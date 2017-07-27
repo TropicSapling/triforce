@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
 void println(char str[]) {
 	printf("%s\n", str);
@@ -24,14 +25,25 @@ int main(int argc, char *argv[]) {
 	FILE *output;
 	
 	if(argc < 3) {
-		// WIP
+		char filename[strlen(argv[1])];
+		strcpy(filename, argv[1]);
+		
+		char c = 0;
+		while(filename[c] != '.') {
+			c++;
+		}
+		
+		memset(filename, 'c', c + 1);
+		memset(filename, '\0', c + 2);
+		
+		output = fopen(filename, "w");
 	} else {
 		output = fopen(argv[2], "w");
 	}
 	
 	char buf[128];
 	
-	while(fscanf(file, "%s", buf) != EOF) {
+	while(fscanf(input, "%s", buf) != EOF) {
 		printf("%s ", buf);
 	}
 	
