@@ -33,8 +33,8 @@ int main(int argc, char *argv[]) {
 			c++;
 		}
 		
-		memset(filename, 'c', c + 1);
-		memset(filename, '\0', c + 2);
+		memset(&filename[c + 1], 'c', 1);
+		memset(&filename[c + 2], '\0', 1);
 		
 		output = fopen(filename, "w");
 	} else {
