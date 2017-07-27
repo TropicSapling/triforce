@@ -13,12 +13,20 @@ int main(int argc, char *argv[]) {
 	
 	println("Compiling...");
 	
-	FILE *file = fopen(argv[1], "r"); // Will be "r+" if automatic compiled GC gets added in the future
+	FILE *input = fopen(argv[1], "r"); // Will be "r+" if automatic compiled GC gets added in the future
 	
-	if(file == NULL) {
+	if(input == NULL) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
 		return 1;
+	}
+	
+	FILE *output;
+	
+	if(argc < 3) {
+		// WIP
+	} else {
+		output = fopen(argv[2], "w");
 	}
 	
 	char buf[128];
@@ -27,7 +35,8 @@ int main(int argc, char *argv[]) {
 		printf("%s ", buf);
 	}
 	
-	fclose(file);
+	fclose(input);
+	fclose(output);
 	
 	return 0;
 }
