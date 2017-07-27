@@ -21,10 +21,10 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	
-	char buf[255];
+	char buf[128];
 	
-	while(fgets(buf, 255, file) != NULL) {
-		println(buf);
+	while(fscanf(file, "%s", buf) != EOF) {
+		printf("%s ", buf);
 	}
 	
 	fclose(file);
