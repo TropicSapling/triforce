@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 		char *cout_pos = strstr(buf, "cout");
 		
 		if(cout_pos != NULL) {
-//			fprintf(output, "printf(\"%%s\", %s);", buf[cout_pos]);
+			fprintf(output, "printf(\"%%s\", %s);", cout_pos + 5);
 		}
 		
 		printf("Compiling... %.2f%%\r", (i / 500) * 100); // Made up progress for now
