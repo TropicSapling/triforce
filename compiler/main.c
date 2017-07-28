@@ -67,6 +67,8 @@ int main(int argc, char *argv[]) {
 		output = fopen(argv[2], "w");
 	}
 	
+	fprintf(output, "#include <stdio.h>\nint main(int argc, char *argv[]) {\n");
+	
 	char buf[128];
 	float i = 0.0;
 	
@@ -74,7 +76,7 @@ int main(int argc, char *argv[]) {
 		char *cout_pos = strstr(buf, "cout");
 		
 		if(cout_pos != NULL) {
-			fprintf(output, "printf(\"%%s\", %s);", cout_pos + 5);
+			fprintf(output, "printf(\"%%s\", %s);\n", cout_pos + 5);
 		}
 		
 		printf("Compiling... %.2f%%\r", (i / 500) * 100); // Made up progress for now
@@ -83,6 +85,9 @@ int main(int argc, char *argv[]) {
 	}
 	
 	fclose(input);
+	
+	fprintf(output, "}");
+	
 	fclose(output);
 	
 	println("Compiling... 100.00%");
