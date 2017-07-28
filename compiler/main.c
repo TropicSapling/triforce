@@ -37,7 +37,23 @@ int main(int argc, char *argv[]) {
 		memset(&filename[c + 1], 'c', 1);
 		memset(&filename[c + 2], '\0', 1);
 		
-		output = fopen(filename, "w");
+		while(filename[c] != '/' && c > 0) {
+			c--;
+		}
+		
+		char finalname[strlen(filename) + 4];
+		
+		if(c == 0) {
+			strcpy(finalname, "bin/");
+			strcat(finalname, filename);
+		} else {
+			strncpy(finalname, filename, c + 1);
+			finalname[c + 1] = '\0';
+			strcat(finalname, "bin/");
+			strcat(finalname, &filename[c + 1]);
+		}
+		
+		output = fopen(finalname, "w");
 	} else {
 		output = fopen(argv[2], "w");
 	}
