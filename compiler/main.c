@@ -25,12 +25,13 @@ int main(int argc, char *argv[]) {
 	FILE *output;
 	
 	if(argc < 3) {
-		char filename[strlen(argv[1])];
+		short file_length = strlen(argv[1]);
+		char filename[file_length];
 		strcpy(filename, argv[1]);
 		
-		char c = 0;
+		char c = file_length - 1;
 		while(filename[c] != '.') {
-			c++;
+			c--;
 		}
 		
 		memset(&filename[c + 1], 'c', 1);
