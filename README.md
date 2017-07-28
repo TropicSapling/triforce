@@ -3,4 +3,3 @@ P+ is for...
 * Performance
 * Power
 * Productivity
-* Programming
