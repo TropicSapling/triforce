@@ -1,5 +1,5 @@
-# P-programming-language
-P is for...
+# P+ programming language
+P+ is for...
 * Performance
 * Power
 * Productivity
