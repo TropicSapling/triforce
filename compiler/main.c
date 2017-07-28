@@ -12,8 +12,6 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	
-	println("Compiling...");
-	
 	FILE *input = fopen(argv[1], "r"); // Will be "r+" if automatic compiled GC gets added in the future
 	
 	if(input == NULL) {
@@ -59,13 +57,18 @@ int main(int argc, char *argv[]) {
 	}
 	
 	char buf[128];
+	float i = 0.0;
 	
 	while(fscanf(input, "%s", buf) != EOF) {
-		printf("%s ", buf);
+		printf("Compiling... %.2f%%\r", (i / 500) * 100); // Made up progress for now
+		fflush(stdout);
+		i++;
 	}
 	
 	fclose(input);
 	fclose(output);
+	
+	println("Compiling... 100.00%");
 	
 	return 0;
 }
