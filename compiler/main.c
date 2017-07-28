@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/stat.h>
 
 void println(char str[]) {
 	printf("%s\n", str);
@@ -40,15 +41,25 @@ int main(int argc, char *argv[]) {
 		}
 		
 		char finalname[strlen(filename) + 4];
+		char success;
 		
 		if(c == 0) {
+			success = mkdir("bin", 0777);
+			
 			strcpy(finalname, "bin/");
 			strcat(finalname, filename);
 		} else {
 			strncpy(finalname, filename, c + 1);
 			finalname[c + 1] = '\0';
 			strcat(finalname, "bin/");
+			success = mkdir(finalname, 0777);
 			strcat(finalname, &filename[c + 1]);
+		}
+		
+		if(success != 0 && errno != 17) {
+			perror("ERROR");
+			fprintf(stderr, "ID: %d\n", errno);
+			return 1;
 		}
 		
 		output = fopen(finalname, "w");
@@ -59,7 +70,13 @@ int main(int argc, char *argv[]) {
 	char buf[128];
 	float i = 0.0;
 	
-	while(fscanf(input, "%s", buf) != EOF) {
+	while(fgets(buf, 128, input) != NULL) {
+		char *cout_pos = strstr(buf, "cout");
+		
+		if(cout_pos != NULL) {
+//			fprintf(output, "printf(\"%%s\", %s);", buf[cout_pos]);
+		}
+		
 		printf("Compiling... %.2f%%\r", (i / 500) * 100); // Made up progress for now
 		fflush(stdout);
 		i++;
