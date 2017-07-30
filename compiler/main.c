@@ -8,8 +8,8 @@ void println(char str[]) {
 }
 
 int main(int argc, char *argv[]) {
-	if(argc != 2) {
-		println("Invalid usage. Please specify a file as the first and only argument.");
+	if(argc < 2 || argc > 3) {
+		println("Invalid usage. Please specify an input file as the first argument and an output file as the second argument.");
 		return 1;
 	}
 	
@@ -24,11 +24,11 @@ int main(int argc, char *argv[]) {
 	FILE *output;
 	
 	if(argc < 3) {
-		short file_length = strlen(argv[1]);
+		unsigned char file_length = strlen(argv[1]);
 		char filename[file_length];
 		strcpy(filename, argv[1]);
 		
-		char c = file_length - 1;
+		unsigned char c = file_length - 1;
 		while(filename[c] != '.') {
 			c--;
 		}
