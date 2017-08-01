@@ -4,13 +4,9 @@
 #include <string.h>
 #include <sys/stat.h>
 
-void println(char str[]) {
-	printf("%s\n", str);
-}
-
 int main(int argc, char *argv[]) {
 	if(argc < 2 || argc > 3) {
-		println("Invalid usage. Please specify an input file as the first argument and an output file as the second argument.");
+		puts("Invalid usage. Please specify an input file as the first argument and an output file as the second argument.");
 		return 1;
 	}
 	
@@ -80,7 +76,7 @@ int main(int argc, char *argv[]) {
 	while(fgets(buf, 65536, input) != NULL) {
 		char *c = buf;
 		char **keywords = malloc(sizeof(char*)); 
-		keywords[0] = c;
+		*keywords = c;
 		size_t row_len = 0;
 		size_t keywords_size = sizeof(char*);
 		
@@ -123,7 +119,7 @@ int main(int argc, char *argv[]) {
 	
 	fclose(output);
 	
-	println("Compiling... 100.00%");
+	puts("Compiling... 100.00%");
 	
 	return 0;
 }
