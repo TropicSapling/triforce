@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
 				return 1;
 			}
 			
-			keywords[keywords_size - 1] = c;
+			keywords[(keywords_size / sizeof(char*)) - 1] = c;
 		}
 		
 		for(size_t i = 0; i < keywords_size; i++) {
