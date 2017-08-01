@@ -79,9 +79,10 @@ int main(int argc, char *argv[]) {
 	
 	while(fgets(buf, 65536, input) != NULL) {
 		char *c = buf;
-		char *keywords[] = {c};
+		char **keywords = malloc(sizeof(char*)); 
+		keywords[0] = c;
 		size_t row_len = 0;
-		size_t keywords_size = 1;
+		size_t keywords_size = sizeof(char*);
 		
 		while(*c != '\0') {
 			while(*c != ' ' && *c != '\0') {
@@ -93,7 +94,7 @@ int main(int argc, char *argv[]) {
 			
 			c++;
 			row_len++;
-			keywords_size++;
+			keywords_size += sizeof(char*);
 			
 			char *res = realloc(keywords, keywords_size);
 			if(res == NULL) {
@@ -105,9 +106,11 @@ int main(int argc, char *argv[]) {
 			keywords[keywords_size - 1] = c;
 		}
 		
-/*		for(int i = 0; i < strlen(keywords); i++) {
-			fprintf(output, "%s", *keywords[i]);
-		} */
+		for(size_t i = 0; i < keywords_size; i++) {
+			fprintf(output, "%s", keywords[i]);
+		}
+		
+		free(keywords);
 		
 		d += row_len;
 		printf("Compiling... %.2f%%\r", (d / file_size) * 100);
