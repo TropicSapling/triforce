@@ -4,6 +4,18 @@
 #include <string.h>
 #include <sys/stat.h>
 
+char *addSpaceForKey(char **keywords, size_t *keywords_size) {
+	*keywords_size += sizeof(char*) + 1;
+	
+	char *res = realloc(keywords, *keywords_size);
+	if(res == NULL) {
+		perror("ERROR");
+		fprintf(stderr, "ID: %d\n", errno);
+	}
+	
+	return res;
+}
+
 int main(int argc, char *argv[]) {
 	if(argc < 2 || argc > 3) {
 		puts("Invalid usage. Please specify an input file as the first argument and an output file as the second argument.");
@@ -73,6 +85,9 @@ int main(int argc, char *argv[]) {
 	char buf[65536];
 	double d = 0.0;
 	
+	char **keywords = malloc(sizeof(char*) + 1); 
+	size_t keywords_size = sizeof(char*) + 1;
+	
 	while(fgets(buf, 65536, input) != NULL) {
 		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
 			continue;
@@ -81,11 +96,9 @@ int main(int argc, char *argv[]) {
 		char *c = malloc(strlen(buf) + 1);
 		strcpy(c, buf);
 		
-		char **keywords = malloc(sizeof(char*) + 1); 
-		*keywords = c;
+		keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c;
 		
 		size_t row_len = 0;
-		size_t keywords_size = sizeof(char*) + 1;
 		
 		while(*c != '\0') {
 			while(*c != ' ' && *c != '\0') {
@@ -97,32 +110,38 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 			
-			*c = '\0'; // use memset if this doesn't work
+			*c = '\0'; // second run: [->"cout", ->"\"Amount", 0x0]
 			
 			c++;
 			row_len++;
-			keywords_size += sizeof(char*) + 1;
 			
-			char *res = realloc(keywords, keywords_size);
+			// ERROR OCCOURS SOMEWHERE AFTER THIS LINE; first pointer becomes null (0x0) after second run [0x0, ->"\"Amount", 0x0]
+			char *res = addSpaceForKey(keywords, &keywords_size);
 			if(res == NULL) {
-				perror("ERROR");
-				fprintf(stderr, "ID: %d\n", errno);
 				return 1;
+			} else {
+				// fix error
 			}
 			
 			keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c;
+			// BEFORE THIS LINE
 		}
 		
 		for(size_t i = 0; i < keywords_size / (sizeof(char*) + 1); i++) {
 			fprintf(output, "%s ", keywords[i]);
 		}
 		
-		free(keywords);
+		char *res = addSpaceForKey(keywords, &keywords_size);
+		if(res == NULL) {
+			return 1;
+		}
 		
 		d += row_len;
 		printf("Compiling... %.2f%%\r", (d / file_size) * 100);
 		fflush(stdout);
 	}
+	
+	free(keywords);
 	
 	fclose(input);
 	
