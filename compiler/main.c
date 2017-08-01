@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
 			keywords[(keywords_size / sizeof(char*)) - 1] = c;
 		}
 		
-		for(size_t i = 0; i < keywords_size; i++) {
+		for(size_t i = 0; i < keywords_size / sizeof(char*); i++) {
 			fprintf(output, "%s", keywords[i]);
 		}
 		
