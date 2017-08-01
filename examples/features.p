@@ -5,7 +5,7 @@ cout "Line number: " + __line;
 byte[] str = "something";
 
 pointer ptr -> str;
-byte[] adress = &str;
+byte[] adress = ->str;
 
 cout "String: " + str; // something
 cout "Pointer/Reference: " + ptr;

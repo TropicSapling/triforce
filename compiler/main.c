@@ -74,11 +74,18 @@ int main(int argc, char *argv[]) {
 	double d = 0.0;
 	
 	while(fgets(buf, 65536, input) != NULL) {
-		char *c = buf;
-		char **keywords = malloc(sizeof(char*)); 
+		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
+			continue;
+		}
+		
+		char *c = malloc(strlen(buf) + 1);
+		strcpy(c, buf);
+		
+		char **keywords = malloc(sizeof(char*) + 1); 
 		*keywords = c;
+		
 		size_t row_len = 0;
-		size_t keywords_size = sizeof(char*);
+		size_t keywords_size = sizeof(char*) + 1;
 		
 		while(*c != '\0') {
 			while(*c != ' ' && *c != '\0') {
@@ -86,11 +93,15 @@ int main(int argc, char *argv[]) {
 				row_len++;
 			}
 			
+			if(*c == '\0') {
+				break;
+			}
+			
 			*c = '\0'; // use memset if this doesn't work
 			
 			c++;
 			row_len++;
-			keywords_size += sizeof(char*);
+			keywords_size += sizeof(char*) + 1;
 			
 			char *res = realloc(keywords, keywords_size);
 			if(res == NULL) {
@@ -99,11 +110,11 @@ int main(int argc, char *argv[]) {
 				return 1;
 			}
 			
-			keywords[(keywords_size / sizeof(char*)) - 1] = c;
+			keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c;
 		}
 		
-		for(size_t i = 0; i < keywords_size / sizeof(char*); i++) {
-			fprintf(output, "%s", keywords[i]);
+		for(size_t i = 0; i < keywords_size / (sizeof(char*) + 1); i++) {
+			fprintf(output, "%s ", keywords[i]);
 		}
 		
 		free(keywords);
