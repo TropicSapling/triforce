@@ -11,6 +11,8 @@ char *addSpaceForKey(char **keywords, size_t *keywords_size) {
 	if(res == NULL) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
+	} else {
+		keywords = (char**) res;
 	}
 	
 	return res;
@@ -110,17 +112,15 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 			
-			*c = '\0'; // second run: [->"cout", ->"\"Amount", 0x0]
+			*c = '\0'; // second run: [->"cout", ->"\"Amount"]
 			
 			c++;
 			row_len++;
 			
-			// ERROR OCCOURS SOMEWHERE AFTER THIS LINE; first pointer becomes null (0x0) after second run [0x0, ->"\"Amount", 0x0]
+			// ERROR OCCOURS SOMEWHERE AFTER THIS LINE; first pointer becomes null (0x0) after second run [0x0, ->"\"Amount"]
 			char *res = addSpaceForKey(keywords, &keywords_size);
 			if(res == NULL) {
 				return 1;
-			} else {
-				// fix error
 			}
 			
 			keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c;
