@@ -48,3 +48,5 @@ cout rearrange(ascii_str, 32); // [[72, 101, 108, 108, 111], [119, 111, 114, 108
 custom[] custom_arr = [2781, 'g', ["some", variable: "thing"], someFunction: function2, -93478];
 cout custom_arr[1]; // 'g'
 cout custom_arr[1<<4] + [1, '2', 3]; // [someFunction: function2, ["some", variable: "thing"], 'g', 1, '2', 3]
+
+cout 1 == 0 ? "Impossible!\n" : "True\n";cout 0 == 1 ? "Also impossible ofc\n" : "Yup.\n";
