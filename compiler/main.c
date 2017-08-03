@@ -90,20 +90,34 @@ int main(int argc, char *argv[]) {
 	char **keywords = malloc(sizeof(char*) + 1); 
 	size_t keywords_size = sizeof(char*) + 1;
 	
+	char *org_c = malloc(1);
+	char *c = org_c;
+	size_t c_size = 0;
+	
 	while(fgets(buf, 65536, input) != NULL) {
 		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
 			continue;
 		}
 		
-		char *c = malloc(strlen(buf) + 1);
+		c_size += strlen(buf) + 1;
+		
+		char *tmp = realloc(org_c, c_size);
+		if(tmp == NULL) {
+			perror("ERROR");
+			fprintf(stderr, "ID: %d\n", errno);
+		} else {
+			org_c = tmp;
+			c = tmp + c_size - (strlen(buf) + 1);
+		}
+		
 		strcpy(c, buf);
 		
 		keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c;
 		
 		size_t row_len = 0;
 		
-		while(*c != '\0') {
-			while(*c != ' ' && *c != '\0') {
+		while(1) {
+			while(*c != ' ' && *c != '\0' && *c != ';') {
 				c++;
 				row_len++;
 			}
@@ -112,22 +126,24 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 			
-			*c = '\0'; // second run: [->"cout", ->"\"Amount"]
+			if(*c == ';') {
+				*c = '\0';
+				c++;
+				break;
+			}
+			
+			*c = '\0';
 			
 			c++;
 			row_len++;
 			
-			// ERROR OCCOURS SOMEWHERE AFTER THIS LINE; first pointer becomes null (0x0) after second run [0x0, ->"\"Amount"]
 			char *res = addSpaceForKey(&keywords, &keywords_size);
 			if(res == NULL) {
 				return 1;
 			}
 			
 			keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c;
-			// BEFORE THIS LINE
 		}
-		
-		free(c - (strlen(buf) + 1));
 		
 		for(size_t i = 0; i < keywords_size / (sizeof(char*) + 1); i++) {
 			fprintf(output, "%s ", keywords[i]);
@@ -143,6 +159,7 @@ int main(int argc, char *argv[]) {
 		fflush(stdout);
 	}
 	
+	free(org_c);
 	free(keywords);
 	
 	fclose(input);
