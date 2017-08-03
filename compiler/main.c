@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
 		
-		c_size += strlen(buf) + 1;
+/*		c_size += strlen(buf) + 1;
 		
 		char *tmp = realloc(org_c, c_size);
 		if(tmp == NULL) {
@@ -110,26 +110,36 @@ int main(int argc, char *argv[]) {
 		} else {
 			org_c = tmp;
 			c = tmp + c_size - (strlen(buf) + 1);
+		} */
+		
+		char *tmp = malloc(strlen(buf) + 1);
+		if(tmp == NULL) {
+			perror("ERROR");
+			fprintf(stderr, "ID: %d\n", errno);
+		} else {
+			c = tmp;
 		}
 		
 		strcpy(c, buf);
 		
-		keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c; // FIX KEYWORDS ITEMS POINT TO NEWLY ALLOCATED 'c' POINTER
+		keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c; // FIX KEYWORDS ITEMS POINT TO NEWLY ALLOCATED 'c' POINTER (maybe, not sure) (actually malloc a new c could work better)
 		
 		size_t row_len = 0;
 		
 		while(1) {
-			while(*c != ' ' && *c != '\0' && *c != ';') {
+			char *special = calloc(2, 1);
+			
+			while(*c != ' ' && *c != '\0') {
 				c++;
 				row_len++;
+				
+				if(*c == ';' || *c == ',' || *c == '[' || *c == ']' || *c == '{' || *c == '}' || *c == '(' || *c == ')' || *c == '?' || *c == '>' || *c == '<' || *c == '=' || *c == '+' || *c == '-' || *c == '*' || *c == '/' || *c == '%' || *c == '!' || *c == '&' || *c == '|' || *c == '^' || *c == '~' || *c == '\\') {
+					special[0] = *c;
+					break;
+				}
 			}
 			
 			if(*c == '\0') {
-				break;
-			}
-			
-			if(*c == ';') {
-				*c = '\0';
 				c++;
 				break;
 			}
@@ -138,6 +148,15 @@ int main(int argc, char *argv[]) {
 			
 			c++;
 			row_len++;
+			
+			if(special[0] != '\0') {
+				char *res = addSpaceForKey(&keywords, &keywords_size);
+				if(res == NULL) {
+					return 1;
+				}
+				
+				keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = special;
+			}
 			
 			char *res = addSpaceForKey(&keywords, &keywords_size);
 			if(res == NULL) {
@@ -148,10 +167,8 @@ int main(int argc, char *argv[]) {
 		}
 		
 		for(; i < keywords_size / (sizeof(char*) + 1); i++) {
-			fprintf(output, " %s", keywords[i]);
+			fprintf(output, "%s ", keywords[i]);
 		}
-		
-		fprintf(output, ";\n");
 		
 		char *res = addSpaceForKey(&keywords, &keywords_size);
 		if(res == NULL) {
