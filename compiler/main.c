@@ -94,6 +94,8 @@ int main(int argc, char *argv[]) {
 	char *c = org_c;
 	size_t c_size = 0;
 	
+	size_t i = 0;
+	
 	while(fgets(buf, 65536, input) != NULL) {
 		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
 			continue;
@@ -112,7 +114,7 @@ int main(int argc, char *argv[]) {
 		
 		strcpy(c, buf);
 		
-		keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c;
+		keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c; // FIX KEYWORDS ITEMS POINT TO NEWLY ALLOCATED 'c' POINTER
 		
 		size_t row_len = 0;
 		
@@ -145,9 +147,11 @@ int main(int argc, char *argv[]) {
 			keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c;
 		}
 		
-		for(size_t i = 0; i < keywords_size / (sizeof(char*) + 1); i++) {
-			fprintf(output, "%s ", keywords[i]);
+		for(; i < keywords_size / (sizeof(char*) + 1); i++) {
+			fprintf(output, " %s", keywords[i]);
 		}
+		
+		fprintf(output, ";\n");
 		
 		char *res = addSpaceForKey(&keywords, &keywords_size);
 		if(res == NULL) {
