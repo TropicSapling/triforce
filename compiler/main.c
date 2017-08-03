@@ -4,15 +4,15 @@
 #include <string.h>
 #include <sys/stat.h>
 
-char *addSpaceForKey(char **keywords, size_t *keywords_size) {
+char *addSpaceForKey(char ***keywords, size_t *keywords_size) {
 	*keywords_size += sizeof(char*) + 1;
 	
-	char *res = realloc(keywords, *keywords_size);
+	char *res = realloc(*keywords, *keywords_size);
 	if(res == NULL) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
 	} else {
-		keywords = (char**) res;
+		*keywords = (char**) res;
 	}
 	
 	return res;
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
 			row_len++;
 			
 			// ERROR OCCOURS SOMEWHERE AFTER THIS LINE; first pointer becomes null (0x0) after second run [0x0, ->"\"Amount"]
-			char *res = addSpaceForKey(keywords, &keywords_size);
+			char *res = addSpaceForKey(&keywords, &keywords_size);
 			if(res == NULL) {
 				return 1;
 			}
@@ -127,11 +127,13 @@ int main(int argc, char *argv[]) {
 			// BEFORE THIS LINE
 		}
 		
+		free(c - (strlen(buf) + 1));
+		
 		for(size_t i = 0; i < keywords_size / (sizeof(char*) + 1); i++) {
 			fprintf(output, "%s ", keywords[i]);
 		}
 		
-		char *res = addSpaceForKey(keywords, &keywords_size);
+		char *res = addSpaceForKey(&keywords, &keywords_size);
 		if(res == NULL) {
 			return 1;
 		}
