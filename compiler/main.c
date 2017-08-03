@@ -90,27 +90,16 @@ int main(int argc, char *argv[]) {
 	char **keywords = malloc(sizeof(char*) + 1); 
 	size_t keywords_size = sizeof(char*) + 1;
 	
-	char *org_c = malloc(1);
-	char *c = org_c;
-	size_t c_size = 0;
-	
 	size_t i = 0;
+	size_t line = 0;
+	
+	char *c = malloc(1);
+	char *tobefreed[65536];
 	
 	while(fgets(buf, 65536, input) != NULL) {
 		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
 			continue;
 		}
-		
-/*		c_size += strlen(buf) + 1;
-		
-		char *tmp = realloc(org_c, c_size);
-		if(tmp == NULL) {
-			perror("ERROR");
-			fprintf(stderr, "ID: %d\n", errno);
-		} else {
-			org_c = tmp;
-			c = tmp + c_size - (strlen(buf) + 1);
-		} */
 		
 		char *tmp = malloc(strlen(buf) + 1);
 		if(tmp == NULL) {
@@ -121,6 +110,8 @@ int main(int argc, char *argv[]) {
 		}
 		
 		strcpy(c, buf);
+		
+		tobefreed[line] = c;
 		
 		keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c; // FIX KEYWORDS ITEMS POINT TO NEWLY ALLOCATED 'c' POINTER (maybe, not sure) (actually malloc a new c could work better)
 		
@@ -178,12 +169,17 @@ int main(int argc, char *argv[]) {
 		d += row_len;
 		printf("Compiling... %.2f%%\r", (d / file_size) * 100);
 		fflush(stdout);
+		
+		line++;
 	}
 	
-	free(org_c);
-	free(keywords);
-	
 	fclose(input);
+	
+	for(size_t it = 0; it < 65536; it++) {
+		free(tobefreed[it]);
+	}
+	
+	free(keywords);
 	
 	fprintf(output, "}");
 	
