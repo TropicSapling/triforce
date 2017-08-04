@@ -184,7 +184,8 @@ int main(int argc, char *argv[]) {
 	
 	for(i = 0; i < key; i++) {
 		if(strcmp(keywords[i], "%%%") == 0) {
-//			free(keywords[i]);
+			free(keywords[i + 1]);
+			i++;
 		}
 	}
 	
