@@ -4,8 +4,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
-char *addSpaceForKey(char ***keywords, size_t *keywords_size) {
-	*keywords_size += sizeof(char*) + 1;
+char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
+	*keywords_size *= 2;
 	
 	char *res = realloc(*keywords, *keywords_size);
 	if(res == NULL) {
@@ -84,19 +84,18 @@ int main(int argc, char *argv[]) {
 	size_t file_size = ftell(input);
 	rewind(input);
 	
-	char buf[4294967296];
-	double d = 0.0;
+	char buf[65536];
+	double progress = 0.0;
 	
-	char **keywords = malloc(sizeof(char*) + 1); 
-	size_t keywords_size = sizeof(char*) + 1;
+	size_t keywords_size = (sizeof(char*) + 1) * 32;
+	char **keywords = malloc(keywords_size); 
 	
-	size_t i = 0;
-	size_t line = 0;
+	size_t i = 0; // Will (most likely) be removed in the future
+	size_t key = 0;
 	
-	char *c = malloc(1);
-	char *tobefreed[536870912];
+	char *c;
 	
-	while(fgets(buf, 4294967296, input) != NULL) {
+	while(fgets(buf, 65536, input) != NULL) {
 		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
 			continue;
 		}
@@ -111,9 +110,19 @@ int main(int argc, char *argv[]) {
 		
 		strcpy(c, buf);
 		
-		tobefreed[line] = c;
+		if(key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(&keywords, &keywords_size) == NULL) {
+			return 1;
+		}
 		
-		keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c; // FIX KEYWORDS ITEMS POINT TO NEWLY ALLOCATED 'c' POINTER (maybe, not sure) (actually malloc a new c could work better)
+		keywords[key] = "%%%"; // This is used to mark where memory was allocated for 'c'
+		key++;
+		
+		if(key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(&keywords, &keywords_size) == NULL) {
+			return 1;
+		}
+		
+		keywords[key] = c;
+		key++;
 		
 		size_t row_len = 0;
 		
@@ -141,49 +150,45 @@ int main(int argc, char *argv[]) {
 			row_len++;
 			
 			if(special[0] != '\0') {
-				char *res = addSpaceForKey(&keywords, &keywords_size);
-				if(res == NULL) {
+				if(key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(&keywords, &keywords_size) == NULL) {
 					return 1;
 				}
 				
-				keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = special;
+				keywords[key] = special;
+				key++;
 			}
 			
-			char *res = addSpaceForKey(&keywords, &keywords_size);
-			if(res == NULL) {
+			if(key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(&keywords, &keywords_size) == NULL) {
 				return 1;
 			}
 			
-			keywords[(keywords_size / (sizeof(char*) + 1)) - 1] = c;
+			keywords[key] = c;
+			key++;
 		}
 		
-		for(; i < keywords_size / (sizeof(char*) + 1); i++) {
+		// For debugging; will be removed (or possibly replaced) in the future
+		for(; i < key; i++) {
 			fprintf(output, "%s ", keywords[i]);
 		}
 		
-		char *res = addSpaceForKey(&keywords, &keywords_size);
-		if(res == NULL) {
-			return 1;
-		}
-		
-		d += row_len;
-		printf("Compiling... %.2f%%\r", (d / file_size) * 100);
+		progress += row_len;
+		printf("Compiling... %.2f%%\r", (progress / file_size) * 100);
 		fflush(stdout);
-		
-		line++;
 	}
 	
 	fclose(input);
 	
-	for(size_t it = 0; it < 65536; it++) {
-		free(tobefreed[it]);
-	}
-	
-	free(keywords);
-	
 	fprintf(output, "}");
 	
 	fclose(output);
+	
+	for(i = 0; i < key; i++) {
+		if(strcmp(keywords[i], "%%%") == 0) {
+//			free(keywords[i]);
+		}
+	}
+	
+	free(keywords);
 	
 	puts("Compiling... 100.00%");
 	
