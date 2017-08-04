@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
 	size_t file_size = ftell(input);
 	rewind(input);
 	
-	char buf[65536];
+	char buf[4294967296];
 	double d = 0.0;
 	
 	char **keywords = malloc(sizeof(char*) + 1); 
@@ -94,9 +94,9 @@ int main(int argc, char *argv[]) {
 	size_t line = 0;
 	
 	char *c = malloc(1);
-	char *tobefreed[65536];
+	char *tobefreed[536870912];
 	
-	while(fgets(buf, 65536, input) != NULL) {
+	while(fgets(buf, 4294967296, input) != NULL) {
 		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
 			continue;
 		}
