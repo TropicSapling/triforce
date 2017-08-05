@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
 			return 1;
 		}
 		
-		keywords[key] = "%%%"; // This is used to mark where memory was allocated for 'c'
+		keywords[key] = NULL; // This is used to mark where memory was allocated for 'c'
 		key++;
 		
 		if(key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(&keywords, &keywords_size) == NULL) {
@@ -168,7 +168,9 @@ int main(int argc, char *argv[]) {
 		
 		// For debugging; will be removed (or possibly replaced) in the future
 		for(; i < key; i++) {
-			fprintf(output, "%s ", keywords[i]);
+			if(keywords[i] != NULL) {
+				fprintf(output, "%s ", keywords[i]);
+			}
 		}
 		
 		progress += row_len;
@@ -183,7 +185,7 @@ int main(int argc, char *argv[]) {
 	fclose(output);
 	
 	for(i = 0; i < key; i++) {
-		if(strcmp(keywords[i], "%%%") == 0) {
+		if(keywords[i] == NULL) {
 			free(keywords[i + 1]);
 			i++;
 		}

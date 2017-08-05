@@ -50,3 +50,5 @@ cout custom_arr[1]; // 'g'
 cout custom_arr[1<<4] + [1, '2', 3]; // [someFunction: function2, ["some", variable: "thing"], 'g', 1, '2', 3]
 
 cout 1 == 0 ? "Impossible!\n" : "True\n";cout 0 == 1 ? "Also impossible ofc\n" : "Yup.\n";
+
+return 0 from __app;
