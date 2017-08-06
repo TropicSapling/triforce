@@ -1,1 +1,1 @@
-`gcc main.c lexer.c -o bin/main.out`
+`./ppc path/to/input.p path/to/output.c`

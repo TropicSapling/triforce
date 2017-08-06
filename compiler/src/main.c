@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	
-	FILE *input = fopen(argv[1], "r"); // Will be "r+" if automatic compiled GC gets added in the future
+	FILE *input = fopen(argv[1], "r"); // Will be "r+" if automatic compiled GC gets added in the future and/or if needed to fix 'read-dir' bug
 	
 	if(input == NULL) {
 		perror("ERROR");
@@ -43,7 +43,12 @@ int main(int argc, char *argv[]) {
 	
 	/////////////////// START PARSING //////////////////
 	
-	// WIP
+	char *parsed_output = parse(keywords, keywords_size, key);
+	if(parsed_output == NULL) {
+		return 1;
+	}
+	
+	puts("Parsing... 100.00%");
 	
 	//////////////// PREPARE FOR OUTPUT ////////////////
 	
