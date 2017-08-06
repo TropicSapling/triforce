@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 	
 	/////////////////// START PARSING //////////////////
 	
-	char *parsed_output = parse(keywords, keywords_size, key);
+	char *parsed_output = parse(keywords, key);
 	if(parsed_output == NULL) {
 		return 1;
 	}
@@ -117,6 +117,8 @@ int main(int argc, char *argv[]) {
 	puts("Printing output... 100.00%");
 	
 	/////////////////// FREE MEMORY ////////////////////
+	
+	free(parsed_output);
 	
 	for(size_t i = 0; i < key; i++) {
 		if(keywords[i] == NULL) {
