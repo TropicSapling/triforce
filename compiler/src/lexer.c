@@ -21,6 +21,7 @@ char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
 
 int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, size_t file_size) {
 	char buf[65536];
+	char extra_buf[16] = "\0";
 	char *c;
 	
 	long double progress = 0.0;
@@ -30,7 +31,12 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			continue;
 		}
 		
-		char *tmp = malloc(strlen(buf) + 1);
+		size_t new_size = strlen(buf) + 1;
+		if(extra_buf != NULL) {
+			new_size += strlen(extra_buf);
+		}
+		
+		char *tmp = malloc(new_size);
 		if(tmp == NULL) {
 			perror("ERROR");
 			fprintf(stderr, "ID: %d\n", errno);
@@ -38,7 +44,14 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			c = tmp;
 		}
 		
-		strcpy(c, buf);
+		if(extra_buf[0] != '\0') {
+			strcpy(c, extra_buf);
+			strcat(c, buf);
+			
+			extra_buf[0] = '\0';
+		} else {
+			strcpy(c, buf);
+		}
 		
 		if(*key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
 			return 1;
@@ -56,7 +69,7 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 		
 		size_t row_len = 0;
 		
-		while(1) {
+		while(row_len < 65521) {
 			char *special = calloc(2, 1);
 			
 			while(*c != ' ' && *c != '\0') {
@@ -79,27 +92,34 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			c++;
 			row_len++;
 			
-			if(special[0] != '\0') {
+			if(row_len < 65521) {
+				if(special[0] != '\0') {
+					if(*key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
+						return 1;
+					}
+					
+					(*keywords)[*key] = special;
+					(*key)++;
+				}
+				
 				if(*key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
 					return 1;
 				}
 				
-				(*keywords)[*key] = special;
+				(*keywords)[*key] = c;
 				(*key)++;
 			}
-			
-			if(*key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
-				return 1;
-			}
-			
-			(*keywords)[*key] = c;
-			(*key)++;
+		}
+		
+		if(row_len > 65520) {
+			strcpy(extra_buf, c);
 		}
 		
 		progress += row_len;
 		printf("Reading file... %.2Lf%%\r", (progress / file_size) * 100);
 		fflush(stdout);
 	}
+	
 	
 	return 0;
 }
