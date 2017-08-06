@@ -4,21 +4,12 @@
 #include <string.h>
 #include <sys/stat.h>
 
-char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
-	*keywords_size *= 2;
-	
-	char *res = realloc(*keywords, *keywords_size);
-	if(res == NULL) {
-		perror("ERROR");
-		fprintf(stderr, "ID: %d\n", errno);
-	} else {
-		*keywords = (char**) res;
-	}
-	
-	return res;
-}
+#include "def.h"
 
 int main(int argc, char *argv[]) {
+	
+	//////////////// PREPARE FOR LEXING ////////////////
+	
 	if(argc < 2 || argc > 3) {
 		puts("Invalid usage. Please specify an input file as the first argument and an output file as the second argument.");
 		return 1;
@@ -31,6 +22,30 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "ID: %d\n", errno);
 		return 1;
 	}
+	
+	// Get file size to be able to print lexing progress
+	fseek(input, 0L, SEEK_END);
+	size_t file_size = ftell(input);
+	rewind(input);
+	
+	/////////////////// START LEXING ///////////////////
+	
+	size_t keywords_size = (sizeof(char*) + 1) * 32;
+	char **keywords = malloc(keywords_size); 
+	size_t key = 0;
+	
+	if(lex_parse(input, &keywords, keywords_size, &key, file_size)) {
+		return 1;
+	}
+	
+	fclose(input);
+	puts("Reading file... 100.00%");
+	
+	/////////////////// START PARSING //////////////////
+	
+	// WIP
+	
+	//////////////// PREPARE FOR OUTPUT ////////////////
 	
 	FILE *output;
 	
@@ -78,113 +93,27 @@ int main(int argc, char *argv[]) {
 		output = fopen(argv[2], "w");
 	}
 	
+	/////////////////// PRINT OUTPUT ///////////////////
+	
 	fprintf(output, "#include <stdio.h>\nint main(int argc, char *argv[]) {\n");
 	
-	fseek(input, 0L, SEEK_END);
-	size_t file_size = ftell(input);
-	rewind(input);
-	
-	char buf[65536];
-	double progress = 0.0;
-	
-	size_t keywords_size = (sizeof(char*) + 1) * 32;
-	char **keywords = malloc(keywords_size); 
-	
-	size_t i = 0; // Will (most likely) be removed in the future
-	size_t key = 0;
-	
-	char *c;
-	
-	while(fgets(buf, 65536, input) != NULL) {
-		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
-			continue;
+	// For debugging; will be replaced in the future
+	for(size_t i = 0; i < key; i++) {
+		if(keywords[i] != NULL) {
+			fprintf(output, "%s ", keywords[i]);
 		}
 		
-		char *tmp = malloc(strlen(buf) + 1);
-		if(tmp == NULL) {
-			perror("ERROR");
-			fprintf(stderr, "ID: %d\n", errno);
-		} else {
-			c = tmp;
-		}
-		
-		strcpy(c, buf);
-		
-		if(key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(&keywords, &keywords_size) == NULL) {
-			return 1;
-		}
-		
-		keywords[key] = NULL; // This is used to mark where memory was allocated for 'c'
-		key++;
-		
-		if(key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(&keywords, &keywords_size) == NULL) {
-			return 1;
-		}
-		
-		keywords[key] = c;
-		key++;
-		
-		size_t row_len = 0;
-		
-		while(1) {
-			char *special = calloc(2, 1);
-			
-			while(*c != ' ' && *c != '\0') {
-				c++;
-				row_len++;
-				
-				if(*c == ';' || *c == ',' || *c == '[' || *c == ']' || *c == '{' || *c == '}' || *c == '(' || *c == ')' || *c == '?' || *c == '>' || *c == '<' || *c == '=' || *c == '+' || *c == '-' || *c == '*' || *c == '/' || *c == '%' || *c == '!' || *c == '&' || *c == '|' || *c == '^' || *c == '~' || *c == '\\') {
-					special[0] = *c;
-					break;
-				}
-			}
-			
-			if(*c == '\0') {
-				c++;
-				break;
-			}
-			
-			*c = '\0';
-			
-			c++;
-			row_len++;
-			
-			if(special[0] != '\0') {
-				if(key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(&keywords, &keywords_size) == NULL) {
-					return 1;
-				}
-				
-				keywords[key] = special;
-				key++;
-			}
-			
-			if(key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(&keywords, &keywords_size) == NULL) {
-				return 1;
-			}
-			
-			keywords[key] = c;
-			key++;
-		}
-		
-		// For debugging; will be removed (or possibly replaced) in the future
-		for(; i < key; i++) {
-			if(keywords[i] != NULL) {
-				fprintf(output, "%s ", keywords[i]);
-			}
-		}
-		
-		progress += row_len;
-		printf("Compiling... %.2f%%\r", (progress / file_size) * 100);
-		fflush(stdout);
+		printf("Printing output... %.2Lf%%\r", (((long double) i + 1) / key) * 100);
 	}
-	
-	fclose(input);
 	
 	fprintf(output, "}");
 	
 	fclose(output);
+	puts("Printing output... 100.00%");
 	
-	for(i = 0; i < key; i++) {
+	/////////////////// FREE MEMORY ////////////////////
+	
+	for(size_t i = 0; i < key; i++) {
 		if(keywords[i] == NULL) {
 			free(keywords[i + 1]);
 			i++;
@@ -192,8 +121,6 @@ int main(int argc, char *argv[]) {
 	}
 	
 	free(keywords);
-	
-	puts("Compiling... 100.00%");
 	
 	return 0;
 }
