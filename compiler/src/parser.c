@@ -18,28 +18,29 @@ char *addSpaceForChars(char **keywords, size_t *keywords_size) {
 	return res;
 }
 
-char *parse(char **keywords, size_t key) {
+char *parse(char **keywords, size_t key, size_t *pos) {
 	size_t output_size = 256;
 	char *output = malloc(output_size);
 	
-	size_t pos = 0;
 	for(size_t i = 0; i < key; i++) {
-		if(pos > output_size && addSpaceForChars(&output, &output_size) == NULL) {
-			return NULL;
+		if(keywords[i] != NULL) {
+			// DEBUG; will be replaced later
+			for(int it = 0; keywords[i][it] != '\0'; it++) {
+				if(*pos > output_size && addSpaceForChars(&output, &output_size) == NULL) {
+					return NULL;
+				}
+				
+				output[*pos] = keywords[i][it];
+				(*pos)++;
+			}
 		}
-		
-		output[pos] = 't'; // DEBUG; will be removed in the future
-		
-		pos += 1;
 	}
 	
-	if(pos > output_size && addSpaceForChars(&output, &output_size) == NULL) {
+	if(*pos > output_size && addSpaceForChars(&output, &output_size) == NULL) {
 		return NULL;
 	}
 	
-	output[pos] = '\0';
-	
-	puts(output);
+	output[*pos] = '\0';
 	
 	return output;
 }

@@ -43,7 +43,8 @@ int main(int argc, char *argv[]) {
 	
 	/////////////////// START PARSING //////////////////
 	
-	char *parsed_output = parse(keywords, key);
+	size_t pos = 0;
+	char *parsed_output = parse(keywords, key, &pos);
 	if(parsed_output == NULL) {
 		return 1;
 	}
@@ -102,11 +103,8 @@ int main(int argc, char *argv[]) {
 	
 	fprintf(output, "#include <stdio.h>\nint main(int argc, char *argv[]) {\n");
 	
-	// For debugging; will be replaced in the future
-	for(size_t i = 0; i < key; i++) {
-		if(keywords[i] != NULL) {
-			fprintf(output, "%s ", keywords[i]);
-		}
+	for(size_t i = 0; i < pos; i++) {
+		fprintf(output, "%c", parsed_output[i]);
 		
 		printf("Printing output... %.2Lf%%\r", (((long double) i + 1) / key) * 100);
 	}
