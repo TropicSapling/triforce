@@ -85,6 +85,9 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			if(*c == '\0') {
 				c++;
 				break;
+			} else if(*c == '/' && *(c - 1) == '/') {
+				(*keywords)[(*key) - 1] = "";
+				break;
 			}
 			
 			*c = '\0';

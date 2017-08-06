@@ -1,1 +1,1 @@
-cout "Hello world!\n"
+cout "Hello world!\n";
