@@ -1,1 +1,1 @@
-`gcc main.c -o bin/main.out`
+`gcc main.c lexer.c -o bin/main.out`
