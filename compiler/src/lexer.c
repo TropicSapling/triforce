@@ -73,19 +73,19 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			char *special = calloc(2, 1);
 			
 			while(*c != ' ' && *c != '\0') {
-				c++;
-				row_len++;
-				
 				if(*c == ';' || *c == ',' || *c == '[' || *c == ']' || *c == '{' || *c == '}' || *c == '(' || *c == ')' || *c == '?' || *c == '>' || *c == '<' || *c == '=' || *c == '+' || *c == '-' || *c == '*' || *c == '/' || *c == '%' || *c == '!' || *c == '&' || *c == '|' || *c == '^' || *c == '~' || *c == '\\') {
 					special[0] = *c;
 					break;
 				}
+				
+				c++;
+				row_len++;
 			}
 			
 			if(*c == '\0') {
 				c++;
 				break;
-			} else if(*c == '/' && *(c - 1) == '/') {
+			} else if(*c == '/' && *(c + 1) == '/') {
 				(*keywords)[(*key) - 1] = "";
 				break;
 			}
