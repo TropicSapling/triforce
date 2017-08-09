@@ -69,9 +69,13 @@ comment */
 --------
 
 #### Arrays
-
---------
-
 * `pointer subarr -> arr[start >> stop]`
 * `str[>>] == "test"`
 * `str == address`
+
+--------
+
+#### Functions
+* `<return type> (function) <name>(<parameters>) { ... }`
+
+--------
