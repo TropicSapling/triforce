@@ -43,7 +43,7 @@ comment */
 * `posint`
 * `signed char`
 * `<type> ofsize <byte size>`
-* `function`
+* `void`
 
 --------
 
@@ -77,7 +77,7 @@ comment */
 --------
 
 #### Functions
-* `<return type> [function] <function name>([parameters]) { <code> }`
+* `<return type> <function name>([parameters]) { <code> }`
 * `<function name>([parameters])`
 
 --------
