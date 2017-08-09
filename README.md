@@ -42,6 +42,8 @@ comment */
 * `posnum`
 * `posint`
 * `signed char`
+
+#### Special
 * `<type> ofsize <byte size>`
 * `void`
 
