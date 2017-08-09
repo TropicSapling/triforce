@@ -37,7 +37,10 @@ comment */
 * `pointer`
 
 #### Extras
+* `whole (number)`
+* `decimal (number)`
 * `posnum`
+* `whole posnum`
 * `signed char`
 * `<type> ofsize <byte size>`
 
