@@ -20,6 +20,16 @@ line
 comment */
 ```
 
+#### Data types
+#### Basic
+* `number`
+* `char`
+* `pointer`
+
+#### Extras
+* `posnum`
+* `signed char`
+
 #### Operators
 ##### Normal
 * `+`
