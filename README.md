@@ -39,6 +39,7 @@ comment */
 #### Extras
 * `posnum`
 * `signed char`
+* `<type> ofsize <byte size>`
 
 --------
 
