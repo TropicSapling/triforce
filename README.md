@@ -83,3 +83,8 @@ comment */
 * `<function name>([parameters])`
 
 --------
+
+#### IO
+* `cout "Print something to console"`
+
+--------
