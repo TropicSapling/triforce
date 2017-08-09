@@ -21,13 +21,14 @@ comment */
 ```
 
 #### Operators
+##### Normal
 * `+`
 * `-`
 * `*`
 * `/`
 * `%`
 
-##### Assignment Operators
+##### Assignment
 * `+=`
 * `-=`
 * `*=`
