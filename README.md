@@ -10,17 +10,30 @@ P+ is for...
 ## Features
 ### Current
 #### Comments
+
+--------
+
 `// One line comment`
+
+--------
 
 ### Planned
 #### Comments
+
+--------
+
 ```
 /* Multi
 line
 comment */
 ```
 
+--------
+
 #### Data types
+
+--------
+
 #### Basic
 * `number`
 * `char`
@@ -30,7 +43,12 @@ comment */
 * `posnum`
 * `signed char`
 
+--------
+
 #### Operators
+
+--------
+
 ##### Normal
 * `+`
 * `-`
@@ -44,3 +62,5 @@ comment */
 * `*=`
 * `/=`
 * `%=`
+
+--------
