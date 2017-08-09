@@ -9,19 +9,19 @@ P+ is for...
 
 ## Features
 ### Current
-#### Comments
 
 --------
 
+#### Comments
 `// One line comment`
 
 --------
 
 ### Planned
-#### Comments
 
 --------
 
+#### Comments
 ```
 /* Multi
 line
@@ -31,9 +31,6 @@ comment */
 --------
 
 #### Data types
-
---------
-
 #### Basic
 * `number`
 * `char`
@@ -46,9 +43,6 @@ comment */
 --------
 
 #### Operators
-
---------
-
 ##### Normal
 * `+`
 * `-`
