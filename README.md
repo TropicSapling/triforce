@@ -57,6 +57,9 @@ comment */
 * `/=`
 * `%=`
 
+##### Special
+* `<condition> ? true : false`
+
 --------
 
 #### Arrays
