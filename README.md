@@ -38,7 +38,7 @@ comment */
 
 #### Extras
 * `int`
-* `decimal (number)`
+* `decimal [number]`
 * `posnum`
 * `posint`
 * `signed char`
@@ -77,7 +77,7 @@ comment */
 --------
 
 #### Functions
-* `<return type> (function) <function name>(<parameters>) { ... }`
-* `<function name>(<parameters>)`
+* `<return type> [function] <function name>([parameters]) { <code> }`
+* `<function name>([parameters])`
 
 --------
