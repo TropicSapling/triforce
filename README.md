@@ -58,3 +58,11 @@ comment */
 * `%=`
 
 --------
+
+#### Arrays
+
+--------
+
+* `pointer subarr -> arr[start >> stop]`
+* `str[>>] == "test"`
+* `str == address`
