@@ -1,0 +1,16 @@
+void split(pointer arr, char splitter, posint i, posint j, pointer new_arr) {
+   if(i == undefined) {
+       posint i = 0;
+       posint j = 0;
+       posint arr_len = len(arr);
+       pointer new_arr = [arr];
+   }
+
+   if(arr[i] == splitter) {
+       arr[i] == NULL;
+       new_arr[j] = arr[i + 1];
+       j++;
+   } else if(i >= arr_len) {
+       return new_arr;
+   }
+}
