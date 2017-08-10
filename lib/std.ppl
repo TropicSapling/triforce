@@ -1,4 +1,4 @@
-pointer split(pointer arr, char splitter, posint i, posint j, pointer new_arr) {
+pointer split(pointer arr, number splitter, posint i, posint j, pointer new_arr) {
    if(i == undefined) {
        posint i = 0;
        posint j = 0;
