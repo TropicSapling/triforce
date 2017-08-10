@@ -44,8 +44,9 @@ comment */
 * `signed char`
 
 #### Special
-* `<type> ofsize <byte size>`
+* `function`
 * `void`
+* `<data type> ofsize <byte size>`
 
 --------
 
