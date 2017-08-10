@@ -7,7 +7,7 @@ pointer split(pointer arr, char splitter, posint i, posint j, pointer new_arr) {
    }
 
    if(arr[i] == splitter) {
-       arr[i] == NULL;
+       arr[i] = NULL;
        new_arr[j] = arr[i + 1];
        j++;
    } else if(i >= arr_len) {
