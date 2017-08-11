@@ -89,3 +89,9 @@ comment */
 * `cout "Print something to console"`
 
 --------
+
+#### Built-in Properties
+* `arr<length>`
+* `var<size>`
+
+--------
