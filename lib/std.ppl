@@ -14,3 +14,17 @@ pointer split(pointer arr, number splitter, posint i, posint j, pointer new_arr)
        return new_arr;
    }
 }
+
+pointer numsplit(pointer arr, number splitter, posint i = 0, pointer new_arr -> []) {
+ if(arr[i] == splitter) {
+   new_arr[new_arr<length> - 1] -> arr[i + 1];
+   arr<length> = i - 1;
+   i++;
+
+   numsplit(new_arr[new_arr<length> - 1], splitter, i, new_arr);
+ } else {
+   numsplit(arr, splitter, i++, new_arr);
+ }
+
+ return new_arr;
+}
