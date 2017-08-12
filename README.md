@@ -50,7 +50,7 @@ comment */
 #### Properties
 * `var<type>`
 * `var<size>`
-* `var<length>`
+* `arr<length>`
 
 --------
 
