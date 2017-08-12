@@ -45,6 +45,7 @@ comment */
 
 #### Special
 * `void`
+* Not specifying a type for a function parameter allows the parameter to be of any type.
 
 #### Properties
 * `var<type>`
