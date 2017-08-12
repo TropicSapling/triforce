@@ -41,7 +41,7 @@ comment */
 * `decimal [number]`
 * `posnum`
 * `posint`
-* `signed char`
+* `unsigned char`
 
 #### Special
 * `void`
