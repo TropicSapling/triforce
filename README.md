@@ -45,8 +45,11 @@ comment */
 
 #### Special
 * `void`
-* `eval`
-* `<data type> ofsize <byte size>`
+
+#### Properties
+* `var<type>`
+* `var<size>`
+* `var<length>`
 
 --------
 
@@ -90,8 +93,7 @@ comment */
 
 --------
 
-#### Built-in Properties
-* `arr<length>`
-* `var<size>`
+#### Special
+* `eval`
 
 --------
