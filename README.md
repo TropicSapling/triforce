@@ -39,8 +39,8 @@ comment */
 #### Extras
 * `int`
 * `decimal [number]`
-* `posnum`
-* `posint`
+* `unsigned number` or `posnum`
+* `unsigned int` or `posint`
 * `unsigned char`
 
 #### Special
