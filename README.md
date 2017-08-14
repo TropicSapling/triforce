@@ -76,9 +76,11 @@ comment */
 
 --------
 
-#### Arrays
+#### Lists
 * `pointer subarr -> arr[start >> stop]`
-* `str[>>] == "test"`
+* `pointer subarr2 -> arr[when <condition> >> until <condition>`
+* `str[>>] == "Test"`
+* `str[<<] == "tseT"`
 * `str == address`
 
 --------
