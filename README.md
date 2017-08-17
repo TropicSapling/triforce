@@ -107,6 +107,7 @@ comment */
 --------
 
 #### Built-in global variables
+* `__path`
 * `__line`
 * `__item`
 * `__itemID`
