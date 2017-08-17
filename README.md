@@ -73,6 +73,7 @@ comment */
 * `<condition> ? true : false`
 * `>>`
 * `<<`
+* `clang <type> <function name>(<parameters>) { <C code> }`
 
 --------
 
@@ -102,5 +103,12 @@ comment */
 #### Special
 * `eval`
 * `import`
+
+--------
+
+#### Built-in global variables
+* `__line`
+* `__item`
+* `__itemID`
 
 --------
