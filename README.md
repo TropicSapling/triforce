@@ -38,7 +38,7 @@ comment */
 
 ##### Extras
 * `[unsigned|signed|decimal] (number|int|char) [array|pointer]`
-* `[unsigned|signed] (posnum|posint) [array|pointer]`
+* `(posnum|posint) [array|pointer]`
 * `string [array]`
 
 ##### Extras
