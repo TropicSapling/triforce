@@ -37,6 +37,11 @@ comment */
 * `pointer [array]`
 
 ##### Extras
+* `[unsigned|signed|decimal] (number|int|char) [array|pointer]`
+* `[unsigned|signed] (posnum|posint) [array|pointer]`
+* `string [array]`
+
+##### Extras
 * `number [array]`
 * `char [array]`
 * `string [array]`
