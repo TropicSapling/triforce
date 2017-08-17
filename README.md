@@ -41,16 +41,6 @@ comment */
 * `[unsigned|signed] (int|char|string) [array|pointer]`
 * `(posnum|posint) [array|pointer]`
 
-##### Extras
-* `number [array]`
-* `char [array]`
-* `string [array]`
-* `int [array]`
-* `decimal [number] [array]`
-* `unsigned number [array]` or `posnum [array]`
-* `unsigned int [array]` or `posint [array]`
-* `unsigned char [array]`
-
 ##### Special
 * `void`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
