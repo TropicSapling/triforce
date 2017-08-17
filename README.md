@@ -32,16 +32,19 @@ comment */
 
 #### Data types
 ##### Basic
-* `number`
-* `char`
-* `pointer`
+* `var [array]`
+* `array [array]`
+* `pointer [array]`
 
 ##### Extras
-* `int`
-* `decimal [number]`
-* `unsigned number` or `posnum`
-* `unsigned int` or `posint`
-* `unsigned char`
+* `number [array]`
+* `char [array]`
+* `string [array]`
+* `int [array]`
+* `decimal [number] [array]`
+* `unsigned number [array]` or `posnum [array]`
+* `unsigned int [array]` or `posint [array]`
+* `unsigned char [array]`
 
 ##### Special
 * `void`
