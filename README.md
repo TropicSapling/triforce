@@ -31,23 +31,23 @@ comment */
 --------
 
 #### Data types
-#### Basic
+##### Basic
 * `number`
 * `char`
 * `pointer`
 
-#### Extras
+##### Extras
 * `int`
 * `decimal [number]`
 * `unsigned number` or `posnum`
 * `unsigned int` or `posint`
 * `unsigned char`
 
-#### Special
+##### Special
 * `void`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
 
-#### Properties
+##### Properties
 * `var<type>`
 * `var<size>`
 * `arr<length>`
