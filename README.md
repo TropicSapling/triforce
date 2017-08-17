@@ -39,7 +39,7 @@ comment */
 ##### Extras
 * `[unsigned|signed|decimal] (number|int|char) [array|pointer]`
 * `(posnum|posint) [array|pointer]`
-* `string [array]`
+* `string [array|pointer]`
 
 ##### Extras
 * `number [array]`
