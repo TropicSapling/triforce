@@ -83,13 +83,13 @@ comment */
 --------
 
 #### Lists
-* `pointer subarr -> arr[start >> stop]`
-* `pointer subarr2 -> arr[when <condition> >> until <condition>`
-* `str[>>] == "Test"`
-* `str[<<] == "tseT"`
-* `str[start >> stop]`
-* `str[stop << start]`
-* `str[when <condition> >> until <condition>]`
+* `pointer subarr -> arr[start >>> stop]`
+* `pointer subarr2 -> arr[when <condition> >>> until <condition>`
+* `str[>>>] == "Test"`
+* `str[<<<] == "tseT"`
+* `str[start >>> stop]`
+* `str[stop <<< start]`
+* `str[when <condition> >>> until <condition>]`
 * `str == address`
 
 --------
