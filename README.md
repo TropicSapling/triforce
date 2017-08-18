@@ -67,10 +67,17 @@ comment */
 * `/=`
 * `%=`
 
-##### Special
-* `<condition> ? true : false`
+##### Bitwise
+* `~`
+* `^`
 * `>>`
 * `<<`
+
+##### Special
+* `!`
+* `<condition> ? true : false`
+* `>>>`
+* `<<<`
 * `clang <type> <function name>(<parameters>) { <C code> }`
 
 --------
