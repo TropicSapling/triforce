@@ -76,6 +76,7 @@ comment */
 * `%=`
 * `&=`
 * `|=`
+* `^=`
 * `<<=`
 * `>>=`
 
@@ -92,8 +93,9 @@ comment */
 * `>=`
 * `<=`
 
-##### Special
-* `<condition> ? true : false`
+##### Misc.
+* `? :`
+* `@`
 * `<<<`
 * `>>>`
 * `clang <type> <function name>(<parameters>) { <C code> }`
