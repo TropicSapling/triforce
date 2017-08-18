@@ -43,6 +43,7 @@ comment */
 
 ##### Special
 * `void`
+* `clang <type> <function name>(<parameters>) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
 
 ##### Properties
@@ -98,7 +99,6 @@ comment */
 * `@`
 * `<<<`
 * `>>>`
-* `clang <type> <function name>(<parameters>) { <C code> }`
 
 --------
 
