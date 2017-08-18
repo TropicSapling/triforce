@@ -60,6 +60,19 @@ comment */
 * `/`
 * `%`
 
+##### Bitwise
+* `&`
+* `|`
+* `~`
+* `^`
+* `<<`
+* `>>`
+
+##### Conditional
+* `!`
+* `&&`
+* `||`
+
 ##### Assignment
 * `+=`
 * `-=`
@@ -71,23 +84,10 @@ comment */
 * `<<=`
 * `>>=`
 
-##### Conditional
-* `!`
-* `&&`
-* `||`
-
-##### Bitwise
-* `&`
-* `|`
-* `~`
-* `^`
-* `>>`
-* `<<`
-
 ##### Special
 * `<condition> ? true : false`
-* `>>>`
 * `<<<`
+* `>>>`
 * `clang <type> <function name>(<parameters>) { <C code> }`
 
 --------
