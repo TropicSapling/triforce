@@ -27,10 +27,10 @@ cout function2(123); // 123
 cout function3(); // [-127, 0, 255]
 
 pointer array -> [1, 65, 3, -34, -24, 121];
-cout array[1>>4]; // [65, 3, -34]
-cout array[4>>1]; // [65, 3, -34]
-cout array[1<<4]; // [-34, 3, 65]
-cout array[4<<1]; // [-34, 3, 65]
+cout array[1>>>4]; // [65, 3, -34]
+cout array[4>>>1]; // [65, 3, -34]
+cout array[1<<<4]; // [-34, 3, 65]
+cout array[4<<<1]; // [-34, 3, 65]
 
 posnum array2 = [16232, 9843, 2121, 5459];
 cout rearrange(array2, 2); // [16, 3, 9843, 1, 15459]
@@ -47,7 +47,7 @@ cout rearrange(ascii_str, 32); // [[72, 101, 108, 108, 111], [119, 111, 114, 108
 
 pointer custom_arr -> [2781, 'g', ["some", variable: "thing"], someFunction: function2, -93478];
 cout custom_arr[1]; // 'g'
-cout custom_arr[1<<4] + [1, '2', 3]; // [someFunction: function2, ["some", variable: "thing"], 'g', 1, '2', 3]
+cout custom_arr[1<<<4] + [1, '2', 3]; // [someFunction: function2, ["some", variable: "thing"], 'g', 1, '2', 3]
 
 cout 1 == 0 ? "Impossible!\n" : "True\n";cout 0 == 1 ? "Also impossible ofc\n" : "Yup.\n";
 
