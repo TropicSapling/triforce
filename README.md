@@ -53,7 +53,7 @@ comment */
 --------
 
 #### Operators
-##### Normal
+##### Arithmetic
 * `+`
 * `-`
 * `*`
@@ -68,11 +68,6 @@ comment */
 * `<<`
 * `>>`
 
-##### Conditional
-* `!`
-* `&&`
-* `||`
-
 ##### Assignment
 * `+=`
 * `-=`
@@ -83,6 +78,19 @@ comment */
 * `|=`
 * `<<=`
 * `>>=`
+
+##### Logical
+* `!`
+* `&&`
+* `||`
+
+##### Relational
+* `==`
+* `!=`
+* `>`
+* `<`
+* `>=`
+* `<=`
 
 ##### Special
 * `<condition> ? true : false`
