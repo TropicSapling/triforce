@@ -114,6 +114,14 @@ comment */
 
 --------
 
+#### Strings
+* `"null terminated string"`
+* `'string size determined by <size> property'`
+* `'null terminated string, but <size> property can still be used to get size\0'`
+* `"null terminated string" == 'null terminated string\0'`
+
+--------
+
 #### Functions
 * `<return type> <function name>([parameters]) { <code> }`
 * `<function name>([parameters])`
