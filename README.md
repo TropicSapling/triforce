@@ -13,20 +13,16 @@ P+ is for...
 --------
 
 #### Comments
-`// One line comment`
-
---------
-
-### Planned
-
---------
-
-#### Comments
-```
+* `// One line comment`
+* ```
 /* Multi
 line
 comment */
 ```
+
+--------
+
+### Planned
 
 --------
 
