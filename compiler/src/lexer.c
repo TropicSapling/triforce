@@ -2,8 +2,13 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "def.h"
+
+bool inStr = false;
+bool escaping = false;
+bool ignoring = false;
 
 char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
 	*keywords_size *= 2;
@@ -53,14 +58,14 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			strcpy(c, buf);
 		}
 		
-		if(*key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
+		if(*key >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
 			return 1;
 		}
 		
 		(*keywords)[*key] = NULL; // This is used to mark where memory was allocated for 'c'
 		(*key)++;
 		
-		if(*key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
+		if(*key >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
 			return 1;
 		}
 		
@@ -72,22 +77,55 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 		while(row_len < 65521) {
 			char *special = calloc(2, 1);
 			
-			while(*c != ' ' && *c != '\0') {
-				if(*c == ';' || *c == ',' || *c == '[' || *c == ']' || *c == '{' || *c == '}' || *c == '(' || *c == ')' || *c == '?' || *c == '>' || *c == '<' || *c == '=' || *c == '+' || *c == '-' || *c == '*' || *c == '/' || *c == '%' || *c == '!' || *c == '&' || *c == '|' || *c == '^' || *c == '~' || *c == '\\') {
+			while((ignoring || *c != ' ') && *c != '\0') {
+				if(ignoring) {
+					if(*c == '*' && *(c + 1) == '/') {
+						ignoring = false;
+						(*keywords)[(*key) - 1] = "";
+						c++;
+						
+						if(*key >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
+							return 1;
+						}
+						
+						(*keywords)[*key] = c + 1;
+						(*key)++;
+					}
+				} else if(!inStr && (*c == ';' || *c == ',' || *c == '[' || *c == ']' || *c == '{' || *c == '}' || *c == '(' || *c == ')' || *c == '?' || *c == '>' || *c == '<' || *c == '=' || *c == '+' || *c == '-' || *c == '*' || *c == '/' || *c == '%' || *c == '!' || *c == '&' || *c == '|' || *c == '^' || *c == '~' || *c == '\\')) {
 					special[0] = *c;
 					break;
+				} else if(escaping) {
+					escaping = false;
+				} else if(*c == '\'' || *c == '"') {
+					if(inStr) {
+						inStr = false;
+					} else {
+						inStr = true;
+					}
+				} else if(*c == '\\') {
+					escaping = true;
 				}
 				
 				c++;
 				row_len++;
 			}
 			
+			if(ignoring) {
+				(*keywords)[(*key) - 1] = "";
+			}
+			
 			if(*c == '\0') {
 				c++;
 				break;
-			} else if(*c == '/' && *(c + 1) == '/') {
-				(*keywords)[(*key) - 1] = "";
-				break;
+			} else if(!inStr) {
+				if(*c == '/' && *(c + 1) == '/') {
+					(*keywords)[(*key) - 1] = "";
+					break;
+				} else if(*c == '/' && *(c + 1) == '*') {
+					ignoring = true;
+					(*keywords)[(*key) - 1] = "";
+					continue;
+				}
 			}
 			
 			*c = '\0';
@@ -97,7 +135,7 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			
 			if(row_len < 65521) {
 				if(special[0] != '\0') {
-					if(*key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
+					if(*key >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
 						return 1;
 					}
 					
@@ -105,7 +143,7 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 					(*key)++;
 				}
 				
-				if(*key > keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
+				if(*key >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
 					return 1;
 				}
 				

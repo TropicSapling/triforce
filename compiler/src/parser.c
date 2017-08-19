@@ -26,7 +26,7 @@ char *parse(char **keywords, size_t key, size_t *pos) {
 		if(keywords[i] != NULL) {
 			// DEBUG; will be replaced later
 			for(int it = 0; keywords[i][it] != '\0'; it++) {
-				if(*pos > output_size && addSpaceForChars(&output, &output_size) == NULL) {
+				if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
 					return NULL;
 				}
 				

@@ -51,4 +51,20 @@ cout custom_arr[1<<<4] + [1, '2', 3]; // [someFunction: function2, ["some", vari
 
 cout 1 == 0 ? "Impossible!\n" : "True\n";cout 0 == 1 ? "Also impossible ofc\n" : "Yup.\n";
 
+/* Multi
+line
+comment */
+
+/* This
+ * works
+ * fine
+ * as well
+ * obviously */
+
+/* And
+ * this
+ */
+
+/* Single line comments using this syntax works too */
+
 return 0 from __app;
