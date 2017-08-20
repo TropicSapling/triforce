@@ -47,6 +47,7 @@ comment */
 * `var<type>`
 * `var<size>`
 * `arr<length>`
+* `var>bit<`
 
 --------
 
@@ -134,11 +135,13 @@ comment */
 #### Special
 * `eval`
 * `import`
+* `#redef`
 
 --------
 
 #### Built-in global variables
 * `__path`
+* `__app`
 * `__line`
 * `__item`
 * `__itemID`
