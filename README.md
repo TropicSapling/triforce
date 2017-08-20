@@ -40,6 +40,7 @@ comment */
 
 ##### Special
 * `void`
+* `noscope`
 * `clang <type> <function name>(<parameters>) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
 
