@@ -141,6 +141,7 @@ comment */
 
 #### Built-in global variables
 * `__path`
+* `__app`
 * `__line`
 * `__item`
 * `__itemID`
