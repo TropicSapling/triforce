@@ -146,10 +146,14 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			} else if(!inStr) {
 				if(*c == '/' && *(c + 1) == '/') {
 					*c = '\0';
+					free(special);
+					
 					break;
 				} else if(*c == '/' && *(c + 1) == '*') {
 					ignoring = true;
 					*c = '\0';
+					free(special);
+					
 					continue;
 				}
 			}
@@ -187,7 +191,6 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 		printf("Reading file... %.2Lf%%\r", (progress / file_size) * 100);
 		fflush(stdout);
 	}
-	
 	
 	return 0;
 }
