@@ -47,6 +47,7 @@ comment */
 * `var<type>`
 * `var<size>`
 * `arr<length>`
+* `var>bit<`
 
 --------
 
@@ -134,6 +135,7 @@ comment */
 #### Special
 * `eval`
 * `import`
+* `#redef`
 
 --------
 
