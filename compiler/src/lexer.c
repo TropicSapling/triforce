@@ -77,11 +77,15 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 		while(row_len < 65521) {
 			char *special = calloc(2, 1);
 			
+			if(ignoring) {
+				*c = '\0';
+				c++;
+			}
+			
 			while((ignoring || *c != ' ') && *c != '\0') {
 				if(ignoring) {
 					if(*c == '*' && *(c + 1) == '/') {
 						ignoring = false;
-						(*keywords)[(*key) - 1] = "";
 						c++;
 						
 						if(*key >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
@@ -110,20 +114,16 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 				row_len++;
 			}
 			
-			if(ignoring) {
-				(*keywords)[(*key) - 1] = "";
-			}
-			
 			if(*c == '\0') {
 				c++;
 				break;
 			} else if(!inStr) {
 				if(*c == '/' && *(c + 1) == '/') {
-					(*keywords)[(*key) - 1] = "";
+					*c = '\0';
 					break;
 				} else if(*c == '/' && *(c + 1) == '*') {
 					ignoring = true;
-					(*keywords)[(*key) - 1] = "";
+					*c = '\0';
 					continue;
 				}
 			}
