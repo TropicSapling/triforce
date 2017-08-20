@@ -34,7 +34,9 @@ int main(int argc, char *argv[]) {
 	char **keywords = malloc(keywords_size); 
 	size_t key = 0;
 	
-	if(lex_parse(input, &keywords, keywords_size, &key, file_size)) {
+	char specials[] = ";,[]{}()?><=+-*/%!&|^~\\.";
+	
+	if(lex_parse(input, &keywords, keywords_size, &key, file_size, specials)) {
 		return 1;
 	}
 	

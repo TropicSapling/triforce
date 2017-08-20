@@ -24,7 +24,7 @@ char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
 	return res;
 }
 
-int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, size_t file_size) {
+int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, size_t file_size, char specials[]) {
 	char buf[65536];
 	char extra_buf[16] = "\0";
 	char *c;
@@ -33,6 +33,32 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 	
 	while(fgets(buf, 65536, input) != NULL) {
 		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
+			continue;
+		}
+		
+		if(buf[0] == '#' && !inStr) {
+			size_t c = 1;
+			char skey[8];
+			
+			while(buf[c] != ' ' && buf[c] != '\0') {
+				skey[c] = buf[c];
+				c++;
+			}
+			
+			c++;
+			progress += c;
+			
+			if(strcmp(skey, "redef") == 0) {
+				for(short s = 0; specials[s] != '\0'; s++) {
+					if(buf[c] == specials[s]) {
+						specials[s] = buf[c + 5];
+						break;
+					}
+				}
+				
+				progress += 5;
+			}
+			
 			continue;
 		}
 		
@@ -95,7 +121,7 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 						(*keywords)[*key] = c + 1;
 						(*key)++;
 					}
-				} else if(!inStr && (*c == ';' || *c == ',' || *c == '[' || *c == ']' || *c == '{' || *c == '}' || *c == '(' || *c == ')' || *c == '?' || *c == '>' || *c == '<' || *c == '=' || *c == '+' || *c == '-' || *c == '*' || *c == '/' || *c == '%' || *c == '!' || *c == '&' || *c == '|' || *c == '^' || *c == '~' || *c == '\\')) {
+				} else if(!inStr && (*c == specials[0] || *c == specials[1] || *c == specials[2] || *c == specials[3] || *c == specials[4] || *c == specials[5] || *c == specials[6] || *c == specials[7] || *c == specials[8] || *c == specials[9] || *c == specials[10] || *c == specials[11] || *c == specials[12] || *c == specials[13] || *c == specials[14] || *c == specials[15] || *c == specials[16] || *c == specials[17] || *c == specials[18] || *c == specials[19] || *c == specials[20] || *c == specials[21] || *c == specials[22] || *c == specials[23])) {
 					special[0] = *c;
 					break;
 				} else if(escaping) {

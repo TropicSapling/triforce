@@ -35,11 +35,17 @@ cout array[4<<<1]; // [-34, 3, 65]
 posnum array2 = [16232, 9843, 2121, 5459];
 cout rearrange(array2, 2); // [16, 3, 9843, 1, 15459]
 
-pointer string -> "Hello world!";
-cout rearrange(string, ' '); // ["Hello", "world!"]
+#redef . as $
+#redef ; as .
 
-pointer string2 -> ['H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'];
-cout rearrange(string2, ' '); // ["Hello", "world!"]
+pointer string -> "Hello world!".
+cout rearrange(string, ' '). // ["Hello", "world!"]
+
+pointer string2 -> ['H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'].
+cout rearrange(string2, ' '). // ["Hello", "world!"]
+
+#redef . as ;
+#redef $ as .
 
 pointer ascii_str -> [72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33];
 cout rearrange((char) ascii_str, ' '); // ["Hello", "world!"]
