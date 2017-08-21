@@ -40,6 +40,7 @@ comment */
 
 ##### Special
 * `void`
+* `func`
 * `noscope`
 * `clang <type> <function name>(<parameters>) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
@@ -123,7 +124,8 @@ comment */
 --------
 
 #### Functions
-* `<return type> <function name>([parameters]) { <code> }`
+* `<return type> <function name>([<parameters>]) { <code> }`
+* `func <function name>([<parameters>]) { <code> }`
 * `<function name>([parameters])`
 * `return [from] [<function>] <value>`
 
