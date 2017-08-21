@@ -143,6 +143,7 @@ comment */
 --------
 
 #### Special
+* `async`
 * `eval`
 * `pause`
 * `import`
