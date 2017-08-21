@@ -144,6 +144,7 @@ comment */
 
 #### Special
 * `eval`
+* `pause`
 * `import`
 * `#redef`
 
