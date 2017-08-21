@@ -52,6 +52,7 @@ comment */
 * `arr<length>`
 * `channel<buffer>`
 * `var>bit<`
+* You can assign properties at variable creation: `<type> variable[, <property1>, <property2>...] (=|->|<-) <value>[, <property1 value>, <property2 value>...]`
 
 --------
 
@@ -98,7 +99,8 @@ comment */
 
 ##### Misc.
 * `? :`
-* `->`
+* `->` (used for pointers)
+* `<-` (used for channels)
 * `@`
 * `<<<`
 * `>>>`
