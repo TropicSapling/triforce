@@ -125,6 +125,7 @@ comment */
 #### Functions
 * `<return type> <function name>([parameters]) { <code> }`
 * `<function name>([parameters])`
+* `return [from] [<function>] <value>`
 
 --------
 
@@ -132,6 +133,7 @@ comment */
 * `foreach <item> in <list>`
 * `while(<condition>)`
 * `repeat(<n times>)`
+* `break`
 
 --------
 
