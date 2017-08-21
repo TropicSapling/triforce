@@ -128,6 +128,13 @@ comment */
 
 --------
 
+#### Loops
+* `foreach <item> in <list>`
+* `while(<condition>)`
+* `repeat(<n times>)`
+
+--------
+
 #### IO
 * `cout "Print something to console"`
 
