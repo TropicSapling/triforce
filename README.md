@@ -39,6 +39,7 @@ comment */
 * `(posnum|posint) [array|pointer]`
 
 ##### Special
+* `chan`
 * `void`
 * `func`
 * `noscope`
@@ -46,9 +47,10 @@ comment */
 * Not specifying a type for a function parameter allows the parameter to be of any type.
 
 ##### Properties
-* `var<type>`
-* `var<size>`
+* `variable<type>`
+* `variable<size>`
 * `arr<length>`
+* `channel<buffer>`
 * `var>bit<`
 
 --------
