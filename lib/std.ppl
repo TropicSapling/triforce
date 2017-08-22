@@ -7,3 +7,12 @@ pointer*2 split(pointer list, splitter) {
 	
 	return new_list;
 }
+
+void delItem(pointer list, unsigned int i) {
+    list<size> -= 1;
+    
+    while(i < list<size>) {
+        list[i] = list[i + 1];
+		i++;
+    }
+}
