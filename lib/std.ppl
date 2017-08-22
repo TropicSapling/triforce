@@ -1,9 +1,9 @@
-pointer pointer split(pointer arr, splitter) {
-	pointer pointer new_arr -> [];
+pointer*2 split(pointer list, splitter) {
+	pointer*2 new_list -> [];
 	unsigned int i = 0;
 	if(arr[>>>] == splitter) {
-		new_arr += arr[__itemID + 1];
+		new_list += list[__itemID + 1];
 	}
 	
-	return new_arr;
+	return new_list;
 }
