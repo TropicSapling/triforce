@@ -1,4 +1,4 @@
-pointer strsplit(pointer arr, char splitter, posint i, posint j, pointer new_arr) {
+pointer strsplit(pointer arr, char splitter, unsigned int i, unsigned int j, pointer new_arr) {
    if(i == undefined) {
        posint i = 0;
        posint j = 0;
@@ -15,7 +15,7 @@ pointer strsplit(pointer arr, char splitter, posint i, posint j, pointer new_arr
    }
 }
 
-pointer numsplit(pointer arr, number splitter, posint i = 0, pointer new_arr -> []) {
+pointer numsplit(pointer arr, number splitter, unsigned int i = 0, pointer new_arr -> []) {
  if(arr[i] == splitter) {
    new_arr[new_arr<length> - 1] -> arr[i + 1];
    arr<length> = i - 1;
