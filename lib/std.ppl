@@ -1,9 +1,18 @@
 pointer*2 split(pointer list, splitter) {
-	pointer*2 new_list -> [];
+	pointer*2 arr -> [];
 	unsigned int i = 0;
-	if(arr[>>>] == splitter) {
-		new_list += list[__itemID + 1];
+	if(list[>>>] == splitter) {
+		arr += list[__itemID + 1];
 	}
 	
-	return new_list;
+	return arr;
+}
+
+void delItem(pointer list, unsigned int i) {
+    list<size> -= 1;
+    
+    while(i < list<size>) {
+        list[i] = list[i + 1];
+		i++;
+    }
 }
