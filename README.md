@@ -39,11 +39,12 @@ comment> */
 
 #### Data types
 ##### Basic
-* `(var|array|pointer) [array|pointer]`
+* `var`
+* `(array|pointer)[*<n>]`
 
 ##### Extras
-* `[unsigned|signed|decimal] number [array|pointer]`
-* `[unsigned|signed] (int|char|string) [array|pointer]`
+* `[unsigned|signed|decimal] number [(array|pointer)[*<n>]]`
+* `[unsigned|signed] (int|char|string) [(array|pointer)[*<n>]]`
 
 ##### Special
 * `chan`
