@@ -40,11 +40,11 @@ comment> */
 #### Data types
 ##### Basic
 * `var`
-* `(array|pointer)[*<n>]`
+* `(array|list|pointer)[*<n>]`
 
 ##### Extras
-* `[unsigned|signed|decimal] number [(array|pointer)[*<n>]]`
-* `[unsigned|signed] (int|char|string) [(array|pointer)[*<n>]]`
+* `[unsigned|signed|decimal] number [(array|list|pointer)[*<n>]]`
+* `[unsigned|signed] (int|char|string) [(array|list|pointer)[*<n>]]`
 
 ##### Special
 * `chan`
@@ -116,8 +116,8 @@ comment> */
 --------
 
 #### Lists
-* `pointer subarr -> arr[start >>> stop]`
-* `pointer subarr2 -> arr[when <condition> >>> until <condition>`
+* `pointer sublist -> list[start >>> stop]`
+* `pointer sublist2 -> list[when <condition> >>> until <condition>`
 * `str[>>>] == "Test"`
 * `str[<<<] == "tseT"`
 * `str[start >>> stop]`
@@ -139,7 +139,7 @@ comment> */
 * `<return type> <function name>([<parameters>]) { <code> }`
 * `func <function name>([<parameters>]) { <code> }`
 * `<function name>([parameters])`
-* `return [from] [<function>] <value>`
+* `return [from <function>] <value>`
 
 --------
 
