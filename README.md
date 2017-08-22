@@ -40,11 +40,14 @@ comment> */
 #### Data types
 ##### Basic
 * `var`
-* `(array|list|pointer)[*<n>]`
+* `[only|const] (array|list|pointer)[*<n>]`
 
 ##### Extras
-* `[unsigned|signed|decimal] number [(array|list|pointer)[*<n>]]`
-* `[unsigned|signed] (int|char|string) [(array|list|pointer)[*<n>]]`
+* `const [var]`
+* `[const] [unsigned|signed|decimal] number [(array|list|pointer)[*<n>]]`
+* `only [unsigned|signed|decimal] number (array|list|pointer)[*<n>]`
+* `[const] [unsigned|signed] (int|char|string) [(array|list|pointer)[*<n>]]`
+* `only [unsigned|signed] (int|char|string) (array|list|pointer)[*<n>]`
 
 ##### Special
 * `chan`
