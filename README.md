@@ -151,7 +151,7 @@ comment */
 #### Special
 * `async`
 * `eval`
-* `pause`
+* `pause <ms>`
 * `import`
 * `#redef`
 
