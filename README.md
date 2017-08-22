@@ -23,12 +23,12 @@ P+ is for...
 --------
 
 #### Comments
-* `// One line comment`
+* `// <One line comment>`
 
 ```
-/* Multi
+/* <Multi
 line
-comment */
+comment> */
 ```
 
 --------
