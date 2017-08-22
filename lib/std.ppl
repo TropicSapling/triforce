@@ -1,11 +1,14 @@
 pointer*2 split(pointer list, splitter) {
 	pointer*2 arr -> [];
-	unsigned int i = 0;
 	if(list[>>>] == splitter) {
 		arr += list[__itemID + 1];
 	}
 	
 	return arr;
+}
+
+void fastReplace(pointer list, toReplace, replacer) {
+	if(list[>>>] == toReplace) __item = replacer;
 }
 
 void delItem(pointer list, unsigned int i) {
