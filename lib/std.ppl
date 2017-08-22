@@ -1,4 +1,4 @@
-pointer split(pointer arr, splitter) {
+pointer pointer split(pointer arr, splitter) {
 	pointer pointer new_arr -> [];
 	unsigned int i = 0;
 	if(arr[>>>] == splitter) {
