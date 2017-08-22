@@ -13,6 +13,8 @@ P+ is for...
 * <sub>brackets (`[]`) are *optional*</sub>
 * <sub>angle brackets (`<>`) **must** be replaced by a name of your choice</sub>
 * <sub>backticks (`` ` ``) are **required** and escapes these definitions (i.e. `` `<type>` `` means you must literally type `<type>`)</sub>
+* <sub>parentheses (`()`) **and** seperated by bars (`|`) are part of a list of mutually exclusive **required** keywords</sub>
+* <sub>brackets (`[]`) **and** seperated by bars (`|`) are part of a list of mutually exclusive *optional* keywords</sub>
 
 <sub>Everything else is **required.**</sub>
 
