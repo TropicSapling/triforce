@@ -43,16 +43,16 @@ comment */
 * `void`
 * `func`
 * `noscope`
-* `clang <type> <function name>(<parameters>) { <C code> }`
+* `clang <type> <function name>([<parameters>]) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
 
 ##### Properties
-* `variable<type>`
-* `variable<size>`
-* `arr<length>`
-* `channel<buffer>`
+* `` variable`<type>` ``
+* `` variable`<size>` ``
+* `` arr`<length>` ``
+* `` channel`<buffer>` ``
 * `var>bit<`
-* You can assign properties at variable creation: `<type> variable[, <property1>, <property2>...] (=|->|<-) <value>[, <property1 value>, <property2 value>...]`
+* You can assign properties at variable creation: ``<type> variable[, `<`<property1>`>`, `<`<property2>`>`...] (=|->|<-) <value>[, <property1 value>, <property2 value>...]``
 
 --------
 
