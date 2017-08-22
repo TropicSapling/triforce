@@ -8,17 +8,27 @@ P+ is for...
 * **It makes sense.**
 
 ## Features
+#### Definitions
+<sup>Keywords surrounded by</sup>
+* <sub>brackets (`[]`) are *optional*</sub>
+* <sub>angle brackets (`<>`) **must** be replaced by a name of your choice</sub>
+* <sub>backticks (`` ` ``) are **required** and escapes these definitions (i.e. `` `<type>` `` means you must literally type `<type>`)</sub>
+* <sub>parentheses (`()`) **and** seperated by bars (`|`) are part of a list of mutually exclusive **required** keywords</sub>
+* <sub>brackets (`[]`) **and** seperated by bars (`|`) are part of a list of mutually exclusive *optional* keywords</sub>
+
+<sub>Everything else is **required.**</sub>
+
 ### Current
 
 --------
 
 #### Comments
-* `// One line comment`
+* `// <One line comment>`
 
 ```
-/* Multi
+/* <Multi
 line
-comment */
+comment> */
 ```
 
 --------
@@ -29,25 +39,27 @@ comment */
 
 #### Data types
 ##### Basic
-* `var [array]`
-* `array [array]`
-* `pointer [array]`
+* `(var|array|pointer) [array|pointer]`
 
 ##### Extras
 * `[unsigned|signed|decimal] number [array|pointer]`
 * `[unsigned|signed] (int|char|string) [array|pointer]`
-* `(posnum|posint) [array|pointer]`
 
 ##### Special
+* `chan`
 * `void`
-* `clang <type> <function name>(<parameters>) { <C code> }`
+* `func`
+* `noscope`
+* `clang <type> <function name>([<parameters>]) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
 
 ##### Properties
-* `var<type>`
-* `var<size>`
-* `arr<length>`
+* `` variable`<type>` ``
+* `` variable`<size>` ``
+* `` arr`<length>` ``
+* `` channel`<buffer>` ``
 * `var>bit<`
+* You can assign properties at variable creation: ``<type> variable[, `<`<property1>`>`, `<`<property2>`>`...] (=|->|<-) <value>[, <property1 value>, <property2 value>...]``
 
 --------
 
@@ -94,7 +106,8 @@ comment */
 
 ##### Misc.
 * `? :`
-* `->`
+* `->` (used for pointers)
+* `<-` (used for channels)
 * `@`
 * `<<<`
 * `>>>`
@@ -122,8 +135,18 @@ comment */
 --------
 
 #### Functions
-* `<return type> <function name>([parameters]) { <code> }`
+* `<return type> <function name>([<parameters>]) { <code> }`
+* `func <function name>([<parameters>]) { <code> }`
 * `<function name>([parameters])`
+* `return [from] [<function>] <value>`
+
+--------
+
+#### Loops
+* `foreach <item> in <list>`
+* `while(<condition>)`
+* `repeat(<n times>)`
+* `break`
 
 --------
 
@@ -133,7 +156,9 @@ comment */
 --------
 
 #### Special
+* `async`
 * `eval`
+* `pause <ms>`
 * `import`
 * `#redef`
 
