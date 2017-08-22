@@ -8,13 +8,13 @@ P+ is for...
 * **It makes sense.**
 
 ## Features
-### Definitions
-Keywords surrounded by
-* brackets (`[]`) are *optional*
-* angle brackets (`<>`) **must** be replaced by a name of your choice
-* backticks (`` ` ``) are **required** and escapes these definitions (i.e. `` `<type>` `` means you must literally type `<type>`)
+#### Definitions
+<sub>Keywords surrounded by</sub>
+* <sub>brackets (`[]`) are *optional*</sub>
+* <sub>angle brackets (`<>`) **must** be replaced by a name of your choice</sub>
+* <sub>backticks (`` ` ``) are **required** and escapes these definitions (i.e. `` `<type>` `` means you must literally type `<type>`)</sub>
 
-Everything else is **required.**
+<sub>Everything else is **required.**</sub>
 
 ### Current
 
