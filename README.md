@@ -39,9 +39,7 @@ comment> */
 
 #### Data types
 ##### Basic
-* `var [array]`
-* `array [array]`
-* `pointer [array]`
+* `(var|array|pointer) [array|pointer]`
 
 ##### Extras
 * `[unsigned|signed|decimal] number [array|pointer]`
