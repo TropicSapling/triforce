@@ -44,7 +44,6 @@ comment> */
 ##### Extras
 * `[unsigned|signed|decimal] number [array|pointer]`
 * `[unsigned|signed] (int|char|string) [array|pointer]`
-* `(posnum|posint) [array|pointer]`
 
 ##### Special
 * `chan`
