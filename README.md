@@ -173,6 +173,5 @@ comment> */
 * `__app`
 * `__line`
 * `__item`
-* `__itemID`
 
 --------
