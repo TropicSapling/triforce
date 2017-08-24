@@ -19,7 +19,7 @@ void replace(pointer list, toReplace, replacer) {
 	} else {
 		if(list[>>>] == toReplace) {
 			move(->(list[__item]), replacer<length> - toReplace<length>);
-			list[__item >>> __item + replacer<length> - toReplace<length>] = replacer[>>>]; // NEEDS TO BE FIXED
+			list[__item >>> __item + replacer<length> - toReplace<length>] = replacer[>>>];
 		}
 	}
 }
