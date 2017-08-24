@@ -44,6 +44,7 @@ comment> */
 
 ##### Extras
 * `const [var]`
+* `bool`
 * `[const] [unsigned|signed|decimal] number [(array|list|pointer)[*<n>]]`
 * `only [unsigned|signed|decimal] number (array|list|pointer)[*<n>]`
 * `[const] [unsigned|signed] (int|char|string) [(array|list|pointer)[*<n>]]`
