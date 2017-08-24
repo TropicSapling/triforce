@@ -1,9 +1,11 @@
 export split, fastReplace, replace, move, delItem;
 
 pointer*2 split(pointer list, splitter) {
-	pointer*2 arr -> [];
+	pointer*2 arr -> [list];
 	if(list[>>>] == splitter) {
-		arr += list[__item + 1];
+		list<length> = __item + 1;
+		list = ->(list[__item + 1]);
+		arr += list;
 	}
 	
 	return arr;
