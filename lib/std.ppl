@@ -14,11 +14,11 @@ void fastReplace(pointer list, toReplace, replacer) {
 }
 
 void replace(pointer list, toReplace, replacer) {
-	if(toReplace<size> == replacer<size>) {
+	if(toReplace<length> == replacer<length>) {
 		if(list[>>>] == toReplace) list[__item] = replacer;
 	} else {
 		if(list[>>>] == toReplace) {
-			move(->(list[__item]), replacer<size> - toReplace<size>);
+			move(->(list[__item]), replacer<length> - toReplace<length>);
 			list[__item >>> __item + replacer<length> - toReplace<length>] = replacer[>>>]; // NEEDS TO BE FIXED
 		}
 	}
@@ -27,12 +27,12 @@ void replace(pointer list, toReplace, replacer) {
 void move(pointer list, int steps) {
 	unsigned int i = 0;
 	if(steps < 0) {
-		while(i < list<size> - steps) {
+		while(i < list<length> - steps) {
 			list[i] = list[i + steps];
 			i++;
 		}
 	} else {
-		while(i < list<size> + steps) {
+		while(i < list<length> + steps) {
 			list[i + steps] = list[i];
 			i++;
 		}
@@ -41,5 +41,5 @@ void move(pointer list, int steps) {
 
 void delItems(pointer firstItem, int count) {
 	move(firstItem, -count);
-    list<size> -= count;
+    list<length> -= count;
 }
