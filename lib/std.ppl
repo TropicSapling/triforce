@@ -25,18 +25,7 @@ void replace(pointer list, toReplace, replacer) {
 }
 
 void move(pointer list, int steps) {
-	unsigned int i = 0;
-	if(steps < 0) {
-		while(i < list<size> - steps) {
-			list[i] = list[i + steps];
-			i++;
-		}
-	} else {
-		while(i < list<size> + steps) {
-			list[i + steps] = list[i];
-			i++;
-		}
-	}
+	steps < 0 ? list[>>> list<size> - steps] = list[__item + steps] : list[steps >>> list<size> - steps] = list[__item - steps];
 }
 
 void delItems(pointer firstItem, int count) {
