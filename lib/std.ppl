@@ -14,21 +14,21 @@ void fastReplace(pointer list, toReplace, replacer) {
 }
 
 void replace(pointer list, toReplace, replacer) {
-	if(toReplace<size> == replacer<size>) {
+	if(toReplace<length> == replacer<length>) {
 		if(list[>>>] == toReplace) list[__item] = replacer;
 	} else {
 		if(list[>>>] == toReplace) {
-			move(->(list[__item]), replacer<size> - toReplace<size>);
-			list[__item >>> __item + replacer<length> - toReplace<length>] = replacer[>>>]; // NEEDS TO BE FIXED
+			move(->(list[__item]), replacer<length> - toReplace<length>);
+			list[__item >>> __item + replacer<length> - toReplace<length>] = replacer[>>>];
 		}
 	}
 }
 
 void move(pointer list, int steps) {
-	steps < 0 ? list[>>> list<size> - steps] = list[__item + steps] : list[steps >>> list<size> - steps] = list[__item - steps];
+	steps < 0 ? list[>>> list<length> - steps] = list[__item + steps] : list[steps >>> list<length> - steps] = list[__item - steps];
 }
 
 void delItems(pointer firstItem, int count) {
 	move(firstItem, -count);
-    list<size> -= count;
+    list<length> -= count;
 }
