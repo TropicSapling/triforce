@@ -5,7 +5,7 @@ cout "Line number: " + __line;
 pointer str -> "something";
 
 pointer ptr -> str;
-pointer adress = ->str;
+pointer address = ->str;
 
 cout "String: " + str; // something
 cout "Pointer/Reference: " + ptr;
@@ -16,11 +16,11 @@ void function {
 	cout "This function returns nothing.";
 }
 
-positive number function2(posnum par1) {
+unsigned number function2(unsigned number par1) {
 	return par1;
 }
 
-posnum ofsize 1 function3 return [-127, 0, 255];
+unsigned number <size>=1 function3 return [-127, 0, 255];
 
 function(); // This function returns nothing.
 cout function2(123); // 123
@@ -32,24 +32,23 @@ cout array[4>>>1]; // [65, 3, -34]
 cout array[1<<<4]; // [-34, 3, 65]
 cout array[4<<<1]; // [-34, 3, 65]
 
-posnum array2 = [16232, 9843, 2121, 5459];
-cout rearrange(array2, 2); // [16, 3, 9843, 1, 15459]
-
 #redef . as $
 #redef ; as .
 
-pointer string -> "Hello world!".
-cout rearrange(string, ' '). // ["Hello", "world!"]
+pointer str -> "Hello world!". // Since this pointer is declared in the same scope as the first 'str' it overrides it
+split(str, ' ').
+cout str. // ["Hello", "world!"]
 
-pointer string2 -> ['H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'].
-cout rearrange(string2, ' '). // ["Hello", "world!"]
+pointer str2 -> ['H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'].
+split(str2, ' ').
+cout str2. // ["Hello", "world!"]
 
 #redef . as ;
 #redef $ as .
 
 pointer ascii_str -> [72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33];
-cout rearrange((char) ascii_str, ' '); // ["Hello", "world!"]
-cout rearrange(ascii_str, 32); // [[72, 101, 108, 108, 111], [119, 111, 114, 108, 100, 33]]
+cout split((char pointer) ascii_str, ' '); // ["Hello", "world!"]
+cout split(ascii_str, 32); // [[72, 101, 108, 108, 111], [119, 111, 114, 108, 100, 33]]
 
 pointer custom_arr -> [2781, 'g', ["some", variable: "thing"], someFunction: function2, -93478];
 cout custom_arr[1]; // 'g'

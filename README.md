@@ -64,7 +64,7 @@ comment> */
 * `` arr`<length>` ``
 * `` channel`<buffer>` ``
 * `var>bit<`
-* You can assign properties at variable creation: ``<type> variable[, `<`<property1>`>`, `<`<property2>`>`...] (=|->|<-) <value>[, <property1 value>, <property2 value>...]``
+* You can assign properties at variable creation: ``<type> variable [`<`<property1>`>`=<property1 value> `<`<property2>`>`=<property2 value>...] (=|->|<-) <variable value>``
 
 --------
 
