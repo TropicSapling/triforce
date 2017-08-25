@@ -5,7 +5,7 @@ pointer*2 split(pointer list, splitter) {
 	
 	unsigned int i = 0;
 	while(i < list<length>) {
-		if(list[i] == splitter) {
+		if(list[i >>> i + splitter<length>] == splitter) {
 			list<length> = i + 1;
 			list = ->(list[i + 1]);
 			arr += list;
