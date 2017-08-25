@@ -23,12 +23,13 @@ void fastReplace(pointer list, toReplace, replacer) {
 }
 
 void replace(pointer list, toReplace, replacer) {
-	if(toReplace<length> == replacer<length>) {
-		if(list[>>>] == toReplace) list[__item] = replacer;
-	} else {
-		if(list[>>>] == toReplace) {
-			move(->(list[__item]), replacer<length> - toReplace<length>);
-			list[__item >>> __item + replacer<length> - toReplace<length>] = replacer[>>>];
+	if(toReplace<length> == replacer<length>) while(i < list<length>) {
+		if(list[i] == toReplace) list[i] = replacer;
+	} else while(i < list<length>) {
+		if(list[i >>> i + toReplace<length>] == toReplace) {
+			move(->(list[i]), replacer<length> - toReplace<length>);
+			list[i >>> i + replacer<length> - toReplace<length>] = replacer;
+			i += toReplace<length> - 1;
 		}
 	}
 }
