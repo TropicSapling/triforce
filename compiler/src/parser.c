@@ -33,6 +33,13 @@ char *parse(char **keywords, size_t key, size_t *pos) {
 				output[*pos] = keywords[i][it];
 				(*pos)++;
 			}
+			
+			if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
+				return NULL;
+			}
+			
+			output[*pos] = ' ';
+			(*pos)++;
 		}
 	}
 	

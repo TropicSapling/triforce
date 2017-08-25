@@ -97,7 +97,7 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 		size_t row_len = 0;
 		
 		while(row_len < 65521) {
-			char *special; // NOTE: This needs to be freed in some way, else there will be a memory leak!
+			char *special;
 			bool foundSpecial = false;
 			
 			if(ignoring) {
