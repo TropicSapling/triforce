@@ -2,17 +2,24 @@ export split, fastReplace, replace, move, delItem;
 
 pointer*2 split(pointer list, splitter) {
 	pointer*2 arr -> [list];
-	if(list[>>>] == splitter) {
-		list<length> = __item + 1;
-		list = ->(list[__item + 1]);
-		arr += list;
+	
+	unsigned int i = 0;
+	while(i < list<length>) {
+		if(list[i] == splitter) {
+			list<length> = i + 1;
+			list = ->(list[i + 1]);
+			arr += list;
+		}
 	}
 	
 	return arr;
 }
 
 void fastReplace(pointer list, toReplace, replacer) {
-	if(list[>>>] == toReplace) list[__item] = replacer;
+	unsigned int i = 0;
+	while(i < list<length>) {
+		if(list[i] == toReplace) list[i] = replacer;
+	}
 }
 
 void replace(pointer list, toReplace, replacer) {
