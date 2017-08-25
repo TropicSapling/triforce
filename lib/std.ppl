@@ -38,7 +38,7 @@ void move(pointer list, int steps) {
 	steps < 0 ? list[>>> list<length> - steps] = list[__item + steps] : list[steps >>> list<length> + steps] = list[__item - steps];
 }
 
-void delItems(pointer firstItem, int count) {
+void delItems(pointer firstItem, int count = 1) {
 	move(firstItem, -count);
     list<length> -= count;
 }
