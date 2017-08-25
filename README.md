@@ -54,7 +54,7 @@ comment> */
 * `chan`
 * `void`
 * `func`
-* `noscope`
+* `noscope [<more types>...]`
 * `clang <type> <function name>([<parameters>]) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
 
