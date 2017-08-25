@@ -4,12 +4,10 @@ pointer*2 split(pointer list, splitter) {
 	pointer*2 arr -> [list];
 	
 	unsigned int i = 0;
-	while(i < list<length>) {
-		if(list[i >>> i + splitter<length>] == splitter) {
-			list<length> = i + 1;
-			list = ->(list[i + 1]);
-			arr += list;
-		}
+	while(i < list<length>) if(list[i >>> i + splitter<length>] == splitter) {
+		list<length> = i + 1;
+		list = ->(list[i + 1]);
+		arr += list;
 	}
 	
 	return arr;
@@ -17,20 +15,16 @@ pointer*2 split(pointer list, splitter) {
 
 void fastReplace(pointer list, toReplace, replacer) {
 	unsigned int i = 0;
-	while(i < list<length>) {
-		if(list[i] == toReplace) list[i] = replacer;
-	}
+	while(i < list<length>) if(list[i] == toReplace) list[i] = replacer;
 }
 
 void replace(pointer list, toReplace, replacer) {
 	if(toReplace<length> == replacer<length>) while(i < list<length>) {
 		if(list[i] == toReplace) list[i] = replacer;
-	} else while(i < list<length>) {
-		if(list[i >>> i + toReplace<length>] == toReplace) {
-			move(->(list[i]), replacer<length> - toReplace<length>);
-			list[i >>> i + replacer<length> - toReplace<length>] = replacer;
-			i += toReplace<length> - 1;
-		}
+	} else while(i < list<length>) if(list[i >>> i + toReplace<length>] == toReplace) {
+		move(->(list[i]), replacer<length> - toReplace<length>);
+		list[i >>> i + replacer<length> - toReplace<length>] = replacer;
+		i += toReplace<length> - 1;
 	}
 }
 
