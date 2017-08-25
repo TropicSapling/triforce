@@ -1,4 +1,4 @@
-export split, fastReplace, replace, move, delItem;
+export split, fastReplace, replace, move, delItem
 
 pointer*2 split(pointer list, splitter) {
 	pointer*2 arr -> [list];
