@@ -35,7 +35,7 @@ void replace(pointer list, toReplace, replacer) {
 }
 
 void move(pointer list, int steps) {
-	steps < 0 ? list[>>> list<length> - steps] = list[__item + steps] : list[steps >>> list<length> - steps] = list[__item - steps];
+	steps < 0 ? list[>>> list<length> - steps] = list[__item + steps] : list[steps >>> list<length> + steps] = list[__item - steps];
 }
 
 void delItems(pointer firstItem, int count) {
