@@ -45,10 +45,10 @@ comment> */
 ##### Extras
 * `const [var]`
 * `bool`
-* `[const] [unsigned|signed|decimal] number [(array|list|pointer)[*<n>]]`
-* `only [unsigned|signed|decimal] number (array|list|pointer)[*<n>]`
-* `[const] [unsigned|signed] (int|char|string) [(array|list|pointer)[*<n>]]`
-* `only [unsigned|signed] (int|char|string) (array|list|pointer)[*<n>]`
+* `[const] [unsigned|signed|fraction] number [(array|list|pointer)[*<n>]]`
+* `only [unsigned|signed|fraction] number (array|list|pointer)[*<n>]`
+* `[const] [unsigned|signed] (int|char) [(array|list|pointer)[*<n>]]`
+* `only [unsigned|signed] (int|char) (array|list|pointer)[*<n>]`
 
 ##### Special
 * `chan`
@@ -61,6 +61,7 @@ comment> */
 ##### Properties
 * `` variable`<type>` ``
 * `` variable`<size>` ``
+* `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
 * `` arr`<length>` ``
 * `` channel`<buffer>` ``
 * `var>bit<`
