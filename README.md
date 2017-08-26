@@ -61,6 +61,7 @@ comment> */
 ##### Properties
 * `` variable`<type>` ``
 * `` variable`<size>` ``
+* `` number`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals \]
 * `` arr`<length>` ``
 * `` channel`<buffer>` ``
 * `var>bit<`
