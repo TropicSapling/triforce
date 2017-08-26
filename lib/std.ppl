@@ -1,4 +1,4 @@
-export split, fastReplace, replace, move, delItem;
+export split, replace, move, delItem, findItems;
 
 pointer*2 split(pointer list, splitter) {
 	pointer*2 arr -> [list];
@@ -7,12 +7,13 @@ pointer*2 split(pointer list, splitter) {
 	while(i < list<length>) if(list[i >>> i + splitter<length>] == splitter) {
 		list<length> = i + 1;
 		list = ->(list[i + 1]);
-		arr += list;
+		arr[>>>] += list;
 	}
 	
 	return arr;
 }
 
+// To import the function below: 'import <std>.fastReplace'
 void fastReplace(pointer list, toReplace, replacer) {
 	unsigned int i = 0;
 	while(i < list<length>) if(list[i] == toReplace) list[i] = replacer;
@@ -35,4 +36,16 @@ void move(pointer list, int steps) {
 void delItems(pointer firstItem, int count = 1) {
 	move(firstItem, -count);
     list<length> -= count;
+}
+
+int array findItems(pointer list, toFind, int count = 0) {
+	unsigned int i = 0;
+	int array foundItems = [];
+	if(count > 0) {
+		while(i < list<length> && foundItems<length> < count) if(list[i] == toFind) foundItems += i;
+	} else {
+		while(i < list<length>) if(list[i] == toFind) foundItems += i;
+	}
+	
+	return foundItems;
 }
