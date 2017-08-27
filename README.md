@@ -40,15 +40,16 @@ comment> */
 #### Data types
 ##### Basic
 * `var`
-* `[only|const] (array|list|pointer)[*<n>]`
+* `(array|list|pointer)[*<n>]`
 
 ##### Extras
-* `const [var]`
 * `bool`
-* `[const] [unsigned|signed|fraction] number [(array|list|pointer)[*<n>]]`
-* `only [unsigned|signed|fraction] number (array|list|pointer)[*<n>]`
-* `[const] [unsigned|signed] (int|char) [(array|list|pointer)[*<n>]]`
-* `only [unsigned|signed] (int|char) (array|list|pointer)[*<n>]`
+* `const [var] [(array|list|pointer)[*<n>]]`
+* `[volatile] only (array|list|pointer)[*<n>]`
+* `[const|volatile] [unsigned|signed|fraction] number [(array|list|pointer)[*<n>]]`
+* `[volatile] only [unsigned|signed|fraction] number (array|list|pointer)[*<n>]`
+* `[const|volatile] [unsigned|signed] (int|char) [(array|list|pointer)[*<n>]]`
+* `[volatile] only [unsigned|signed] (int|char) (array|list|pointer)[*<n>]`
 
 ##### Special
 * `chan`
@@ -61,6 +62,7 @@ comment> */
 ##### Properties
 * `` variable`<type>` ``
 * `` variable`<size>` ``
+* `` variable`<alignment>` ``
 * `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
 * `` arr`<length>` ``
 * `` channel`<buffer>` ``
@@ -85,7 +87,7 @@ comment> */
 * `<<`
 * `>>`
 
-##### Assignment
+##### Compound Assignment
 * `+=`
 * `-=`
 * `*=`
@@ -114,6 +116,8 @@ comment> */
 * `? :`
 * `->` (used for pointers)
 * `<-` (used for channels)
+* `[]`
+* `>[]`
 * `@`
 * `<<<`
 * `>>>`
@@ -145,6 +149,7 @@ comment> */
 * `func <function name>([<parameters>]) { <code> }`
 * `<function name>([parameters])`
 * `return [from <function>] <value>`
+* P+ allows ad-hoc polymorphism; you can create multiple functions with the same name but with different parameters.
 
 --------
 
