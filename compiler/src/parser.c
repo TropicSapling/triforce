@@ -34,19 +34,22 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 	
 	for(size_t i = 0; i < key; i++) {
 		if(keywords[i] != NULL) {
-			if(strcmp(keywords[i], "unsigned") == 0 || strcmp(keywords[i], "signed") == 0 || strcmp(keywords[i], "int") == 0 || strcmp(keywords[i], "char") == 0 || strcmp(keywords[i], "const") == 0 || strcmp(keywords[i], "void") == 0) {
-				if(*pos + 1 >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
+			// DEBUG; will be replaced later
+			for(int it = 0; keywords[i][it] != '\0'; it++) {
+				if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
 					return NULL;
 				}
 				
-				for(unsigned int j = 0; j < strlen(keywords[i]); j++) {
-					output[*pos] = keywords[i][j];
-					(*pos)++;
-				}
-				
-				output[*pos] = ' ';
+				output[*pos] = keywords[i][it];
 				(*pos)++;
 			}
+			
+			if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
+				return NULL;
+			}
+				
+			output[*pos] = ' ';
+			(*pos)++;
 		}
 	}
 	
