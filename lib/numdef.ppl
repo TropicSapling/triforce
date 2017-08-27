@@ -1,4 +1,3 @@
-#define "String" as "char array"
 #define "Byte" as "int <size>=1"
 #define "Short" as "int <size>=2"
 #define "Long" as "int <size>=4"
