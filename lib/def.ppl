@@ -1,1 +1,1 @@
-#define "String" as "char array"
+#define 'String' as 'char array'
