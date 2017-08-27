@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 	/////////////////// START PARSING //////////////////
 	
 	size_t pos = 0;
-	char *parsed_output = parse(keywords, key, &pos);
+	char *parsed_output = parse(keywords, key, &pos, specials);
 	if(parsed_output == NULL) {
 		return 1;
 	}

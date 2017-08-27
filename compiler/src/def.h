@@ -3,6 +3,6 @@
 
 int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, size_t file_size, char specials[]);
 
-char *parse(char **keywords, size_t key, size_t *pos);
+char *parse(char **keywords, size_t key, size_t *pos, char specials[]);
 
 #endif

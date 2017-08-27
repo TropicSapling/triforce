@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 #include "def.h"
 
@@ -18,7 +19,16 @@ char *addSpaceForChars(char **keywords, size_t *keywords_size) {
 	return res;
 }
 
-char *parse(char **keywords, size_t key, size_t *pos) {
+char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
+/*	char types[][2][12][8] = {
+		{{"array", "bool", "chan", "func", "list", "pointer", "var", "void"}, {}},
+		{{"char", "int", "number"}, {"array", "list", "pointer"}},
+		{{"const", "only"}, {"array", "char", "fraction", "int", "list", "number", "pointer", "signed", "unsigned", "var"}},
+		{{"fraction"}, {"number"}},
+		{{"noscope"}, {"array", "char", "const", "fraction", "int", "list", "number", "only", "pointer", "signed", "unsigned", "var"}},
+		{{"signed", "unsigned"}, {"char", "int", "number"}}
+	}; */
+	
 	size_t output_size = 256;
 	char *output = malloc(output_size);
 	
@@ -37,7 +47,7 @@ char *parse(char **keywords, size_t key, size_t *pos) {
 			if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
 				return NULL;
 			}
-			
+				
 			output[*pos] = ' ';
 			(*pos)++;
 		}
