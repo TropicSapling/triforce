@@ -86,7 +86,7 @@ comment> */
 * `<<`
 * `>>`
 
-##### Assignment
+##### Compound Assignment
 * `+=`
 * `-=`
 * `*=`
@@ -115,6 +115,8 @@ comment> */
 * `? :`
 * `->` (used for pointers)
 * `<-` (used for channels)
+* `[]`
+* `>[]`
 * `@`
 * `<<<`
 * `>>>`
