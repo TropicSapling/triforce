@@ -1,6 +1,6 @@
-#define 'String' as 'char array'
-#define 'Byte' as 'int <size>=1'
-#define 'Short' as 'int <size>=2'
-#define 'Long' as 'int <size>=4'
-#define 'Float' as 'decimal <size>=4 <precision>=8'
-#define 'Double' as 'decimal <size>=8 <precision>=11'
+#define "String" as "char array"
+#define "Byte" as "int <size>=1"
+#define "Short" as "int <size>=2"
+#define "Long" as "int <size>=4"
+#define "Float" as "decimal <size>=4 <precision>=8"
+#define "Double" as "decimal <size>=8 <precision>=11"
