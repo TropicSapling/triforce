@@ -1,50 +1,49 @@
 export split, replace, move, delItem, findItems;
 
-pointer*2 split(pointer list, splitter) {
-	pointer*2 arr -> [list];
+	pointer*2 arr -> [listp];
 	
 	unsigned int i = 0;
-	while(i < list<length>) if(list[i >>> i + splitter<length>] == splitter) {
-		list<length> = i + 1;
-		list = ->(list[i + 1]);
-		arr[>>>] += list;
+	while(i < listp<length>) if(listp[i >>> i + splitter<length>] == splitter) {
+		listp<length> = i + 1;
+		listp = ->(listp[i + 1]);
+		arr[>>>] += listp;
 	}
 	
 	return arr;
 }
 
 // To import the function below: 'import <std>.fastReplace'
-void fastReplace(pointer list, toReplace, replacer) {
+void fastReplace(pointer listp, toReplace, replacer) {
 	unsigned int i = 0;
-	while(i < list<length>) if(list[i] == toReplace) list[i] = replacer;
+	while(i < listp<length>) if(listp[i] == toReplace) listp[i] = replacer;
 }
 
-void replace(pointer list, toReplace, replacer) {
-	if(toReplace<length> == replacer<length>) while(i < list<length>) {
-		if(list[i] == toReplace) list[i] = replacer;
-	} else while(i < list<length>) if(list[i >>> i + toReplace<length>] == toReplace) {
-		move(->(list[i]), replacer<length> - toReplace<length>);
-		list[i >>> i + replacer<length> - toReplace<length>] = replacer;
+void replace(pointer listp, toReplace, replacer) {
+	if(toReplace<length> == replacer<length>) while(i < listp<length>) {
+		if(listp[i] == toReplace) listp[i] = replacer;
+	} else while(i < listp<length>) if(listp[i >>> i + toReplace<length>] == toReplace) {
+		move(->(listp[i]), replacer<length> - toReplace<length>);
+		listp[i >>> i + replacer<length> - toReplace<length>] = replacer;
 		i += toReplace<length> - 1;
 	}
 }
 
-void move(pointer list, int steps) {
-	steps < 0 ? list[>>> list<length> - steps] = list[__item + steps] : list[steps >>> list<length> + steps] = list[__item - steps];
+void move(pointer listp, int steps) {
+	steps < 0 ? listp[>>> listp<length> - steps] = listp[__item + steps] : listp[steps >>> listp<length> + steps] = listp[__item - steps];
 }
 
 void delItems(pointer firstItem, int count = 1) {
 	move(firstItem, -count);
-    list<length> -= count;
+    listp<length> -= count;
 }
 
-int array findItems(pointer list, toFind, int count = 0) {
+int array findItems(pointer listp, toFind, int count = 0) {
 	unsigned int i = 0;
 	int array foundItems = [];
 	if(count > 0) {
-		while(i < list<length> && foundItems<length> < count) if(list[i] == toFind) foundItems += i;
+		while(i < listp<length> && foundItems<length> < count) if(listp[i] == toFind) foundItems += i;
 	} else {
-		while(i < list<length>) if(list[i] == toFind) foundItems += i;
+		while(i < listp<length>) if(listp[i] == toFind) foundItems += i;
 	}
 	
 	return foundItems;
