@@ -1,5 +1,6 @@
 export split, replace, move, delItem, findItems;
 
+pointer*2 split(pointer listp, splitter) {
 	pointer*2 arr -> [listp];
 	
 	unsigned int i = 0;
