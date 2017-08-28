@@ -64,7 +64,7 @@ comment> */
 * `` variable`<size>` ``
 * `` variable`<alignment>` ``
 * `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
-* `` some_list`<length>` ``
+* `` pointer_to_list`<length>` `` and `` some_list`<listLength>` ``
 * `` channel`<buffer>` ``
 * `variable>bit<`
 * You can assign properties at variable creation: ``<type> variable [`<`<property1>`>`=<property1 value> `<`<property2>`>`=<property2 value>...] (=|->|<-) <variable value>``
