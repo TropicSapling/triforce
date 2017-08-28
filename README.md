@@ -64,9 +64,9 @@ comment> */
 * `` variable`<size>` ``
 * `` variable`<alignment>` ``
 * `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
-* `` arr`<length>` ``
+* `` some_list`<length>` ``
 * `` channel`<buffer>` ``
-* `var>bit<`
+* `variable>bit<`
 * You can assign properties at variable creation: ``<type> variable [`<`<property1>`>`=<property1 value> `<`<property2>`>`=<property2 value>...] (=|->|<-) <variable value>``
 
 --------
