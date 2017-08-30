@@ -161,11 +161,6 @@ comment> */
 
 --------
 
-#### IO
-* `cout "Print something to console"`
-
---------
-
 #### Special
 * `async`
 * `eval`
