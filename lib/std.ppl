@@ -1,4 +1,4 @@
-export split, replace, move, delItem, findItems;
+export split, replace, move, delItem, findItems, print;
 
 pointer*2 split(pointer listp, splitter) {
 	pointer*2 arr -> [listp];
@@ -48,4 +48,37 @@ int array findItems(pointer listp, toFind, int count = 0) {
 	}
 	
 	return foundItems;
+}
+
+bool print(obj) { // Currently works for all types except floating points, but integers must be max. 4 bytes and min. 1 byte
+	clang int cprint(pointer p) {
+		#include <stdio.h>
+		
+		printf("%p", p);
+	}
+	
+	clang int cprint(char c) {
+		#include <stdio.h>
+		
+		printf("%c", c);
+	}
+	
+	clang int cprint(number n) {
+		#include <stdio.h>
+		
+		printf("%d", n);
+	}
+	
+	if(obj<length> > 1) {
+		unsigned int n = 0;
+		while(n < obj<length>) {
+			if(cprint(obj[n]) == -1) {
+				return 1;
+			}
+		}
+		
+		return 0;
+	} else {
+		return cprint(obj) == -1;
+	}
 }

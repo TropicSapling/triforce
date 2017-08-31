@@ -162,17 +162,13 @@ comment> */
 
 --------
 
-#### IO
-* `cout "Print something to console"`
-
---------
-
 #### Special
 * `async`
 * `eval`
 * `pause <ms>`
 * `import`
 * `#redef`
+* `#def`
 
 --------
 
