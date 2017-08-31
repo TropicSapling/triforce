@@ -54,6 +54,7 @@ comment> */
 ##### Special
 * `chan`
 * `void`
+* `type <custom type> = <type1>[|<type2>|<type3>...]`
 * `func`
 * `noscope [<more types>...]`
 * `clang <type> <function name>([<parameters>]) { <C code> }`
