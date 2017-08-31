@@ -1,2 +1,2 @@
-#define 'String' as 'char array'
-#define 'Let' as 'var|array|list|pointer'
+#def 'String' as 'char array'
+#def 'Let' as 'var|array|list|pointer'

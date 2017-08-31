@@ -168,6 +168,7 @@ comment> */
 * `pause <ms>`
 * `import`
 * `#redef`
+* `#def`
 
 --------
 
