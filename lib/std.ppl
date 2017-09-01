@@ -69,7 +69,7 @@ bool print(obj) { // Currently works for all types except floating points, but i
 		printf("%d", n);
 	}
 	
-	if(obj<type> == array|list) {
+	if(->obj<type> == array|list) {
 		unsigned int n = 0;
 		while(n < ->obj<length>) {
 			if(cprint((->obj)[n]) == -1) {
