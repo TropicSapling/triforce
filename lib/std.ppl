@@ -50,7 +50,7 @@ int array findItems(pointer listp, toFind, int count = 0) {
 	return foundItems;
 }
 
-bool print(obj) { // Currently works for all types except floating points, but integers must be max. 4 bytes and min. 1 byte
+bool print(obj) { // Currently works for all types except floating points, but integers must be max. 4 bytes
 	clang int cprint(pointer p) {
 		#include <stdio.h>
 		
@@ -69,15 +69,26 @@ bool print(obj) { // Currently works for all types except floating points, but i
 		printf("%d", n);
 	}
 	
-	if(obj<length> > 1) {
+	if(obj<type> == array|list) {
 		unsigned int n = 0;
-		while(n < obj<length>) {
-			if(cprint(obj[n]) == -1) {
+		while(n < ->obj<length>) {
+			if(cprint((->obj)[n]) == -1) {
 				return 1;
 			}
+			
+			n++;
 		}
 		
 		return 0;
+	} else if(obj<size> % 8) {
+		unsigned int i = 0;
+		while(i < obj<size>) {
+			if(cprint(obj>i<) == -1) {
+				return 1;
+			}
+			
+			i++;
+		}
 	} else {
 		return cprint(obj) == -1;
 	}
