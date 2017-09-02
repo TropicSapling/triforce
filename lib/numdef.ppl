@@ -1,5 +1,0 @@
-#def 'Byte' as 'int <size>=1'
-#def 'Short' as 'int <size>=2'
-#def 'Long' as 'int <size>=4'
-#def 'Float' as 'decimal <size>=4 <precision>=8'
-#def 'Double' as 'decimal <size>=8 <precision>=11'

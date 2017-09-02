@@ -120,7 +120,6 @@ comment> */
 * `->` (used for pointers)
 * `<-` (used for channels)
 * `[]`
-* `>[]`
 * `@`
 * `<<<`
 * `>>>`
@@ -170,7 +169,7 @@ comment> */
 * `pause <ms>`
 * `import`
 * `#redef`
-* `#def`
+* `#def` (supports regex using `#{<regex>}`, as well as `${(property|properties|var)}`)
 
 --------
 

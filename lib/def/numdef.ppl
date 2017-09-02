@@ -1,0 +1,6 @@
+#def '<bytesize>=' as '<size>=8*'
+#def 'Byte' as 'int <size>=8'
+#def 'Short' as 'int <size>=16'
+#def 'Long' as 'int <size>=64'
+#def 'Float' as 'decimal <size>=64 <precision>=8'
+#def 'Double' as 'decimal <size>=64 <precision>=11'
