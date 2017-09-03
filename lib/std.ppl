@@ -1,4 +1,4 @@
-export split, replace, move, delItem, findItems, print;
+export split, replace, move, delItem, findItems, print, pause;
 
 pointer*2 split(pointer listp, splitter) {
 	pointer*2 arr -> [listp];
@@ -92,4 +92,20 @@ bool print(obj) { // Currently works for all types except floating points, but i
 	} else {
 		return cprint(obj) == -1;
 	}
+}
+
+clang void pause(int sec, int <size>=32 ns = 0) {
+	#ifdef _WIN32
+		#include <windows.h>
+		
+		Sleep(sec * 1000 + ns / 1000000);
+	#else
+		#include <time.h>
+		
+		struct timespec stime;
+		stime.tv_sec = sec;
+		stime.tv_nsec = ns;
+		
+		nanosleep(stime, NULL);
+	#endif
 }
