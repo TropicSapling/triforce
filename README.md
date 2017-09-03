@@ -169,7 +169,7 @@ comment> */
 * `pause <ms>`
 * `import`
 * `#redef`
-* `#def` (supports regex using `#{<regex>}`, as well as `${(property|properties|var)}`)
+* `#def` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
 
 --------
 
