@@ -1,2 +1,2 @@
-#def '${var}>[' as '->(${var})['
-#def '${var}<${property}>' as '(->${var})${property}'
+#def '%{var}>[' as '->(%{var})['
+#def '%{var}<%{property}>' as '(->%{var})%{property}'

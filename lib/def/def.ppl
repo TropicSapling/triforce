@@ -1,2 +1,4 @@
 #def 'String' as 'char array'
 #def 'Let' as 'var|array|list|pointer'
+
+#def '#{^return (%\{var\},)+}' as '#{^return \[("%\{var\}": %\{var\})+\]}' // 'return a, b, c' -> 'return ["a": a, "b": b, "c": c]'
