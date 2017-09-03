@@ -39,12 +39,11 @@ comment> */
 
 #### Data types
 ##### Basic
-* `var`
+* `number`
+* `bool`
 * `(array|list|pointer)[*<n>]`
 
 ##### Extras
-* `bool`
-* `const [var] [(array|list|pointer)[*<n>]]`
 * `[volatile] only (array|list|pointer)[*<n>]`
 * `[const|volatile] [unsigned|signed|fraction] number [(array|list|pointer)[*<n>]]`
 * `[volatile] only [unsigned|signed|fraction] number (array|list|pointer)[*<n>]`
@@ -61,14 +60,14 @@ comment> */
 * Not specifying a type for a function parameter allows the parameter to be of any type.
 
 ##### Properties
-* `` variable`<type>` ``
-* `` variable`<size>` ``
-* `` variable`<alignment>` ``
+* `` var`<type>` ``
+* `` var`<size>` ``
+* `` var`<alignment>` ``
 * `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
 * `` pointer_to_list`<length>` `` \[**NOTE:** `` some_list`<`<property>`>` `` will **not** access the property of the whole list, but the properties of each item of the list.\* Use `` ->some_list`<`<property>`>` `` instead. \]
 * `` channel`<buffer>` ``
-* `variable>bit<`
-* You can assign properties at variable creation: ``<type> variable [`<`<property1>`>`=<property1 value> `<`<property2>`>`=<property2 value>...] (=|->|<-) <variable value>``
+* `var>bit<`
+* You can assign properties at variable creation: ``<type> [`<`<property1>`>`=<property1 value> `<`<property2>`>`=<property2 value>...] var``
 
 <sup>\*This is because `` some_list`<`<property>`>` `` decays into `` pointer_to_list[>>>]`<`<property>`>` ``</sup>
 
@@ -127,8 +126,8 @@ comment> */
 --------
 
 #### Lists
-* `pointer sublist -> list[start >>> stop]`
-* `pointer sublist2 -> list[when <condition> >>> until <condition>`
+* `pointer sublist -> some_list[start >>> stop]`
+* `pointer sublist2 -> some_list[when <condition> >>> until <condition>]`
 * `str[>>>] == "Test"`
 * `str[<<<] == "tseT"`
 * `str[start >>> stop]`
@@ -163,13 +162,19 @@ comment> */
 
 --------
 
+#### Defining
+* `#redef`
+* `#def` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
+* `#ifdef`
+* `#else`
+* `#endif`
+
+--------
+
 #### Special
 * `async`
 * `eval`
-* `pause <ms>`
 * `import`
-* `#redef`
-* `#def` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
 
 --------
 
