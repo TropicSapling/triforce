@@ -56,9 +56,11 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 				if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
 					return NULL;
 				}
-					
-				output[*pos] = ' ';
-				(*pos)++;
+				
+				if(strlen(keywords[i]) > 1) {
+					output[*pos] = ' ';
+					(*pos)++;
+				}
 			}
 		}
 	}
