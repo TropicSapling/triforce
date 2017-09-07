@@ -36,11 +36,64 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 		if(keywords[i] != NULL) {
 			if(strcmp(keywords[i], "@") == 0) {
 				// POINTER ACCESS
+				
 				if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
 					return NULL;
 				}
 				
 				output[*pos] = '*';
+				(*pos)++;
+			} else if(keywords[i][0] == '\'') {
+				// STRINGS (without null termination)
+				
+				if(keywords[i][2] == '\0') {
+					if(*pos + 2 >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
+						return NULL;
+					}
+					
+					output[*pos] = '\'';
+					(*pos)++;
+					output[*pos] = keywords[i][1];
+					(*pos)++;
+					output[*pos] = '\'';
+					(*pos)++;
+					
+					continue;
+				}
+				
+				if(*pos + (strlen(keywords[i]) - 2) * 4 >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
+					return NULL;
+				}
+				
+				output[*pos] = '{';
+				(*pos)++;
+				
+				for(unsigned int c = 1; keywords[i][c] != '\0'; c++) {
+					output[*pos] = '\'';
+					(*pos)++;
+					output[*pos] = keywords[i][c];
+					(*pos)++;
+					output[*pos] = '\'';
+					(*pos)++;
+					if(keywords[i][c + 1] != '\0') {
+						output[*pos] = ',';
+						(*pos)++;
+					}
+				}
+				
+				output[*pos] = '}';
+				(*pos)++;
+			} else if(keywords[i][0] == '"') {
+				if(*pos + strlen(keywords[i]) >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
+					return NULL;
+				}
+				
+				for(unsigned int c = 0; keywords[i][c] != '\0'; c++) {
+					output[*pos] = keywords[i][c];
+					(*pos)++;
+				}
+				
+				output[*pos] = '"';
 				(*pos)++;
 			} else {
 				// DEBUG; will be replaced later
@@ -53,12 +106,14 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 					(*pos)++;
 				}
 				
-				if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-					return NULL;
-				}
+				if(strlen(keywords[i]) > 1) {
+					if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
+						return NULL;
+					}
 					
-				output[*pos] = ' ';
-				(*pos)++;
+					output[*pos] = ' ';
+					(*pos)++;
+				}
 			}
 		}
 	}

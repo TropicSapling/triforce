@@ -7,6 +7,7 @@
 #include "def.h"
 
 bool inStr = false;
+bool inStr2 = false;
 bool escaping = false;
 bool ignoring = false;
 
@@ -105,7 +106,7 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 				c++;
 			}
 			
-			while((ignoring || *c != ' ') && *c != '\0') {
+			while((ignoring || inStr || inStr2 || *c != ' ') && *c != '\0') {
 				if(ignoring) {
 					if(*c == '*' && *(c + 1) == '/') {
 						ignoring = false;
@@ -126,11 +127,19 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 					break;
 				} else if(escaping) {
 					escaping = false;
-				} else if(*c == '\'' || *c == '"') {
+				} else if(!inStr2 && *c == '\'') {
 					if(inStr) {
 						inStr = false;
+						break;
 					} else {
 						inStr = true;
+					}
+				} else if(!inStr && *c == '"') {
+					if(inStr2) {
+						inStr2 = false;
+						break;
+					} else {
+						inStr2 = true;
 					}
 				} else if(*c == '\\') {
 					escaping = true;
@@ -143,7 +152,7 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			if(*c == '\0') {
 				c++;
 				break;
-			} else if(!inStr) {
+			} else {
 				if(*c == '/' && *(c + 1) == '/') {
 					*c = '\0';
 					free(special);
