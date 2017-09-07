@@ -34,22 +34,32 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 	
 	for(size_t i = 0; i < key; i++) {
 		if(keywords[i] != NULL) {
-			// DEBUG; will be replaced later
-			for(int it = 0; keywords[i][it] != '\0'; it++) {
+			if(strcmp(keywords[i], "@") == 0) {
+				// POINTER ACCESS
 				if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
 					return NULL;
 				}
 				
-				output[*pos] = keywords[i][it];
+				output[*pos] = '*';
+				(*pos)++;
+			} else {
+				// DEBUG; will be replaced later
+				for(int it = 0; keywords[i][it] != '\0'; it++) {
+					if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
+						return NULL;
+					}
+					
+					output[*pos] = keywords[i][it];
+					(*pos)++;
+				}
+				
+				if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
+					return NULL;
+				}
+					
+				output[*pos] = ' ';
 				(*pos)++;
 			}
-			
-			if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-				return NULL;
-			}
-				
-			output[*pos] = ' ';
-			(*pos)++;
 		}
 	}
 	
