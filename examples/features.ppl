@@ -72,4 +72,6 @@ comment */
 
 /* Single line comments using this syntax works too */
 
+print('string without null termination');
+
 return 0 from __app;
