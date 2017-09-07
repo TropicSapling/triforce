@@ -118,7 +118,7 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 						(*keywords)[*key] = c + 1;
 						(*key)++;
 					}
-				} else if(!inStr && (*c == specials[0] || *c == specials[1] || *c == specials[2] || *c == specials[3] || *c == specials[4] || *c == specials[5] || *c == specials[6] || *c == specials[7] || *c == specials[8] || *c == specials[9] || *c == specials[10] || *c == specials[11] || *c == specials[12] || *c == specials[13] || *c == specials[14] || *c == specials[15] || *c == specials[16] || *c == specials[17] || *c == specials[18] || *c == specials[19] || *c == specials[20] || *c == specials[21] || *c == specials[22] || *c == specials[23])) {
+				} else if(!inStr && (*c == specials[0] || *c == specials[1] || *c == specials[2] || *c == specials[3] || *c == specials[4] || *c == specials[5] || *c == specials[6] || *c == specials[7] || *c == specials[8] || *c == specials[9] || *c == specials[10] || *c == specials[11] || *c == specials[12] || *c == specials[13] || *c == specials[14] || *c == specials[15] || *c == specials[16] || *c == specials[17] || *c == specials[18] || *c == specials[19] || *c == specials[20] || *c == specials[21] || *c == specials[22] || *c == specials[23] || *c == specials[24])) {
 					special = calloc(2, 1);
 					special[0] = *c;
 					foundSpecial = true;
