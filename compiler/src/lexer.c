@@ -37,12 +37,20 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			continue;
 		}
 		
-		if(buf[0] == '#' && !inStr) {
+		size_t new_size = strlen(buf) + 1;
+		char *trimmed_buf = &buf[0];
+		while(*trimmed_buf == '\t' || *trimmed_buf == ' ') {
+			new_size--;
+			trimmed_buf++;
+		}
+		
+		// PREPROCESSING
+		if(trimmed_buf[0] == '#' && !inStr) {
 			size_t c = 1;
 			char skey[8];
 			
-			while(buf[c] != ' ' && buf[c] != '\0') {
-				skey[c] = buf[c];
+			while(trimmed_buf[c] != ' ' && trimmed_buf[c] != '\0') {
+				skey[c] = trimmed_buf[c];
 				c++;
 			}
 			
@@ -51,8 +59,8 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			
 			if(strcmp(skey, "redef") == 0) {
 				for(short s = 0; specials[s] != '\0'; s++) {
-					if(buf[c] == specials[s]) {
-						specials[s] = buf[c + 5];
+					if(trimmed_buf[c] == specials[s]) {
+						specials[s] = trimmed_buf[c + 5];
 						break;
 					}
 				}
@@ -63,7 +71,6 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			continue;
 		}
 		
-		size_t new_size = strlen(buf) + 1;
 		if(extra_buf != NULL) {
 			new_size += strlen(extra_buf);
 		}
@@ -78,11 +85,11 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 		
 		if(extra_buf[0] != '\0') {
 			strcpy(c, extra_buf);
-			strcat(c, buf);
+			strcat(c, trimmed_buf);
 			
 			extra_buf[0] = '\0';
 		} else {
-			strcpy(c, buf);
+			strcpy(c, trimmed_buf);
 		}
 		
 		if(*key + 1 >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
@@ -150,6 +157,8 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			}
 			
 			if(*c == '\0') {
+				if(*(c - 1) == '\n') *(c - 1) = '\0';
+				if(*(c - 2) == '\r') *(c - 2) = '\0';
 				c++;
 				break;
 			} else {

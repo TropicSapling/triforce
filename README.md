@@ -44,11 +44,11 @@ comment> */
 * `(array|list|pointer)[*<n>]`
 
 ##### Extras
-* `[volatile] only (array|list|pointer)[*<n>]`
-* `[const|volatile] [unsigned|signed|fraction] number [(array|list|pointer)[*<n>]]`
-* `[volatile] only [unsigned|signed|fraction] number (array|list|pointer)[*<n>]`
-* `[const|volatile] [unsigned|signed] (int|char) [(array|list|pointer)[*<n>]]`
-* `[volatile] only [unsigned|signed] (int|char) (array|list|pointer)[*<n>]`
+* `only [register|stack|heap] [volatile] [unique] (array|list|pointer)[*<n>]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [(array|list|pointer)[*<n>]]`
+* `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number (array|list|pointer)[*<n>]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [(array|list|pointer)[*<n>]]`
+* `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) (array|list|pointer)[*<n>]`
 
 ##### Special
 * `chan`
