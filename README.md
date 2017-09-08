@@ -172,7 +172,7 @@ comment> */
 --------
 
 #### Special
-* `async`
+* `async { <code> }`
 * `eval`
 * `import`
 
