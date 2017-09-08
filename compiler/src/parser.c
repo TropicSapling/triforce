@@ -5,6 +5,12 @@
 
 #include "def.h"
 
+#define RED   "\x1B[31m"
+#define GREEN   "\x1B[32m"
+#define YELLOW   "\x1B[33m"
+#define BLUE   "\x1B[34m"
+#define RESET "\x1B[0m"
+
 char *addSpaceForChars(char **keywords, size_t *keywords_size) {
 	*keywords_size *= 2;
 	
@@ -20,14 +26,7 @@ char *addSpaceForChars(char **keywords, size_t *keywords_size) {
 }
 
 char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
-/*	char types[][2][12][8] = {
-		{{"array", "bool", "chan", "func", "list", "pointer", "var", "void"}, {}},
-		{{"char", "int", "number"}, {"array", "list", "pointer"}},
-		{{"const", "only"}, {"array", "char", "fraction", "int", "list", "number", "pointer", "signed", "unsigned", "var"}},
-		{{"fraction"}, {"number"}},
-		{{"noscope"}, {"array", "char", "const", "fraction", "int", "list", "number", "only", "pointer", "signed", "unsigned", "var"}},
-		{{"signed", "unsigned"}, {"char", "int", "number"}}
-	}; */
+	char types[][8] = {"bool", "chan", "char", "const", "fraction", "int", "list", "number", "only", "pointer", "signed", "unsigned"};
 	
 	size_t output_size = 256;
 	char *output = malloc(output_size);
@@ -84,6 +83,8 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 				output[*pos] = '}';
 				(*pos)++;
 			} else if(keywords[i][0] == '"') {
+				// STRINGS (with null termination)
+				
 				if(*pos + strlen(keywords[i]) >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
 					return NULL;
 				}
@@ -95,6 +96,26 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 				
 				output[*pos] = '"';
 				(*pos)++;
+			} else if(strcmp(keywords[i], "clang") == 0) {
+				// INLINE C
+				
+				for(unsigned int j = 1; j < 6; j++) {
+					unsigned int k = 0;
+					for(; k < 10; k++) {
+						if(strcmp(keywords[i + j], types[k]) == 0) {
+							break;
+						}
+					}
+					
+					if(k == 10) {
+						i = i + j + 2;
+						break;
+					}
+				}
+				
+				puts("----------------------------------------------------------------");
+				printf(YELLOW "[WARNING]" RESET " 'clang' is not implemented yet.\n"); // WIP
+				puts("----------------------------------------------------------------");
 			} else {
 				// DEBUG; will be replaced later
 				for(int it = 0; keywords[i][it] != '\0'; it++) {
