@@ -109,7 +109,7 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 			} else if(strcmp(keywords[i], "clang") == 0) {
 				// INLINE C
 				
-				for(unsigned int j = 1; j < 7; j++) {
+				for(unsigned int j = 1; j < 8; j++) {
 					unsigned int k = 0;
 					for(; k < 10; k++) {
 						if(strcmp(keywords[i + j], types[k]) == 0) {

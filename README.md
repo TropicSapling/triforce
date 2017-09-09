@@ -44,14 +44,13 @@ comment> */
 * `(array|list|pointer)[*<n>]`
 
 ##### Extras
-* `only [register|stack|heap] [volatile] [unique] (array|list|pointer)[*<n>]`
-* `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [(array|list|pointer)[*<n>]]`
-* `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number (array|list|pointer)[*<n>]`
-* `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [(array|list|pointer)[*<n>]]`
-* `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) (array|list|pointer)[*<n>]`
+* `only [register|stack|heap] [volatile] [unique] (array|list|pointer)[*<n>] [chan]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [(array|list|pointer)[*<n>]] [chan]`
+* `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number (array|list|pointer)[*<n>] [chan]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [(array|list|pointer)[*<n>]] [chan]`
+* `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) (array|list|pointer)[*<n>] [chan]`
 
 ##### Special
-* `chan`
 * `void`
 * `type <custom type> = <type1>[|<type2>|<type3>...]`
 * `func`
@@ -116,8 +115,7 @@ comment> */
 
 ##### Misc.
 * `? :`
-* `->` (used for pointers)
-* `<-` (used for channels)
+* `->`
 * `[]`
 * `@`
 * `<<<`
@@ -154,27 +152,41 @@ comment> */
 
 --------
 
+#### Conditionals
+* `if(<condition>) { <code> } [else if(<condition>) { <code> } else if...] [else { <code> }]`
+* `switch(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }`
+
+--------
+
 #### Loops
-* `foreach <item> in <list>`
-* `while(<condition>)`
-* `repeat(<n times>)`
+* `foreach <item> in <list> { <code> }`
+* `while(<condition>) { <code> }`
+* `repeat(<n times>) { <code> }`
 * `break`
 
 --------
 
+#### Concurrency
+* `async { <code> }`
+* `select { <cases> }`
+* `send <data> to <channel>`
+* `<type> <var> = receive from <channel>`
+
+--------
+
 #### Defining
-* `#redef`
-* `#def` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
-* `#ifdef`
+* `#redef '<char>' as '<char>'`
+* `#def '<code>' as '<code>'` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
+* `#ifdef <const>`
 * `#else`
 * `#endif`
 
 --------
 
 #### Special
-* `async { <code> }`
-* `eval`
-* `import`
+* `eval '<code>'`
+* `goto <label>`
+* `import '<path>' [as '<name>']`
 
 --------
 
