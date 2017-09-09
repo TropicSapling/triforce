@@ -154,17 +154,17 @@ comment> */
 --------
 
 #### Loops
-* `foreach <item> in <list>`
-* `while(<condition>)`
-* `repeat(<n times>)`
+* `foreach <item> in <list> { <code> }`
+* `while(<condition>) { <code> }`
+* `repeat(<n times>) { <code> }`
 * `break`
 
 --------
 
 #### Defining
-* `#redef`
-* `#def` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
-* `#ifdef`
+* `#redef '<char>' as '<char>'`
+* `#def '<code>' as '<code>'` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
+* `#ifdef <const>`
 * `#else`
 * `#endif`
 
@@ -172,8 +172,10 @@ comment> */
 
 #### Special
 * `async { <code> }`
-* `eval`
-* `import`
+* `await <channel>`
+* `eval '<code>'`
+* `goto <label>`
+* `import '<path>' [as '<name>']`
 
 --------
 
