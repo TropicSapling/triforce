@@ -115,8 +115,7 @@ comment> */
 
 ##### Misc.
 * `? :`
-* `->` (used for pointers)
-* `<-` (used for channels)
+* `->`
 * `[]`
 * `@`
 * `<<<`
@@ -167,6 +166,14 @@ comment> */
 
 --------
 
+#### Concurrency
+* `async { <code> }`
+* `select { <cases> }`
+* `send <data> to <channel>`
+* `<type> <var> = receive from <channel>`
+
+--------
+
 #### Defining
 * `#redef '<char>' as '<char>'`
 * `#def '<code>' as '<code>'` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
@@ -177,8 +184,6 @@ comment> */
 --------
 
 #### Special
-* `async { <code> }`
-* `select { <cases> }`
 * `eval '<code>'`
 * `goto <label>`
 * `import '<path>' [as '<name>']`
