@@ -172,7 +172,7 @@ comment> */
 
 #### Special
 * `async { <code> }`
-* `await <channel>`
+* `await <channel>[, <channel 2>, <channel 3>...]`
 * `eval '<code>'`
 * `goto <label>`
 * `import '<path>' [as '<name>']`
