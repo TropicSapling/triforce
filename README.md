@@ -153,6 +153,12 @@ comment> */
 
 --------
 
+#### Conditionals
+* `if(<condition>) { <code> } [else if(<condition>) { <code> } else if...] [else { <code> }]`
+* `switch(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }
+
+--------
+
 #### Loops
 * `foreach <item> in <list> { <code> }`
 * `while(<condition>) { <code> }`
@@ -172,7 +178,7 @@ comment> */
 
 #### Special
 * `async { <code> }`
-* `await <channel>[, <channel 2>, <channel 3>...]`
+* `select { <cases> }`
 * `eval '<code>'`
 * `goto <label>`
 * `import '<path>' [as '<name>']`
