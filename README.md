@@ -44,14 +44,13 @@ comment> */
 * `(array|list|pointer)[*<n>]`
 
 ##### Extras
-* `only [register|stack|heap] [volatile] [unique] (array|list|pointer)[*<n>]`
-* `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [(array|list|pointer)[*<n>]]`
-* `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number (array|list|pointer)[*<n>]`
-* `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [(array|list|pointer)[*<n>]]`
-* `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) (array|list|pointer)[*<n>]`
+* `only [register|stack|heap] [volatile] [unique] (array|list|pointer)[*<n>] [chan]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [(array|list|pointer)[*<n>]] [chan]`
+* `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number (array|list|pointer)[*<n>] [chan]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [(array|list|pointer)[*<n>]] [chan]`
+* `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) (array|list|pointer)[*<n>] [chan]`
 
 ##### Special
-* `chan`
 * `void`
 * `type <custom type> = <type1>[|<type2>|<type3>...]`
 * `func`
