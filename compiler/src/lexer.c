@@ -66,6 +66,14 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 				}
 				
 				progress += 5;
+			} else if(strcmp(skey, "def") == 0) {
+				// WIP
+			} else if(strcmp(skey, "ifdef") == 0) {
+				// WIP
+			} else if(strcmp(skey, "import") == 0) {
+				// WIP
+			} else if(strcmp(skey, "export") == 0) {
+				// WIP
 			}
 			
 			continue;
