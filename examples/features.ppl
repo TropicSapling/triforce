@@ -1,3 +1,5 @@
+#import <std.ppl>
+
 print("Amount of arguments specified: " + __argc);
 print("Arguments specified: " + split(__args, " "));
 print("Line number: " + __line);

@@ -41,19 +41,20 @@ comment> */
 ##### Basic
 * `number`
 * `bool`
+* `char`
 * `(array|list|pointer)[*<n>]`
+* `func`
 
 ##### Extras
-* `only [register|stack|heap] [volatile] [unique] (array|list|pointer)[*<n>] [chan]`
-* `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [(array|list|pointer)[*<n>]] [chan]`
-* `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number (array|list|pointer)[*<n>] [chan]`
-* `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [(array|list|pointer)[*<n>]] [chan]`
-* `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) (array|list|pointer)[*<n>] [chan]`
+* `only [register|stack|heap] [volatile] [unique] [func] (array|list|pointer)[*<n>] [chan]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [func] [(array|list|pointer)[*<n>]] [chan]`
+* `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number [func] (array|list|pointer)[*<n>] [chan]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [func] [(array|list|pointer)[*<n>]] [chan]`
+* `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) [func] (array|list|pointer)[*<n>] [chan]`
 
 ##### Special
 * `void`
-* `type <custom type> = <type1>[|<type2>|<type3>...]`
-* `func`
+* ``type <custom type> = <type1>[`|`<type2>`|`<type3>...]``
 * `noscope [<more types>...]`
 * `clang <type> <function name>([<parameters>]) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
@@ -186,7 +187,8 @@ comment> */
 #### Special
 * `eval '<code>'`
 * `goto <label>`
-* `import '<path>' [as '<name>']`
+* ``#import '(<path>|`<`<std lib path>`>`)' [as <name>]``
+* `#export <function1>[, <function2>...]`
 
 --------
 
