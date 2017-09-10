@@ -133,6 +133,14 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 				puts("----------------------------------------------------------------");
 				printf(YELLOW "[WARNING]" RESET " 'clang' is not implemented yet.\n"); // WIP
 				puts("----------------------------------------------------------------");
+			} else if(strcmp(keywords[i], "__args") == 0) {
+				typeTo(output, "argv", pos);
+			} else if(strcmp(keywords[i], "__argc") == 0) {
+				typeTo(output, "argc", pos);
+			} else if(strcmp(keywords[i], "__line") == 0) {
+				typeTo(output, "__LINE__", pos);
+			} else if(strcmp(keywords[i], "__path") == 0) {
+				typeTo(output, "__PATH__", pos);
 			} else if(keywords[i][0] == specials[2]) {
 				// LISTS
 				

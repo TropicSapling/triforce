@@ -11,7 +11,7 @@ pointer address = ->str;
 
 print("String: " + str); // something
 print("Pointer/Reference: " + ptr);
-print("Adress: " + adress);
+print("Address: " + address);
 print("Pointer value: " + @ptr);
 
 void function {
