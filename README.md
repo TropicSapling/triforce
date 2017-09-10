@@ -195,6 +195,8 @@ comment> */
 #### Built-in global variables
 * `__path`
 * `__app`
+* `__args`
+* `__argc`
 * `__line`
 * `__item`
 
