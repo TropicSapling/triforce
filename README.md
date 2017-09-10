@@ -186,7 +186,8 @@ comment> */
 #### Special
 * `eval '<code>'`
 * `goto <label>`
-* `import '<path>' [as '<name>']`
+* ``#import '(<path>|`<`<std lib path>`>`)' [as <name>]``
+* `#export <function1>[, <function2>...]`
 
 --------
 
