@@ -52,8 +52,8 @@ comment> */
 
 ##### Special
 * `void`
-* `type <custom type> = <type1>[|<type2>|<type3>...]`
-* `func`
+* ``type <custom type> = <type1>[`|`<type2>`|`<type3>...]``
+* `func (array|list|pointer)[*<n>]`
 * `noscope [<more types>...]`
 * `clang <type> <function name>([<parameters>]) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
