@@ -1,4 +1,4 @@
-export split, replace, move, delItem, findItems, print, pause;
+#export split, replace, move, delItem, findItems, print, pause;
 
 pointer*2 split(pointer listp, splitter) {
 	pointer*2 arr -> [listp];
