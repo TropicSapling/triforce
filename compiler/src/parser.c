@@ -68,9 +68,6 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 			if(keywords[i][0] == specials[22]) {
 				// POINTER ACCESS
 				
-/*				if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-					return NULL;
-				} */
 				INCR_MEM(1);
 				
 				output[*pos] = '*';
@@ -79,9 +76,6 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 				// STRINGS (without null termination)
 				
 				if(keywords[i][2] == '\0') {
-/*					if(*pos + 2 >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-						return NULL;
-					} */
 					INCR_MEM(3);
 					
 					output[*pos] = '\'';
@@ -94,9 +88,6 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 					continue;
 				}
 				
-/*				if(*pos + (strlen(keywords[i]) - 2) * 4 >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-					return NULL;
-				} */
 				INCR_MEM(1);
 				
 				output[*pos] = '{';
@@ -121,10 +112,6 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 				(*pos)++;
 			} else if(keywords[i][0] == '"') {
 				// STRINGS (with null termination)
-				
-/*				if(*pos + strlen(keywords[i]) >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-					return NULL;
-				} */
 				
 				for(unsigned int c = 0; keywords[i][c] != '\0'; c++) {
 					INCR_MEM(1);
@@ -175,9 +162,6 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 				} else {
 					for(unsigned int j = 1; keywords[i + j][0] != specials[3]; j++) {
 						if(keywords[i + j][0] != '>' || keywords[i + j + 1][0] != '>' || keywords[i + j + 2][0] != '>') {
-/*							if(*pos + 16 >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-								return NULL;
-							} */
 							INCR_MEM(22);
 							
 							typeTo(output, "for(unsigned int ", pos);
@@ -249,9 +233,6 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 				}
 			} else if(!isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
 				for(int it = 0; keywords[i][it] != '\0'; it++) {
-/*					if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-						return NULL;
-					} */
 					INCR_MEM(1);
 					
 					output[*pos] = keywords[i][it];
@@ -262,9 +243,6 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 			} else {
 				// DEBUG; will be replaced later
 				for(int it = 0; keywords[i][it] != '\0'; it++) {
-/*					if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-						return NULL;
-					} */
 					INCR_MEM(1);
 					
 					output[*pos] = keywords[i][it];
@@ -272,9 +250,6 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 				}
 				
 				if(strlen(keywords[i]) > 1) {
-/*					if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-						return NULL;
-					} */
 					INCR_MEM(1);
 					
 					output[*pos] = ' ';
@@ -284,11 +259,7 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 		}
 	}
 	
-/*	if(*pos > output_size && addSpaceForChars(&output, &output_size) == NULL) {
-		return NULL;
-	} */
 	INCR_MEM(1);
-	
 	output[*pos] = '\0';
 	
 	return output;
