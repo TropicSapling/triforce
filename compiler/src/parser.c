@@ -160,7 +160,7 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 				// WIP
 			} else {
 				for(unsigned int j = 1; keywords[i + j][0] != specials[3]; j++) {
-					if(keywords[i + j][0] != '>' || keywords[i + j + 1][0] != '>' || keywords[i + j + 2][0] != '>') {
+					if(keywords[i + j][0] == '>' || keywords[i + j + 1][0] == '>' || keywords[i + j + 2][0] == '>') {
 						INCR_MEM(22);
 						
 						typeTo(output, "for(unsigned int ", pos);
@@ -225,7 +225,7 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 						typeTo(output, "++", pos);
 						
 						break;
-					} else if(keywords[i][0] != '<' || keywords[i + j + 1][0] != '<' || keywords[i + j + 2][0] != '<') {
+					} else if(keywords[i][0] == '<' || keywords[i + j + 1][0] == '<' || keywords[i + j + 2][0] == '<') {
 						break; // TMP, WIP
 					}
 				}
