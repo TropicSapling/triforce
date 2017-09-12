@@ -209,9 +209,9 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 //								typeTo(output, list_length, pos); // TODO: Define 'list_length'
 								break; // TMP
 							} else if(isNumber(keywords[i + 1])) {
-								for(unsigned int l = j + 3; keywords[l][0] != specials[3]; l++) {
+								for(unsigned int l = 0; keywords[i + j + 2][l] != '\0'; l++) {
 									INCR_MEM(1);
-									output[*pos] = keywords[i + j + 3][l];
+									output[*pos] = keywords[i + j + 2][l];
 									(*pos)++;
 								}
 							} else {

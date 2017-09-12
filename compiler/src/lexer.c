@@ -7,7 +7,13 @@
 #include "def.h"
 
 #define INCR_MEM(size) do { \
-	if(*key + (size) - 1 >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) { \
+	if(*key + (size) - 1 >= keywords_size / sizeof(char*) && addSpaceForKeys(keywords, &keywords_size) == NULL) { \
+		return 1; \
+	} \
+} while(0)
+
+#define INCR_MEM2(size) do { \
+	if(*pkey + (size) - 1 >= pointers_size / sizeof(char*) && addSpaceForKeys(pointers, &pointers_size) == NULL) { \
 		return 1; \
 	} \
 } while(0)
@@ -31,7 +37,7 @@ char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
 	return res;
 }
 
-int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, size_t file_size, char specials[]) {
+int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, char ***pointers, size_t pointers_size, size_t *pkey, size_t file_size, char specials[]) {
 	char buf[65536];
 	char extra_buf[16] = "\0";
 	char *c;
@@ -59,6 +65,8 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 				skey[c] = trimmed_buf[c];
 				c++;
 			}
+			
+			skey[c] = '\0';
 			
 			c++;
 			progress += c;
@@ -106,10 +114,11 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			strcpy(c, trimmed_buf);
 		}
 		
-		INCR_MEM(2);
+		INCR_MEM(1);
+		INCR_MEM2(1);
 		
-		(*keywords)[*key] = NULL; // This is used to mark where memory was allocated for 'c'
-		(*key)++;
+		(*pointers)[*pkey] = c; // This is used to mark where memory was allocated for 'c'
+		(*pkey)++;
 		
 		(*keywords)[*key] = c;
 		(*key)++;
@@ -193,10 +202,11 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			
 			if(row_len < 65521) {
 				if(foundSpecial) {
-					INCR_MEM(2);
+					INCR_MEM(1);
+					INCR_MEM2(1);
 					
-					(*keywords)[*key] = NULL; // This is used to mark where memory was allocated for 'special'
-					(*key)++;
+					(*pointers)[*pkey] = special; // This is used to mark where memory was allocated for 'special'
+					(*pkey)++;
 					
 					(*keywords)[*key] = special;
 					(*key)++;
