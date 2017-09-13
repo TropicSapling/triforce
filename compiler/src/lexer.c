@@ -195,7 +195,7 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 				}
 			}
 			
-			*c = '\0';
+			if(*(c - 1) != '\0') *c = '\0';
 			
 			c++;
 			row_len++;
@@ -210,6 +210,8 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 					
 					(*keywords)[*key] = special;
 					(*key)++;
+					
+					if(*c == ' ') c++;
 				}
 				
 				INCR_MEM(1);

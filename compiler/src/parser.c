@@ -153,48 +153,47 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 		} else if(strcmp(keywords[i], "__path") == 0) {
 			INCR_MEM(8);
 			typeTo(output, "__PATH__", pos);
-		} else if(keywords[i][0] == specials[2]) {
+		} else if(keywords[i + 1] && keywords[i + 1][0] == specials[2]) {
 			// LISTS
 			
-			if(strcmp(keywords[i + 1], "when") == 0) {
+			if(strcmp(keywords[i + 2], "when") == 0) {
 				// WIP
 			} else {
-				for(unsigned int j = 1; keywords[i + j][0] != specials[3]; j++) {
-					if(keywords[i + j][0] == '>' || keywords[i + j + 1][0] == '>' || keywords[i + j + 2][0] == '>') {
+				for(unsigned int i_pos = 2; keywords[i + i_pos][0] != specials[3]; i_pos++) {
+					if(keywords[i + i_pos][0] == specials[9] && keywords[i + i_pos + 1][0] == specials[9] && keywords[i + i_pos + 2][0] == specials[9]) {
 						INCR_MEM(22);
 						
 						typeTo(output, "for(unsigned int ", pos);
 						
+						// Generate iterator name
 						char it_name[64];
 						size_t it_name_len;
-						if(!isReserved(types, keywords[i - 1], 22) && !isReserved(reserved_keys, keywords[i - 1], 19) && strstr(specials, keywords[i - 1]) == NULL) {
-							strcpy(it_name, keywords[i - 1]);
-							strcat(it_name, "_it");
-							
-							it_name_len = strlen(it_name);
-							INCR_MEM(it_name_len);
-							typeTo(output, it_name, pos);
-						} else {
-//								typeTo(output, it_name, pos); // TODO: Define 'it_name'
-							break; // TMP
-						}
+						strcpy(it_name, keywords[i]);
+						strcat(it_name, "_it");
+						
+						it_name_len = strlen(it_name);
+						INCR_MEM(it_name_len);
+						typeTo(output, it_name, pos);
 						
 						output[*pos] = '=';
 						(*pos)++;
 						
-						if(j == 0) {
+						// Get sublist start pos
+						if(keywords[i + i_pos - 1][0] == specials[2]) { // Use default
 							INCR_MEM(1);
 							output[*pos] = '0';
 							(*pos)++;
-						} else if(isNumber(keywords[i + 1])) {
-							for(unsigned int k = 0; keywords[i + 1][k] != '\0'; k++) {
+						} else if(keywords[i + i_pos - 2][0] == specials[2]) {
+							for(unsigned int sn_pos = 0; keywords[i + i_pos - 1][sn_pos] != '\0'; sn_pos++) {
 								INCR_MEM(1);
-								output[*pos] = keywords[i + 1][k];
+								output[*pos] = keywords[i + i_pos - 1][sn_pos];
 								(*pos)++;
 							}
 						} else {
 							break; // TMP, WIP
 						}
+						
+						i_pos += 3;
 						
 						output[*pos] = ';';
 						(*pos)++;
@@ -204,28 +203,54 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 						output[*pos] = '<';
 						(*pos)++;
 						
-						if(keywords[i + j + 3][0] == specials[3]) {
+						// Get sublist end pos
+						if(keywords[i + i_pos][0] == specials[3]) { // Use default
 //								typeTo(output, list_length, pos); // TODO: Define 'list_length'
 							break; // TMP
-						} else if(isNumber(keywords[i + 1])) {
-							for(unsigned int l = 0; keywords[i + j + 2][l] != '\0'; l++) {
+						} else if(keywords[i + i_pos - 1][0] == specials[9]) {
+							for(unsigned int en_pos = 0; keywords[i + i_pos][en_pos] != '\0'; en_pos++) {
 								INCR_MEM(1);
-								output[*pos] = keywords[i + j + 2][l];
+								output[*pos] = keywords[i + i_pos][en_pos];
 								(*pos)++;
 							}
+							
+							i_pos++;
 						} else {
 							break; // TMP, WIP
 						}
 						
+						i_pos++;
+						
 						output[*pos] = ';';
 						(*pos)++;
 						
-						INCR_MEM(it_name_len);
+						INCR_MEM(it_name_len * 3 + 5);
 						typeTo(output, it_name, pos);
-						typeTo(output, "++", pos);
+						typeTo(output, "++){", pos);
+						
+						typeTo(output, keywords[i], pos);
+						
+						output[*pos] = '[';
+						(*pos)++;
+						typeTo(output, it_name, pos);
+						output[*pos] = ']';
+						(*pos)++;
+						
+						output[*pos] = ' ';
+						(*pos)++;
+						
+						for(; !(keywords[i + i_pos][0] == specials[0] && keywords[i + i_pos][1] == '\0'); i_pos++) {
+							INCR_MEM(1);
+							typeTo(output, keywords[i + i_pos], pos);
+						}
+						
+						output[*pos] = '}';
+						(*pos)++;
+						
+						i += i_pos;
 						
 						break;
-					} else if(keywords[i][0] == '<' || keywords[i + j + 1][0] == '<' || keywords[i + j + 2][0] == '<') {
+					} else if(keywords[i + i_pos][0] == specials[10] && keywords[i + i_pos + 1][0] == specials[10] && keywords[i + i_pos + 2][0] == specials[10]) {
 						break; // TMP, WIP
 					}
 				}
