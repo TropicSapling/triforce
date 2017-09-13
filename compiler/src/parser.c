@@ -228,6 +228,16 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 						typeTo(output, it_name, pos);
 						typeTo(output, "++){", pos);
 						
+						unsigned int beflist_pos = 0;
+						while(i - beflist_pos >= 0 && keywords[i - beflist_pos][0] != specials[0]) {
+							beflist_pos++;
+						}
+						
+						for(beflist_pos--; beflist_pos > 0; beflist_pos--) {
+							INCR_MEM(1);
+							typeTo(output, keywords[i - beflist_pos], pos);
+						}
+						
 						typeTo(output, keywords[i], pos);
 						
 						output[*pos] = '[';
