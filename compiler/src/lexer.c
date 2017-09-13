@@ -37,6 +37,14 @@ char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
 	return res;
 }
 
+bool isSpecial(char c, char specials[]) {
+	for(unsigned int i = 0; specials[i] != '\0'; i++) {
+		if(c == specials[i]) return true;
+	}
+	
+	return false;
+}
+
 int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, char ***pointers, size_t pointers_size, size_t *pkey, size_t file_size, char specials[]) {
 	char buf[65536];
 	char extra_buf[16] = "\0";
@@ -145,7 +153,7 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 						(*keywords)[*key] = c + 1;
 						(*key)++;
 					}
-				} else if(!inStr && (*c == specials[0] || *c == specials[1] || *c == specials[2] || *c == specials[3] || *c == specials[4] || *c == specials[5] || *c == specials[6] || *c == specials[7] || *c == specials[8] || *c == specials[9] || *c == specials[10] || *c == specials[11] || *c == specials[12] || *c == specials[13] || *c == specials[14] || *c == specials[15] || *c == specials[16] || *c == specials[17] || *c == specials[18] || *c == specials[19] || *c == specials[20] || *c == specials[21] || *c == specials[22] || *c == specials[23] || *c == specials[24])) {
+				} else if(!inStr && isSpecial(*c, specials)) {
 					special = calloc(2, 1);
 					special[0] = *c;
 					foundSpecial = true;
@@ -195,7 +203,9 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 				}
 			}
 			
-			if(*(c - 1) != '\0') *c = '\0';
+			if(*(c - 1) != '\0') {
+				*c = '\0';
+			}
 			
 			c++;
 			row_len++;
@@ -214,10 +224,12 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 					if(*c == ' ') c++;
 				}
 				
-				INCR_MEM(1);
-				
-				(*keywords)[*key] = c;
-				(*key)++;
+				if(!isSpecial(*c, specials)) {
+					INCR_MEM(1);
+					
+					(*keywords)[*key] = c;
+					(*key)++;
+				}
 			}
 		}
 		
