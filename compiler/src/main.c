@@ -30,13 +30,16 @@ int main(int argc, char *argv[]) {
 	
 	/////////////////// START LEXING ///////////////////
 	
-	size_t keywords_size = (sizeof(char*) + 1) * 32;
-	char **keywords = malloc(keywords_size); 
+	size_t keywords_size = sizeof(char*) * 32;
+	size_t pointers_size = sizeof(char*) * 32;
+	char **keywords = malloc(keywords_size);
+	char **pointers = malloc(pointers_size);
 	size_t key = 0;
+	size_t pkey = 0;
 	
 	char specials[] = ";,[]{}()?><=+-*/%!&|^~@\\.";
 	
-	if(lex_parse(input, &keywords, keywords_size, &key, file_size, specials)) {
+	if(lex_parse(input, &keywords, keywords_size, &key, &pointers, pointers_size, &pkey, file_size, specials)) {
 		return 1;
 	}
 	
@@ -120,14 +123,12 @@ int main(int argc, char *argv[]) {
 	
 	free(parsed_output);
 	
-	for(size_t i = 0; i < key; i++) {
-		if(keywords[i] == NULL) {
-			free(keywords[i + 1]);
-			i++;
-		}
+	for(size_t i = 0; i < pkey; i++) {
+		free(pointers[i]);
 	}
 	
 	free(keywords);
+	free(pointers);
 	
 	return 0;
 }

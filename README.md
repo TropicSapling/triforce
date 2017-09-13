@@ -178,8 +178,11 @@ comment> */
 #### Defining
 * `#redef '<char>' as '<char>'`
 * `#def '<code>' as '<code>'` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
+* `#if <condition>`
 * `#ifdef <const>`
+* `#ifndef <const>`
 * `#else`
+* `#elif <condition>`
 * `#endif`
 
 --------

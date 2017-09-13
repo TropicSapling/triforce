@@ -3,8 +3,15 @@
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include "def.h"
+
+#define INCR_MEM(size) do { \
+	if(*pos + (size) - 1 >= output_size && addSpaceForChars(&output, &output_size) == NULL) { \
+		return NULL; \
+	} \
+} while(0)
 
 #define RED   "\x1B[31m"
 #define GREEN   "\x1B[32m"
@@ -26,12 +33,20 @@ char *addSpaceForChars(char **keywords, size_t *keywords_size) {
 	return res;
 }
 
-bool arrContains(char arr[][8], char *str, unsigned int size){
+bool isReserved(char arr[][8], char *str, unsigned int size) {
 	for (unsigned int i = 0; i < size; i++) {
 		if(strcmp(arr[i], str) == 0) return true;
 	}
 	
 	return false;
+}
+
+bool isNumber(char *str) {
+	for (unsigned int i = 0; str[i] != '\0'; i++) {
+		if(!isdigit(str[i])) return false;
+	}
+	
+	return true;
 }
 
 void typeTo(char *output, char *str, size_t *pos) {
@@ -49,189 +64,240 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 	char *output = malloc(output_size);
 	
 	for(size_t i = 0; i < key; i++) {
-		if(keywords[i] != NULL) {
-			if(keywords[i][0] == specials[22]) {
-				// POINTER ACCESS
+		if(keywords[i][0] == specials[22]) {
+			// POINTER ACCESS
+			
+			INCR_MEM(1);
+			
+			output[*pos] = '*';
+			(*pos)++;
+		} else if(keywords[i][0] == '\'') {
+			// STRINGS (without null termination)
+			
+			if(keywords[i][2] == '\0') {
+				INCR_MEM(3);
 				
-				if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-					return NULL;
-				}
-				
-				output[*pos] = '*';
+				output[*pos] = '\'';
 				(*pos)++;
-			} else if(keywords[i][0] == '\'') {
-				// STRINGS (without null termination)
-				
-				if(keywords[i][2] == '\0') {
-					if(*pos + 2 >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-						return NULL;
-					}
-					
-					output[*pos] = '\'';
-					(*pos)++;
-					output[*pos] = keywords[i][1];
-					(*pos)++;
-					output[*pos] = '\'';
-					(*pos)++;
-					
-					continue;
-				}
-				
-				if(*pos + (strlen(keywords[i]) - 2) * 4 >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-					return NULL;
-				}
-				
-				output[*pos] = '{';
+				output[*pos] = keywords[i][1];
+				(*pos)++;
+				output[*pos] = '\'';
 				(*pos)++;
 				
-				for(unsigned int c = 1; keywords[i][c] != '\0'; c++) {
-					output[*pos] = '\'';
-					(*pos)++;
-					output[*pos] = keywords[i][c];
-					(*pos)++;
-					output[*pos] = '\'';
-					(*pos)++;
-					if(keywords[i][c + 1] != '\0') {
-						output[*pos] = ',';
-						(*pos)++;
-					}
-				}
+				continue;
+			}
+			
+			INCR_MEM(1);
+			
+			output[*pos] = '{';
+			(*pos)++;
+			
+			for(unsigned int c = 1; keywords[i][c] != '\0'; c++) {
+				INCR_MEM(4);
 				
-				output[*pos] = '}';
+				output[*pos] = '\'';
 				(*pos)++;
-			} else if(keywords[i][0] == '"') {
-				// STRINGS (with null termination)
-				
-				if(*pos + strlen(keywords[i]) >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-					return NULL;
-				}
-				
-				for(unsigned int c = 0; keywords[i][c] != '\0'; c++) {
-					output[*pos] = keywords[i][c];
+				output[*pos] = keywords[i][c];
+				(*pos)++;
+				output[*pos] = '\'';
+				(*pos)++;
+				if(keywords[i][c + 1] != '\0') {
+					output[*pos] = ',';
 					(*pos)++;
 				}
-				
-				output[*pos] = '"';
+			}
+			
+			output[*pos] = '}';
+			(*pos)++;
+		} else if(keywords[i][0] == '"') {
+			// STRINGS (with null termination)
+			
+			for(unsigned int c = 0; keywords[i][c] != '\0'; c++) {
+				INCR_MEM(1);
+				output[*pos] = keywords[i][c];
 				(*pos)++;
-			} else if(strcmp(keywords[i], "clang") == 0) {
-				// INLINE C
-				
-				for(unsigned int j = 1; j < 9; j++) {
-					unsigned int k = 0;
-					for(; k < 22; k++) {
-						if(strcmp(keywords[i + j], types[k]) == 0) {
-							break;
-						}
-					}
-					
-					if(k == 22) {
-						i = i + j + 2;
+			}
+			
+			INCR_MEM(1);
+			output[*pos] = '"';
+			(*pos)++;
+		} else if(strcmp(keywords[i], "clang") == 0) {
+			// INLINE C
+			
+			for(unsigned int j = 1; j < 9; j++) {
+				unsigned int k = 0;
+				for(; k < 22; k++) {
+					if(strcmp(keywords[i + j], types[k]) == 0) {
 						break;
 					}
 				}
 				
-				puts("----------------------------------------------------------------");
-				printf(YELLOW "[WARNING]" RESET " 'clang' is not implemented yet.\n"); // WIP
-				puts("----------------------------------------------------------------");
-			} else if(strcmp(keywords[i], "__args") == 0) {
-				typeTo(output, "argv", pos);
-			} else if(strcmp(keywords[i], "__argc") == 0) {
-				typeTo(output, "argc", pos);
-			} else if(strcmp(keywords[i], "__line") == 0) {
-				typeTo(output, "__LINE__", pos);
-			} else if(strcmp(keywords[i], "__path") == 0) {
-				typeTo(output, "__PATH__", pos);
-			} else if(keywords[i][0] == specials[2]) {
-				// LISTS
-				
-				if(strcmp(keywords[i + 1], "when") == 0) {
-					// WIP
-				} else {
-/*					for(unsigned int j = 1; keywords[i + j] != specials[3]; j++) {
-						if(keywords[i + j] != '>' || keywords[i + j + 1] != '>' || keywords[i + j + 2] != '>') {
-							typeTo(output, "for(unsigned int ", pos);
-							typeTo(output, ITERATOR_NAME, pos); // REPLACE ITERATOR_NAME
-							output[*pos] = '=';
-							(*pos)++;
-							
-							unsigned int k = 1;
-							for(; k < j; k++) {
-								output[*pos] = keywords[i + k];
-								(*pos)++;
-							}
-							
-							if(k == 1) {
-								output[*pos] = '0';
-								(*pos)++;
-							}
-							
-							output[*pos] = ';';
-							(*pos)++;
-							
-							typeTo(output, ITERATOR_NAME, pos);
-							output[*pos] = '<';
-							(*pos)++;
-							
-							unsigned int l = k + 3;
-							for(; keywords[l] != specials[3]; l++) {
-								output[*pos] = keywords[i + l];
-								(*pos)++;
-							}
-							
-							if(l == 1) {
-								typeTo(output, NAME_SIZE, pos); // REPLACE NAME_SIZE
-							}
-							
-							output[*pos] = ';';
-							(*pos)++;
-							
-							typeTo(output, ITERATOR_NAME, pos);
-							typeTo(output, "++", pos);
-							
-							break;
-						} else if(keywords[i] != '<' || keywords[i + j + 1] != '<' || keywords[i + j + 2] != '<') {
-							break;
-						}
-					} */
+				if(k == 22) {
+					i = i + j + 2;
+					break;
 				}
-			} else if(!arrContains(types, keywords[i], 22) && !arrContains(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
-				for(int it = 0; keywords[i][it] != '\0'; it++) {
-					if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-						return NULL;
-					}
-					
-					output[*pos] = keywords[i][it];
-					(*pos)++;
-				}
-				
-				typeTo(output, "_ppl", pos);
+			}
+			
+			puts("----------------------------------------------------------------");
+			printf(YELLOW "[WARNING]" RESET " 'clang' is not implemented yet.\n"); // WIP
+			puts("----------------------------------------------------------------");
+		} else if(strcmp(keywords[i], "__args") == 0) {
+			INCR_MEM(4);
+			typeTo(output, "argv", pos);
+		} else if(strcmp(keywords[i], "__argc") == 0) {
+			INCR_MEM(4);
+			typeTo(output, "argc", pos);
+		} else if(strcmp(keywords[i], "__line") == 0) {
+			INCR_MEM(8);
+			typeTo(output, "__LINE__", pos);
+		} else if(strcmp(keywords[i], "__path") == 0) {
+			INCR_MEM(8);
+			typeTo(output, "__PATH__", pos);
+		} else if(keywords[i + 1] && keywords[i + 1][0] == specials[2]) {
+			// LISTS
+			
+			if(strcmp(keywords[i + 2], "when") == 0) {
+				// WIP
 			} else {
-				// DEBUG; will be replaced later
-				for(int it = 0; keywords[i][it] != '\0'; it++) {
-					if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-						return NULL;
+				for(unsigned int i_pos = 2; keywords[i + i_pos][0] != specials[3]; i_pos++) {
+					if(keywords[i + i_pos][0] == specials[9] && keywords[i + i_pos + 1][0] == specials[9] && keywords[i + i_pos + 2][0] == specials[9]) {
+						while(*pos >= 0 && output[*pos - 1] != specials[0] && output[*pos - 1] != specials[5]) {
+							(*pos)--;
+						}
+						
+						INCR_MEM(22);
+						
+						typeTo(output, "for(unsigned int ", pos);
+						
+						// Generate iterator name
+						char it_name[64];
+						size_t it_name_len;
+						strcpy(it_name, keywords[i]);
+						strcat(it_name, "_it");
+						
+						it_name_len = strlen(it_name);
+						INCR_MEM(it_name_len);
+						typeTo(output, it_name, pos);
+						
+						output[*pos] = '=';
+						(*pos)++;
+						
+						// Get sublist start pos
+						if(keywords[i + i_pos - 1][0] == specials[2]) { // Use default
+							INCR_MEM(1);
+							output[*pos] = '0';
+							(*pos)++;
+						} else if(keywords[i + i_pos - 2][0] == specials[2]) {
+							for(unsigned int sn_pos = 0; keywords[i + i_pos - 1][sn_pos] != '\0'; sn_pos++) {
+								INCR_MEM(1);
+								output[*pos] = keywords[i + i_pos - 1][sn_pos];
+								(*pos)++;
+							}
+						} else {
+							break; // TMP, WIP
+						}
+						
+						i_pos += 3;
+						
+						output[*pos] = ';';
+						(*pos)++;
+						
+						INCR_MEM(it_name_len);
+						typeTo(output, it_name, pos);
+						output[*pos] = '<';
+						(*pos)++;
+						
+						// Get sublist end pos
+						if(keywords[i + i_pos][0] == specials[3]) { // Use default
+//								typeTo(output, list_length, pos); // TODO: Define 'list_length'
+							break; // TMP
+						} else if(keywords[i + i_pos - 1][0] == specials[9]) {
+							for(unsigned int en_pos = 0; keywords[i + i_pos][en_pos] != '\0'; en_pos++) {
+								INCR_MEM(1);
+								output[*pos] = keywords[i + i_pos][en_pos];
+								(*pos)++;
+							}
+							
+							i_pos++;
+						} else {
+							break; // TMP, WIP
+						}
+						
+						i_pos++;
+						
+						output[*pos] = ';';
+						(*pos)++;
+						
+						INCR_MEM(it_name_len * 3 + 5);
+						typeTo(output, it_name, pos);
+						typeTo(output, "++){", pos);
+						
+						unsigned int beflist_pos = 0;
+						while(i - beflist_pos >= 0 && keywords[i - beflist_pos][0] != specials[0]) {
+							beflist_pos++;
+						}
+						
+						for(beflist_pos--; beflist_pos > 0; beflist_pos--) {
+							INCR_MEM(1);
+							typeTo(output, keywords[i - beflist_pos], pos);
+						}
+						
+						typeTo(output, keywords[i], pos);
+						
+						output[*pos] = '[';
+						(*pos)++;
+						typeTo(output, it_name, pos);
+						output[*pos] = ']';
+						(*pos)++;
+						
+						output[*pos] = ' ';
+						(*pos)++;
+						
+						for(; !(keywords[i + i_pos][0] == specials[0] && keywords[i + i_pos][1] == '\0'); i_pos++) {
+							INCR_MEM(1);
+							typeTo(output, keywords[i + i_pos], pos);
+						}
+						
+						output[*pos] = '}';
+						(*pos)++;
+						
+						i += i_pos;
+						
+						break;
+					} else if(keywords[i + i_pos][0] == specials[10] && keywords[i + i_pos + 1][0] == specials[10] && keywords[i + i_pos + 2][0] == specials[10]) {
+						break; // TMP, WIP
 					}
-					
-					output[*pos] = keywords[i][it];
-					(*pos)++;
 				}
+			}
+		} else if(!isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
+			for(int it = 0; keywords[i][it] != '\0'; it++) {
+				INCR_MEM(1);
 				
-				if(strlen(keywords[i]) > 1) {
-					if(*pos >= output_size && addSpaceForChars(&output, &output_size) == NULL) {
-						return NULL;
-					}
-					
-					output[*pos] = ' ';
-					(*pos)++;
-				}
+				output[*pos] = keywords[i][it];
+				(*pos)++;
+			}
+			
+			typeTo(output, "_ppl", pos);
+		} else {
+			// DEBUG; will be replaced later
+			int it = 0;
+			for(; keywords[i][it] != '\0'; it++) {
+				INCR_MEM(1);
+				
+				output[*pos] = keywords[i][it];
+				(*pos)++;
+			}
+			
+			if(it > 1) {
+				INCR_MEM(1);
+				
+				output[*pos] = ' ';
+				(*pos)++;
 			}
 		}
 	}
 	
-	if(*pos > output_size && addSpaceForChars(&output, &output_size) == NULL) {
-		return NULL;
-	}
-	
+	INCR_MEM(1);
 	output[*pos] = '\0';
 	
 	return output;

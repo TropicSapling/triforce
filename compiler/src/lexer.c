@@ -6,6 +6,18 @@
 
 #include "def.h"
 
+#define INCR_MEM(size) do { \
+	if(*key + (size) - 1 >= keywords_size / sizeof(char*) && addSpaceForKeys(keywords, &keywords_size) == NULL) { \
+		return 1; \
+	} \
+} while(0)
+
+#define INCR_MEM2(size) do { \
+	if(*pkey + (size) - 1 >= pointers_size / sizeof(char*) && addSpaceForKeys(pointers, &pointers_size) == NULL) { \
+		return 1; \
+	} \
+} while(0)
+
 bool inStr = false;
 bool inStr2 = false;
 bool escaping = false;
@@ -25,7 +37,15 @@ char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
 	return res;
 }
 
-int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, size_t file_size, char specials[]) {
+bool isSpecial(char c, char specials[]) {
+	for(unsigned int i = 0; specials[i] != '\0'; i++) {
+		if(c == specials[i]) return true;
+	}
+	
+	return false;
+}
+
+int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, char ***pointers, size_t pointers_size, size_t *pkey, size_t file_size, char specials[]) {
 	char buf[65536];
 	char extra_buf[16] = "\0";
 	char *c;
@@ -53,6 +73,8 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 				skey[c] = trimmed_buf[c];
 				c++;
 			}
+			
+			skey[c] = '\0';
 			
 			c++;
 			progress += c;
@@ -100,12 +122,11 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			strcpy(c, trimmed_buf);
 		}
 		
-		if(*key + 1 >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
-			return 1;
-		}
+		INCR_MEM(1);
+		INCR_MEM2(1);
 		
-		(*keywords)[*key] = NULL; // This is used to mark where memory was allocated for 'c'
-		(*key)++;
+		(*pointers)[*pkey] = c; // This is used to mark where memory was allocated for 'c'
+		(*pkey)++;
 		
 		(*keywords)[*key] = c;
 		(*key)++;
@@ -127,14 +148,12 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 						ignoring = false;
 						c++;
 						
-						if(*key >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
-							return 1;
-						}
+						INCR_MEM(1);
 						
 						(*keywords)[*key] = c + 1;
 						(*key)++;
 					}
-				} else if(!inStr && (*c == specials[0] || *c == specials[1] || *c == specials[2] || *c == specials[3] || *c == specials[4] || *c == specials[5] || *c == specials[6] || *c == specials[7] || *c == specials[8] || *c == specials[9] || *c == specials[10] || *c == specials[11] || *c == specials[12] || *c == specials[13] || *c == specials[14] || *c == specials[15] || *c == specials[16] || *c == specials[17] || *c == specials[18] || *c == specials[19] || *c == specials[20] || *c == specials[21] || *c == specials[22] || *c == specials[23] || *c == specials[24])) {
+				} else if(!inStr && isSpecial(*c, specials)) {
 					special = calloc(2, 1);
 					special[0] = *c;
 					foundSpecial = true;
@@ -184,28 +203,33 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 				}
 			}
 			
-			*c = '\0';
+			if(*(c - 1) != '\0') {
+				*c = '\0';
+			}
 			
 			c++;
 			row_len++;
 			
 			if(row_len < 65521) {
 				if(foundSpecial) {
-					if(*key + 1 >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
-						return 1;
-					}
+					INCR_MEM(1);
+					INCR_MEM2(1);
 					
-					(*keywords)[*key] = NULL; // This is used to mark where memory was allocated for 'special'
-					(*key)++;
+					(*pointers)[*pkey] = special; // This is used to mark where memory was allocated for 'special'
+					(*pkey)++;
 					
 					(*keywords)[*key] = special;
 					(*key)++;
-				} else if(*key >= keywords_size / (sizeof(char*) + 1) && addSpaceForKeys(keywords, &keywords_size) == NULL) {
-					return 1;
+					
+					if(*c == ' ') c++;
 				}
 				
-				(*keywords)[*key] = c;
-				(*key)++;
+				if(!isSpecial(*c, specials)) {
+					INCR_MEM(1);
+					
+					(*keywords)[*key] = c;
+					(*key)++;
+				}
 			}
 		}
 		
