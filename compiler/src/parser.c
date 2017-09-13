@@ -161,6 +161,10 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 			} else {
 				for(unsigned int i_pos = 2; keywords[i + i_pos][0] != specials[3]; i_pos++) {
 					if(keywords[i + i_pos][0] == specials[9] && keywords[i + i_pos + 1][0] == specials[9] && keywords[i + i_pos + 2][0] == specials[9]) {
+						while(*pos >= 0 && output[*pos - 1] != specials[0] && output[*pos - 1] != specials[5]) {
+							(*pos)--;
+						}
+						
 						INCR_MEM(22);
 						
 						typeTo(output, "for(unsigned int ", pos);
@@ -276,14 +280,15 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 			typeTo(output, "_ppl", pos);
 		} else {
 			// DEBUG; will be replaced later
-			for(int it = 0; keywords[i][it] != '\0'; it++) {
+			int it = 0;
+			for(; keywords[i][it] != '\0'; it++) {
 				INCR_MEM(1);
 				
 				output[*pos] = keywords[i][it];
 				(*pos)++;
 			}
 			
-			if(strlen(keywords[i]) > 1) {
+			if(it > 1) {
 				INCR_MEM(1);
 				
 				output[*pos] = ' ';
