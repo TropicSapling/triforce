@@ -55,7 +55,6 @@ comment> */
 ##### Special
 * `void`
 * ``type <custom type> = <type1>[`|`<type2>`|`<type3>...]``
-* `noscope [<more types>...]`
 * `clang <type> <function name>([<parameters>]) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
 
@@ -63,6 +62,7 @@ comment> */
 * `` var`<type>` ``
 * `` var`<size>` ``
 * `` var`<alignment>` ``
+* `` var`<scope>` ``
 * `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
 * `` pointer_to_list`<length>` `` \[**NOTE:** `` some_list`<`<property>`>` `` will **not** access the property of the whole list, but the properties of each item of the list.\* Use `` ->some_list`<`<property>`>` `` instead. \]
 * `` channel`<buffer>` ``
