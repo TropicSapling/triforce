@@ -7,13 +7,13 @@
 #include "def.h"
 
 #define INCR_MEM(size) do { \
-	if(*key + (size) - 1 >= keywords_size / sizeof(char*) && addSpaceForKeys(keywords, &keywords_size) == NULL) { \
+	if(*key + (size) > keywords_size / sizeof(char*) && addSpaceForKeys(keywords, &keywords_size) == NULL) { \
 		return 1; \
 	} \
 } while(0)
 
 #define INCR_MEM2(size) do { \
-	if(*pkey + (size) - 1 >= pointers_size / sizeof(char*) && addSpaceForKeys(pointers, &pointers_size) == NULL) { \
+	if(*pkey + (size) > pointers_size / sizeof(char*) && addSpaceForKeys(pointers, &pointers_size) == NULL) { \
 		return 1; \
 	} \
 } while(0)
@@ -70,11 +70,11 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			char skey[8];
 			
 			while(trimmed_buf[c] != ' ' && trimmed_buf[c] != '\0') {
-				skey[c] = trimmed_buf[c];
+				skey[c - 1] = trimmed_buf[c];
 				c++;
 			}
 			
-			skey[c] = '\0';
+			skey[c - 1] = '\0';
 			
 			c++;
 			progress += c;
@@ -203,7 +203,7 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 				}
 			}
 			
-			if(*(c - 1) != '\0') {
+			if(c == tmp || *(c - 1) != '\0') {
 				*c = '\0';
 			}
 			

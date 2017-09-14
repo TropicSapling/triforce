@@ -8,7 +8,7 @@
 #include "def.h"
 
 #define INCR_MEM(size) do { \
-	if(*pos + (size) - 1 >= output_size && addSpaceForChars(&output, &output_size) == NULL) { \
+	if(*pos + (size) > output_size && addSpaceForChars(&output, &output_size) == NULL) { \
 		return NULL; \
 	} \
 } while(0)
@@ -56,14 +56,14 @@ void typeTo(char *output, char *str, size_t *pos) {
 	}
 }
 
-char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
+char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 	char types[22][8] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile"};
 	char reserved_keys[19][8] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while"};
 	
 	size_t output_size = 256;
 	char *output = malloc(output_size);
 	
-	for(size_t i = 0; i < key; i++) {
+	for(size_t i = 0; i < keys; i++) {
 		if(keywords[i][0] == specials[22]) {
 			// POINTER ACCESS
 			
@@ -153,7 +153,7 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 		} else if(strcmp(keywords[i], "__path") == 0) {
 			INCR_MEM(8);
 			typeTo(output, "__PATH__", pos);
-		} else if(keywords[i + 1] && keywords[i + 1][0] == specials[2]) {
+		} else if(i + 1 < keys && keywords[i + 1][0] == specials[2]) {
 			// LISTS
 			
 			if(strcmp(keywords[i + 2], "when") == 0) {
@@ -161,6 +161,16 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 			} else {
 				for(unsigned int i_pos = 2; keywords[i + i_pos][0] != specials[3]; i_pos++) {
 					if(keywords[i + i_pos][0] == specials[9] && keywords[i + i_pos + 1][0] == specials[9] && keywords[i + i_pos + 2][0] == specials[9]) {
+/*						while(*pos >= 0 && output[*pos - 1] != specials[0] && output[*pos - 1] != specials[5]) {
+							(*pos)--;
+						}
+						
+						INCR_MEM(17);
+						
+						typeTo(output, "for(unsigned int ", pos); */
+						
+						////////////////////////////////////////////////////////////////////////////////////////
+						
 						while(*pos >= 0 && output[*pos - 1] != specials[0] && output[*pos - 1] != specials[5]) {
 							(*pos)--;
 						}
@@ -276,6 +286,8 @@ char *parse(char **keywords, size_t key, size_t *pos, char specials[]) {
 				output[*pos] = keywords[i][it];
 				(*pos)++;
 			}
+			
+			INCR_MEM(4);
 			
 			typeTo(output, "_ppl", pos);
 		} else {
