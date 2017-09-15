@@ -23,10 +23,18 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	
-	// Get file size to be able to print lexing progress
-	fseek(input, 0L, SEEK_END);
-	size_t file_size = ftell(input);
-	rewind(input);
+	///////////////// PREPROCESS INPUT /////////////////
+	
+	char specials[] = ";,[]{}()?><=+-*/%!&|^~@\\.";
+	
+	size_t processed_input_size = 256;
+	char *processed_input = malloc(processed_input_size);
+	if(preprocess(input, &processed_input, processed_input_size, specials)) {
+		return 1;
+	}
+	
+	fclose(input);
+	puts("[DEBUG] Read and preprocessed file.");
 	
 	/////////////////// START LEXING ///////////////////
 	
@@ -37,14 +45,11 @@ int main(int argc, char *argv[]) {
 	size_t key = 0;
 	size_t pkey = 0;
 	
-	char specials[] = ";,[]{}()?><=+-*/%!&|^~@\\.";
-	
-	if(lex_parse(input, &keywords, keywords_size, &key, &pointers, pointers_size, &pkey, file_size, specials)) {
+	if(lex_parse(processed_input, &keywords, keywords_size, &key, &pointers, pointers_size, &pkey, specials)) {
 		return 1;
 	}
 	
-	fclose(input);
-	puts("Reading file... 100.00%");
+	puts("[DEBUG] Lex-parsed input.");
 	
 	/////////////////// START PARSING //////////////////
 	
@@ -54,7 +59,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	
-	puts("Parsing... 100.00%");
+	puts("[DEBUG] Parsed input.");
 	
 	//////////////// PREPARE FOR OUTPUT ////////////////
 	
@@ -111,13 +116,13 @@ int main(int argc, char *argv[]) {
 	for(size_t i = 0; i < pos; i++) {
 		fprintf(output, "%c", parsed_output[i]);
 		
-		printf("Printing output... %.2Lf%%\r", (((long double) i + 1) / key) * 100);
+		printf("[DEBUG] Printing output... %.2Lf%%\r", (((long double) i + 1) / key) * 100);
 	}
 	
 	fprintf(output, "}");
 	
 	fclose(output);
-	puts("Printing output... 100.00%");
+	puts("[DEBUG] Printing output... 100.00%");
 	
 	/////////////////// FREE MEMORY ////////////////////
 	

@@ -45,92 +45,8 @@ bool isSpecial(char c, char specials[]) {
 	return false;
 }
 
-int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, char ***pointers, size_t pointers_size, size_t *pkey, size_t file_size, char specials[]) {
-	char buf[65536];
-	char extra_buf[16] = "\0";
-	char *c;
-	
-	long double progress = 0.0;
-	
-	while(fgets(buf, 65536, input) != NULL) {
-		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
-			continue;
-		}
-		
-		size_t new_size = strlen(buf) + 1;
-		char *trimmed_buf = &buf[0];
-		while(*trimmed_buf == '\t' || *trimmed_buf == ' ') {
-			new_size--;
-			trimmed_buf++;
-		}
-		
-		// PREPROCESSING
-		if(trimmed_buf[0] == '#' && !inStr) {
-			size_t c = 1;
-			char skey[8];
-			
-			while(trimmed_buf[c] != ' ' && trimmed_buf[c] != '\0') {
-				skey[c - 1] = trimmed_buf[c];
-				c++;
-			}
-			
-			skey[c - 1] = '\0';
-			
-			c++;
-			progress += c;
-			
-			if(strcmp(skey, "redef") == 0) {
-				for(short s = 0; specials[s] != '\0'; s++) {
-					if(trimmed_buf[c] == specials[s]) {
-						specials[s] = trimmed_buf[c + 5];
-						break;
-					}
-				}
-				
-				progress += 5;
-			} else if(strcmp(skey, "def") == 0) {
-				// WIP
-			} else if(strcmp(skey, "ifdef") == 0) {
-				// WIP
-			} else if(strcmp(skey, "import") == 0) {
-				// WIP
-			} else if(strcmp(skey, "export") == 0) {
-				// WIP
-			}
-			
-			continue;
-		}
-		
-		if(extra_buf != NULL) {
-			new_size += strlen(extra_buf);
-		}
-		
-		char *tmp = malloc(new_size);
-		if(tmp == NULL) {
-			perror("ERROR");
-			fprintf(stderr, "ID: %d\n", errno);
-		} else {
-			c = tmp;
-		}
-		
-		if(extra_buf[0] != '\0') {
-			strcpy(c, extra_buf);
-			strcat(c, trimmed_buf);
-			
-			extra_buf[0] = '\0';
-		} else {
-			strcpy(c, trimmed_buf);
-		}
-		
-		INCR_MEM(1);
-		INCR_MEM2(1);
-		
-		(*pointers)[*pkey] = c; // This is used to mark where memory was allocated for 'c'
-		(*pkey)++;
-		
-		(*keywords)[*key] = c;
-		(*key)++;
-		
+int lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, char ***pointers, size_t pointers_size, size_t *pkey, char specials[]) {
+	for(size_t i = 0; input[i] != '\0'; i++) {
 		size_t row_len = 0;
 		
 		while(row_len < 65521) {
@@ -138,76 +54,76 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 			bool foundSpecial = false;
 			
 			if(ignoring) {
-				*c = '\0';
-				c++;
+				*input = '\0';
+				input++;
 			}
 			
-			while((ignoring || inStr || inStr2 || *c != ' ') && *c != '\0') {
+			while((ignoring || inStr || inStr2 || *input != ' ') && *input != '\0') {
 				if(ignoring) {
-					if(*c == '*' && *(c + 1) == '/') {
+					if(*input == '*' && *(input + 1) == '/') {
 						ignoring = false;
-						c++;
+						input++;
 						
 						INCR_MEM(1);
 						
-						(*keywords)[*key] = c + 1;
+						(*keywords)[*key] = input + 1;
 						(*key)++;
 					}
-				} else if(!inStr && isSpecial(*c, specials)) {
+				} else if(!inStr && isSpecial(*input, specials)) {
 					special = calloc(2, 1);
-					special[0] = *c;
+					special[0] = *input;
 					foundSpecial = true;
 					
 					break;
 				} else if(escaping) {
 					escaping = false;
-				} else if(!inStr2 && *c == '\'') {
+				} else if(!inStr2 && *input == '\'') {
 					if(inStr) {
 						inStr = false;
 						break;
 					} else {
 						inStr = true;
 					}
-				} else if(!inStr && *c == '"') {
+				} else if(!inStr && *input == '"') {
 					if(inStr2) {
 						inStr2 = false;
 						break;
 					} else {
 						inStr2 = true;
 					}
-				} else if(*c == '\\') {
+				} else if(*input == '\\') {
 					escaping = true;
 				}
 				
-				c++;
+				input++;
 				row_len++;
 			}
 			
-			if(*c == '\0') {
-				if(*(c - 1) == '\n') *(c - 1) = '\0';
-				if(*(c - 2) == '\r') *(c - 2) = '\0';
-				c++;
+			if(*input == '\0') {
+				if(*(input - 1) == '\n') *(input - 1) = '\0';
+				if(*(input - 2) == '\r') *(input - 2) = '\0';
+				input++;
 				break;
 			} else {
-				if(*c == '/' && *(c + 1) == '/') {
-					*c = '\0';
+				if(*input == '/' && *(input + 1) == '/') {
+					*input = '\0';
 					free(special);
 					
 					break;
-				} else if(*c == '/' && *(c + 1) == '*') {
+				} else if(*input == '/' && *(input + 1) == '*') {
 					ignoring = true;
-					*c = '\0';
+					*input = '\0';
 					free(special);
 					
 					continue;
 				}
 			}
 			
-			if(c == tmp || *(c - 1) != '\0') {
-				*c = '\0';
+			if(input == tmp || *(input - 1) != '\0') {
+				*input = '\0';
 			}
 			
-			c++;
+			input++;
 			row_len++;
 			
 			if(row_len < 65521) {
@@ -221,25 +137,17 @@ int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, 
 					(*keywords)[*key] = special;
 					(*key)++;
 					
-					if(*c == ' ') c++;
+					if(*c == ' ') input++;
 				}
 				
-				if(!isSpecial(*c, specials)) {
+				if(!isSpecial(*input, specials)) {
 					INCR_MEM(1);
 					
-					(*keywords)[*key] = c;
+					(*keywords)[*key] = input;
 					(*key)++;
 				}
 			}
 		}
-		
-		if(row_len > 65520) {
-			strcpy(extra_buf, c);
-		}
-		
-		progress += row_len;
-		printf("Reading file... %.2Lf%%\r", (progress / file_size) * 100);
-		fflush(stdout);
 	}
 	
 	return 0;

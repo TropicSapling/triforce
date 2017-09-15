@@ -1,0 +1,75 @@
+#include <string.h>
+
+#define INCR_MEM(size) do { \
+	if(*key + (size) > input_size / sizeof(char*) && addSpaceForChars(input, &input_size) == NULL) { \
+		return 1; \
+	} \
+} while(0)
+
+char *addSpaceForChars(char **str, size_t *str_size) {
+	*str_size *= 2;
+	
+	char *res = realloc(*str, *str_size);
+	if(res == NULL) {
+		perror("ERROR");
+		fprintf(stderr, "ID: %d\n", errno);
+	} else {
+		*str = (char*) res;
+	}
+	
+	return res;
+}
+
+int preprocess(FILE *input, char **processed_input, size_t input_size, char specials[]) {
+	char buf[65536];
+	
+	while(fgets(buf, 65536, input) != NULL) {
+		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
+			continue;
+		}
+		
+		char *trimmed_buf = &buf[0];
+		while(*trimmed_buf == '\t' || *trimmed_buf == ' ') {
+			trimmed_buf++;
+		}
+		
+		if(trimmed_buf[0] == '#') {
+			size_t c = 1;
+			char skey[8];
+			
+			while(trimmed_buf[c] != ' ' && trimmed_buf[c] != '\0') {
+				skey[c - 1] = trimmed_buf[c];
+				c++;
+			}
+			
+			skey[c - 1] = '\0';
+			
+			c++;
+			
+			if(strcmp(skey, "redef") == 0) {
+				for(unsigned short s = 0; specials[s] != '\0'; s++) {
+					if(trimmed_buf[c] == specials[s]) {
+						specials[s] = trimmed_buf[c + 5];
+						break;
+					}
+				}
+			} else if(strcmp(skey, "def") == 0) {
+				// WIP
+			} else if(strcmp(skey, "ifdef") == 0) {
+				// WIP
+			} else if(strcmp(skey, "import") == 0) {
+				// WIP
+			} else if(strcmp(skey, "export") == 0) {
+				// WIP
+			}
+			
+			continue;
+		}
+		
+		for(size_t i = 0; *trimmed_buf != '\0'; i++) {
+			INCR_MEM(1);
+			(*processed_input)[i] = *trimmed_buf;
+			trimmed_buf++;
+		}
+	}
+}
