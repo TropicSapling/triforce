@@ -33,6 +33,10 @@ void move(pointer listp, int steps) {
 	steps < 0 ? listp[>>> listp<length> - steps] = listp[__item + steps] : listp[steps >>> listp<length> + steps] = listp[__item - steps];
 }
 
+void rotBits(pointer bitsp, rots, size) {
+	bitsp = (bitsp << rots) | (bitsp >> (-rots & size));
+}
+
 void delItems(pointer firstItem, int count = 1) {
 	move(firstItem, -count);
 	listp<length> -= count;

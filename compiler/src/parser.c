@@ -259,7 +259,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							// ...
 							break;
 							
-							typeTo(output, "} if(", pos);
+							typeTo(output, "}if(", pos);
 							typeTo(output, it_name, pos);
 							output[*pos] = '<';
 							(*pos)++;
