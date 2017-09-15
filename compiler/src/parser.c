@@ -50,10 +50,21 @@ bool isNumber(char *str) {
 }
 
 void typeTo(char *output, char *str, size_t *pos) {
-	for(unsigned int i = 0; str[i] != '\0'; i++) {
+	for(size_t i = 0; str[i] != '\0'; i++) {
 		output[*pos] = str[i];
 		(*pos)++;
 	}
+}
+
+void addIteratorID(char *str_end, size_t *iterator_count) {
+	char *chars = "abcdefghijklmnopqrstuvwxyz";
+	
+	str_end[0] = chars[(*iterator_count / (26 * 26)) % 26];
+	str_end[1] = chars[(*iterator_count / 26) % 26];
+	str_end[2] = chars[*iterator_count % 26];
+	str_end[3] = '\0';
+	
+	(*iterator_count)++;
 }
 
 char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
@@ -62,6 +73,8 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 	
 	size_t output_size = 256;
 	char *output = malloc(output_size);
+	
+	size_t iterators = 0;
 	
 	for(size_t i = 0; i < keys; i++) {
 		if(keywords[i][0] == specials[22]) {
@@ -168,18 +181,12 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 								(*pos)--;
 							}
 							
-							INCR_MEM(17);
+							INCR_MEM(21);
 							
-							typeTo(output, "for(unsigned int ", pos);
+							typeTo(output, "for(size_t ", pos);
 							
-							// Generate iterator name
-							char it_name[64];
-							size_t it_name_len;
-							strcpy(it_name, keywords[i]);
-							strcat(it_name, "_it");
-							
-							it_name_len = strlen(it_name);
-							INCR_MEM(it_name_len);
+							char it_name[11] = "ppl_it_";
+							addIteratorID(it_name + 7, &iterators);
 							typeTo(output, it_name, pos);
 							
 							output[*pos] = '=';
@@ -205,7 +212,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							output[*pos] = ';';
 							(*pos)++;
 							
-							INCR_MEM(it_name_len);
+							INCR_MEM(10);
 							typeTo(output, it_name, pos);
 							output[*pos] = '<';
 							(*pos)++;
@@ -231,7 +238,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							output[*pos] = ';';
 							(*pos)++;
 							
-							INCR_MEM(it_name_len * 3 + 5);
+							INCR_MEM(35);
 							typeTo(output, it_name, pos);
 							typeTo(output, "++){", pos);
 							
@@ -242,7 +249,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 						////////////////////////////////////////////////////////////////////////////////////////
 						////////////////////////////////////////////////////////////////////////////////////////
 						
-						while(*pos >= 0 && output[*pos - 1] != specials[0] && output[*pos - 1] != specials[5]) {
+/*						while(*pos >= 0 && output[*pos - 1] != specials[0] && output[*pos - 1] != specials[5]) {
 							(*pos)--;
 						}
 						
@@ -344,13 +351,13 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 						
 						i += i_pos;
 						
-						break;
+						break; */
 					} else if(keywords[i + i_pos][0] == specials[10] && keywords[i + i_pos + 1][0] == specials[10] && keywords[i + i_pos + 2][0] == specials[10]) {
 						break; // TMP, WIP
 					}
 				}
 			}
-		} else if(!isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
+		} else if(keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
 			for(int it = 0; keywords[i][it] != '\0'; it++) {
 				INCR_MEM(1);
 				
