@@ -176,19 +176,25 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 					if(keywords[i + i_pos][0] == specials[9] && keywords[i + i_pos + 1][0] == specials[9] && keywords[i + i_pos + 2][0] == specials[9]) {
 						if(keywords[i - 1][0] == specials[11] && strstr(specials, keywords[i - 2]) == NULL) {
 							// WIP
-						} else {
+							break;
+						} else if(keywords[i - 1][0] == specials[11] && keywords[i - 1][0] == specials[12]) {
+							// WIP
+							break;
+						} else if(keywords[i - 1][0] == specials[8] || keywords[i - 1][0] == specials[9] || keywords[i - 1][0] == specials[10] || keywords[i - 1][0] == specials[11] || keywords[i - 1][0] == specials[17] || keywords[i - 1][0] == specials[18] || keywords[i - 1][0] == specials[19]) {
+							// keywords[i - 1] is a comparison operator
+							
 							while(*pos >= 0 && output[*pos - 1] != specials[0] && output[*pos - 1] != specials[5]) {
 								(*pos)--;
 							}
 							
-							INCR_MEM(21);
+							INCR_MEM(61);
 							
-							typeTo(output, "for(size_t ", pos);
+							typeTo(output, "size_t ", pos);
 							
 							char it_name[11] = "ppl_it_";
 							addIteratorID(it_name + 7, &iterators);
-							typeTo(output, it_name, pos);
 							
+							typeTo(output, it_name, pos);
 							output[*pos] = '=';
 							(*pos)++;
 							
@@ -209,24 +215,32 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							
 							i_pos += 3;
 							
-							output[*pos] = ';';
-							(*pos)++;
+							typeTo(output, ";for(;", pos);
 							
-							INCR_MEM(10);
 							typeTo(output, it_name, pos);
 							output[*pos] = '<';
 							(*pos)++;
+							
+							char max_it_val[32];
+							unsigned int max_it_val_size = 0;
 							
 							// Get sublist end pos
 							if(keywords[i + i_pos][0] == specials[3]) { // Use default
 //								typeTo(output, list_length, pos); // TODO: Define 'list_length'
 								break; // TMP
 							} else if(keywords[i + i_pos - 1][0] == specials[9]) {
-								for(unsigned int en_pos = 0; keywords[i + i_pos][en_pos] != '\0'; en_pos++) {
+								unsigned int en_pos = 0;
+								for(; keywords[i + i_pos][en_pos] != '\0'; en_pos++) {
 									INCR_MEM(1);
-									output[*pos] = keywords[i + i_pos][en_pos];
+									
+									max_it_val[en_pos] = keywords[i + i_pos][en_pos];
+									max_it_val_size++;
+									
+									output[*pos] = max_it_val[en_pos];
 									(*pos)++;
 								}
+								
+								max_it_val[en_pos] = '\0';
 								
 								i_pos++;
 							} else {
@@ -238,11 +252,31 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							output[*pos] = ';';
 							(*pos)++;
 							
-							INCR_MEM(35);
 							typeTo(output, it_name, pos);
-							typeTo(output, "++){", pos);
+							typeTo(output, "++){if(", pos);
 							
 							// WIP
+							// ...
+							break;
+							
+							typeTo(output, "} if(", pos);
+							typeTo(output, it_name, pos);
+							output[*pos] = '<';
+							(*pos)++;
+							
+							INCR_MEM(max_it_val_size);
+							
+							typeTo(output, max_it_val, pos);
+							output[*pos] = '{';
+							(*pos)++;
+							
+							// WIP
+							// ...
+							
+							output[*pos] = '}';
+							(*pos)++;
+							
+							break;
 						}
 						
 						////////////////////////////////////////////////////////////////////////////////////////
