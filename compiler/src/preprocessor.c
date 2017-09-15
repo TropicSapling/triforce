@@ -1,12 +1,15 @@
+#include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+#include <errno.h>
 
 #define INCR_MEM(size) do { \
-	if(*key + (size) > input_size / sizeof(char*) && addSpaceForChars(input, &input_size) == NULL) { \
+	if(i + (size) > input_size / sizeof(char*) && addSpaceForFileChars(input, &input_size) == NULL) { \
 		return 1; \
 	} \
 } while(0)
 
-char *addSpaceForChars(char **str, size_t *str_size) {
+char *addSpaceForFileChars(FILE **str, size_t *str_size) {
 	*str_size *= 2;
 	
 	char *res = realloc(*str, *str_size);
@@ -14,16 +17,16 @@ char *addSpaceForChars(char **str, size_t *str_size) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
 	} else {
-		*str = (char*) res;
+		*str = (FILE*) res;
 	}
 	
 	return res;
 }
 
-int preprocess(FILE *input, char **processed_input, size_t input_size, char specials[]) {
+int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[]) {
 	char buf[65536];
 	
-	while(fgets(buf, 65536, input) != NULL) {
+	while(fgets(buf, 65536, *input) != NULL) {
 		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
 			continue;
 		}

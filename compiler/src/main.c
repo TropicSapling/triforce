@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 	
 	size_t processed_input_size = 256;
 	char *processed_input = malloc(processed_input_size);
-	if(preprocess(input, &processed_input, processed_input_size, specials)) {
+	if(preprocess(&input, &processed_input, processed_input_size, specials)) {
 		return 1;
 	}
 	
@@ -48,6 +48,8 @@ int main(int argc, char *argv[]) {
 	if(lex_parse(processed_input, &keywords, keywords_size, &key, &pointers, pointers_size, &pkey, specials)) {
 		return 1;
 	}
+	
+	free(processed_input);
 	
 	puts("[DEBUG] Lex-parsed input.");
 	

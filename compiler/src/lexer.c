@@ -46,107 +46,101 @@ bool isSpecial(char c, char specials[]) {
 }
 
 int lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, char ***pointers, size_t pointers_size, size_t *pkey, char specials[]) {
-	for(size_t i = 0; input[i] != '\0'; i++) {
-		size_t row_len = 0;
+	char *org_input = input;
+	
+	for(; *input != '\0'; input++) {
+		char *special;
+		bool foundSpecial = false;
 		
-		while(row_len < 65521) {
-			char *special;
-			bool foundSpecial = false;
-			
+		if(ignoring) {
+			*input = '\0';
+			input++;
+		}
+		
+		while((ignoring || inStr || inStr2 || *input != ' ') && *input != '\0') {
 			if(ignoring) {
-				*input = '\0';
-				input++;
-			}
-			
-			while((ignoring || inStr || inStr2 || *input != ' ') && *input != '\0') {
-				if(ignoring) {
-					if(*input == '*' && *(input + 1) == '/') {
-						ignoring = false;
-						input++;
-						
-						INCR_MEM(1);
-						
-						(*keywords)[*key] = input + 1;
-						(*key)++;
-					}
-				} else if(!inStr && isSpecial(*input, specials)) {
-					special = calloc(2, 1);
-					special[0] = *input;
-					foundSpecial = true;
+				if(*input == '*' && *(input + 1) == '/') {
+					ignoring = false;
+					input++;
 					
-					break;
-				} else if(escaping) {
-					escaping = false;
-				} else if(!inStr2 && *input == '\'') {
-					if(inStr) {
-						inStr = false;
-						break;
-					} else {
-						inStr = true;
-					}
-				} else if(!inStr && *input == '"') {
-					if(inStr2) {
-						inStr2 = false;
-						break;
-					} else {
-						inStr2 = true;
-					}
-				} else if(*input == '\\') {
-					escaping = true;
+					INCR_MEM(1);
+					
+					(*keywords)[*key] = input + 1;
+					(*key)++;
 				}
+			} else if(!inStr && isSpecial(*input, specials)) {
+				special = calloc(2, 1);
+				special[0] = *input;
+				foundSpecial = true;
 				
-				input++;
-				row_len++;
-			}
-			
-			if(*input == '\0') {
-				if(*(input - 1) == '\n') *(input - 1) = '\0';
-				if(*(input - 2) == '\r') *(input - 2) = '\0';
-				input++;
 				break;
-			} else {
-				if(*input == '/' && *(input + 1) == '/') {
-					*input = '\0';
-					free(special);
-					
+			} else if(escaping) {
+				escaping = false;
+			} else if(!inStr2 && *input == '\'') {
+				if(inStr) {
+					inStr = false;
 					break;
-				} else if(*input == '/' && *(input + 1) == '*') {
-					ignoring = true;
-					*input = '\0';
-					free(special);
-					
-					continue;
+				} else {
+					inStr = true;
 				}
-			}
-			
-			if(input == tmp || *(input - 1) != '\0') {
-				*input = '\0';
+			} else if(!inStr && *input == '"') {
+				if(inStr2) {
+					inStr2 = false;
+					break;
+				} else {
+					inStr2 = true;
+				}
+			} else if(*input == '\\') {
+				escaping = true;
 			}
 			
 			input++;
-			row_len++;
-			
-			if(row_len < 65521) {
-				if(foundSpecial) {
-					INCR_MEM(1);
-					INCR_MEM2(1);
-					
-					(*pointers)[*pkey] = special; // This is used to mark where memory was allocated for 'special'
-					(*pkey)++;
-					
-					(*keywords)[*key] = special;
-					(*key)++;
-					
-					if(*c == ' ') input++;
-				}
+		}
+		
+		if(*input == '\0') {
+			if(*(input - 1) == '\n') *(input - 1) = '\0';
+			if(*(input - 2) == '\r') *(input - 2) = '\0';
+			input++;
+			break;
+		} else {
+			if(*input == '/' && *(input + 1) == '/') {
+				*input = '\0';
+				free(special);
 				
-				if(!isSpecial(*input, specials)) {
-					INCR_MEM(1);
-					
-					(*keywords)[*key] = input;
-					(*key)++;
-				}
+				break;
+			} else if(*input == '/' && *(input + 1) == '*') {
+				ignoring = true;
+				*input = '\0';
+				free(special);
+				
+				continue;
 			}
+		}
+		
+		if(input == org_input || *(input - 1) != '\0') {
+			*input = '\0';
+		}
+		
+		input++;
+		
+		if(foundSpecial) {
+			INCR_MEM(1);
+			INCR_MEM2(1);
+			
+			(*pointers)[*pkey] = special; // This is used to mark where memory was allocated for 'special'
+			(*pkey)++;
+			
+			(*keywords)[*key] = special;
+			(*key)++;
+			
+			if(*input == ' ') input++;
+		}
+		
+		if(!isSpecial(*input, specials)) {
+			INCR_MEM(1);
+			
+			(*keywords)[*key] = input;
+			(*key)++;
 		}
 	}
 	
