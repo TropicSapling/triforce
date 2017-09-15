@@ -4,12 +4,12 @@
 #include <errno.h>
 
 #define INCR_MEM(size) do { \
-	if(i + (size) > input_size / sizeof(char*) && addSpaceForFileChars(input, &input_size) == NULL) { \
+	if(input_item + (size) > input_size / sizeof(char*) && addSpaceForFileChars(processed_input, &input_size) == NULL) { \
 		return 1; \
 	} \
 } while(0)
 
-char *addSpaceForFileChars(FILE **str, size_t *str_size) {
+char *addSpaceForFileChars(char **str, size_t *str_size) {
 	*str_size *= 2;
 	
 	char *res = realloc(*str, *str_size);
@@ -17,7 +17,7 @@ char *addSpaceForFileChars(FILE **str, size_t *str_size) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
 	} else {
-		*str = (FILE*) res;
+		*str = (char*) res;
 	}
 	
 	return res;
@@ -25,6 +25,7 @@ char *addSpaceForFileChars(FILE **str, size_t *str_size) {
 
 int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[]) {
 	char buf[65536];
+	size_t input_item = 0;
 	
 	while(fgets(buf, 65536, *input) != NULL) {
 		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
@@ -69,9 +70,11 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 			continue;
 		}
 		
-		for(size_t i = 0; *trimmed_buf != '\0'; i++) {
+		while(*trimmed_buf != '\0') {
 			INCR_MEM(1);
-			(*processed_input)[i] = *trimmed_buf;
+			(*processed_input)[input_item] = *trimmed_buf;
+			
+			input_item++;
 			trimmed_buf++;
 		}
 	}

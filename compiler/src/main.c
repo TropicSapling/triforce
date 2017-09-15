@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
 	}
 	
 	fclose(input);
+	
 	puts("[DEBUG] Read and preprocessed file.");
 	
 	/////////////////// START LEXING ///////////////////
