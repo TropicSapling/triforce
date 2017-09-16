@@ -13,13 +13,13 @@
 } while(0)
 
 #define INCR_EXPORTS_MEM(size) do { \
-	if(i + (size) > exports_size && addSpaceForKeys(&exports, &exports_size) == NULL) { \
+	if(exports_count + (size) > exports_size && addSpaceForKeys(&exports, &exports_size) == NULL) { \
 		return 1; \
 	} \
 } while(0)
 
 #define INCR_EXPORTS2_MEM(size) do { \
-	if(i + (size) > exports_str_size && addSpaceForFileChars(exports_str, &exports_str_size) == NULL) { \
+	if(ekey + (size) > exports_str_size && addSpaceForFileChars(exports_str, &exports_str_size) == NULL) { \
 		return 1; \
 	} \
 } while(0)
@@ -42,6 +42,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 	char buf[65536];
 	size_t input_item = 0;
 	size_t exports_count = 0;
+	size_t exports_exported = 0;
 	size_t ekey = 0;
 	
 	size_t exports_size = sizeof(char*) * 32;
@@ -132,8 +133,9 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 					} else {
 						size_t exported_content_size = 256;
 						char *exported_content = malloc(exported_content_size);
+						char *lib_contents = malloc(exported_content_size);
 						
-						if(preprocess(&lib, &lib_contents, lib_contents_size, specials, &exported_content, exported_content_size)) return 1;
+						if(preprocess(&lib, &lib_contents, exported_content_size, specials, &exported_content, exported_content_size)) return 1;
 						
 						while(*exported_content != '\0') {
 							INCR_MEM(1);
@@ -148,7 +150,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 				} else {
 					// Import custom library
 				}
-			} else if(exports_arr && strcmp(skey, "export") == 0) {
+			} else if(exports_str && strcmp(skey, "export") == 0) {
 				for(; trimmed_buf[c] != '\n'; exports_count++) {
 					INCR_EXPORTS_MEM(1);
 					exports[exports_count] = &trimmed_buf[c];
@@ -169,7 +171,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 		}
 		
 		if(exports_count > 0 && !exporting) {
-			while(exportID < exports_count && *trimmed_buf != '\0') {
+			while(exports_exported < exports_count && *trimmed_buf != '\0') {
 				if(!inStr2 && *trimmed_buf == '\'') {
 					if(inStr) {
 						inStr = false;
@@ -188,7 +190,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 				
 				if(!inStr && !inStr2) {
 					for(size_t exportID = 0; exportID < exports_count; exportID++) {
-						if(strcmp(trimmed_buf, exports[exportID]) == 0) {
+						if(strncmp(trimmed_buf, exports[exportID], strlen(exports[exportID])) == 0) {
 							exporting = true;
 							break;
 						}
@@ -221,8 +223,15 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 					INCR_EXPORTS2_MEM(1);
 					(*exports_str)[ekey] = *trimmed_buf;
 					ekey++;
+					
+					if(*trimmed_buf == specials[5]) {
+						exporting = false;
+						break;
+					}
 				}
 			}
+			
+			exports_exported++;
 		} else {
 			while(*trimmed_buf != '\0') {
 				INCR_MEM(1);
