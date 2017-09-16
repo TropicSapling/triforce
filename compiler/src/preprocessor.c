@@ -4,7 +4,7 @@
 #include <errno.h>
 
 #define INCR_MEM(size) do { \
-	if(input_item + (size) > input_size / sizeof(char*) && addSpaceForFileChars(processed_input, &input_size) == NULL) { \
+	if(input_item + (size) > input_size && addSpaceForFileChars(processed_input, &input_size) == NULL) { \
 		return 1; \
 	} \
 } while(0)
@@ -28,13 +28,13 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 	size_t input_item = 0;
 	
 	while(fgets(buf, 65536, *input) != NULL) {
-		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
-			continue;
-		}
-		
 		char *trimmed_buf = &buf[0];
 		while(*trimmed_buf == '\t' || *trimmed_buf == ' ') {
 			trimmed_buf++;
+		}
+		
+		if(strcmp(trimmed_buf, "\n") == 0 || strcmp(trimmed_buf, "\r\n") == 0) {
+			continue;
 		}
 		
 		if(trimmed_buf[0] == '#') {
@@ -70,7 +70,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 			continue;
 		}
 		
-		while(*trimmed_buf != '\0') {
+		while(*trimmed_buf != '\0' && *trimmed_buf != '\r' && *trimmed_buf != '\n') {
 			INCR_MEM(1);
 			(*processed_input)[input_item] = *trimmed_buf;
 			
@@ -78,4 +78,9 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 			trimmed_buf++;
 		}
 	}
+	
+	INCR_MEM(1);
+	(*processed_input)[input_item] = '\0';
+	
+	return 0;
 }
