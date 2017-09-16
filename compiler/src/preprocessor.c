@@ -119,6 +119,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 						lib_path[i] = trimmed_buf[c + i];
 					}
 					
+					lib_path[i] = '\0';
 					strcat(full_path, lib_path);
 					
 					FILE *lib = fopen(full_path, "r");
