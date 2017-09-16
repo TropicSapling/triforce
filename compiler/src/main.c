@@ -50,8 +50,6 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	
-	free(processed_input);
-	
 	puts("[DEBUG] Lex-parsed input.");
 	
 	/////////////////// START PARSING //////////////////
@@ -61,6 +59,8 @@ int main(int argc, char *argv[]) {
 	if(parsed_output == NULL) {
 		return 1;
 	}
+	
+	free(processed_input);
 	
 	puts("[DEBUG] Parsed input.");
 	
