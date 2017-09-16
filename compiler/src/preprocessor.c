@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <errno.h>
 
@@ -27,14 +28,26 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 	char buf[65536];
 	size_t input_item = 0;
 	
+	bool ignoring = false;
+	
 	while(fgets(buf, 65536, *input) != NULL) {
+		if(strlen(buf) == 65535) break; // File is compressed; skip preprocessing
+		
 		char *trimmed_buf = &buf[0];
 		while(*trimmed_buf == '\t' || *trimmed_buf == ' ') {
 			trimmed_buf++;
 		}
 		
-		if(strcmp(trimmed_buf, "\n") == 0 || strcmp(trimmed_buf, "\r\n") == 0) {
+		if(strcmp(trimmed_buf, "\n") == 0 || strcmp(trimmed_buf, "\r\n") == 0 || (*trimmed_buf == '/' && *(trimmed_buf + 1) == '/')) {
 			continue;
+		}
+		
+		if(ignoring || (*trimmed_buf == '/' && *(trimmed_buf + 1) == '*')) {
+			ignoring = true;
+			
+			while(*trimmed_buf != '\0' && !(*trimmed_buf == '*' && *(trimmed_buf + 1) == '/')) trimmed_buf++;
+			
+			if(*trimmed_buf != '\0') ignoring = false;
 		}
 		
 		if(trimmed_buf[0] == '#') {
@@ -70,7 +83,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 			continue;
 		}
 		
-		while(*trimmed_buf != '\0' && *trimmed_buf != '\r' && *trimmed_buf != '\n') {
+		while(*trimmed_buf != '\0') {
 			INCR_MEM(1);
 			(*processed_input)[input_item] = *trimmed_buf;
 			

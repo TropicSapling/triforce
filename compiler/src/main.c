@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
 	
 	///////////////// PREPROCESS INPUT /////////////////
 	
-	char specials[] = ";,[]{}()?><=+-*/%!&|^~@\\.";
+	char specials[] = ";,[]{}()?><=+-*/%!&|^~@\\.:";
 	
 	size_t processed_input_size = 256;
 	char *processed_input = malloc(processed_input_size);

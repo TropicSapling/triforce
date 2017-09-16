@@ -34,17 +34,11 @@ print(array[4>>>1]); // [65, 3, -34]
 print(array[1<<<4]); // [-34, 3, 65]
 print(array[4<<<1]); // [-34, 3, 65]
 
-#redef . as $
-#redef ; as .
+pointer str -> "Hello world!"; // Since this pointer is declared in the same scope as the first 'str' it overrides it
+print(split(str, ' ')); // ["Hello", "world!"]
 
-pointer str -> "Hello world!". // Since this pointer is declared in the same scope as the first 'str' it overrides it
-print(split(str, ' ')). // ["Hello", "world!"]
-
-pointer str2 -> ['H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'].
-print(split(str2, ' ')). // ["Hello", "world!"]
-
-#redef . as ;
-#redef $ as .
+pointer str2 -> ['H', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!'];
+print(split(str2, ' ')); // ["Hello", "world!"]
 
 pointer ascii_str -> [72, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33];
 print(split((char pointer) ascii_str, ' ')); // ["Hello", "world!"]
@@ -70,7 +64,9 @@ comment */
  * this
  */
 
-/* Single line comments using this syntax works too */
+/* Single line comments using this syntax work too */
+
+// Single line comments on blank rows work as well
 
 print('string without null termination');
 

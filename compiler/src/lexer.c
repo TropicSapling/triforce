@@ -101,23 +101,22 @@ int lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, 
 			input++;
 		}
 		
-		if(*input == '\0') {
-			if(*(input - 1) == '\n') *(input - 1) = '\0';
-			if(*(input - 2) == '\r') *(input - 2) = '\0';
+		if(*input == specials[0] || *input == specials[4] || *input == specials[5]) {
+			*input = '\0';
 			input++;
-			break;
-		} else {
-			if(*input == '/' && *(input + 1) == '/') {
-				*input = '\0';
-				free(special);
-				
-				break;
+			
+			while(*input == ' ') input++;
+			if(*input == '/' && *(input + 1) == '/') while(*input != '\n') input++;
+			
+			if(*input == '\r') {
+				input++;
 			} else if(*input == '/' && *(input + 1) == '*') {
 				ignoring = true;
-				*input = '\0';
-				free(special);
+				input++;
 				
 				continue;
+			} else if(*input != '\n') {
+				input--;
 			}
 		}
 		
@@ -138,7 +137,7 @@ int lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, 
 			(*key)++;
 		}
 		
-		if(*input == ' ') input++;
+		while(*input == ' ') input++;
 		
 		if(!isSpecial(*input, specials)) {
 			INCR_MEM(1);
