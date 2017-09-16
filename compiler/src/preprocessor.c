@@ -38,16 +38,21 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 			trimmed_buf++;
 		}
 		
-		if(strcmp(trimmed_buf, "\n") == 0 || strcmp(trimmed_buf, "\r\n") == 0 || (*trimmed_buf == '/' && *(trimmed_buf + 1) == '/')) {
-			continue;
-		}
-		
 		if(ignoring || (*trimmed_buf == '/' && *(trimmed_buf + 1) == '*')) {
 			ignoring = true;
 			
 			while(*trimmed_buf != '\0' && !(*trimmed_buf == '*' && *(trimmed_buf + 1) == '/')) trimmed_buf++;
 			
-			if(*trimmed_buf != '\0') ignoring = false;
+			if(*trimmed_buf != '\0') {
+				ignoring = false;
+				trimmed_buf += 2;
+			} else {
+				continue;
+			}
+		}
+		
+		if(strcmp(trimmed_buf, "\n") == 0 || strcmp(trimmed_buf, "\r\n") == 0 || (*trimmed_buf == '/' && *(trimmed_buf + 1) == '/')) {
+			continue;
 		}
 		
 		if(trimmed_buf[0] == '#') {
