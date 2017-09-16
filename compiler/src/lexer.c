@@ -48,7 +48,7 @@ bool isSpecial(char c, char specials[]) {
 int lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, char ***pointers, size_t pointers_size, size_t *pkey, char specials[]) {
 	char *org_input = input;
 	
-	for(; *input != '\0'; input++) {
+	while(*input != '\0') {
 		char *special;
 		bool foundSpecial = false;
 		
@@ -68,7 +68,7 @@ int lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, 
 					(*keywords)[*key] = input + 1;
 					(*key)++;
 				}
-			} else if(!inStr && isSpecial(*input, specials)) {
+			} else if(!inStr && !inStr2 && isSpecial(*input, specials)) {
 				special = calloc(2, 1);
 				special[0] = *input;
 				foundSpecial = true;
@@ -132,9 +132,9 @@ int lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, 
 			
 			(*keywords)[*key] = special;
 			(*key)++;
-			
-			if(*input == ' ') input++;
 		}
+		
+		if(*input == ' ') input++;
 		
 		if(!isSpecial(*input, specials)) {
 			INCR_MEM(1);
@@ -143,6 +143,10 @@ int lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, 
 			(*key)++;
 		}
 	}
+	
+	puts((*keywords)[0]); // DEBUG
+	puts((*keywords)[1]);
+	puts((*keywords)[2]);
 	
 	return 0;
 }
