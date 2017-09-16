@@ -4,8 +4,22 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include "def.h"
+
 #define INCR_MEM(size) do { \
 	if(input_item + (size) > input_size && addSpaceForFileChars(processed_input, &input_size) == NULL) { \
+		return 1; \
+	} \
+} while(0)
+
+#define INCR_EXPORTS_MEM(size) do { \
+	if(i + (size) > exports_size && addSpaceForKeys(&exports, &exports_size) == NULL) { \
+		return 1; \
+	} \
+} while(0)
+
+#define INCR_EXPORTS2_MEM(size) do { \
+	if(i + (size) > exports_str_size && addSpaceForFileChars(exports_str, &exports_str_size) == NULL) { \
 		return 1; \
 	} \
 } while(0)
@@ -24,11 +38,23 @@ char *addSpaceForFileChars(char **str, size_t *str_size) {
 	return res;
 }
 
-int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[]) {
+int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char **exports_str, size_t exports_str_size) {
 	char buf[65536];
 	size_t input_item = 0;
+	size_t exports_count = 0;
+	size_t ekey = 0;
+	
+	size_t exports_size = sizeof(char*) * 32;
+	char **exports = malloc(exports_size); // Array of functions to be exported
+	if(exports == NULL) {
+		perror("ERROR");
+		fprintf(stderr, "ID: %d\n", errno);
+	}
 	
 	bool ignoring = false;
+	bool inStr = false;
+	bool inStr2 = false;
+	bool exporting = false;
 	
 	while(fgets(buf, 65536, *input) != NULL) {
 		if(strlen(buf) == 65535) break; // File is compressed; skip preprocessing
@@ -80,20 +106,131 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 			} else if(strcmp(skey, "ifdef") == 0) {
 				// WIP
 			} else if(strcmp(skey, "import") == 0) {
-				// WIP
-			} else if(strcmp(skey, "export") == 0) {
-				// WIP
+				if(trimmed_buf[c] == '<') {
+					// Import standard library
+					
+					char full_path[256] = "../../lib/";
+					char lib_path[246];
+					
+					c++;
+					unsigned short i = 0;
+					for(; trimmed_buf[c + i] != '>'; i++) {
+						lib_path[i] = trimmed_buf[c + i];
+					}
+					
+					strcat(full_path, lib_path);
+					
+					FILE *lib = fopen(full_path, "r");
+					if(lib == NULL) {
+						perror("ERROR");
+						fprintf(stderr, "ID: %d\n", errno);
+						return 1;
+					}
+					
+					if(trimmed_buf[c + i + 2] == 'a') {
+						// WIP
+					} else {
+						size_t exported_content_size = 256;
+						char *exported_content = malloc(exported_content_size);
+						
+						if(preprocess(&lib, &lib_contents, lib_contents_size, specials, &exported_content, exported_content_size)) return 1;
+						
+						while(*exported_content != '\0') {
+							INCR_MEM(1);
+							(*processed_input)[input_item] = *exported_content;
+							exported_content++;
+						}
+						
+						// TODO: Add support for importing specific functions
+					}
+					
+					fclose(lib);
+				} else {
+					// Import custom library
+				}
+			} else if(exports_arr && strcmp(skey, "export") == 0) {
+				for(; trimmed_buf[c] != '\n'; exports_count++) {
+					INCR_EXPORTS_MEM(1);
+					exports[exports_count] = &trimmed_buf[c];
+					
+					while(trimmed_buf[c] != ',') {
+						c++;
+					}
+					
+					trimmed_buf[c] = '\0';
+					c++;
+					while(trimmed_buf[c] == ' ') c++;
+				}
+				
+				exports_count++;
 			}
 			
 			continue;
 		}
 		
-		while(*trimmed_buf != '\0') {
-			INCR_MEM(1);
-			(*processed_input)[input_item] = *trimmed_buf;
-			
-			input_item++;
-			trimmed_buf++;
+		if(exports_count > 0 && !exporting) {
+			while(exportID < exports_count && *trimmed_buf != '\0') {
+				if(!inStr2 && *trimmed_buf == '\'') {
+					if(inStr) {
+						inStr = false;
+						break;
+					} else {
+						inStr = true;
+					}
+				} else if(!inStr && *trimmed_buf == '"') {
+					if(inStr2) {
+						inStr2 = false;
+						break;
+					} else {
+						inStr2 = true;
+					}
+				}
+				
+				if(!inStr && !inStr2) {
+					for(size_t exportID = 0; exportID < exports_count; exportID++) {
+						if(strcmp(trimmed_buf, exports[exportID]) == 0) {
+							exporting = true;
+							break;
+						}
+					}
+				}
+				
+				if(exporting) break;
+				
+				trimmed_buf++;
+			}
+		} else if(exporting) {
+			while(*trimmed_buf != '\0') {
+				if(!inStr2 && *trimmed_buf == '\'') {
+					if(inStr) {
+						inStr = false;
+						break;
+					} else {
+						inStr = true;
+					}
+				} else if(!inStr && *trimmed_buf == '"') {
+					if(inStr2) {
+						inStr2 = false;
+						break;
+					} else {
+						inStr2 = true;
+					}
+				}
+				
+				if(!inStr && !inStr2) {
+					INCR_EXPORTS2_MEM(1);
+					(*exports_str)[ekey] = *trimmed_buf;
+					ekey++;
+				}
+			}
+		} else {
+			while(*trimmed_buf != '\0') {
+				INCR_MEM(1);
+				(*processed_input)[input_item] = *trimmed_buf;
+				
+				input_item++;
+				trimmed_buf++;
+			}
 		}
 	}
 	
