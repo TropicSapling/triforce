@@ -38,19 +38,19 @@ char *addSpaceForFileChars(char **str, size_t *str_size) {
 	return res;
 }
 
-int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char **exports_str, size_t exports_str_size) {
+int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char *path, char **exports_str, size_t exports_str_size) {
 	char buf[65536];
 	size_t input_item = 0;
-	size_t exports_count = 0;
-	size_t exports_exported = 0;
+/*	size_t exports_count = 0;
+	size_t exports_exported = 0; */
 	size_t ekey = 0;
 	
-	size_t exports_size = sizeof(char*) * 32;
+/*	size_t exports_size = sizeof(char*) * 32;
 	char **exports = malloc(exports_size); // Array of functions to be exported
 	if(exports == NULL) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
-	}
+	} */
 	
 	bool ignoring = false;
 	bool inStr = false;
@@ -110,17 +110,31 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 				if(trimmed_buf[c] == '<') {
 					// Import standard library
 					
-					char full_path[256] = "../../lib/";
-					char lib_path[246];
+					char full_path[256]; 
+					strcpy(full_path, path); // Path to executable
+					
+					unsigned short i = strlen(full_path) - 1;
+					for(unsigned short s = 0; s < 3; s++) {
+						do {
+							i--;
+						} while(full_path[i] != '/' && i > 0);
+						
+						if(i == 0) break;
+					}
+					full_path[i] = '\0';
+					
+					strcat(full_path, "/lib/");
+					char lib_path[128];
 					
 					c++;
-					unsigned short i = 0;
+					i = 0;
 					for(; trimmed_buf[c + i] != '>'; i++) {
 						lib_path[i] = trimmed_buf[c + i];
 					}
 					
 					lib_path[i] = '\0';
 					strcat(full_path, lib_path);
+					puts(full_path); // DEBUG
 					
 					FILE *lib = fopen(full_path, "r");
 					if(lib == NULL) {
@@ -136,7 +150,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 						char *exported_content = malloc(exported_content_size);
 						char *lib_contents = malloc(exported_content_size);
 						
-						if(preprocess(&lib, &lib_contents, exported_content_size, specials, &exported_content, exported_content_size)) return 1;
+						if(preprocess(&lib, &lib_contents, exported_content_size, specials, path, &exported_content, exported_content_size)) return 1;
 						
 						while(*exported_content != '\0') {
 							INCR_MEM(1);
@@ -151,8 +165,16 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 				} else {
 					// Import custom library
 				}
+			} else if(strcmp(skey, "endexp") == 0) {
+				exporting = false;
+			} else if(exporting) {
+				while(*trimmed_buf != '\0') {
+					INCR_EXPORTS2_MEM(1);
+					(*exports_str)[ekey] = *trimmed_buf;
+					ekey++;
+				}
 			} else if(exports_str && strcmp(skey, "export") == 0) {
-				for(; trimmed_buf[c] != '\n'; exports_count++) {
+/*				for(; trimmed_buf[c] != '\n'; exports_count++) {
 					INCR_EXPORTS_MEM(1);
 					exports[exports_count] = &trimmed_buf[c];
 					
@@ -165,13 +187,15 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 					while(trimmed_buf[c] == ' ') c++;
 				}
 				
-				exports_count++;
+				exports_count++; */
+				
+				exporting = true;
 			}
 			
 			continue;
 		}
 		
-		if(exports_count > 0 && !exporting) {
+/*		if(exports_count > 0 && !exporting) {
 			while(exports_exported < exports_count && *trimmed_buf != '\0') {
 				if(!inStr2 && *trimmed_buf == '\'') {
 					if(inStr) {
@@ -233,7 +257,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 			}
 			
 			exports_exported++;
-		} else {
+		} else { */
 			while(*trimmed_buf != '\0') {
 				INCR_MEM(1);
 				(*processed_input)[input_item] = *trimmed_buf;
@@ -241,7 +265,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 				input_item++;
 				trimmed_buf++;
 			}
-		}
+//		}
 	}
 	
 	INCR_MEM(1);

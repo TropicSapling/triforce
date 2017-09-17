@@ -1,5 +1,4 @@
-#export split, replace, move, delItem, findItems, print, pause;
-
+#export
 pointer*2 split(pointer listp, splitter) {
 	pointer*2 arr -> [listp];
 	
@@ -12,6 +11,7 @@ pointer*2 split(pointer listp, splitter) {
 	
 	return arr;
 }
+#endexp
 
 // To import the function below: 'import <std>.fastReplace'
 void fastReplace(pointer listp, toReplace, replacer) {
@@ -19,6 +19,7 @@ void fastReplace(pointer listp, toReplace, replacer) {
 	while(i < listp<length>) if(listp[i] == toReplace) listp[i] = replacer;
 }
 
+#export
 void replace(pointer listp, toReplace, replacer) {
 	if(toReplace<length> == replacer<length>) while(i < listp<length>) {
 		if(listp[i] == toReplace) listp[i] = replacer;
@@ -113,3 +114,4 @@ clang void pause(int sec, int <size>=32 ns = 0) {
 		nanosleep(stime, NULL);
 	#endif
 }
+#endexp
