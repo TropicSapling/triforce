@@ -70,7 +70,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 			size_t c = 1;
 			char skey[8];
 			
-			while(trimmed_buf[c] != ' ' && trimmed_buf[c] != '\0') {
+			while(trimmed_buf[c] != ' ' && trimmed_buf[c] != '\r' && trimmed_buf[c] != '\n' && trimmed_buf[c] != '\0') {
 				skey[c - 1] = trimmed_buf[c];
 				c++;
 			}
@@ -146,6 +146,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 							INCR_MEM(1);
 							(*processed_input)[input_item] = *exported_content;
 							exported_content++;
+							input_item++;
 						}
 						
 						free(org_exported_content);
@@ -159,26 +160,28 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 				}
 			} else if(strcmp(skey, "endexp") == 0) {
 				exporting = false;
-			} else if(exporting) {
-				while(*trimmed_buf != '\0') {
-					INCR_EXPORTS_MEM(1);
-					(*exports)[*ekey] = *trimmed_buf;
-					*ekey++;
-					trimmed_buf++;
-				}
-			} else if(exports && strcmp(skey, "export") == 0) {
+			} else if(exports_size && strcmp(skey, "export") == 0) {
 				exporting = true;
 			}
 			
 			continue;
 		}
 		
-		while(*trimmed_buf != '\0') {
-			INCR_MEM(1);
-			(*processed_input)[input_item] = *trimmed_buf;
-			
-			input_item++;
-			trimmed_buf++;
+		if(exporting) {
+			while(*trimmed_buf != '\0') {
+				INCR_EXPORTS_MEM(1);
+				(*exports)[*ekey] = *trimmed_buf;
+				(*ekey)++;
+				trimmed_buf++;
+			}
+		} else {
+			while(*trimmed_buf != '\0') {
+				INCR_MEM(1);
+				(*processed_input)[input_item] = *trimmed_buf;
+				
+				input_item++;
+				trimmed_buf++;
+			}
 		}
 	}
 	
