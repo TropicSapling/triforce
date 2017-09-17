@@ -13,13 +13,7 @@
 } while(0)
 
 #define INCR_EXPORTS_MEM(size) do { \
-	if(exports_count + (size) > exports_size && addSpaceForKeys(&exports, &exports_size) == NULL) { \
-		return 1; \
-	} \
-} while(0)
-
-#define INCR_EXPORTS2_MEM(size) do { \
-	if(*ekey + (size) > *exports_str_size && addSpaceForFileChars(exports_str, exports_str_size) == NULL) { \
+	if(*ekey + (size) > *exports_size && addSpaceForFileChars(exports, exports_size) == NULL) { \
 		return 1; \
 	} \
 } while(0)
@@ -38,18 +32,9 @@ char *addSpaceForFileChars(char **str, size_t *str_size) {
 	return res;
 }
 
-int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char *path, char **exports_str, size_t *exports_str_size, size_t *ekey) {
+int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char *path, char **exports, size_t *exports_size, size_t *ekey) {
 	char buf[65536];
 	size_t input_item = 0;
-/*	size_t exports_count = 0;
-	size_t exports_exported = 0; */
-	
-/*	size_t exports_size = sizeof(char*) * 32;
-	char **exports = malloc(exports_size); // Array of functions to be exported
-	if(exports == NULL) {
-		perror("ERROR");
-		fprintf(stderr, "ID: %d\n", errno);
-	} */
 	
 	bool ignoring = false;
 	bool inStr = false;
@@ -176,104 +161,25 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 				exporting = false;
 			} else if(exporting) {
 				while(*trimmed_buf != '\0') {
-					INCR_EXPORTS2_MEM(1);
-					(*exports_str)[*ekey] = *trimmed_buf;
+					INCR_EXPORTS_MEM(1);
+					(*exports)[*ekey] = *trimmed_buf;
 					*ekey++;
 					trimmed_buf++;
 				}
-			} else if(exports_str && strcmp(skey, "export") == 0) {
-/*				for(; trimmed_buf[c] != '\n'; exports_count++) {
-					INCR_EXPORTS_MEM(1);
-					exports[exports_count] = &trimmed_buf[c];
-					
-					while(trimmed_buf[c] != ',') {
-						c++;
-					}
-					
-					trimmed_buf[c] = '\0';
-					c++;
-					while(trimmed_buf[c] == ' ') c++;
-				}
-				
-				exports_count++; */
-				
+			} else if(exports && strcmp(skey, "export") == 0) {
 				exporting = true;
 			}
 			
 			continue;
 		}
 		
-/*		if(exports_count > 0 && !exporting) {
-			while(exports_exported < exports_count && *trimmed_buf != '\0') {
-				if(!inStr2 && *trimmed_buf == '\'') {
-					if(inStr) {
-						inStr = false;
-						break;
-					} else {
-						inStr = true;
-					}
-				} else if(!inStr && *trimmed_buf == '"') {
-					if(inStr2) {
-						inStr2 = false;
-						break;
-					} else {
-						inStr2 = true;
-					}
-				}
-				
-				if(!inStr && !inStr2) {
-					for(size_t exportID = 0; exportID < exports_count; exportID++) {
-						if(strncmp(trimmed_buf, exports[exportID], strlen(exports[exportID])) == 0) {
-							exporting = true;
-							break;
-						}
-					}
-				}
-				
-				if(exporting) break;
-				
-				trimmed_buf++;
-			}
-		} else if(exporting) {
-			while(*trimmed_buf != '\0') {
-				if(!inStr2 && *trimmed_buf == '\'') {
-					if(inStr) {
-						inStr = false;
-						break;
-					} else {
-						inStr = true;
-					}
-				} else if(!inStr && *trimmed_buf == '"') {
-					if(inStr2) {
-						inStr2 = false;
-						break;
-					} else {
-						inStr2 = true;
-					}
-				}
-				
-				if(!inStr && !inStr2) {
-					INCR_EXPORTS2_MEM(1);
-					(*exports_str)[ekey] = *trimmed_buf;
-					ekey++;
-					
-					if(*trimmed_buf == specials[5]) {
-						exporting = false;
-						break;
-					}
-				}
-			}
+		while(*trimmed_buf != '\0') {
+			INCR_MEM(1);
+			(*processed_input)[input_item] = *trimmed_buf;
 			
-			exports_exported++;
-		} else { */
-			while(*trimmed_buf != '\0') {
-				INCR_MEM(1);
-				(*processed_input)[input_item] = *trimmed_buf;
-				
-				input_item++;
-				trimmed_buf++;
-			}
-//		}
+			input_item++;
+			trimmed_buf++;
+		}
 	}
 	
 	INCR_MEM(1);
