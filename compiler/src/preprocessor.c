@@ -19,7 +19,7 @@
 } while(0)
 
 #define INCR_EXPORTS2_MEM(size) do { \
-	if(ekey + (size) > exports_str_size && addSpaceForFileChars(exports_str, &exports_str_size) == NULL) { \
+	if(*ekey + (size) > *exports_str_size && addSpaceForFileChars(exports_str, exports_str_size) == NULL) { \
 		return 1; \
 	} \
 } while(0)
@@ -38,12 +38,11 @@ char *addSpaceForFileChars(char **str, size_t *str_size) {
 	return res;
 }
 
-int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char *path, char **exports_str, size_t exports_str_size) {
+int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char *path, char **exports_str, size_t *exports_str_size, size_t *ekey) {
 	char buf[65536];
 	size_t input_item = 0;
 /*	size_t exports_count = 0;
 	size_t exports_exported = 0; */
-	size_t ekey = 0;
 	
 /*	size_t exports_size = sizeof(char*) * 32;
 	char **exports = malloc(exports_size); // Array of functions to be exported
@@ -134,7 +133,6 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 					
 					lib_path[i] = '\0';
 					strcat(full_path, lib_path);
-					puts(full_path); // DEBUG
 					
 					FILE *lib = fopen(full_path, "r");
 					if(lib == NULL) {
@@ -150,13 +148,22 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 						char *exported_content = malloc(exported_content_size);
 						char *lib_contents = malloc(exported_content_size);
 						
-						if(preprocess(&lib, &lib_contents, exported_content_size, specials, path, &exported_content, exported_content_size)) return 1;
+						size_t ec_key = 0;
 						
+						if(preprocess(&lib, &lib_contents, exported_content_size, specials, path, &exported_content, &exported_content_size, &ec_key)) return 1;
+						free(lib_contents); // We don't need this
+						
+						if(ec_key > exported_content_size && addSpaceForFileChars(&exported_content, &exported_content_size) == NULL) return 1;
+						exported_content[ec_key] = '\0';
+						
+						char *org_exported_content = exported_content;
 						while(*exported_content != '\0') {
 							INCR_MEM(1);
 							(*processed_input)[input_item] = *exported_content;
 							exported_content++;
 						}
+						
+						free(org_exported_content);
 						
 						// TODO: Add support for importing specific functions
 					}
@@ -170,8 +177,9 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 			} else if(exporting) {
 				while(*trimmed_buf != '\0') {
 					INCR_EXPORTS2_MEM(1);
-					(*exports_str)[ekey] = *trimmed_buf;
-					ekey++;
+					(*exports_str)[*ekey] = *trimmed_buf;
+					*ekey++;
+					trimmed_buf++;
 				}
 			} else if(exports_str && strcmp(skey, "export") == 0) {
 /*				for(; trimmed_buf[c] != '\n'; exports_count++) {
