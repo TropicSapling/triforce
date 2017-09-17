@@ -32,7 +32,7 @@ char *addSpaceForFileChars(char **str, size_t *str_size) {
 	return res;
 }
 
-int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char *path, char **exports, size_t *exports_size, size_t *ekey) {
+int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char *path[], char **exports, size_t *exports_size, size_t *ekey) {
 	char buf[65536];
 	size_t input_item = 0;
 	
@@ -91,13 +91,15 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 			} else if(strcmp(skey, "ifdef") == 0) {
 				// WIP
 			} else if(strcmp(skey, "import") == 0) {
+				char full_path[256];
+				unsigned short i;
+				
 				if(trimmed_buf[c] == '<') {
 					// Import standard library
 					
-					char full_path[256]; 
-					strcpy(full_path, path); // Path to executable
+					strcpy(full_path, path[0]); // Path to executable
 					
-					unsigned short i = strlen(full_path) - 1;
+					i = strlen(full_path) - 1;
 					for(unsigned short s = 0; s < 3; s++) {
 						do {
 							i--;
@@ -108,56 +110,58 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 					full_path[i] = '\0';
 					
 					strcat(full_path, "/lib/");
-					char lib_path[128];
-					
-					c++;
-					i = 0;
-					for(; trimmed_buf[c + i] != '>'; i++) {
-						lib_path[i] = trimmed_buf[c + i];
-					}
-					
-					lib_path[i] = '\0';
-					strcat(full_path, lib_path);
-					
-					FILE *lib = fopen(full_path, "r");
-					if(lib == NULL) {
-						perror("ERROR");
-						fprintf(stderr, "ID: %d\n", errno);
-						return 1;
-					}
-					
-					if(trimmed_buf[c + i + 2] == 'a') {
-						// WIP
-					} else {
-						size_t exported_content_size = 256;
-						char *exported_content = malloc(exported_content_size);
-						char *lib_contents = malloc(exported_content_size);
-						
-						size_t ec_key = 0;
-						
-						if(preprocess(&lib, &lib_contents, exported_content_size, specials, path, &exported_content, &exported_content_size, &ec_key)) return 1;
-						free(lib_contents); // We don't need this
-						
-						if(ec_key > exported_content_size && addSpaceForFileChars(&exported_content, &exported_content_size) == NULL) return 1;
-						exported_content[ec_key] = '\0';
-						
-						char *org_exported_content = exported_content;
-						while(*exported_content != '\0') {
-							INCR_MEM(1);
-							(*processed_input)[input_item] = *exported_content;
-							exported_content++;
-							input_item++;
-						}
-						
-						free(org_exported_content);
-						
-						// TODO: Add support for importing specific functions
-					}
-					
-					fclose(lib);
 				} else {
 					// Import custom library
+					
+					strcpy(full_path, path[1]); // Path to P+ file
 				}
+				
+				char lib_path[128];
+				c++;
+				i = 0;
+				for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"'; i++) {
+					lib_path[i] = trimmed_buf[c + i];
+				}
+				
+				lib_path[i] = '\0';
+				strcat(full_path, lib_path);
+					
+				FILE *lib = fopen(full_path, "r");
+				if(lib == NULL) {
+					perror("ERROR");
+					fprintf(stderr, "ID: %d\n", errno);
+					return 1;
+				}
+				
+				if(trimmed_buf[c + i + 2] == 'a') {
+					// WIP
+				} else {
+					size_t exported_content_size = 256;
+					char *exported_content = malloc(exported_content_size);
+					char *lib_contents = malloc(exported_content_size);
+					
+					size_t ec_key = 0;
+					
+					if(preprocess(&lib, &lib_contents, exported_content_size, specials, path, &exported_content, &exported_content_size, &ec_key)) return 1;
+					free(lib_contents);
+					
+					if(ec_key > exported_content_size && addSpaceForFileChars(&exported_content, &exported_content_size) == NULL) return 1;
+					exported_content[ec_key] = '\0';
+					
+					char *org_exported_content = exported_content;
+					while(*exported_content != '\0') {
+						INCR_MEM(1);
+						(*processed_input)[input_item] = *exported_content;
+						exported_content++;
+						input_item++;
+					}
+					
+					free(org_exported_content);
+					
+					// TODO: Add support for importing specific functions
+				}
+				
+				fclose(lib);
 			} else if(strcmp(skey, "endexp") == 0) {
 				exporting = false;
 			} else if(exports_size && strcmp(skey, "export") == 0) {
