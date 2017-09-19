@@ -114,6 +114,48 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 					// Import custom library
 					
 					strcpy(full_path, path[1]); // Path to P+ file
+					
+					char lib_path[128];
+					c++;
+					i = 0;
+					for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"'; i++) {
+						lib_path[i] = trimmed_buf[c + i];
+					}
+					
+					lib_path[i] = '\0';
+					
+					char *new_lib_path = "";
+					unsigned short levels = 1;
+					i = strlen(lib_path) - 1;
+					do {
+						i--;
+						if(i > 0 && lib_path[i] == '.' && lib_path[i - 1] == '.') {
+							if(levels == 1) new_lib_path = &lib_path[i + 1];
+							levels++;
+							i--;
+						} else if(levels > 1 && lib_path[i] != '/') {
+							break;
+						}
+					} while(i > 0);
+					
+					i = strlen(full_path) - 1;
+					for(unsigned short s = 0; s < levels; s++) {
+						do {
+							i--;
+						} while(full_path[i] != '/' && i > 0);
+						
+						if(i == 0) break;
+					}
+					
+					if(levels == 1 && lib_path[0] != '/') i++;
+					
+					full_path[i] = '\0';
+					
+					if(new_lib_path[0] == '\0') {
+						strcat(full_path, lib_path);
+					} else {
+						strcat(full_path, new_lib_path);
+					}
 				}
 				
 				char lib_path[128];
