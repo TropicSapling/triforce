@@ -13,6 +13,10 @@
 	} \
 } while(0)
 
+#define typeToOutput(str) do { \
+	if(typeTo(output, output_size, str, pos) == NULL) return NULL; \
+} while(0)
+
 #define RED   "\x1B[31m"
 #define GREEN   "\x1B[32m"
 #define YELLOW   "\x1B[33m"
@@ -49,11 +53,14 @@ bool isNumber(char *str) {
 	return true;
 }
 
-void typeTo(char *output, char *str, size_t *pos) {
+char *typeTo(char *output, size_t output_size, char *str, size_t *pos) {
 	for(size_t i = 0; str[i] != '\0'; i++) {
+		INCR_MEM(1);
 		output[*pos] = str[i];
 		(*pos)++;
 	}
+	
+	return &output[*pos];
 }
 
 void addIteratorID(char *str_end, size_t *iterator_count) {
@@ -155,17 +162,13 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 			printf(YELLOW "[WARNING]" RESET " 'clang' is not implemented yet.\n"); // WIP
 			puts("----------------------------------------------------------------");
 		} else if(strcmp(keywords[i], "__args") == 0) {
-			INCR_MEM(4);
-			typeTo(output, "argv", pos);
+			typeToOutput("argv");
 		} else if(strcmp(keywords[i], "__argc") == 0) {
-			INCR_MEM(4);
-			typeTo(output, "argc", pos);
+			typeToOutput("argc");
 		} else if(strcmp(keywords[i], "__line") == 0) {
-			INCR_MEM(8);
-			typeTo(output, "__LINE__", pos);
+			typeToOutput("__LINE__");
 		} else if(strcmp(keywords[i], "__path") == 0) {
-			INCR_MEM(8);
-			typeTo(output, "__PATH__", pos);
+			typeToOutput("__PATH__");
 		} else if(i + 1 < keys && keywords[i + 1][0] == specials[2]) {
 			// LISTS
 			
@@ -187,14 +190,14 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 								(*pos)--;
 							}
 							
-							INCR_MEM(61);
+							INCR_MEM(7);
 							
-							typeTo(output, "size_t ", pos);
+							typeToOutput("size_t ");
 							
 							char it_name[11] = "ppl_it_";
 							addIteratorID(it_name + 7, &iterators);
 							
-							typeTo(output, it_name, pos);
+							typeToOutput(it_name);
 							output[*pos] = '=';
 							(*pos)++;
 							
@@ -215,18 +218,17 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							
 							i_pos += 3;
 							
-							typeTo(output, ";for(;", pos);
+							typeToOutput(";for(;");
 							
-							typeTo(output, it_name, pos);
+							typeToOutput(it_name);
 							output[*pos] = '<';
 							(*pos)++;
 							
 							char max_it_val[32];
-							unsigned int max_it_val_size = 0;
 							
 							// Get sublist end pos
 							if(keywords[i + i_pos][0] == specials[3]) { // Use default
-//								typeTo(output, list_length, pos); // TODO: Define 'list_length'
+//								typeToOutput(list_length); // TODO: Define 'list_length'
 								break; // TMP
 							} else if(keywords[i + i_pos - 1][0] == specials[9]) {
 								unsigned int en_pos = 0;
@@ -234,7 +236,6 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 									INCR_MEM(1);
 									
 									max_it_val[en_pos] = keywords[i + i_pos][en_pos];
-									max_it_val_size++;
 									
 									output[*pos] = max_it_val[en_pos];
 									(*pos)++;
@@ -252,21 +253,27 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							output[*pos] = ';';
 							(*pos)++;
 							
-							typeTo(output, it_name, pos);
-							typeTo(output, "++){if(", pos);
+							typeToOutput(it_name);
+							typeToOutput("++){if(!(");
 							
-							// WIP
-							// ...
-							break;
+							unsigned int st_pos = 1;
+							while(strstr(specials, keywords[i - st_pos]) != NULL) {
+								st_pos++;
+							}
 							
-							typeTo(output, "}if(", pos);
-							typeTo(output, it_name, pos);
+							for(; st_pos > 0; st_pos--) {
+								typeToOutput(keywords[i - st_pos]);
+							}
+							
+							output[*pos] = '[';
+							(*pos)++;
+							typeToOutput(it_name);
+							typeToOutput("]){break;}}if(");
+							typeToOutput(it_name);
 							output[*pos] = '<';
 							(*pos)++;
 							
-							INCR_MEM(max_it_val_size);
-							
-							typeTo(output, max_it_val, pos);
+							typeToOutput(max_it_val);
 							output[*pos] = '{';
 							(*pos)++;
 							
@@ -275,6 +282,8 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							
 							output[*pos] = '}';
 							(*pos)++;
+							
+							i += i_pos;
 							
 							break;
 						}
@@ -399,9 +408,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 				(*pos)++;
 			}
 			
-			INCR_MEM(4);
-			
-			typeTo(output, "_ppl", pos);
+			typeToOutput("_ppl");
 		} else {
 			// DEBUG; will be replaced later
 			int it = 0;
