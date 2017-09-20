@@ -6,6 +6,23 @@
 
 #include "def.h"
 
+void safe_free(void **ptr) {
+	free(*ptr);
+	ptr = NULL;
+}
+
+void free_all(char **processed_input, char **parsed_output, char ***pointers, char ***keywords, size_t pkey) {
+	safe_free((void**) processed_input);
+	safe_free((void**) parsed_output);
+	
+	for(size_t i = 0; i < pkey; i++) {
+		free(pointers[i]);
+	}
+	
+	safe_free((void**) pointers);
+	safe_free((void**) keywords);
+}
+
 int main(int argc, char *argv[]) {
 	
 	//////////////// PREPARE FOR LEXING ////////////////
@@ -30,6 +47,7 @@ int main(int argc, char *argv[]) {
 	size_t processed_input_size = 256;
 	char *processed_input = malloc(processed_input_size);
 	if(preprocess(&input, &processed_input, processed_input_size, specials, argv, NULL, NULL, NULL)) {
+		free_all(&processed_input, NULL, NULL, NULL, 0);
 		return 1;
 	}
 	
@@ -47,6 +65,7 @@ int main(int argc, char *argv[]) {
 	size_t pkey = 0;
 	
 	if(lex_parse(processed_input, &keywords, keywords_size, &key, &pointers, pointers_size, &pkey, specials)) {
+		free_all(&processed_input, NULL, &pointers, &keywords, pkey);
 		return 1;
 	}
 	
@@ -57,10 +76,11 @@ int main(int argc, char *argv[]) {
 	size_t pos = 0;
 	char *parsed_output = parse(keywords, key, &pos, specials);
 	if(parsed_output == NULL) {
+		free_all(&processed_input, &parsed_output, &pointers, &keywords, pkey);
 		return 1;
 	}
 	
-	free(processed_input);
+	safe_free((void**) &processed_input);
 	
 	puts("[DEBUG] Parsed input.");
 	
@@ -104,6 +124,8 @@ int main(int argc, char *argv[]) {
 		if(success != 0 && errno != 17) {
 			perror("ERROR");
 			fprintf(stderr, "ID: %d\n", errno);
+			
+			free_all(&processed_input, &parsed_output, &pointers, &keywords, pkey);
 			return 1;
 		}
 		
@@ -129,14 +151,14 @@ int main(int argc, char *argv[]) {
 	
 	/////////////////// FREE MEMORY ////////////////////
 	
-	free(parsed_output);
+	safe_free((void**) &parsed_output);
 	
 	for(size_t i = 0; i < pkey; i++) {
 		free(pointers[i]);
 	}
 	
-	free(keywords);
-	free(pointers);
+	safe_free((void**) &keywords);
+	safe_free((void**) &pointers);
 	
 	return 0;
 }

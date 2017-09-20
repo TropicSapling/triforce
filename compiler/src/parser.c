@@ -14,7 +14,7 @@
 } while(0)
 
 #define typeToOutput(str) do { \
-	if(typeTo(output, output_size, str, pos) == NULL) return NULL; \
+	if(typeTo(&output, &output_size, str, pos) == NULL) return NULL; \
 } while(0)
 
 #define RED   "\x1B[31m"
@@ -53,14 +53,14 @@ bool isNumber(char *str) {
 	return true;
 }
 
-char *typeTo(char *output, size_t output_size, char *str, size_t *pos) {
+char *typeTo(char **output, size_t *output_size, char *str, size_t *pos) {
 	for(size_t i = 0; str[i] != '\0'; i++) {
-		INCR_MEM(1);
-		output[*pos] = str[i];
+		if(*pos + 1 > *output_size && addSpaceForChars(output, output_size) == NULL) return NULL;
+		(*output)[*pos] = str[i];
 		(*pos)++;
 	}
 	
-	return &output[*pos];
+	return &(*output)[*pos];
 }
 
 void addIteratorID(char *str_end, size_t *iterator_count) {
@@ -190,7 +190,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 								(*pos)--;
 							}
 							
-							INCR_MEM(7);
+							INCR_MEM(6);
 							
 							typeToOutput("size_t ");
 							
@@ -261,29 +261,36 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 								st_pos++;
 							}
 							
-							for(; st_pos > 0; st_pos--) {
-								typeToOutput(keywords[i - st_pos]);
+							unsigned int st_pos_c = st_pos;
+							for(unsigned int st_pos2 = st_pos; st_pos2 > 0; st_pos2--) {
+								typeToOutput(keywords[i - st_pos2]);
 							}
 							
 							output[*pos] = '[';
 							(*pos)++;
 							typeToOutput(it_name);
-							typeToOutput("]){break;}}if(");
+							typeToOutput("]){break;}}");
+							
+							while(keywords[i - st_pos][0] != specials[0] && keywords[i - st_pos][0] != specials[4]) {
+								st_pos++;
+							}
+							
+							for(; st_pos > st_pos_c; st_pos--) {
+								typeToOutput(keywords[i - st_pos]);
+							}
+							
+							output[*pos] = '(';
+							(*pos)++;
 							typeToOutput(it_name);
 							output[*pos] = '<';
 							(*pos)++;
-							
 							typeToOutput(max_it_val);
-							output[*pos] = '{';
-							(*pos)++;
-							
-							// WIP
-							// ...
-							
-							output[*pos] = '}';
-							(*pos)++;
+							typeToOutput("?true:false)");
 							
 							i += i_pos;
+							for(; keywords[i][0] != specials[0] && keywords[i][0] != specials[5]; i++) {
+								typeToOutput(keywords[i]);
+							}
 							
 							break;
 						}
