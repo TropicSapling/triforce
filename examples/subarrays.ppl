@@ -1,0 +1,4 @@
+char *arr = 'test123';
+char *arr2 = '123';
+
+printf(arr2[0 >>> 3] == arr[4 >>> 7]);

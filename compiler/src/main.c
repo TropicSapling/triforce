@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
 	
 	/////////////////// PRINT OUTPUT ///////////////////
 	
-	fprintf(output, "#include <stdio.h>\nint main(int argc, char *argv[]){");
+	fprintf(output, "#include <stdio.h>\nint main(int argc,char *argv[]){");
 	
 	for(size_t i = 0; i < pos; i++) {
 		fprintf(output, "%c", parsed_output[i]);

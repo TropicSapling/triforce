@@ -180,10 +180,10 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 						if(keywords[i - 1][0] == specials[11] && strstr(specials, keywords[i - 2]) == NULL) {
 							// WIP
 							break;
-						} else if(keywords[i - 1][0] == specials[11] && keywords[i - 1][0] == specials[12]) {
+						} else if(keywords[i - 1][0] == specials[11] && keywords[i - 1][0] == specials[12]) { // NEVER TRUE; should be changed, can't remember to what though
 							// WIP
 							break;
-						} else if(keywords[i - 1][0] == specials[8] || keywords[i - 1][0] == specials[9] || keywords[i - 1][0] == specials[10] || keywords[i - 1][0] == specials[11] || keywords[i - 1][0] == specials[17] || keywords[i - 1][0] == specials[18] || keywords[i - 1][0] == specials[19]) {
+						} else if(keywords[i - 1][0] == specials[9] || keywords[i - 1][0] == specials[10] || keywords[i - 1][0] == specials[11] || keywords[i - 1][0] == specials[17] || keywords[i - 1][0] == specials[18] || keywords[i - 1][0] == specials[19]) {
 							// keywords[i - 1] is a comparison operator
 							
 							while(*pos >= 0 && output[*pos - 1] != specials[0] && output[*pos - 1] != specials[5]) {
@@ -287,7 +287,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							output[*pos] = '<';
 							(*pos)++;
 							typeToOutput(max_it_val);
-							typeToOutput("?true:false)");
+							typeToOutput("?1:0)");
 							
 							i += i_pos;
 							for(; keywords[i][0] != specials[0] && keywords[i][0] != specials[5]; i++) {
@@ -296,114 +296,6 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							
 							break;
 						}
-						
-						////////////////////////////////////////////////////////////////////////////////////////
-						////////////////////////////////////////////////////////////////////////////////////////
-						////////////////////////////////////////////////////////////////////////////////////////
-						
-/*						while(*pos >= 0 && output[*pos - 1] != specials[0] && output[*pos - 1] != specials[5]) {
-							(*pos)--;
-						}
-						
-						INCR_MEM(22);
-						
-						typeTo(output, "for(unsigned int ", pos);
-						
-						// Generate iterator name
-						char it_name[64];
-						size_t it_name_len;
-						strcpy(it_name, keywords[i]);
-						strcat(it_name, "_it");
-						
-						it_name_len = strlen(it_name);
-						INCR_MEM(it_name_len);
-						typeTo(output, it_name, pos);
-						
-						output[*pos] = '=';
-						(*pos)++;
-						
-						// Get sublist start pos
-						if(keywords[i + i_pos - 1][0] == specials[2]) { // Use default
-							INCR_MEM(1);
-							output[*pos] = '0';
-							(*pos)++;
-						} else if(keywords[i + i_pos - 2][0] == specials[2]) {
-							for(unsigned int sn_pos = 0; keywords[i + i_pos - 1][sn_pos] != '\0'; sn_pos++) {
-								INCR_MEM(1);
-								output[*pos] = keywords[i + i_pos - 1][sn_pos];
-								(*pos)++;
-							}
-						} else {
-							break; // TMP, WIP
-						}
-						
-						i_pos += 3;
-						
-						output[*pos] = ';';
-						(*pos)++;
-						
-						INCR_MEM(it_name_len);
-						typeTo(output, it_name, pos);
-						output[*pos] = '<';
-						(*pos)++;
-						
-						// Get sublist end pos
-						if(keywords[i + i_pos][0] == specials[3]) { // Use default
-//								typeTo(output, list_length, pos); // TODO: Define 'list_length'
-							break; // TMP
-						} else if(keywords[i + i_pos - 1][0] == specials[9]) {
-							for(unsigned int en_pos = 0; keywords[i + i_pos][en_pos] != '\0'; en_pos++) {
-								INCR_MEM(1);
-								output[*pos] = keywords[i + i_pos][en_pos];
-								(*pos)++;
-							}
-							
-							i_pos++;
-						} else {
-							break; // TMP, WIP
-						}
-						
-						i_pos++;
-						
-						output[*pos] = ';';
-						(*pos)++;
-						
-						INCR_MEM(it_name_len * 3 + 5);
-						typeTo(output, it_name, pos);
-						typeTo(output, "++){", pos);
-						
-						unsigned int beflist_pos = 0;
-						while(i - beflist_pos >= 0 && keywords[i - beflist_pos][0] != specials[0]) {
-							beflist_pos++;
-						}
-						
-						for(beflist_pos--; beflist_pos > 0; beflist_pos--) {
-							INCR_MEM(1);
-							typeTo(output, keywords[i - beflist_pos], pos);
-						}
-						
-						typeTo(output, keywords[i], pos);
-						
-						output[*pos] = '[';
-						(*pos)++;
-						typeTo(output, it_name, pos);
-						output[*pos] = ']';
-						(*pos)++;
-						
-						output[*pos] = ' ';
-						(*pos)++;
-						
-						for(; !(keywords[i + i_pos][0] == specials[0] && keywords[i + i_pos][1] == '\0'); i_pos++) {
-							INCR_MEM(1);
-							typeTo(output, keywords[i + i_pos], pos);
-						}
-						
-						output[*pos] = '}';
-						(*pos)++;
-						
-						i += i_pos;
-						
-						break; */
 					} else if(keywords[i + i_pos][0] == specials[10] && keywords[i + i_pos + 1][0] == specials[10] && keywords[i + i_pos + 2][0] == specials[10]) {
 						break; // TMP, WIP
 					}
