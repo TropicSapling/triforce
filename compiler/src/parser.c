@@ -266,14 +266,16 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 								typeToOutput(keywords[i - st_pos2]);
 							}
 							
+							typeToOutput(keywords[i]);
 							output[*pos] = '[';
 							(*pos)++;
 							typeToOutput(it_name);
-							typeToOutput("]){break;}}");
+							typeToOutput("])){break;}}");
 							
 							while(keywords[i - st_pos][0] != specials[0] && keywords[i - st_pos][0] != specials[4]) {
 								st_pos++;
 							}
+							st_pos--;
 							
 							for(; st_pos > st_pos_c; st_pos--) {
 								typeToOutput(keywords[i - st_pos]);
