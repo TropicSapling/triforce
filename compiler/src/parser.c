@@ -298,6 +298,15 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 						}
 					} else if(keywords[i + i_pos][0] == specials[10] && keywords[i + i_pos + 1][0] == specials[10] && keywords[i + i_pos + 2][0] == specials[10]) {
 						break; // TMP, WIP
+					} else {
+						for(int it = 0; keywords[i][it] != '\0'; it++) {
+							INCR_MEM(1);
+							
+							output[*pos] = keywords[i][it];
+							(*pos)++;
+						}
+						
+						typeToOutput("_ppl");
 					}
 				}
 			}
