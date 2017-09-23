@@ -7,15 +7,11 @@
 #include "def.h"
 
 #define INCR_MEM(size) do { \
-	if(*key + (size) > keywords_size / sizeof(char*) && addSpaceForKeys(keywords, &keywords_size) == NULL) { \
-		return 1; \
-	} \
+	if(*key + (size) > keywords_size / sizeof(char*)) addSpaceForKeys(keywords, &keywords_size); \
 } while(0)
 
 #define INCR_MEM2(size) do { \
-	if(*pkey + (size) > pointers_size / sizeof(char*) && addSpaceForKeys(pointers, &pointers_size) == NULL) { \
-		return 1; \
-	} \
+	if(*pkey + (size) > pointers_size / sizeof(char*)) addSpaceForKeys(pointers, &pointers_size); \
 } while(0)
 
 bool inStr = false;
@@ -30,6 +26,7 @@ char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
 	if(res == NULL) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
+		exit(EXIT_FAILURE);
 	} else {
 		*keywords = (char**) res;
 	}
@@ -45,7 +42,7 @@ bool isSpecial(char c, char specials[]) {
 	return false;
 }
 
-int lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, char ***pointers, size_t pointers_size, size_t *pkey, char specials[]) {
+void lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, char ***pointers, size_t pointers_size, size_t *pkey, char specials[]) {
 	char *org_input = input;
 	
 	INCR_MEM(1);
@@ -146,6 +143,4 @@ int lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, 
 			(*key)++;
 		}
 	}
-	
-	return 0;
 }

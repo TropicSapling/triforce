@@ -7,15 +7,11 @@
 #include "def.h"
 
 #define INCR_MEM(size) do { \
-	if(input_item + (size) > input_size && addSpaceForFileChars(processed_input, &input_size) == NULL) { \
-		return 1; \
-	} \
+	if(input_item + (size) > input_size) addSpaceForFileChars(processed_input, &input_size); \
 } while(0)
 
 #define INCR_EXPORTS_MEM(size) do { \
-	if(*ekey + (size) > *exports_size && addSpaceForFileChars(exports, exports_size) == NULL) { \
-		return 1; \
-	} \
+	if(*ekey + (size) > *exports_size) addSpaceForFileChars(exports, exports_size); \
 } while(0)
 
 char *addSpaceForFileChars(char **str, size_t *str_size) {
@@ -25,6 +21,7 @@ char *addSpaceForFileChars(char **str, size_t *str_size) {
 	if(res == NULL) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
+		exit(EXIT_FAILURE);
 	} else {
 		*str = (char*) res;
 	}
@@ -32,7 +29,7 @@ char *addSpaceForFileChars(char **str, size_t *str_size) {
 	return res;
 }
 
-int preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char *path[], char **exports, size_t *exports_size, size_t *ekey) {
+void preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char *path[], char **exports, size_t *exports_size, size_t *ekey) {
 	char buf[65536];
 	size_t input_item = 0;
 	
@@ -172,7 +169,7 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 				if(lib == NULL) {
 					perror("ERROR");
 					fprintf(stderr, "ID: %d\n", errno);
-					return 1;
+					exit(EXIT_FAILURE);
 				}
 				
 				if(trimmed_buf[c + i + 2] == 'a') {
@@ -184,10 +181,10 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 					
 					size_t ec_key = 0;
 					
-					if(preprocess(&lib, &lib_contents, exported_content_size, specials, path, &exported_content, &exported_content_size, &ec_key)) return 1;
+					preprocess(&lib, &lib_contents, exported_content_size, specials, path, &exported_content, &exported_content_size, &ec_key);
 					free(lib_contents);
 					
-					if(ec_key > exported_content_size && addSpaceForFileChars(&exported_content, &exported_content_size) == NULL) return 1;
+					if(ec_key > exported_content_size) addSpaceForFileChars(&exported_content, &exported_content_size);
 					exported_content[ec_key] = '\0';
 					
 					char *org_exported_content = exported_content;
@@ -233,6 +230,4 @@ int preprocess(FILE **input, char **processed_input, size_t input_size, char spe
 	
 	INCR_MEM(1);
 	(*processed_input)[input_item] = '\0';
-	
-	return 0;
 }

@@ -8,13 +8,11 @@
 #include "def.h"
 
 #define INCR_MEM(size) do { \
-	if(*pos + (size) > output_size && addSpaceForChars(&output, &output_size) == NULL) { \
-		return NULL; \
-	} \
+	if(*pos + (size) > output_size) addSpaceForChars(&output, &output_size); \
 } while(0)
 
 #define typeToOutput(str) do { \
-	if(typeTo(&output, &output_size, str, pos) == NULL) return NULL; \
+	typeTo(&output, &output_size, str, pos); \
 } while(0)
 
 #define RED   "\x1B[31m"
@@ -30,6 +28,7 @@ char *addSpaceForChars(char **keywords, size_t *keywords_size) {
 	if(res == NULL) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
+		exit(EXIT_FAILURE);
 	} else {
 		*keywords = res;
 	}
@@ -53,14 +52,12 @@ bool isNumber(char *str) {
 	return true;
 }
 
-char *typeTo(char **output, size_t *output_size, char *str, size_t *pos) {
+void *typeTo(char **output, size_t *output_size, char *str, size_t *pos) {
 	for(size_t i = 0; str[i] != '\0'; i++) {
-		if(*pos + 1 > *output_size && addSpaceForChars(output, output_size) == NULL) return NULL;
+		if(*pos + 1 > *output_size) addSpaceForChars(output, output_size);
 		(*output)[*pos] = str[i];
 		(*pos)++;
 	}
-	
-	return &(*output)[*pos];
 }
 
 void addIteratorID(char *str_end, size_t *iterator_count) {
@@ -186,7 +183,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 						} else if(keywords[i - 1][0] == specials[9] || keywords[i - 1][0] == specials[10] || keywords[i - 1][0] == specials[11] || keywords[i - 1][0] == specials[17] || keywords[i - 1][0] == specials[18] || keywords[i - 1][0] == specials[19]) {
 							// keywords[i - 1] is a comparison operator
 							
-							while(*pos >= 0 && output[*pos - 1] != specials[0] && output[*pos - 1] != specials[5]) {
+							while(*pos >= 0 && output[*pos - 1] != specials[0] && output[*pos - 1] != specials[4] && output[*pos - 1] != specials[5]) {
 								(*pos)--;
 							}
 							
@@ -263,6 +260,22 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							
 							unsigned int st_pos_c = st_pos;
 							for(unsigned int st_pos2 = st_pos; st_pos2 > 0; st_pos2--) {
+/*								if(st_pos2 <= 3 && keywords[i - st_pos2][0] == specials[2]) {
+									INCR_MEM(2);
+									output[*pos] = '[';
+									(*pos)++;
+									typeToOutput(it_name);
+									output[*pos] = ']';
+									(*pos)++;
+									
+									st_pos2--;
+									typeToOutput(keywords[i - st_pos2]);
+									st_pos2--;
+									if(st_pos2 > 0) typeToOutput(keywords[i - st_pos2]);
+									
+									break;
+								} */ // WIP
+								
 								typeToOutput(keywords[i - st_pos2]);
 							}
 							
@@ -272,7 +285,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							typeToOutput(it_name);
 							typeToOutput("])){break;}}");
 							
-							while(keywords[i - st_pos][0] != specials[0] && keywords[i - st_pos][0] != specials[4]) {
+							while(keywords[i - st_pos][0] != specials[0] && keywords[i - st_pos][0] != specials[4] && keywords[i - st_pos][0] != specials[5]) {
 								st_pos++;
 							}
 							st_pos--;
@@ -290,7 +303,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							typeToOutput("?1:0)");
 							
 							i += i_pos;
-							for(; keywords[i][0] != specials[0] && keywords[i][0] != specials[5]; i++) {
+							for(; keywords[i][0] != specials[0] && keywords[i - st_pos][0] != specials[4] && keywords[i][0] != specials[5]; i++) {
 								typeToOutput(keywords[i]);
 							}
 							
