@@ -84,6 +84,25 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char sp
 					}
 				}
 			} else if(strcmp(skey, "def") == 0) {
+				c++;
+				
+				// Get what to replace
+				char toReplace[256];
+				unsigned int i = 0;
+				for(; trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"'; i++) {
+					toReplace[i] = trimmed_buf[c + i];
+				}
+				toReplace[i] = '\0';
+				c += i + 3;
+				
+				// Get what to replace with
+				char replacer[256];
+				unsigned int r_pos = 0;
+				for(; trimmed_buf[c + r_pos] != '\'' && trimmed_buf[c + r_pos] != '"'; r_pos++) {
+					replacer[i] = trimmed_buf[c + r_pos];
+				}
+				replacer[i] = '\0';
+				
 				// WIP
 			} else if(strcmp(skey, "ifdef") == 0) {
 				// WIP
