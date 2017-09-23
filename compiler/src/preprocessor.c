@@ -37,7 +37,7 @@ unsigned int replaceIfDefined2(char *input, size_t *input_item, char *buf, char 
 	return 0;
 }
 
-void preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char *path[], char **exports, size_t *exports_size, size_t *ekey) {
+void preprocess(FILE **input, char **processed_input, size_t input_size, char *path[], char **exports, size_t *exports_size, size_t *ekey) {
 	char buf[65536];
 	size_t input_item = 0;
 	
@@ -203,7 +203,7 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char sp
 					
 					size_t ec_key = 0;
 					
-					preprocess(&lib, &lib_contents, exported_content_size, specials, path, &exported_content, &exported_content_size, &ec_key);
+					preprocess(&lib, &lib_contents, exported_content_size, path, &exported_content, &exported_content_size, &ec_key);
 					free(lib_contents);
 					
 					if(ec_key > exported_content_size) addSpaceForFileChars(&exported_content, &exported_content_size);

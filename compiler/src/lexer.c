@@ -96,7 +96,7 @@ void lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key,
 			input++;
 		}
 		
-		if(*input == specials[0] || *input == specials[4] || *input == specials[5]) {
+		if(*input == ';' || *input == '{' || *input == '}') {
 			*input = '\0';
 			input++;
 			

@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 	
 	size_t processed_input_size = 256;
 	char *processed_input = malloc(processed_input_size);
-	preprocess(&input, &processed_input, processed_input_size, specials, argv, NULL, NULL, NULL);
+	preprocess(&input, &processed_input, processed_input_size, argv, NULL, NULL, NULL);
 	
 	fclose(input);
 	
