@@ -122,7 +122,20 @@ void lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key,
 		input++;
 		
 		if(foundSpecial) {
-			if((*keywords)[*pkey - 1][strlen((*keywords)[*pkey - 1]) - 1] == ')') {
+			if((special[0] == '>' || special[0] == '<' || special[0] == '=' || special[0] == '+' || special[0] == '-' || special[0] == '*' || special[0] == '/' || special[0] == '%') && (*keywords)[*key - 1][strlen((*keywords)[*key - 1]) - 1] != ')') {
+				char *extra_special = malloc(2);
+				extra_special[0] = '(';
+				extra_special[1] = '\0';
+				
+				INCR_MEM(1);
+				INCR_MEM2(1);
+				
+				(*keywords)[*key] = (*keywords)[*key - 1];
+				(*keywords)[*key - 1] = extra_special;
+				(*key)++;
+				
+				(*pointers)[*pkey] = extra_special;
+				(*pkey)++;
 				// WIP
 			}
 			
