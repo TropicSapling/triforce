@@ -29,9 +29,20 @@ char *addSpaceForFileChars(char **str, size_t *str_size) {
 	return res;
 }
 
+unsigned int replaceIfDefined(char *input, size_t *input_item, char *buf, char defs[128][2][128]) {
+	return 0;
+}
+
+unsigned int replaceIfDefined2(char *input, size_t *input_item, char *buf, char defs[128][2][128]) {
+	return 0;
+}
+
 void preprocess(FILE **input, char **processed_input, size_t input_size, char specials[], char *path[], char **exports, size_t *exports_size, size_t *ekey) {
 	char buf[65536];
 	size_t input_item = 0;
+	
+	char defs[128][2][128];
+	size_t defID = 0;
 	
 	bool ignoring = false;
 	bool inStr = false;
@@ -76,34 +87,26 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char sp
 			
 			c++;
 			
-			if(strcmp(skey, "redef") == 0) {
-				for(unsigned short s = 0; specials[s] != '\0'; s++) {
-					if(trimmed_buf[c] == specials[s]) {
-						specials[s] = trimmed_buf[c + 5];
-						break;
-					}
-				}
-			} else if(strcmp(skey, "def") == 0) {
+			if(strcmp(skey, "def") == 0) {
 				c++;
 				
 				// Get what to replace
-				char toReplace[256];
 				unsigned int i = 0;
 				for(; trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"'; i++) {
-					toReplace[i] = trimmed_buf[c + i];
+					defs[defID][0][i] = trimmed_buf[c + i];
 				}
-				toReplace[i] = '\0';
+				defs[defID][0][i] = '\0';
+				
 				c += i + 3;
 				
 				// Get what to replace with
-				char replacer[256];
 				unsigned int r_pos = 0;
 				for(; trimmed_buf[c + r_pos] != '\'' && trimmed_buf[c + r_pos] != '"'; r_pos++) {
-					replacer[i] = trimmed_buf[c + r_pos];
+					defs[defID][1][i] = trimmed_buf[c + r_pos];
 				}
-				replacer[i] = '\0';
+				defs[defID][1][i] = '\0';
 				
-				// WIP
+				defID++;
 			} else if(strcmp(skey, "ifdef") == 0) {
 				// WIP
 			} else if(strcmp(skey, "import") == 0) {
@@ -231,18 +234,22 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char sp
 		
 		if(exporting) {
 			while(*trimmed_buf != '\0') {
-				INCR_EXPORTS_MEM(1);
-				(*exports)[*ekey] = *trimmed_buf;
-				(*ekey)++;
-				trimmed_buf++;
+				if(!replaceIfDefined2(*processed_input, &input_item, trimmed_buf, defs)) {
+					INCR_EXPORTS_MEM(1);
+					(*exports)[*ekey] = *trimmed_buf;
+					(*ekey)++;
+					trimmed_buf++;
+				}
 			}
 		} else {
 			while(*trimmed_buf != '\0') {
-				INCR_MEM(1);
-				(*processed_input)[input_item] = *trimmed_buf;
-				
-				input_item++;
-				trimmed_buf++;
+				if(!replaceIfDefined(*processed_input, &input_item, trimmed_buf, defs)) {
+					INCR_MEM(1);
+					(*processed_input)[input_item] = *trimmed_buf;
+					
+					input_item++;
+					trimmed_buf++;
+				}
 			}
 		}
 	}
