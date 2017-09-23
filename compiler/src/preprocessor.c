@@ -29,15 +29,15 @@ char *addSpaceForFileChars(char **str, size_t *str_size) {
 	return res;
 }
 
-unsigned int replaceIfDefined(char **exports, size_t *ekey, size_t *exports_size, char *str, char defs[128][2][128], size_t defs_len) {
+unsigned int replaceIfDefined(char **exports, size_t *ekey, size_t *exports_size, char **str, char defs[128][2][128], size_t defs_len) {
 	for(size_t i = 0; i < defs_len; i++) {
-		if(strncmp(str, defs[i][0], strlen(defs[i][0])) == 0) {
+		if(strncmp(*str, defs[i][0], strlen(defs[i][0])) == 0) {
 			for(unsigned short s = 0; s < strlen(defs[i][1]); s++) {
 				INCR_EXPORTS_MEM(1);
 				(*exports)[*ekey] = defs[i][1][s];
 				
 				(*ekey)++;
-				str++;
+				(*str)++;
 			}
 			
 			return 1;
@@ -107,14 +107,14 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 				}
 				defs[defID][0][i] = '\0';
 				
-				c += i + 3;
+				c += i + 6;
 				
 				// Get what to replace with
 				unsigned int r_pos = 0;
 				for(; trimmed_buf[c + r_pos] != '\'' && trimmed_buf[c + r_pos] != '"'; r_pos++) {
-					defs[defID][1][i] = trimmed_buf[c + r_pos];
+					defs[defID][1][r_pos] = trimmed_buf[c + r_pos];
 				}
-				defs[defID][1][i] = '\0';
+				defs[defID][1][r_pos] = '\0';
 				
 				defID++;
 			} else if(strcmp(skey, "ifdef") == 0) {
@@ -244,7 +244,7 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 		
 		if(exporting) {
 			while(*trimmed_buf != '\0') {
-				if(!replaceIfDefined(exports, ekey, exports_size, trimmed_buf, defs, defID)) {
+				if(!replaceIfDefined(exports, ekey, exports_size, &trimmed_buf, defs, defID)) {
 					INCR_EXPORTS_MEM(1);
 					(*exports)[*ekey] = *trimmed_buf;
 					(*ekey)++;
@@ -253,7 +253,7 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 			}
 		} else {
 			while(*trimmed_buf != '\0') {
-				if(!replaceIfDefined(processed_input, &input_item, &input_size, trimmed_buf, defs, defID)) {
+				if(!replaceIfDefined(processed_input, &input_item, &input_size, &trimmed_buf, defs, defID)) {
 					INCR_MEM(1);
 					(*processed_input)[input_item] = *trimmed_buf;
 					
