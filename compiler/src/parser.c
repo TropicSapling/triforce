@@ -194,7 +194,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 								(*pos)--;
 							}
 							
-							INCR_MEM(6);
+							INCR_MEM(8);
 							
 							// Create iterator
 							typeToOutput("size_t ");
@@ -262,9 +262,32 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 								st_pos++;
 							}
 							
+							unsigned int st_pos_bef = st_pos;
+							while(keywords[i - st_pos_bef][0] != '[') {
+								st_pos_bef++;
+							}
+							st_pos_bef++;
+							
+							if(keywords[i - st_pos_bef][0] == ')') {
+								while(keywords[i - st_pos_bef][0] != '(') {
+									st_pos_bef++;
+								}
+							}
+							
 							// Type expression before comparison operator
+							for(; keywords[i - st_pos_bef][0] != '['; st_pos_bef--) {
+								typeToOutput(keywords[i - st_pos_bef]);
+							}
+							
+							output[*pos] = '[';
+							(*pos)++;
+							typeToOutput(it_name);
+							output[*pos] = ']';
+							(*pos)++;
+							
+							// Type comparison operator
 							unsigned int st_pos_c = st_pos;
-							for(unsigned int st_pos2 = st_pos; st_pos2 > 0; st_pos2--) {
+							for(unsigned int st_pos2 = st_pos - 1; st_pos2 > 0; st_pos2--) {
 /*								if(st_pos2 <= 3 && keywords[i - st_pos2][0] == '[') {
 									INCR_MEM(2);
 									output[*pos] = '[';
