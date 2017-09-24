@@ -169,11 +169,16 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 		} else if(i + 1 < keys && keywords[i + 1][0] == '[') {
 			// LISTS
 			
+			bool foundSublist = false;
+			
 			if(strcmp(keywords[i + 2], "when") == 0) {
 				// WIP
 			} else {
-				for(unsigned int i_pos = 2; keywords[i + i_pos][0] != ']'; i_pos++) {
+				unsigned int i_pos = 2;
+				for(; keywords[i + i_pos][0] != ']'; i_pos++) {
 					if(keywords[i + i_pos][0] == '>' && keywords[i + i_pos + 1][0] == '>' && keywords[i + i_pos + 2][0] == '>') {
+						foundSublist = true;
+						
 						unsigned int st_pos = 0;
 						if(keywords[i][0] == ')') {
 							while(keywords[i - st_pos][0] != '(') {
@@ -274,6 +279,8 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 								}
 							}
 							
+							unsigned int st_pos_bef_c = st_pos_bef;
+							
 							// Type expression before comparison operator
 							for(; keywords[i - st_pos_bef][0] != '['; st_pos_bef--) {
 								typeToOutput(keywords[i - st_pos_bef]);
@@ -286,7 +293,6 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							(*pos)++;
 							
 							// Type comparison operator
-							unsigned int st_pos_c = st_pos;
 							for(unsigned int st_pos2 = st_pos - 1; st_pos2 > 0; st_pos2--) {
 /*								if(st_pos2 <= 3 && keywords[i - st_pos2][0] == '[') {
 									INCR_MEM(2);
@@ -320,7 +326,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							st_pos--;
 							
 							// Type statement before comparison
-							for(; st_pos > st_pos_c; st_pos--) {
+							for(; st_pos > st_pos_bef_c; st_pos--) {
 								typeToOutput(keywords[i - st_pos]);
 							}
 							
@@ -340,7 +346,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							
 							// Type statement after comparison
 							i += i_pos;
-							for(; keywords[i][0] != ';' && keywords[i][0] != '{' && keywords[i][0] != '}'; i++) {
+							for(; keywords[i - 1][0] != ';' && keywords[i - 1][0] != '{' && keywords[i - 1][0] != '}'; i++) {
 								typeToOutput(keywords[i]);
 							}
 							
@@ -348,26 +354,16 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 						}
 					} else if(keywords[i + i_pos][0] == '<' && keywords[i + i_pos + 1][0] == '<' && keywords[i + i_pos + 2][0] == '<') {
 						break; // TMP, WIP
-					} else {
-						for(int it = 0; keywords[i][it] != '\0'; it++) {
-							INCR_MEM(1);
-							
-							output[*pos] = keywords[i][it];
-							(*pos)++;
-						}
-						
-						typeToOutput("_ppl");
 					}
+				}
+				
+				if(!foundSublist) {
+					typeToOutput(keywords[i]);
+					typeToOutput("_ppl");
 				}
 			}
 		} else if(keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
-			for(int it = 0; keywords[i][it] != '\0'; it++) {
-				INCR_MEM(1);
-				
-				output[*pos] = keywords[i][it];
-				(*pos)++;
-			}
-			
+			typeToOutput(keywords[i]);
 			typeToOutput("_ppl");
 		} else {
 			// DEBUG; will be replaced later
