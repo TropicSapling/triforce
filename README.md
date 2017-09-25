@@ -22,55 +22,8 @@ P+ is for...
 
 --------
 
-#### Comments
-* `// <One line comment>`
-
-```
-/* <Multi
-line
-comment> */
-```
-
---------
-
-### Planned
-
---------
-
 #### Data types
-##### Basic
-* `number`
-* `bool`
 * `char`
-* `(array|list|pointer)[*<n>]`
-* `func`
-
-##### Extras
-* `only [register|stack|heap] [volatile] [unique] [func] (array|list|pointer)[*<n>] [chan]`
-* `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [func] [(array|list|pointer)[*<n>]] [chan]`
-* `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number [func] (array|list|pointer)[*<n>] [chan]`
-* `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [func] [(array|list|pointer)[*<n>]] [chan]`
-* `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) [func] (array|list|pointer)[*<n>] [chan]`
-
-##### Special
-* `void`
-* ``type <custom type> = <type1>[`|`<type2>`|`<type3>...]``
-* `clang <type> <function name>([<parameters>]) { <C code> }`
-* Not specifying a type for a function parameter allows the parameter to be of any type.
-
-##### Properties
-* `` var`<type>` ``
-* `` var`<size>` ``
-* `` var`<alignment>` ``
-* `` var`<scope>` ``
-* `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
-* `` pointer_to_list`<length>` `` \[**NOTE:** `` some_list`<`<property>`>` `` will **not** access the property of the whole list, but the properties of each item of the list.\* Use `` ->some_list`<`<property>`>` `` instead. \]
-* `` pointer_to_list`<separator>` ``
-* `` channel`<buffer>` ``
-* `var>bit<`
-* You can assign properties at variable creation: ``<type> [`<`<property1>`>`=<property1 value> `<`<property2>`>`=<property2 value>...] var``
-
-<sup>\*This is because `` some_list`<`<property>`>` `` decays into `` pointer_to_list[>>>]`<`<property>`>` ``</sup>
 
 --------
 
@@ -81,7 +34,6 @@ comment> */
 * `*`
 * `/`
 * `%`
-* `**`
 
 ##### Bitwise
 * `&`
@@ -118,11 +70,70 @@ comment> */
 
 ##### Misc.
 * `? :`
-* `->`
 * `[]`
 * `@`
-* `<<<`
 * `>>>`
+
+--------
+
+#### Comments
+* `// <One line comment>`
+
+```
+/* <Multi
+line
+comment> */
+```
+
+--------
+
+### Planned
+
+--------
+
+#### Data types
+##### Basic
+* `number`
+* `bool`
+* `(array|list|pointer)[*<n>]`
+* `func`
+
+##### Extras
+* `only [register|stack|heap] [volatile] [unique] [func] (array|list|pointer)[*<n>] [chan]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [func] [(array|list|pointer)[*<n>]] [chan]`
+* `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number [func] (array|list|pointer)[*<n>] [chan]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [func] [(array|list|pointer)[*<n>]] [chan]`
+* `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) [func] (array|list|pointer)[*<n>] [chan]`
+
+##### Special
+* `void`
+* ``type <custom type> = <type1>[`|`<type2>`|`<type3>...]``
+* `clang <type> <function name>([<parameters>]) { <C code> }`
+* Not specifying a type for a function parameter allows the parameter to be of any type.
+
+##### Properties
+* `` var`<type>` ``
+* `` var`<size>` ``
+* `` var`<alignment>` ``
+* `` var`<scope>` ``
+* `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
+* `` pointer_to_list`<length>` `` \[**NOTE:** `` some_list`<`<property>`>` `` will **not** access the property of the whole list, but the properties of each item of the list.\* Use `` ->some_list`<`<property>`>` `` instead. \]
+* `` pointer_to_list`<separator>` ``
+* `` channel`<buffer>` ``
+* `var>bit<`
+* You can assign properties at variable creation: ``<type> [`<`<property1>`>`=<property1 value> `<`<property2>`>`=<property2 value>...] var``
+
+<sup>\*This is because `` some_list`<`<property>`>` `` decays into `` pointer_to_list[>>>]`<`<property>`>` ``</sup>
+
+--------
+
+#### Operators
+##### Arithmetic
+* `**`
+
+##### Misc.
+* `->`
+* `<<<`
 * `in` (example: `if(item in arr) ...`)
 
 --------
