@@ -7,15 +7,11 @@
 #include "def.h"
 
 #define INCR_MEM(size) do { \
-	if(*key + (size) > keywords_size / sizeof(char*) && addSpaceForKeys(keywords, &keywords_size) == NULL) { \
-		return 1; \
-	} \
+	if(*key + (size) > keywords_size / sizeof(char*)) addSpaceForKeys(keywords, &keywords_size); \
 } while(0)
 
 #define INCR_MEM2(size) do { \
-	if(*pkey + (size) > pointers_size / sizeof(char*) && addSpaceForKeys(pointers, &pointers_size) == NULL) { \
-		return 1; \
-	} \
+	if(*pkey + (size) > pointers_size / sizeof(char*)) addSpaceForKeys(pointers, &pointers_size); \
 } while(0)
 
 bool inStr = false;
@@ -30,6 +26,7 @@ char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
 	if(res == NULL) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
+		exit(EXIT_FAILURE);
 	} else {
 		*keywords = (char**) res;
 	}
@@ -45,202 +42,120 @@ bool isSpecial(char c, char specials[]) {
 	return false;
 }
 
-int lex_parse(FILE *input, char ***keywords, size_t keywords_size, size_t *key, char ***pointers, size_t pointers_size, size_t *pkey, size_t file_size, char specials[]) {
-	char buf[65536];
-	char extra_buf[16] = "\0";
-	char *c;
+void lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key, char ***pointers, size_t pointers_size, size_t *pkey, char specials[]) {
+	INCR_MEM(1);
+	(*keywords)[*key] = input;
+	(*key)++;
 	
-	long double progress = 0.0;
-	
-	while(fgets(buf, 65536, input) != NULL) {
-		if(strcmp(buf, "\n") == 0 || strcmp(buf, "\r\n") == 0) {
-			continue;
+	while(*input != '\0') {
+		char *special;
+		bool foundSpecial = false;
+		
+		if(ignoring) {
+			*input = '\0';
+			input++;
 		}
 		
-		size_t new_size = strlen(buf) + 1;
-		char *trimmed_buf = &buf[0];
-		while(*trimmed_buf == '\t' || *trimmed_buf == ' ') {
-			new_size--;
-			trimmed_buf++;
-		}
-		
-		// PREPROCESSING
-		if(trimmed_buf[0] == '#' && !inStr) {
-			size_t c = 1;
-			char skey[8];
-			
-			while(trimmed_buf[c] != ' ' && trimmed_buf[c] != '\0') {
-				skey[c - 1] = trimmed_buf[c];
-				c++;
-			}
-			
-			skey[c - 1] = '\0';
-			
-			c++;
-			progress += c;
-			
-			if(strcmp(skey, "redef") == 0) {
-				for(short s = 0; specials[s] != '\0'; s++) {
-					if(trimmed_buf[c] == specials[s]) {
-						specials[s] = trimmed_buf[c + 5];
-						break;
-					}
-				}
-				
-				progress += 5;
-			} else if(strcmp(skey, "def") == 0) {
-				// WIP
-			} else if(strcmp(skey, "ifdef") == 0) {
-				// WIP
-			} else if(strcmp(skey, "import") == 0) {
-				// WIP
-			} else if(strcmp(skey, "export") == 0) {
-				// WIP
-			}
-			
-			continue;
-		}
-		
-		if(extra_buf != NULL) {
-			new_size += strlen(extra_buf);
-		}
-		
-		char *tmp = malloc(new_size);
-		if(tmp == NULL) {
-			perror("ERROR");
-			fprintf(stderr, "ID: %d\n", errno);
-		} else {
-			c = tmp;
-		}
-		
-		if(extra_buf[0] != '\0') {
-			strcpy(c, extra_buf);
-			strcat(c, trimmed_buf);
-			
-			extra_buf[0] = '\0';
-		} else {
-			strcpy(c, trimmed_buf);
-		}
-		
-		INCR_MEM(1);
-		INCR_MEM2(1);
-		
-		(*pointers)[*pkey] = c; // This is used to mark where memory was allocated for 'c'
-		(*pkey)++;
-		
-		(*keywords)[*key] = c;
-		(*key)++;
-		
-		size_t row_len = 0;
-		
-		while(row_len < 65521) {
-			char *special;
-			bool foundSpecial = false;
-			
+		while((ignoring || inStr || inStr2 || *input != ' ') && *input != '\0') {
 			if(ignoring) {
-				*c = '\0';
-				c++;
-			}
-			
-			while((ignoring || inStr || inStr2 || *c != ' ') && *c != '\0') {
-				if(ignoring) {
-					if(*c == '*' && *(c + 1) == '/') {
-						ignoring = false;
-						c++;
-						
-						INCR_MEM(1);
-						
-						(*keywords)[*key] = c + 1;
-						(*key)++;
-					}
-				} else if(!inStr && isSpecial(*c, specials)) {
-					special = calloc(2, 1);
-					special[0] = *c;
-					foundSpecial = true;
+				if(*input == '*' && *(input + 1) == '/') {
+					ignoring = false;
+					input++;
 					
-					break;
-				} else if(escaping) {
-					escaping = false;
-				} else if(!inStr2 && *c == '\'') {
-					if(inStr) {
-						inStr = false;
-						break;
-					} else {
-						inStr = true;
-					}
-				} else if(!inStr && *c == '"') {
-					if(inStr2) {
-						inStr2 = false;
-						break;
-					} else {
-						inStr2 = true;
-					}
-				} else if(*c == '\\') {
-					escaping = true;
+					INCR_MEM(1);
+					
+					(*keywords)[*key] = input + 1;
+					(*key)++;
 				}
+			} else if(!inStr && !inStr2 && isSpecial(*input, specials)) {
+				special = calloc(2, 1);
+				special[0] = *input;
+				foundSpecial = true;
 				
-				c++;
-				row_len++;
-			}
-			
-			if(*c == '\0') {
-				if(*(c - 1) == '\n') *(c - 1) = '\0';
-				if(*(c - 2) == '\r') *(c - 2) = '\0';
-				c++;
 				break;
-			} else {
-				if(*c == '/' && *(c + 1) == '/') {
-					*c = '\0';
-					free(special);
-					
+			} else if(escaping) {
+				escaping = false;
+			} else if(!inStr2 && *input == '\'') {
+				if(inStr) {
+					inStr = false;
 					break;
-				} else if(*c == '/' && *(c + 1) == '*') {
-					ignoring = true;
-					*c = '\0';
-					free(special);
-					
-					continue;
+				} else {
+					inStr = true;
 				}
+			} else if(!inStr && *input == '"') {
+				if(inStr2) {
+					inStr2 = false;
+					break;
+				} else {
+					inStr2 = true;
+				}
+			} else if(*input == '\\') {
+				escaping = true;
 			}
 			
-			if(c == tmp || *(c - 1) != '\0') {
-				*c = '\0';
-			}
+			input++;
+		}
+		
+		if(*input == ';' || *input == '{' || *input == '}') {
+			*input = '\0';
+			input++;
 			
-			c++;
-			row_len++;
+			while(*input == ' ') input++;
+			if(*input == '/' && *(input + 1) == '/') while(*input != '\n') input++;
 			
-			if(row_len < 65521) {
-				if(foundSpecial) {
-					INCR_MEM(1);
-					INCR_MEM2(1);
-					
-					(*pointers)[*pkey] = special; // This is used to mark where memory was allocated for 'special'
-					(*pkey)++;
-					
-					(*keywords)[*key] = special;
-					(*key)++;
-					
-					if(*c == ' ') c++;
-				}
+			if(*input == '\r') {
+				input++;
+			} else if(*input == '/' && *(input + 1) == '*') {
+				ignoring = true;
+				input++;
 				
-				if(!isSpecial(*c, specials)) {
-					INCR_MEM(1);
-					
-					(*keywords)[*key] = c;
-					(*key)++;
-				}
+				continue;
+			} else if(*input != '\n') {
+				input--;
 			}
 		}
 		
-		if(row_len > 65520) {
-			strcpy(extra_buf, c);
+		if(*(input - 1) != '\0') {
+			*input = '\0';
 		}
 		
-		progress += row_len;
-		printf("Reading file... %.2Lf%%\r", (progress / file_size) * 100);
-		fflush(stdout);
+		input++;
+		
+		if(foundSpecial) {
+/*			if((special[0] == '>' || special[0] == '<' || special[0] == '=' || special[0] == '+' || special[0] == '-' || special[0] == '*' || special[0] == '/' || special[0] == '%') && (*keywords)[*key - 1][strlen((*keywords)[*key - 1]) - 1] != ')') {
+				char *extra_special = malloc(2);
+				extra_special[0] = '(';
+				extra_special[1] = '\0';
+				
+				INCR_MEM(1);
+				INCR_MEM2(1);
+				
+				(*keywords)[*key] = (*keywords)[*key - 1];
+				(*keywords)[*key - 1] = extra_special;
+				(*key)++;
+				
+				(*pointers)[*pkey] = extra_special;
+				(*pkey)++;
+				// WIP
+			} */
+			
+			INCR_MEM(1);
+			INCR_MEM2(1);
+			
+			(*pointers)[*pkey] = special; // This is used to mark where memory was allocated for 'special'
+			(*pkey)++;
+			
+			(*keywords)[*key] = special;
+			(*key)++;
+		}
+		
+		while(*input == ' ') input++;
+		
+		if(!isSpecial(*input, specials)) {
+			INCR_MEM(1);
+			
+			(*keywords)[*key] = input;
+			(*key)++;
+		}
 	}
-	
-	return 0;
 }

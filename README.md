@@ -65,6 +65,7 @@ comment> */
 * `` var`<scope>` ``
 * `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
 * `` pointer_to_list`<length>` `` \[**NOTE:** `` some_list`<`<property>`>` `` will **not** access the property of the whole list, but the properties of each item of the list.\* Use `` ->some_list`<`<property>`>` `` instead. \]
+* `` pointer_to_list`<separator>` ``
 * `` channel`<buffer>` ``
 * `var>bit<`
 * You can assign properties at variable creation: ``<type> [`<`<property1>`>`=<property1 value> `<`<property2>`>`=<property2 value>...] var``
@@ -80,6 +81,7 @@ comment> */
 * `*`
 * `/`
 * `%`
+* `**`
 
 ##### Bitwise
 * `&`
@@ -121,6 +123,7 @@ comment> */
 * `@`
 * `<<<`
 * `>>>`
+* `in` (example: `if(item in arr) ...`)
 
 --------
 
@@ -176,7 +179,6 @@ comment> */
 --------
 
 #### Defining
-* `#redef '<char>' as '<char>'`
 * `#def '<code>' as '<code>'` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
 * `#if <condition>`
 * `#ifdef <const>`
@@ -202,5 +204,24 @@ comment> */
 * `__argc`
 * `__line`
 * `__item`
+
+--------
+
+#### Precedence
+1. `()`, `[]`, `.`, `++`, `--`
+2. `!`, `~`, `(<type>)`, `@`, `->`
+3. `*`, `/`, `%`, `**`
+4. `+`, `-`
+5. `>>`, `<<`
+6. `<`, `<=`, `>`, `>=`
+7. `==`, `!=`
+8. `&`
+9. `^`
+10. `|`
+11. `&&`
+12. `||`
+13. `?:`
+14. `=`, `+=`, `-=`, `*=`, `/=`, `%=`, `>>=`, `<<=`, `&=`, `^=`, `|=`
+15. `>>>`, `<<<`, `,`, `in`
 
 --------
