@@ -344,14 +344,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 							}
 							typeToOutput("?1:0)");
 							
-							// Type statement after comparison
-							i += i_pos;
-							for(; keywords[i - 1][0] != ';' && keywords[i - 1][0] != '{' && keywords[i - 1][0] != '}'; i++) {
-								typeToOutput(keywords[i]);
-							}
-							
-							i--;
-							
+							i += i_pos - 1;
 							break;
 						}
 					} else if(keywords[i + i_pos][0] == '<' && keywords[i + i_pos + 1][0] == '<' && keywords[i + i_pos + 2][0] == '<') {
