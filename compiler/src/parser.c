@@ -78,6 +78,14 @@ void addIteratorID(char *str_end, size_t *iterator_count) {
 size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, size_t *output_size, size_t *pos, char specials[], unsigned short status) {
 	char *output = *outputp;
 	
+	if(keywords[i][0] == '\n') { // TMP; makes it possible to include C functions without the need of 'import clib'
+		INCR_MEM(1);
+		output[*pos] = '\n';
+		(*pos)++;
+		
+		return i;
+	}
+	
 	if(keywords[i][0] == '@') {
 		// POINTER ACCESS
 		
@@ -367,7 +375,21 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 			(*pos)++;
 		}
 	} else {
-		typeToOutput(keywords[i]);
+		if(keywords[i][0] == '$' && keywords[i][1] == '#') { // TMP; makes it possible to include C functions without the need of 'import clib'
+			keywords[i][0] = '\n';
+			
+			typeToOutput(keywords[i]);
+			
+			unsigned int d_pos = 1;
+			while(keywords[i + d_pos][0] != ';') d_pos++;
+			keywords[i + d_pos][0] = '\n';
+			
+			INCR_MEM(1);
+			output[*pos] = ' ';
+			(*pos)++;
+		} else {
+			typeToOutput(keywords[i]);
+		}
 		
 		if(strstr(specials, keywords[i]) == NULL && strstr(specials, keywords[i + 1]) == NULL) {
 			INCR_MEM(1);
