@@ -76,6 +76,33 @@ P+ is for...
 
 --------
 
+#### Strings
+* `"null terminated string"`
+* `'string size determined by <size> property'`
+* `'null terminated string, but <size> property can still be used to get size\0'`
+* `"null terminated string" == 'null terminated string\0'`
+
+--------
+
+#### Loops
+* `while(<condition>) { <code> }`
+* `break`
+
+--------
+
+#### Defining
+* `#def '<code>' as '<code>'` (will support regex in the future using `#{<regex>}`, as well as `%{(property|properties|var)}`)
+
+--------
+
+#### Built-in global variables
+* `__path`
+* `__args`
+* `__argc`
+* `__line`
+
+--------
+
 #### Comments
 * `// <One line comment>`
 
@@ -150,14 +177,6 @@ comment> */
 
 --------
 
-#### Strings
-* `"null terminated string"`
-* `'string size determined by <size> property'`
-* `'null terminated string, but <size> property can still be used to get size\0'`
-* `"null terminated string" == 'null terminated string\0'`
-
---------
-
 #### Functions
 * `<return type> <function name>([<parameters>]) { <code> }`
 * `func <function name>([<parameters>]) { <code> }`
@@ -175,9 +194,7 @@ comment> */
 
 #### Loops
 * `foreach <item> in <list> { <code> }`
-* `while(<condition>) { <code> }`
 * `repeat(<n times>) { <code> }`
-* `break`
 
 --------
 
@@ -190,7 +207,6 @@ comment> */
 --------
 
 #### Defining
-* `#def '<code>' as '<code>'` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
 * `#if <condition>`
 * `#ifdef <const>`
 * `#ifndef <const>`
@@ -209,11 +225,7 @@ comment> */
 --------
 
 #### Built-in global variables
-* `__path`
 * `__app`
-* `__args`
-* `__argc`
-* `__line`
 * `__item`
 
 --------
