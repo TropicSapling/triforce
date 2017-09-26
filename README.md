@@ -23,7 +23,11 @@ P+ is for...
 --------
 
 #### Data types
+##### Basic
 * `char`
+
+##### Special
+* `void`
 
 --------
 
@@ -76,6 +80,13 @@ P+ is for...
 
 --------
 
+#### Lists
+* `str[>>>] == "Test"`
+* `str[start >>> stop]`
+* `str == address`
+
+--------
+
 #### Strings
 * `"null terminated string"`
 * `'string size determined by <size> property'`
@@ -92,6 +103,13 @@ P+ is for...
 
 #### Defining
 * `#def '<code>' as '<code>'` (will support regex in the future using `#{<regex>}`, as well as `%{(property|properties|var)}`)
+
+--------
+
+#### Special
+* `goto <label>`
+* ``#import '(<path>|`<`<std lib path>`>`)' [as <name>]``
+* `#export <function1>[, <function2>...]`
 
 --------
 
@@ -133,7 +151,6 @@ comment> */
 * `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) [func] (array|list|pointer)[*<n>] [chan]`
 
 ##### Special
-* `void`
 * ``type <custom type> = <type1>[`|`<type2>`|`<type3>...]``
 * `clang <type> <function name>([<parameters>]) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
@@ -169,12 +186,9 @@ comment> */
 #### Lists
 * `pointer sublist -> some_list[start >>> stop]`
 * `pointer sublist2 -> some_list[when <condition> >>> until <condition>]`
-* `str[>>>] == "Test"`
 * `str[<<<] == "tseT"`
-* `str[start >>> stop]`
 * `str[stop <<< start]`
 * `str[when <condition> >>> until <condition>]`
-* `str == address`
 
 --------
 
@@ -219,9 +233,6 @@ comment> */
 
 #### Special
 * `eval '<code>'`
-* `goto <label>`
-* ``#import '(<path>|`<`<std lib path>`>`)' [as <name>]``
-* `#export <function1>[, <function2>...]`
 
 --------
 
