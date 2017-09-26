@@ -87,6 +87,12 @@ P+ is for...
 
 --------
 
+#### Conditionals
+* `if(<condition>) { <code> } [else if(<condition>) { <code> } else if...] [else { <code> }]`
+* `switch(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }`
+
+--------
+
 #### Strings
 * `"null terminated string"`
 * `'string size determined by <size> property'`
@@ -98,6 +104,7 @@ P+ is for...
 #### Loops
 * `while(<condition>) { <code> }`
 * `break`
+* `continue`
 
 --------
 
@@ -198,12 +205,6 @@ comment> */
 * `<function name>([parameters])`
 * `return [from <function>] <value>`
 * P+ allows ad-hoc polymorphism; you can create multiple functions with the same name but with different parameters.
-
---------
-
-#### Conditionals
-* `if(<condition>) { <code> } [else if(<condition>) { <code> } else if...] [else { <code> }]`
-* `switch(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }`
 
 --------
 
