@@ -40,8 +40,8 @@ char *addSpaceForChars(char **keywords, size_t *keywords_size) {
 	return res;
 }
 
-bool isReserved(char arr[][8], char *str, unsigned int size) {
-	for (unsigned int i = 0; i < size; i++) {
+bool isReserved(char arr[][8], char *str, unsigned int len) {
+	for (unsigned int i = 0; i < len; i++) {
 		if(strcmp(arr[i], str) == 0) return true;
 	}
 	
@@ -359,6 +359,13 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 	} else if(keywords[i][0] != '$' && keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
 		typeToOutput(keywords[i]);
 		typeToOutput("_ppl");
+		
+		if(strstr(specials, keywords[i + 1]) == NULL) {
+			INCR_MEM(1);
+			
+			output[*pos] = ' ';
+			(*pos)++;
+		}
 	} else {
 		typeToOutput(keywords[i]);
 		
