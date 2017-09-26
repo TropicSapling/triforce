@@ -167,11 +167,12 @@ comment> */
 * `` var`<size>` ``
 * `` var`<memsize>` ``
 * `` var`<alignment>` ``
-* `` var`<scope>` ``
+* `` var`<scope>` `` (default: `1`)
 * `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
 * `` pointer_to_list`<length>` `` \[**NOTE:** `` some_list`<`<property>`>` `` will **not** access the property of the whole list, but the properties of each item of the list.\* Use `` ->some_list`<`<property>`>` `` instead. \]
 * `` pointer_to_list`<separator>` ``
-* `` channel`<buffer>` ``
+* `` str`<encoding>` `` (default: `'utf-8'`)
+* `` channel`<buffer>` `` (default: `1`)
 * `var>bit<`
 * You can assign properties at variable creation: ``<type> [`<`<property1>`>`=<property1 value> `<`<property2>`>`=<property2 value>...] var``
 
