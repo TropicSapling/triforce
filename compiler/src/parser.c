@@ -214,7 +214,6 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						} else {
 							for(unsigned int sp_pos = 2; keywords[i + sp_pos][0] != '>'; sp_pos++) {
 								parseKey(keywords, i + sp_pos, keys, outputp, output_size, pos, specials, 0);
-//								typeToOutput(keywords[i + sp_pos]);
 							}
 						}
 						
@@ -280,7 +279,6 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						// Type expression before comparison operator
 						for(; keywords[i - st_pos_bef][0] != '['; st_pos_bef--) {
 							parseKey(keywords, i - st_pos_bef, keys, outputp, output_size, pos, specials, 0);
-//							typeToOutput(keywords[i - st_pos_bef]);
 						}
 						
 						output[*pos] = '[';
@@ -314,7 +312,6 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						// Type expression after comparison operator
 						for(; keywords[i - st_pos2][0] != '['; st_pos2--) {
 							parseKey(keywords, i - st_pos2, keys, outputp, output_size, pos, specials, 1);
-//							typeToOutput(keywords[i - st_pos_bef]);
 						}
 						
 						output[*pos] = '[';
@@ -330,7 +327,6 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						// Type statement before comparison
 						for(; st_pos > st_pos_bef_c; st_pos--) {
 							parseKey(keywords, i - st_pos, keys, outputp, output_size, pos, specials, 0);
-//							typeToOutput(keywords[i - st_pos]);
 						}
 						
 						// Include comparison results
@@ -360,20 +356,13 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 				typeToOutput("_ppl");
 			}
 		}
-	} else if(keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
+	} else if(keywords[i][0] != '$' && keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
 		typeToOutput(keywords[i]);
 		typeToOutput("_ppl");
 	} else {
-		// DEBUG; will be replaced later
-		int it = 0;
-		for(; keywords[i][it] != '\0'; it++) {
-			INCR_MEM(1);
-			
-			output[*pos] = keywords[i][it];
-			(*pos)++;
-		}
+		typeToOutput(keywords[i]);
 		
-		if(it > 1) {
+		if(strstr(specials, keywords[i]) == NULL && strstr(specials, keywords[i + 1]) == NULL) {
 			INCR_MEM(1);
 			
 			output[*pos] = ' ';

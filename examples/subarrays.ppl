@@ -1,6 +1,8 @@
+$#include <$stdio.$h>
+
 char arr[] = 'test123';
 char arr2[] = '123';
 
-printf("%d\n", arr2[0 >>> 3] == arr[4 >>> 7]);
+$printf("%d\n", arr2[0 >>> 3] == arr[4 >>> 7]);
 
 return 0;

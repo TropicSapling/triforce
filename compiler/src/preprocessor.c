@@ -237,9 +237,9 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 				exporting = false;
 			} else if(exports_size && strcmp(skey, "export") == 0) {
 				exporting = true;
+			} else if(strcmp(skey, "include") != 0) { // TMP; makes it possible to include C functions without the need of 'import clib'
+				continue;
 			}
-			
-			continue;
 		}
 		
 		if(exporting) {
