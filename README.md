@@ -22,55 +22,12 @@ P+ is for...
 
 --------
 
-#### Comments
-* `// <One line comment>`
-
-```
-/* <Multi
-line
-comment> */
-```
-
---------
-
-### Planned
-
---------
-
 #### Data types
 ##### Basic
-* `number`
-* `bool`
 * `char`
-* `(array|list|pointer)[*<n>]`
-* `func`
-
-##### Extras
-* `only [register|stack|heap] [volatile] [unique] [func] (array|list|pointer)[*<n>] [chan]`
-* `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [func] [(array|list|pointer)[*<n>]] [chan]`
-* `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number [func] (array|list|pointer)[*<n>] [chan]`
-* `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [func] [(array|list|pointer)[*<n>]] [chan]`
-* `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) [func] (array|list|pointer)[*<n>] [chan]`
 
 ##### Special
 * `void`
-* ``type <custom type> = <type1>[`|`<type2>`|`<type3>...]``
-* `noscope [<more types>...]`
-* `clang <type> <function name>([<parameters>]) { <C code> }`
-* Not specifying a type for a function parameter allows the parameter to be of any type.
-
-##### Properties
-* `` var`<type>` ``
-* `` var`<size>` ``
-* `` var`<alignment>` ``
-* `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
-* `` pointer_to_list`<length>` `` \[**NOTE:** `` some_list`<`<property>`>` `` will **not** access the property of the whole list, but the properties of each item of the list.\* Use `` ->some_list`<`<property>`>` `` instead. \]
-* `` pointer_to_list`<separator>` ``
-* `` channel`<buffer>` ``
-* `var>bit<`
-* You can assign properties at variable creation: ``<type> [`<`<property1>`>`=<property1 value> `<`<property2>`>`=<property2 value>...] var``
-
-<sup>\*This is because `` some_list`<`<property>`>` `` decays into `` pointer_to_list[>>>]`<`<property>`>` ``</sup>
 
 --------
 
@@ -81,7 +38,6 @@ comment> */
 * `*`
 * `/`
 * `%`
-* `**`
 
 ##### Bitwise
 * `&`
@@ -118,24 +74,22 @@ comment> */
 
 ##### Misc.
 * `? :`
-* `->`
 * `[]`
 * `@`
-* `<<<`
 * `>>>`
-* `in` (example: `if(item in arr) ...`)
 
 --------
 
 #### Lists
-* `pointer sublist -> some_list[start >>> stop]`
-* `pointer sublist2 -> some_list[when <condition> >>> until <condition>]`
 * `str[>>>] == "Test"`
-* `str[<<<] == "tseT"`
 * `str[start >>> stop]`
-* `str[stop <<< start]`
-* `str[when <condition> >>> until <condition>]`
 * `str == address`
+
+--------
+
+#### Conditionals
+* `if(<condition>) { <code> } [else if(<condition>) { <code> } else if...] [else { <code> }]`
+* `switch(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }`
 
 --------
 
@@ -144,6 +98,104 @@ comment> */
 * `'string size determined by <size> property'`
 * `'null terminated string, but <size> property can still be used to get size\0'`
 * `"null terminated string" == 'null terminated string\0'`
+
+--------
+
+#### Loops
+* `while(<condition>) { <code> }`
+* `break`
+* `continue`
+
+--------
+
+#### Defining
+* `#def '<code>' as '<code>'` (will support regex in the future using `#{<regex>}`, as well as `%{(property|properties|var)}`)
+
+--------
+
+#### Special
+* `goto <label>`
+* ``#import '(<path>|`<`<std lib path>`>`)' [as <name>]``
+* `#export <function1>[, <function2>...]`
+
+--------
+
+#### Built-in global variables
+* `__path`
+* `__args`
+* `__argc`
+* `__line`
+
+--------
+
+#### Comments
+* `// <One line comment>`
+
+```
+/* <Multi
+line
+comment> */
+```
+
+--------
+
+### Planned
+
+--------
+
+#### Data types
+##### Basic
+* `number`
+* `bool`
+* `(array|list|pointer)[*<n>]`
+* `func`
+
+##### Extras
+* `only [register|stack|heap] [volatile] [unique] [func] (array|list|pointer)[*<n>] [chan]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [func] [(array|list|pointer)[*<n>]] [chan]`
+* `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number [func] (array|list|pointer)[*<n>] [chan]`
+* `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [func] [(array|list|pointer)[*<n>]] [chan]`
+* `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) [func] (array|list|pointer)[*<n>] [chan]`
+
+##### Special
+* ``type <custom type> = <type1>[`|`<type2>`|`<type3>...]``
+* `clang <type> <function name>([<parameters>]) { <C code> }`
+* Not specifying a type for a function parameter allows the parameter to be of any type.
+
+##### Properties
+* `` var`<type>` ``
+* `` var`<size>` ``
+* `` var`<memsize>` ``
+* `` var`<alignment>` ``
+* `` var`<scope>` ``
+* `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
+* `` pointer_to_list`<length>` `` \[**NOTE:** `` some_list`<`<property>`>` `` will **not** access the property of the whole list, but the properties of each item of the list.\* Use `` ->some_list`<`<property>`>` `` instead. \]
+* `` pointer_to_list`<separator>` ``
+* `` channel`<buffer>` ``
+* `var>bit<`
+* You can assign properties at variable creation: ``<type> [`<`<property1>`>`=<property1 value> `<`<property2>`>`=<property2 value>...] var``
+
+<sup>\*This is because `` some_list`<`<property>`>` `` decays into `` pointer_to_list[>>>]`<`<property>`>` ``</sup>
+
+--------
+
+#### Operators
+##### Arithmetic
+* `**`
+
+##### Misc.
+* `->`
+* `<<<`
+* `in` (example: `if(item in arr) ...`)
+
+--------
+
+#### Lists
+* `pointer sublist -> some_list[start >>> stop]`
+* `pointer sublist2 -> some_list[when <condition> >>> until <condition>]`
+* `str[<<<] == "tseT"`
+* `str[stop <<< start]`
+* `str[when <condition> >>> until <condition>]`
 
 --------
 
@@ -156,17 +208,9 @@ comment> */
 
 --------
 
-#### Conditionals
-* `if(<condition>) { <code> } [else if(<condition>) { <code> } else if...] [else { <code> }]`
-* `switch(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }`
-
---------
-
 #### Loops
 * `foreach <item> in <list> { <code> }`
-* `while(<condition>) { <code> }`
 * `repeat(<n times>) { <code> }`
-* `break`
 
 --------
 
@@ -179,7 +223,6 @@ comment> */
 --------
 
 #### Defining
-* `#def '<code>' as '<code>'` (supports regex using `#{<regex>}`, as well as `%{(property|properties|var)}`)
 * `#if <condition>`
 * `#ifdef <const>`
 * `#ifndef <const>`
@@ -191,18 +234,11 @@ comment> */
 
 #### Special
 * `eval '<code>'`
-* `goto <label>`
-* ``#import '(<path>|`<`<std lib path>`>`)' [as <name>]``
-* `#export <function1>[, <function2>...]`
 
 --------
 
 #### Built-in global variables
-* `__path`
 * `__app`
-* `__args`
-* `__argc`
-* `__line`
 * `__item`
 
 --------
