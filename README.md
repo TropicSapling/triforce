@@ -141,6 +141,7 @@ comment> */
 ##### Properties
 * `` var`<type>` ``
 * `` var`<size>` ``
+* `` var`<memsize>` ``
 * `` var`<alignment>` ``
 * `` var`<scope>` ``
 * `` some_fraction`<precision>` `` \[**NOTE:** The precision value is the number of bits for the exponent, **not** the number of decimals\]
