@@ -86,7 +86,23 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		return i;
 	}
 	
-	if(keywords[i][0] == '@') {
+	if(keywords[i][0] == '-' && keywords[i + 1][0] == '>') {
+		// POINTER CREATION
+		
+		if(!(keywords[i - 1][0] == '=' && strstr(specials, keywords[i - 2]) == NULL)) { // Assignment
+			INCR_MEM(1);
+			
+			output[*pos] = '=';
+			(*pos)++;
+		}
+		
+		INCR_MEM(1);
+		
+		output[*pos] = '&';
+		(*pos)++;
+		
+		i++;
+	} else if(keywords[i][0] == '@') {
 		// POINTER ACCESS
 		
 		INCR_MEM(1);
