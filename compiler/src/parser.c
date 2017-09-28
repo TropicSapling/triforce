@@ -187,14 +187,28 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						}
 					}
 					
-					if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
+					if(strcmp(keywords[i + 2], "when") == 0) {
+						if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
+							// WIP
+							break;
+						} else if(keywords[i - st_pos - 2][0] == '+' && keywords[i - 1][0] == '=') {
+							// WIP
+							break;
+						} else if(keywords[i - st_pos - 1][0] == '>' || keywords[i - st_pos - 1][0] == '<' || keywords[i - st_pos - 1][0] == '=' || keywords[i - st_pos - 1][0] == '!' || keywords[i - st_pos - 1][0] == '&' || keywords[i - st_pos - 1][0] == '|') {
+							// keywords[i - st_pos - 1] is a comparison operator
+							
+							foundSublist = true;
+							
+							break; // WIP
+						}
+					} else if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
 						// WIP
 						break;
 					} else if(keywords[i - st_pos - 2][0] == '+' && keywords[i - 1][0] == '=') {
 						// WIP
 						break;
 					} else if(keywords[i - st_pos - 1][0] == '>' || keywords[i - st_pos - 1][0] == '<' || keywords[i - st_pos - 1][0] == '=' || keywords[i - st_pos - 1][0] == '!' || keywords[i - st_pos - 1][0] == '&' || keywords[i - st_pos - 1][0] == '|') {
-						// keywords[i - 1] is a comparison operator
+						// keywords[i - st_pos - 1] is a comparison operator
 						
 						foundSublist = true;
 						
