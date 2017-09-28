@@ -96,10 +96,12 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 			(*pos)++;
 		}
 		
-		INCR_MEM(1);
-		
-		output[*pos] = '&';
-		(*pos)++;
+		if(keywords[i + 2][0] != '{' && keywords[i + 2][0] != '\'') {
+			INCR_MEM(1);
+			
+			output[*pos] = '&';
+			(*pos)++;
+		}
 		
 		i++;
 	} else if(keywords[i][0] == '@') {
