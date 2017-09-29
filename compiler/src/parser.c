@@ -86,7 +86,25 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		return i;
 	}
 	
-	if(keywords[i][0] == '@') {
+	if(keywords[i][0] == '-' && keywords[i + 1][0] == '>') {
+		// POINTER CREATION
+		
+		if(!(keywords[i - 1][0] == '=' && strstr(specials, keywords[i - 2]) == NULL)) { // Assignment
+			INCR_MEM(1);
+			
+			output[*pos] = '=';
+			(*pos)++;
+		}
+		
+		if(keywords[i + 2][0] != '{' && keywords[i + 2][0] != '\'') {
+			INCR_MEM(1);
+			
+			output[*pos] = '&';
+			(*pos)++;
+		}
+		
+		i++;
+	} else if(keywords[i][0] == '@') {
 		// POINTER ACCESS
 		
 		INCR_MEM(1);
@@ -187,14 +205,28 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						}
 					}
 					
-					if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
+					if(strcmp(keywords[i + 2], "when") == 0) {
+						if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
+							// WIP
+							break;
+						} else if(keywords[i - st_pos - 2][0] == '+' && keywords[i - 1][0] == '=') {
+							// WIP
+							break;
+						} else if(keywords[i - st_pos - 1][0] == '>' || keywords[i - st_pos - 1][0] == '<' || keywords[i - st_pos - 1][0] == '=' || keywords[i - st_pos - 1][0] == '!' || keywords[i - st_pos - 1][0] == '&' || keywords[i - st_pos - 1][0] == '|') {
+							// keywords[i - st_pos - 1] is a comparison operator
+							
+							foundSublist = true;
+							
+							break; // WIP
+						}
+					} else if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
 						// WIP
 						break;
 					} else if(keywords[i - st_pos - 2][0] == '+' && keywords[i - 1][0] == '=') {
 						// WIP
 						break;
 					} else if(keywords[i - st_pos - 1][0] == '>' || keywords[i - st_pos - 1][0] == '<' || keywords[i - st_pos - 1][0] == '=' || keywords[i - st_pos - 1][0] == '!' || keywords[i - st_pos - 1][0] == '&' || keywords[i - st_pos - 1][0] == '|') {
-						// keywords[i - 1] is a comparison operator
+						// keywords[i - st_pos - 1] is a comparison operator
 						
 						foundSublist = true;
 						

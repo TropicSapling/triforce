@@ -1,6 +1,6 @@
 #export
 pointer*2 split(pointer listp, splitter) {
-	pointer*2 arr -> [listp];
+	pointer*2 arr -> {listp};
 	
 	unsigned int i = 0;
 	while(i < listp<length>) if(listp[i >>> i + splitter<length>] == splitter) {
