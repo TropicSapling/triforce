@@ -14,7 +14,7 @@
 	if(*ekey + (size) > *exports_size) addSpaceForFileChars(exports, exports_size); \
 } while(0)
 
-char *addSpaceForFileChars(char **str, size_t *str_size) {
+void *addSpaceForFileChars(char **str, size_t *str_size) {
 	*str_size *= 2;
 	
 	char *res = realloc(*str, *str_size);
@@ -25,8 +25,6 @@ char *addSpaceForFileChars(char **str, size_t *str_size) {
 	} else {
 		*str = (char*) res;
 	}
-	
-	return res;
 }
 
 unsigned int replaceIfDefined(char **exports, size_t *ekey, size_t *exports_size, char **str, char defs[128][2][128], size_t defs_len) {

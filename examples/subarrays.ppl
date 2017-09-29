@@ -4,10 +4,10 @@ char arr[] -> 'test123';
 char arr2[] -> '123';
 char arr3[] -> 'test\0456\0';
 
-$printf("%d ", arr2[0 >>> 3] == arr[4 >>> 7]);
-$printf("%d\n", arr2[0 >>> 3] == arr[4 >>> 6]);
+$printf("%d ", arr2[>>> 3] == arr[4 >>> 7]);
+$printf("%d\n", arr2[>>> 3] == arr[4 >>> 6]);
 
-$printf("%d ", arr[0 >>> 4] == arr3[when true >>> until arr3[__item] == '\0']);
-$printf("%d\n", arr[0 >>> 4] == arr3[when true >>> until __item > 7]);
+$printf("%d ", arr[>>> 4] == arr3[when true >>> until arr3[__item] == '\0']);
+$printf("%d\n", arr[>>> 4] == arr3[when true >>> until __item > 7]);
 
 return 0;

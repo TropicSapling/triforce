@@ -24,8 +24,9 @@
 char types[22][8] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile"};
 char reserved_keys[19][8] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while"};
 size_t iterators = 0;
+size_t bools = 0;
 
-char *addSpaceForChars(char **keywords, size_t *keywords_size) {
+void *addSpaceForChars(char **keywords, size_t *keywords_size) {
 	*keywords_size *= 2;
 	
 	char *res = realloc(*keywords, *keywords_size);
@@ -36,8 +37,6 @@ char *addSpaceForChars(char **keywords, size_t *keywords_size) {
 	} else {
 		*keywords = res;
 	}
-	
-	return res;
 }
 
 bool isReserved(char arr[][8], char *str, unsigned int len) {
@@ -64,15 +63,15 @@ void *typeTo(char **output, size_t *output_size, char *str, size_t *pos) {
 	}
 }
 
-void addIteratorID(char *str_end, size_t *iterator_count) {
+void addID(char *str_end, size_t *IDs) {
 	char *chars = "abcdefghijklmnopqrstuvwxyz";
 	
-	str_end[0] = chars[(*iterator_count / (26 * 26)) % 26];
-	str_end[1] = chars[(*iterator_count / 26) % 26];
-	str_end[2] = chars[*iterator_count % 26];
+	str_end[0] = chars[(*IDs / (26 * 26)) % 26];
+	str_end[1] = chars[(*IDs / 26) % 26];
+	str_end[2] = chars[*IDs % 26];
 	str_end[3] = '\0';
 	
-	(*iterator_count)++;
+	(*IDs)++;
 }
 
 size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, size_t *output_size, size_t *pos, char specials[], unsigned short status) {
@@ -124,13 +123,21 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 	} else if(keywords[i][0] == '\'') {
 		// STRINGS (without null termination)
 		
-		if(keywords[i][2] == '\0') {
+		if(keywords[i][2] == '\0' || (keywords[i][1] == '\\' && keywords[i][2] == '0' && keywords[i][3] == '\0')) {
 			INCR_MEM(3);
 			
 			output[*pos] = '\'';
 			(*pos)++;
+			
 			output[*pos] = keywords[i][1];
 			(*pos)++;
+			if(keywords[i][2] != '\0') {
+				INCR_MEM(1);
+				
+				output[*pos] = keywords[i][2];
+				(*pos)++;
+			}
+			
 			output[*pos] = '\'';
 			(*pos)++;
 		} else {
@@ -237,13 +244,20 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 							(*pos)--;
 						}
 						
-						INCR_MEM(7);
+						INCR_MEM(3);
+						
+						// Create condition bool
+						typeToOutput("int ");
+						
+						char cond_bool[17] = "ppl_condBool_";
+						addID(cond_bool + 13, &bools);
+						
+						typeToOutput(cond_bool);
+						typeToOutput("=1;size_t ");
 						
 						// Create iterator
-						typeToOutput("size_t ");
-						
 						char it_name[11] = "ppl_it_";
-						addIteratorID(it_name + 7, &iterators);
+						addID(it_name + 7, &iterators);
 						
 						typeToOutput(it_name);
 						typeToOutput("=0;while(!(");
@@ -267,16 +281,88 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 							break; // TMP
 						} else {
 							unsigned int ep_pos = 0;
-							for(; keywords[i + i_pos + ep_pos][0] != ']'; ep_pos++) {
+							unsigned int brackets = 0;
+							for(; keywords[i + i_pos + ep_pos][0] != ']' || brackets > 0; ep_pos++) {
 								typeToOutput(keywords[i + i_pos + ep_pos]);
+								
+								if(keywords[i + i_pos + ep_pos][0] == '[') brackets++;
+								if(brackets && keywords[i + i_pos + ep_pos][0] == ']') brackets--;
 							}
 							
 							i_pos += ep_pos;
 						}
 						
+						i_pos++;
+						
 						typeToOutput(")){if(!(");
 						
-						break; // WIP
+						// Get start pos of expression before comparison operator
+						st_pos++;
+						while(keywords[i - st_pos][0] == '>' || keywords[i - st_pos][0] == '<' || keywords[i - st_pos][0] == '=' || keywords[i - st_pos][0] == '!' || keywords[i - st_pos][0] == '&' || keywords[i - st_pos][0] == '|') {
+							st_pos++;
+						}
+						
+						unsigned int st_pos_bef = st_pos;
+						while(keywords[i - st_pos_bef][0] != '[') {
+							st_pos_bef++;
+						}
+						st_pos_bef++;
+						
+						if(keywords[i - st_pos_bef][0] == ')') {
+							while(keywords[i - st_pos_bef][0] != '(') {
+								st_pos_bef++;
+							}
+						}
+						
+						unsigned int st_pos_bef_c = st_pos_bef;
+						
+						// Type expression before comparison operator
+						for(; keywords[i - st_pos_bef][0] != '['; st_pos_bef--) {
+							parseKey(keywords, i - st_pos_bef, keys, outputp, output_size, pos, specials, 0);
+						}
+						
+						output[*pos] = '[';
+						(*pos)++;
+						typeToOutput(it_name);
+						output[*pos] = ']';
+						(*pos)++;
+						
+						// Type comparison operator
+						unsigned int st_pos2 = st_pos - 1;
+						for(; keywords[i - st_pos2][0] == '>' || keywords[i - st_pos2][0] == '<' || keywords[i - st_pos2][0] == '=' || keywords[i - st_pos2][0] == '!' || keywords[i - st_pos2][0] == '&' || keywords[i - st_pos2][0] == '|'; st_pos2--) {
+							typeToOutput(keywords[i - st_pos2]);
+						}
+						
+						// Type expression after comparison operator
+						for(; keywords[i - st_pos2][0] != '['; st_pos2--) {
+							parseKey(keywords, i - st_pos2, keys, outputp, output_size, pos, specials, 1);
+						}
+						
+						output[*pos] = '[';
+						(*pos)++;
+						typeToOutput(it_name);
+						typeToOutput("])){");
+						typeToOutput(cond_bool);
+						typeToOutput("=0;break;}");
+						
+						typeToOutput(it_name);
+						typeToOutput("++;}");
+						
+						while(keywords[i - st_pos][0] != ';' && keywords[i - st_pos][0] != '{' && keywords[i - st_pos][0] != '}') {
+							st_pos++;
+						}
+						st_pos--;
+						
+						// Type statement before comparison
+						for(; st_pos > st_pos_bef_c; st_pos--) {
+							parseKey(keywords, i - st_pos, keys, outputp, output_size, pos, specials, 0);
+						}
+						
+						// Include comparison results
+						typeToOutput(cond_bool);
+						
+						i += i_pos - 1;
+						break;
 					}
 				} else if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
 					// WIP
@@ -299,7 +385,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					typeToOutput("size_t ");
 					
 					char it_name[11] = "ppl_it_";
-					addIteratorID(it_name + 7, &iterators);
+					addID(it_name + 7, &iterators);
 					
 					typeToOutput(it_name);
 					output[*pos] = '=';
@@ -356,6 +442,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					typeToOutput(it_name);
 					typeToOutput("++){if(!(");
 					
+					// Get start pos of expression before comparison operator
 					st_pos++;
 					while(keywords[i - st_pos][0] == '>' || keywords[i - st_pos][0] == '<' || keywords[i - st_pos][0] == '=' || keywords[i - st_pos][0] == '!' || keywords[i - st_pos][0] == '&' || keywords[i - st_pos][0] == '|') {
 						st_pos++;
@@ -389,22 +476,6 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					// Type comparison operator
 					unsigned int st_pos2 = st_pos - 1;
 					for(; keywords[i - st_pos2][0] == '>' || keywords[i - st_pos2][0] == '<' || keywords[i - st_pos2][0] == '=' || keywords[i - st_pos2][0] == '!' || keywords[i - st_pos2][0] == '&' || keywords[i - st_pos2][0] == '|'; st_pos2--) {
-/*								if(st_pos2 <= 3 && keywords[i - st_pos2][0] == '[') {
-							INCR_MEM(2);
-							output[*pos] = '[';
-							(*pos)++;
-							typeToOutput(it_name);
-							output[*pos] = ']';
-							(*pos)++;
-							
-							st_pos2--;
-							typeToOutput(keywords[i - st_pos2]);
-							st_pos2--;
-							if(st_pos2 > 0) typeToOutput(keywords[i - st_pos2]);
-							
-							break;
-						} */ // WIP
-						
 						typeToOutput(keywords[i - st_pos2]);
 					}
 					

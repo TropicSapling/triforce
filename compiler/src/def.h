@@ -7,6 +7,6 @@ void lex_parse(char *input, char ***keywords, size_t keywords_size, size_t *key,
 
 char *parse(char **keywords, size_t keys, size_t *pos, char specials[]);
 
-char *addSpaceForKeys(char ***keywords, size_t *keywords_size);
+void *addSpaceForKeys(char ***keywords, size_t *keywords_size);
 
 #endif
