@@ -86,7 +86,17 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		return i;
 	}
 	
-	if(keywords[i][0] == '-' && keywords[i + 1][0] == '>') {
+	if(strcmp(keywords[i], "false") == 0) {
+		INCR_MEM(1);
+		
+		output[*pos] = '0';
+		(*pos)++;
+	} else if(strcmp(keywords[i], "true") == 0) {
+		INCR_MEM(1);
+		
+		output[*pos] = '1';
+		(*pos)++;
+	} else if(keywords[i][0] == '-' && keywords[i + 1][0] == '>') {
 		// POINTER CREATION
 		
 		if(!(keywords[i - 1][0] == '=' && strstr(specials, keywords[i - 2]) == NULL)) { // Assignment
@@ -134,8 +144,17 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 				
 				output[*pos] = '\'';
 				(*pos)++;
+				
 				output[*pos] = keywords[i][c];
 				(*pos)++;
+				if(keywords[i][c] == '\\' && keywords[i][c + 1] == '0') {
+					INCR_MEM(1);
+					
+					output[*pos] = keywords[i][c + 1];
+					(*pos)++;
+					c++;
+				}
+				
 				output[*pos] = '\'';
 				(*pos)++;
 				if(keywords[i][c + 1] != '\0') {
@@ -216,6 +235,49 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 							// keywords[i - st_pos - 1] is a comparison operator
 							
 							foundSublist = true;
+							
+							while(*pos >= 0 && output[*pos - 1] != ';' && output[*pos - 1] != '{' && output[*pos - 1] != '}') {
+								(*pos)--;
+							}
+							
+							INCR_MEM(7);
+							
+							// Create iterator
+							typeToOutput("size_t ");
+							
+							char it_name[11] = "ppl_it_";
+							addIteratorID(it_name + 7, &iterators);
+							
+							typeToOutput(it_name);
+							typeToOutput("=0;while(!(");
+							
+							// Get sublist start pos
+							for(unsigned int sp_pos = 2; keywords[i + sp_pos][0] != '>'; sp_pos++) {
+								parseKey(keywords, i + sp_pos, keys, outputp, output_size, pos, specials, 0);
+							}
+							
+							i_pos += 4;
+							
+							typeToOutput(")){");
+							typeToOutput(it_name);
+							
+							// Create while loop
+							typeToOutput("++;}while(!(");
+							
+							// Get sublist end pos
+							if(keywords[i + i_pos][0] == ']') { // Use default
+//								typeToOutput(list_length); // TODO: Define 'list_length'
+								break; // TMP
+							} else {
+								unsigned int ep_pos = 0;
+								for(; keywords[i + i_pos + ep_pos][0] != ']'; ep_pos++) {
+									typeToOutput(keywords[i + i_pos + ep_pos]);
+								}
+								
+								i_pos += ep_pos;
+							}
+							
+							typeToOutput(")){if(!(");
 							
 							break; // WIP
 						}
