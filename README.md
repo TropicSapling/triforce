@@ -126,6 +126,7 @@ P+ is for...
 * `__args`
 * `__argc`
 * `__line`
+* `__item`
 
 --------
 
@@ -240,7 +241,6 @@ comment> */
 
 #### Built-in global variables
 * `__app`
-* `__item`
 
 --------
 
