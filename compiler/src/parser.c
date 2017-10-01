@@ -518,7 +518,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						(*outputp)[*pos] = max_it_val[miv_pos];
 						(*pos)++;
 					}
-					typeToOutput("?1:0)");
+					typeToOutput("?0:1)");
 					
 					i += i_pos - 1;
 					break;
