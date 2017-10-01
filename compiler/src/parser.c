@@ -24,8 +24,9 @@
 char types[22][8] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile"};
 char reserved_keys[19][8] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while"};
 size_t iterators = 0;
+size_t bools = 0;
 
-char *addSpaceForChars(char **keywords, size_t *keywords_size) {
+void *addSpaceForChars(char **keywords, size_t *keywords_size) {
 	*keywords_size *= 2;
 	
 	char *res = realloc(*keywords, *keywords_size);
@@ -36,8 +37,6 @@ char *addSpaceForChars(char **keywords, size_t *keywords_size) {
 	} else {
 		*keywords = res;
 	}
-	
-	return res;
 }
 
 bool isReserved(char arr[][8], char *str, unsigned int len) {
@@ -64,42 +63,50 @@ void *typeTo(char **output, size_t *output_size, char *str, size_t *pos) {
 	}
 }
 
-void addIteratorID(char *str_end, size_t *iterator_count) {
+void addID(char *str_end, size_t *IDs) {
 	char *chars = "abcdefghijklmnopqrstuvwxyz";
 	
-	str_end[0] = chars[(*iterator_count / (26 * 26)) % 26];
-	str_end[1] = chars[(*iterator_count / 26) % 26];
-	str_end[2] = chars[*iterator_count % 26];
+	str_end[0] = chars[(*IDs / (26 * 26)) % 26];
+	str_end[1] = chars[(*IDs / 26) % 26];
+	str_end[2] = chars[*IDs % 26];
 	str_end[3] = '\0';
 	
-	(*iterator_count)++;
+	(*IDs)++;
 }
 
-size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, size_t *output_size, size_t *pos, char specials[], unsigned short status) {
-	char *output = *outputp;
-	
+size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, size_t *output_size, size_t *pos, char specials[], unsigned short status, char *cItem) {
 	if(keywords[i][0] == '\n') { // TMP; makes it possible to include C functions without the need of 'import clib'
 		INCR_MEM(1);
-		output[*pos] = '\n';
+		(*outputp)[*pos] = '\n';
 		(*pos)++;
 		
 		return i;
 	}
 	
-	if(keywords[i][0] == '-' && keywords[i + 1][0] == '>') {
+	if(strcmp(keywords[i], "false") == 0) {
+		INCR_MEM(1);
+		
+		(*outputp)[*pos] = '0';
+		(*pos)++;
+	} else if(strcmp(keywords[i], "true") == 0) {
+		INCR_MEM(1);
+		
+		(*outputp)[*pos] = '1';
+		(*pos)++;
+	} else if(keywords[i][0] == '-' && keywords[i + 1][0] == '>') {
 		// POINTER CREATION
 		
 		if(!(keywords[i - 1][0] == '=' && strstr(specials, keywords[i - 2]) == NULL)) { // Assignment
 			INCR_MEM(1);
 			
-			output[*pos] = '=';
+			(*outputp)[*pos] = '=';
 			(*pos)++;
 		}
 		
 		if(keywords[i + 2][0] != '{' && keywords[i + 2][0] != '\'') {
 			INCR_MEM(1);
 			
-			output[*pos] = '&';
+			(*outputp)[*pos] = '&';
 			(*pos)++;
 		}
 		
@@ -109,42 +116,59 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		
 		INCR_MEM(1);
 		
-		output[*pos] = '*';
+		(*outputp)[*pos] = '*';
 		(*pos)++;
 	} else if(keywords[i][0] == '\'') {
 		// STRINGS (without null termination)
 		
-		if(keywords[i][2] == '\0') {
+		if(keywords[i][2] == '\0' || (keywords[i][1] == '\\' && keywords[i][2] == '0' && keywords[i][3] == '\0')) {
 			INCR_MEM(3);
 			
-			output[*pos] = '\'';
+			(*outputp)[*pos] = '\'';
 			(*pos)++;
-			output[*pos] = keywords[i][1];
+			
+			(*outputp)[*pos] = keywords[i][1];
 			(*pos)++;
-			output[*pos] = '\'';
+			if(keywords[i][2] != '\0') {
+				INCR_MEM(1);
+				
+				(*outputp)[*pos] = keywords[i][2];
+				(*pos)++;
+			}
+			
+			(*outputp)[*pos] = '\'';
 			(*pos)++;
 		} else {
 			INCR_MEM(1);
 			
-			output[*pos] = '{';
+			(*outputp)[*pos] = '{';
 			(*pos)++;
 			
 			for(unsigned int c = 1; keywords[i][c] != '\0'; c++) {
 				INCR_MEM(4);
 				
-				output[*pos] = '\'';
+				(*outputp)[*pos] = '\'';
 				(*pos)++;
-				output[*pos] = keywords[i][c];
+				
+				(*outputp)[*pos] = keywords[i][c];
 				(*pos)++;
-				output[*pos] = '\'';
+				if(keywords[i][c] == '\\' && keywords[i][c + 1] == '0') {
+					INCR_MEM(1);
+					
+					(*outputp)[*pos] = keywords[i][c + 1];
+					(*pos)++;
+					c++;
+				}
+				
+				(*outputp)[*pos] = '\'';
 				(*pos)++;
 				if(keywords[i][c + 1] != '\0') {
-					output[*pos] = ',';
+					(*outputp)[*pos] = ',';
 					(*pos)++;
 				}
 			}
 			
-			output[*pos] = '}';
+			(*outputp)[*pos] = '}';
 			(*pos)++;
 		}
 	} else if(keywords[i][0] == '"') {
@@ -152,12 +176,12 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		
 		for(unsigned int c = 0; keywords[i][c] != '\0'; c++) {
 			INCR_MEM(1);
-			output[*pos] = keywords[i][c];
+			(*outputp)[*pos] = keywords[i][c];
 			(*pos)++;
 		}
 		
 		INCR_MEM(1);
-		output[*pos] = '"';
+		(*outputp)[*pos] = '"';
 		(*pos)++;
 	} else if(strcmp(keywords[i], "clang") == 0) {
 		// INLINE C
@@ -187,39 +211,32 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		typeToOutput("__LINE__");
 	} else if(strcmp(keywords[i], "__path") == 0) {
 		typeToOutput("__PATH__");
+	} else if(strcmp(keywords[i], "__item") == 0) {
+		if(cItem == NULL) {
+			puts("----------------------------------------------------------------");
+			printf(RED "[ERROR]" RESET " Invalid placement of '__item'.\n");
+			puts("----------------------------------------------------------------");
+			exit(EXIT_FAILURE);
+		} else {
+			typeToOutput(cItem);
+		}
 	} else if(i + 1 < keys && keywords[i + 1][0] == '[' && status != 1) {
 		// LISTS
 		
 		bool foundSublist = false;
 		
-		if(strcmp(keywords[i + 2], "when") == 0) {
-			// WIP
-		} else {
-			unsigned int i_pos = 2;
-			for(; keywords[i + i_pos][0] != ']'; i_pos++) {
-				if(keywords[i + i_pos][0] == '>' && keywords[i + i_pos + 1][0] == '>' && keywords[i + i_pos + 2][0] == '>') {
-					unsigned int st_pos = 0;
-					if(keywords[i][0] == ')') {
-						while(keywords[i - st_pos][0] != '(') {
-							st_pos++;
-						}
+		unsigned int i_pos = 2;
+		for(; keywords[i + i_pos][0] != ']'; i_pos++) {
+			if(keywords[i + i_pos][0] == '>' && keywords[i + i_pos + 1][0] == '>' && keywords[i + i_pos + 2][0] == '>') {
+				unsigned int st_pos = 0;
+				if(keywords[i][0] == ')') {
+					while(keywords[i - st_pos][0] != '(') {
+						st_pos++;
 					}
-					
-					if(strcmp(keywords[i + 2], "when") == 0) {
-						if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
-							// WIP
-							break;
-						} else if(keywords[i - st_pos - 2][0] == '+' && keywords[i - 1][0] == '=') {
-							// WIP
-							break;
-						} else if(keywords[i - st_pos - 1][0] == '>' || keywords[i - st_pos - 1][0] == '<' || keywords[i - st_pos - 1][0] == '=' || keywords[i - st_pos - 1][0] == '!' || keywords[i - st_pos - 1][0] == '&' || keywords[i - st_pos - 1][0] == '|') {
-							// keywords[i - st_pos - 1] is a comparison operator
-							
-							foundSublist = true;
-							
-							break; // WIP
-						}
-					} else if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
+				}
+				
+				if(strcmp(keywords[i + 2], "when") == 0) {
+					if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
 						// WIP
 						break;
 					} else if(keywords[i - st_pos - 2][0] == '+' && keywords[i - 1][0] == '=') {
@@ -230,44 +247,40 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						
 						foundSublist = true;
 						
-						while(*pos >= 0 && output[*pos - 1] != ';' && output[*pos - 1] != '{' && output[*pos - 1] != '}') {
+						while(*pos >= 0 && (*outputp)[*pos - 1] != ';' && (*outputp)[*pos - 1] != '{' && (*outputp)[*pos - 1] != '}') {
 							(*pos)--;
 						}
 						
-						INCR_MEM(8);
+						INCR_MEM(3);
+						
+						// Create condition bool
+						typeToOutput("int ");
+						
+						char cond_bool[17] = "ppl_condBool_";
+						addID(cond_bool + 13, &bools);
+						
+						typeToOutput(cond_bool);
+						typeToOutput("=1;size_t ");
 						
 						// Create iterator
-						typeToOutput("size_t ");
-						
 						char it_name[11] = "ppl_it_";
-						addIteratorID(it_name + 7, &iterators);
+						addID(it_name + 7, &iterators);
 						
 						typeToOutput(it_name);
-						output[*pos] = '=';
-						(*pos)++;
+						typeToOutput("=0;while(!(");
 						
 						// Get sublist start pos
-						if(keywords[i + i_pos - 1][0] == '[') { // Use default
-							INCR_MEM(1);
-							output[*pos] = '0';
-							(*pos)++;
-						} else {
-							for(unsigned int sp_pos = 2; keywords[i + sp_pos][0] != '>'; sp_pos++) {
-								parseKey(keywords, i + sp_pos, keys, outputp, output_size, pos, specials, 0);
-							}
+						for(unsigned int sp_pos = 3; keywords[i + sp_pos][0] != '>'; sp_pos++) {
+							parseKey(keywords, i + sp_pos, keys, outputp, output_size, pos, specials, 0, it_name);
 						}
 						
-						i_pos += 3;
+						i_pos += 4;
 						
-						// Create for loop
-						typeToOutput(";for(;");
-						
+						typeToOutput(")){");
 						typeToOutput(it_name);
-						output[*pos] = '<';
-						(*pos)++;
 						
-						char *max_it_val = &output[*pos];
-						size_t max_it_val_len = 0;
+						// Create while loop
+						typeToOutput("++;}while(!(");
 						
 						// Get sublist end pos
 						if(keywords[i + i_pos][0] == ']') { // Use default
@@ -275,15 +288,12 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 							break; // TMP
 						} else {
 							unsigned int ep_pos = 0;
-							for(; keywords[i + i_pos + ep_pos][0] != ']'; ep_pos++) {
-								for(unsigned int en_pos = 0; keywords[i + i_pos + ep_pos][en_pos] != '\0'; en_pos++) {
-									INCR_MEM(1);
-									
-									output[*pos] = keywords[i + i_pos + ep_pos][en_pos];
-									(*pos)++;
-									
-									max_it_val_len++;
-								}
+							unsigned int brackets = 0;
+							for(; keywords[i + i_pos + ep_pos][0] != ']' || brackets > 0; ep_pos++) {
+								parseKey(keywords, i + i_pos + ep_pos, keys, outputp, output_size, pos, specials, 0, it_name);
+								
+								if(keywords[i + i_pos + ep_pos][0] == '[') brackets++;
+								if(brackets && keywords[i + i_pos + ep_pos][0] == ']') brackets--;
 							}
 							
 							i_pos += ep_pos;
@@ -291,12 +301,9 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						
 						i_pos++;
 						
-						output[*pos] = ';';
-						(*pos)++;
+						typeToOutput(")){if(!(");
 						
-						typeToOutput(it_name);
-						typeToOutput("++){if(!(");
-						
+						// Get start pos of expression before comparison operator
 						st_pos++;
 						while(keywords[i - st_pos][0] == '>' || keywords[i - st_pos][0] == '<' || keywords[i - st_pos][0] == '=' || keywords[i - st_pos][0] == '!' || keywords[i - st_pos][0] == '&' || keywords[i - st_pos][0] == '|') {
 							st_pos++;
@@ -318,46 +325,35 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						
 						// Type expression before comparison operator
 						for(; keywords[i - st_pos_bef][0] != '['; st_pos_bef--) {
-							parseKey(keywords, i - st_pos_bef, keys, outputp, output_size, pos, specials, 0);
+							parseKey(keywords, i - st_pos_bef, keys, outputp, output_size, pos, specials, 0, cItem);
 						}
 						
-						output[*pos] = '[';
+						(*outputp)[*pos] = '[';
 						(*pos)++;
 						typeToOutput(it_name);
-						output[*pos] = ']';
+						(*outputp)[*pos] = ']';
 						(*pos)++;
 						
 						// Type comparison operator
 						unsigned int st_pos2 = st_pos - 1;
 						for(; keywords[i - st_pos2][0] == '>' || keywords[i - st_pos2][0] == '<' || keywords[i - st_pos2][0] == '=' || keywords[i - st_pos2][0] == '!' || keywords[i - st_pos2][0] == '&' || keywords[i - st_pos2][0] == '|'; st_pos2--) {
-/*								if(st_pos2 <= 3 && keywords[i - st_pos2][0] == '[') {
-								INCR_MEM(2);
-								output[*pos] = '[';
-								(*pos)++;
-								typeToOutput(it_name);
-								output[*pos] = ']';
-								(*pos)++;
-								
-								st_pos2--;
-								typeToOutput(keywords[i - st_pos2]);
-								st_pos2--;
-								if(st_pos2 > 0) typeToOutput(keywords[i - st_pos2]);
-								
-								break;
-							} */ // WIP
-							
 							typeToOutput(keywords[i - st_pos2]);
 						}
 						
 						// Type expression after comparison operator
 						for(; keywords[i - st_pos2][0] != '['; st_pos2--) {
-							parseKey(keywords, i - st_pos2, keys, outputp, output_size, pos, specials, 1);
+							parseKey(keywords, i - st_pos2, keys, outputp, output_size, pos, specials, 1, cItem);
 						}
 						
-						output[*pos] = '[';
+						(*outputp)[*pos] = '[';
 						(*pos)++;
 						typeToOutput(it_name);
-						typeToOutput("])){break;}}");
+						typeToOutput("])){");
+						typeToOutput(cond_bool);
+						typeToOutput("=0;break;}");
+						
+						typeToOutput(it_name);
+						typeToOutput("++;}");
 						
 						while(keywords[i - st_pos][0] != ';' && keywords[i - st_pos][0] != '{' && keywords[i - st_pos][0] != '}') {
 							st_pos++;
@@ -366,35 +362,175 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						
 						// Type statement before comparison
 						for(; st_pos > st_pos_bef_c; st_pos--) {
-							parseKey(keywords, i - st_pos, keys, outputp, output_size, pos, specials, 0);
+							parseKey(keywords, i - st_pos, keys, outputp, output_size, pos, specials, 0, cItem);
 						}
 						
 						// Include comparison results
-						output[*pos] = '(';
-						(*pos)++;
-						typeToOutput(it_name);
-						output[*pos] = '<';
-						(*pos)++;
-						for(unsigned int miv_pos = 0; miv_pos < max_it_val_len; miv_pos++) {
-							INCR_MEM(1);
-							
-							output[*pos] = max_it_val[miv_pos];
-							(*pos)++;
-						}
-						typeToOutput("?1:0)");
+						typeToOutput(cond_bool);
 						
 						i += i_pos - 1;
 						break;
 					}
-				} else if(keywords[i + i_pos][0] == '<' && keywords[i + i_pos + 1][0] == '<' && keywords[i + i_pos + 2][0] == '<') {
-					break; // TMP, WIP
+				} else if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
+					// WIP
+					break;
+				} else if(keywords[i - st_pos - 2][0] == '+' && keywords[i - 1][0] == '=') {
+					// WIP
+					break;
+				} else if(keywords[i - st_pos - 1][0] == '>' || keywords[i - st_pos - 1][0] == '<' || keywords[i - st_pos - 1][0] == '=' || keywords[i - st_pos - 1][0] == '!' || keywords[i - st_pos - 1][0] == '&' || keywords[i - st_pos - 1][0] == '|') {
+					// keywords[i - st_pos - 1] is a comparison operator
+					
+					foundSublist = true;
+					
+					while(*pos >= 0 && (*outputp)[*pos - 1] != ';' && (*outputp)[*pos - 1] != '{' && (*outputp)[*pos - 1] != '}') {
+						(*pos)--;
+					}
+					
+					INCR_MEM(8);
+					
+					// Create iterator
+					typeToOutput("size_t ");
+					
+					char it_name[11] = "ppl_it_";
+					addID(it_name + 7, &iterators);
+					
+					typeToOutput(it_name);
+					(*outputp)[*pos] = '=';
+					(*pos)++;
+					
+					// Get sublist start pos
+					if(keywords[i + i_pos - 1][0] == '[') { // Use default
+						INCR_MEM(1);
+						(*outputp)[*pos] = '0';
+						(*pos)++;
+					} else {
+						for(unsigned int sp_pos = 2; keywords[i + sp_pos][0] != '>'; sp_pos++) {
+							parseKey(keywords, i + sp_pos, keys, outputp, output_size, pos, specials, 0, it_name);
+						}
+					}
+					
+					i_pos += 3;
+					
+					// Create for loop
+					typeToOutput(";for(;");
+					
+					typeToOutput(it_name);
+					(*outputp)[*pos] = '<';
+					(*pos)++;
+					
+					char *max_it_val = &(*outputp)[*pos];
+					size_t max_it_val_len = 0;
+					
+					// Get sublist end pos
+					if(keywords[i + i_pos][0] == ']') { // Use default
+//								typeToOutput(list_length); // TODO: Define 'list_length'
+						break; // TMP
+					} else {
+						unsigned int ep_pos = 0;
+						for(; keywords[i + i_pos + ep_pos][0] != ']'; ep_pos++) {
+							for(unsigned int en_pos = 0; keywords[i + i_pos + ep_pos][en_pos] != '\0'; en_pos++) {
+								INCR_MEM(1);
+								
+								(*outputp)[*pos] = keywords[i + i_pos + ep_pos][en_pos];
+								(*pos)++;
+								
+								max_it_val_len++;
+							}
+						}
+						
+						i_pos += ep_pos;
+					}
+					
+					i_pos++;
+					
+					(*outputp)[*pos] = ';';
+					(*pos)++;
+					
+					typeToOutput(it_name);
+					typeToOutput("++){if(!(");
+					
+					// Get start pos of expression before comparison operator
+					st_pos++;
+					while(keywords[i - st_pos][0] == '>' || keywords[i - st_pos][0] == '<' || keywords[i - st_pos][0] == '=' || keywords[i - st_pos][0] == '!' || keywords[i - st_pos][0] == '&' || keywords[i - st_pos][0] == '|') {
+						st_pos++;
+					}
+					
+					unsigned int st_pos_bef = st_pos;
+					while(keywords[i - st_pos_bef][0] != '[') {
+						st_pos_bef++;
+					}
+					st_pos_bef++;
+					
+					if(keywords[i - st_pos_bef][0] == ')') {
+						while(keywords[i - st_pos_bef][0] != '(') {
+							st_pos_bef++;
+						}
+					}
+					
+					unsigned int st_pos_bef_c = st_pos_bef;
+					
+					// Type expression before comparison operator
+					for(; keywords[i - st_pos_bef][0] != '['; st_pos_bef--) {
+						parseKey(keywords, i - st_pos_bef, keys, outputp, output_size, pos, specials, 0, cItem);
+					}
+					
+					(*outputp)[*pos] = '[';
+					(*pos)++;
+					typeToOutput(it_name);
+					(*outputp)[*pos] = ']';
+					(*pos)++;
+					
+					// Type comparison operator
+					unsigned int st_pos2 = st_pos - 1;
+					for(; keywords[i - st_pos2][0] == '>' || keywords[i - st_pos2][0] == '<' || keywords[i - st_pos2][0] == '=' || keywords[i - st_pos2][0] == '!' || keywords[i - st_pos2][0] == '&' || keywords[i - st_pos2][0] == '|'; st_pos2--) {
+						typeToOutput(keywords[i - st_pos2]);
+					}
+					
+					// Type expression after comparison operator
+					for(; keywords[i - st_pos2][0] != '['; st_pos2--) {
+						parseKey(keywords, i - st_pos2, keys, outputp, output_size, pos, specials, 1, cItem);
+					}
+					
+					(*outputp)[*pos] = '[';
+					(*pos)++;
+					typeToOutput(it_name);
+					typeToOutput("])){break;}}");
+					
+					while(keywords[i - st_pos][0] != ';' && keywords[i - st_pos][0] != '{' && keywords[i - st_pos][0] != '}') {
+						st_pos++;
+					}
+					st_pos--;
+					
+					// Type statement before comparison
+					for(; st_pos > st_pos_bef_c; st_pos--) {
+						parseKey(keywords, i - st_pos, keys, outputp, output_size, pos, specials, 0, cItem);
+					}
+					
+					// Include comparison results
+					(*outputp)[*pos] = '(';
+					(*pos)++;
+					typeToOutput(it_name);
+					(*outputp)[*pos] = '<';
+					(*pos)++;
+					for(unsigned int miv_pos = 0; miv_pos < max_it_val_len; miv_pos++) {
+						INCR_MEM(1);
+						
+						(*outputp)[*pos] = max_it_val[miv_pos];
+						(*pos)++;
+					}
+					typeToOutput("?0:1)");
+					
+					i += i_pos - 1;
+					break;
 				}
+			} else if(keywords[i + i_pos][0] == '<' && keywords[i + i_pos + 1][0] == '<' && keywords[i + i_pos + 2][0] == '<') {
+				break; // TMP, WIP
 			}
-			
-			if(!foundSublist) {
-				typeToOutput(keywords[i]);
-				typeToOutput("_ppl");
-			}
+		}
+		
+		if(!foundSublist) {
+			typeToOutput(keywords[i]);
+			typeToOutput("_ppl");
 		}
 	} else if(keywords[i][0] != '$' && keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
 		typeToOutput(keywords[i]);
@@ -403,7 +539,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		if(strstr(specials, keywords[i + 1]) == NULL) {
 			INCR_MEM(1);
 			
-			output[*pos] = ' ';
+			(*outputp)[*pos] = ' ';
 			(*pos)++;
 		}
 	} else {
@@ -417,7 +553,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 			keywords[i + d_pos][0] = '\n';
 			
 			INCR_MEM(1);
-			output[*pos] = ' ';
+			(*outputp)[*pos] = ' ';
 			(*pos)++;
 		} else {
 			typeToOutput(keywords[i]);
@@ -426,7 +562,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		if(strstr(specials, keywords[i]) == NULL && strstr(specials, keywords[i + 1]) == NULL) {
 			INCR_MEM(1);
 			
-			output[*pos] = ' ';
+			(*outputp)[*pos] = ' ';
 			(*pos)++;
 		}
 	}
@@ -439,7 +575,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 	char *output = malloc(output_size);
 	
 	for(size_t i = 0; i < keys; i++) {
-		i = parseKey(keywords, i, keys, &output, &output_size, pos, specials, 0);
+		i = parseKey(keywords, i, keys, &output, &output_size, pos, specials, 0, NULL);
 	}
 	
 	if(*pos + 1 > output_size) addSpaceForChars(&output, &output_size);

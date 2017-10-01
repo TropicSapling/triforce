@@ -19,7 +19,7 @@ bool inStr2 = false;
 bool escaping = false;
 bool ignoring = false;
 
-char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
+void *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
 	*keywords_size *= 2;
 	
 	char *res = realloc(*keywords, *keywords_size);
@@ -30,8 +30,6 @@ char *addSpaceForKeys(char ***keywords, size_t *keywords_size) {
 	} else {
 		*keywords = (char**) res;
 	}
-	
-	return res;
 }
 
 bool isSpecial(char c, char specials[]) {
