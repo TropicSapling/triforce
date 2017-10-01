@@ -75,11 +75,9 @@ void addID(char *str_end, size_t *IDs) {
 }
 
 size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, size_t *output_size, size_t *pos, char specials[], unsigned short status, char *cItem) {
-	char *output = *outputp;
-	
 	if(keywords[i][0] == '\n') { // TMP; makes it possible to include C functions without the need of 'import clib'
 		INCR_MEM(1);
-		output[*pos] = '\n';
+		(*outputp)[*pos] = '\n';
 		(*pos)++;
 		
 		return i;
@@ -88,12 +86,12 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 	if(strcmp(keywords[i], "false") == 0) {
 		INCR_MEM(1);
 		
-		output[*pos] = '0';
+		(*outputp)[*pos] = '0';
 		(*pos)++;
 	} else if(strcmp(keywords[i], "true") == 0) {
 		INCR_MEM(1);
 		
-		output[*pos] = '1';
+		(*outputp)[*pos] = '1';
 		(*pos)++;
 	} else if(keywords[i][0] == '-' && keywords[i + 1][0] == '>') {
 		// POINTER CREATION
@@ -101,14 +99,14 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		if(!(keywords[i - 1][0] == '=' && strstr(specials, keywords[i - 2]) == NULL)) { // Assignment
 			INCR_MEM(1);
 			
-			output[*pos] = '=';
+			(*outputp)[*pos] = '=';
 			(*pos)++;
 		}
 		
 		if(keywords[i + 2][0] != '{' && keywords[i + 2][0] != '\'') {
 			INCR_MEM(1);
 			
-			output[*pos] = '&';
+			(*outputp)[*pos] = '&';
 			(*pos)++;
 		}
 		
@@ -118,7 +116,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		
 		INCR_MEM(1);
 		
-		output[*pos] = '*';
+		(*outputp)[*pos] = '*';
 		(*pos)++;
 	} else if(keywords[i][0] == '\'') {
 		// STRINGS (without null termination)
@@ -126,51 +124,51 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		if(keywords[i][2] == '\0' || (keywords[i][1] == '\\' && keywords[i][2] == '0' && keywords[i][3] == '\0')) {
 			INCR_MEM(3);
 			
-			output[*pos] = '\'';
+			(*outputp)[*pos] = '\'';
 			(*pos)++;
 			
-			output[*pos] = keywords[i][1];
+			(*outputp)[*pos] = keywords[i][1];
 			(*pos)++;
 			if(keywords[i][2] != '\0') {
 				INCR_MEM(1);
 				
-				output[*pos] = keywords[i][2];
+				(*outputp)[*pos] = keywords[i][2];
 				(*pos)++;
 			}
 			
-			output[*pos] = '\'';
+			(*outputp)[*pos] = '\'';
 			(*pos)++;
 		} else {
 			INCR_MEM(1);
 			
-			output[*pos] = '{';
+			(*outputp)[*pos] = '{';
 			(*pos)++;
 			
 			for(unsigned int c = 1; keywords[i][c] != '\0'; c++) {
 				INCR_MEM(4);
 				
-				output[*pos] = '\'';
+				(*outputp)[*pos] = '\'';
 				(*pos)++;
 				
-				output[*pos] = keywords[i][c];
+				(*outputp)[*pos] = keywords[i][c];
 				(*pos)++;
 				if(keywords[i][c] == '\\' && keywords[i][c + 1] == '0') {
 					INCR_MEM(1);
 					
-					output[*pos] = keywords[i][c + 1];
+					(*outputp)[*pos] = keywords[i][c + 1];
 					(*pos)++;
 					c++;
 				}
 				
-				output[*pos] = '\'';
+				(*outputp)[*pos] = '\'';
 				(*pos)++;
 				if(keywords[i][c + 1] != '\0') {
-					output[*pos] = ',';
+					(*outputp)[*pos] = ',';
 					(*pos)++;
 				}
 			}
 			
-			output[*pos] = '}';
+			(*outputp)[*pos] = '}';
 			(*pos)++;
 		}
 	} else if(keywords[i][0] == '"') {
@@ -178,12 +176,12 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		
 		for(unsigned int c = 0; keywords[i][c] != '\0'; c++) {
 			INCR_MEM(1);
-			output[*pos] = keywords[i][c];
+			(*outputp)[*pos] = keywords[i][c];
 			(*pos)++;
 		}
 		
 		INCR_MEM(1);
-		output[*pos] = '"';
+		(*outputp)[*pos] = '"';
 		(*pos)++;
 	} else if(strcmp(keywords[i], "clang") == 0) {
 		// INLINE C
@@ -214,7 +212,14 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 	} else if(strcmp(keywords[i], "__path") == 0) {
 		typeToOutput("__PATH__");
 	} else if(strcmp(keywords[i], "__item") == 0) {
-		typeToOutput(cItem);
+		if(cItem == NULL) {
+			puts("----------------------------------------------------------------");
+			printf(RED "[ERROR]" RESET " Invalid placement of '__item'.\n");
+			puts("----------------------------------------------------------------");
+			exit(EXIT_FAILURE);
+		} else {
+			typeToOutput(cItem);
+		}
 	} else if(i + 1 < keys && keywords[i + 1][0] == '[' && status != 1) {
 		// LISTS
 		
@@ -242,7 +247,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						
 						foundSublist = true;
 						
-						while(*pos >= 0 && output[*pos - 1] != ';' && output[*pos - 1] != '{' && output[*pos - 1] != '}') {
+						while(*pos >= 0 && (*outputp)[*pos - 1] != ';' && (*outputp)[*pos - 1] != '{' && (*outputp)[*pos - 1] != '}') {
 							(*pos)--;
 						}
 						
@@ -323,10 +328,10 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 							parseKey(keywords, i - st_pos_bef, keys, outputp, output_size, pos, specials, 0, cItem);
 						}
 						
-						output[*pos] = '[';
+						(*outputp)[*pos] = '[';
 						(*pos)++;
 						typeToOutput(it_name);
-						output[*pos] = ']';
+						(*outputp)[*pos] = ']';
 						(*pos)++;
 						
 						// Type comparison operator
@@ -340,7 +345,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 							parseKey(keywords, i - st_pos2, keys, outputp, output_size, pos, specials, 1, cItem);
 						}
 						
-						output[*pos] = '[';
+						(*outputp)[*pos] = '[';
 						(*pos)++;
 						typeToOutput(it_name);
 						typeToOutput("])){");
@@ -377,7 +382,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					
 					foundSublist = true;
 					
-					while(*pos >= 0 && output[*pos - 1] != ';' && output[*pos - 1] != '{' && output[*pos - 1] != '}') {
+					while(*pos >= 0 && (*outputp)[*pos - 1] != ';' && (*outputp)[*pos - 1] != '{' && (*outputp)[*pos - 1] != '}') {
 						(*pos)--;
 					}
 					
@@ -390,13 +395,13 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					addID(it_name + 7, &iterators);
 					
 					typeToOutput(it_name);
-					output[*pos] = '=';
+					(*outputp)[*pos] = '=';
 					(*pos)++;
 					
 					// Get sublist start pos
 					if(keywords[i + i_pos - 1][0] == '[') { // Use default
 						INCR_MEM(1);
-						output[*pos] = '0';
+						(*outputp)[*pos] = '0';
 						(*pos)++;
 					} else {
 						for(unsigned int sp_pos = 2; keywords[i + sp_pos][0] != '>'; sp_pos++) {
@@ -410,10 +415,10 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					typeToOutput(";for(;");
 					
 					typeToOutput(it_name);
-					output[*pos] = '<';
+					(*outputp)[*pos] = '<';
 					(*pos)++;
 					
-					char *max_it_val = &output[*pos];
+					char *max_it_val = &(*outputp)[*pos];
 					size_t max_it_val_len = 0;
 					
 					// Get sublist end pos
@@ -426,7 +431,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 							for(unsigned int en_pos = 0; keywords[i + i_pos + ep_pos][en_pos] != '\0'; en_pos++) {
 								INCR_MEM(1);
 								
-								output[*pos] = keywords[i + i_pos + ep_pos][en_pos];
+								(*outputp)[*pos] = keywords[i + i_pos + ep_pos][en_pos];
 								(*pos)++;
 								
 								max_it_val_len++;
@@ -438,7 +443,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					
 					i_pos++;
 					
-					output[*pos] = ';';
+					(*outputp)[*pos] = ';';
 					(*pos)++;
 					
 					typeToOutput(it_name);
@@ -469,10 +474,10 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						parseKey(keywords, i - st_pos_bef, keys, outputp, output_size, pos, specials, 0, cItem);
 					}
 					
-					output[*pos] = '[';
+					(*outputp)[*pos] = '[';
 					(*pos)++;
 					typeToOutput(it_name);
-					output[*pos] = ']';
+					(*outputp)[*pos] = ']';
 					(*pos)++;
 					
 					// Type comparison operator
@@ -486,7 +491,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						parseKey(keywords, i - st_pos2, keys, outputp, output_size, pos, specials, 1, cItem);
 					}
 					
-					output[*pos] = '[';
+					(*outputp)[*pos] = '[';
 					(*pos)++;
 					typeToOutput(it_name);
 					typeToOutput("])){break;}}");
@@ -502,15 +507,15 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					}
 					
 					// Include comparison results
-					output[*pos] = '(';
+					(*outputp)[*pos] = '(';
 					(*pos)++;
 					typeToOutput(it_name);
-					output[*pos] = '<';
+					(*outputp)[*pos] = '<';
 					(*pos)++;
 					for(unsigned int miv_pos = 0; miv_pos < max_it_val_len; miv_pos++) {
 						INCR_MEM(1);
 						
-						output[*pos] = max_it_val[miv_pos];
+						(*outputp)[*pos] = max_it_val[miv_pos];
 						(*pos)++;
 					}
 					typeToOutput("?1:0)");
@@ -534,7 +539,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		if(strstr(specials, keywords[i + 1]) == NULL) {
 			INCR_MEM(1);
 			
-			output[*pos] = ' ';
+			(*outputp)[*pos] = ' ';
 			(*pos)++;
 		}
 	} else {
@@ -548,7 +553,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 			keywords[i + d_pos][0] = '\n';
 			
 			INCR_MEM(1);
-			output[*pos] = ' ';
+			(*outputp)[*pos] = ' ';
 			(*pos)++;
 		} else {
 			typeToOutput(keywords[i]);
@@ -557,7 +562,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		if(strstr(specials, keywords[i]) == NULL && strstr(specials, keywords[i + 1]) == NULL) {
 			INCR_MEM(1);
 			
-			output[*pos] = ' ';
+			(*outputp)[*pos] = ' ';
 			(*pos)++;
 		}
 	}
