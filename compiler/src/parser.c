@@ -250,7 +250,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						(*pos)--;
 					}
 					
-					INCR_MEM(5);
+					INCR_MEM(7);
 					
 					// Create iterator
 					typeToOutput("size_t ");
@@ -309,6 +309,11 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						typeToOutput("for(;");
 						
 						if(strcmp(keywords[i + i_pos], "until") == 0) {
+							INCR_MEM(1);
+							
+							(*outputp)[*pos] = '!';
+							(*pos)++;
+							
 							i_pos++;
 						} else {
 							typeToOutput(it_name);
@@ -318,6 +323,9 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 							(*pos)++;
 						}
 						
+						(*outputp)[*pos] = '(';
+						(*pos)++;
+						
 						unsigned int ep_pos = 0;
 						for(; keywords[i + i_pos + ep_pos][0] != ']' || brackets > 0; ep_pos++) {
 							parseKey(keywords, i + i_pos + ep_pos, keys, outputp, output_size, pos, specials, 0, it_name);
@@ -325,6 +333,9 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 							if(keywords[i + i_pos + ep_pos][0] == '[') brackets++;
 							if(brackets && keywords[i + i_pos + ep_pos][0] == ']') brackets--;
 						}
+						
+						(*outputp)[*pos] = ')';
+						(*pos)++;
 						
 						i_pos += ep_pos;
 					}

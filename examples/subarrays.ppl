@@ -1,13 +1,14 @@
 $#include <$stdio.$h>;
 
-char arr[] -> 'test123';
+char arr[] -> '123test';
 char arr2[] -> '123';
 char arr3[] -> 'test\0456\0';
+char arr4[] -> 'test123';
 
-$printf("%d ", arr2[>>> 3] == arr[4 >>> 7]);
-$printf("%d\n", arr2[>>> 3] == arr[4 >>> 6]);
+$printf("%d ", arr2[>>> 3] == arr[>>> 3]); // '123' == '123'; out: 1
+$printf("%d\n", arr2[>>> 3] == arr[>>> 4]); // '123' == '123t'; out: 0
 
-$printf("%d ", arr[>>> 4] == arr3[>>> until arr3[__item] == '\0']);
-$printf("%d\n", arr[>>> 4] == arr3[>>> until __item > 7]);
+$printf("%d ", arr4[>>> 4] == arr3[>>> until arr3[__item] == '\0']); // 'test' == 'test'; out: 1
+$printf("%d\n", arr4[>>> 4] == arr3[>>> until __item > 4 && arr3[__item] == '\0']); // 'test' == 'test\0456'; out: 0
 
 return 0;
