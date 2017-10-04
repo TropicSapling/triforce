@@ -288,7 +288,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					
 					typeToOutput("int ");
 					typeToOutput(cond_bool);
-					typeToOutput("=1;");
+					typeToOutput("=0;");
 					
 					unsigned short brackets = 0;
 					
@@ -398,8 +398,11 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					(*pos)++;
 					typeToOutput(it_name);
 					typeToOutput("])){");
+					
 					typeToOutput(cond_bool);
-					typeToOutput("=0;break;}}");
+					typeToOutput("=0;break;}else{");
+					typeToOutput(cond_bool);
+					typeToOutput("=1;}}");
 					
 					while(keywords[i - st_pos][0] != ';' && keywords[i - st_pos][0] != '{' && keywords[i - st_pos][0] != '}') {
 						st_pos++;
