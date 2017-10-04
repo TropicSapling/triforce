@@ -385,11 +385,11 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					
 					// Type expression before comparison operator
 					for(; keywords[i - st_pos_bef][0] != '[' || brackets > 0; st_pos_bef--) {
- 						parseKey(keywords, i - st_pos_bef, keys, outputp, output_size, pos, specials, 0, cItem);
- 						
- 						if(keywords[i - st_pos_bef][0] == '[') brackets++;
- 						if(brackets && keywords[i - st_pos_bef][0] == ']') brackets--;
- 					}
+						parseKey(keywords, i - st_pos_bef, keys, outputp, output_size, pos, specials, 0, cItem);
+						
+						if(keywords[i - st_pos_bef][0] == '[') brackets++;
+						if(brackets && keywords[i - st_pos_bef][0] == ']') brackets--;
+					}
 					
 					(*outputp)[*pos] = '[';
 					(*pos)++;
