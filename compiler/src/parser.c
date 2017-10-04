@@ -222,8 +222,9 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 			if(keywords[i + i_pos][0] == '>' && keywords[i + i_pos + 1][0] == '>' && keywords[i + i_pos + 2][0] == '>') {
 				unsigned short parentheses = 0;
 				unsigned short brackets = 0;
+				unsigned short brackets2 = 0;
 				
-				// Get list
+				// Get list start pos
 				unsigned int st_pos = 0;
 				if(keywords[i][0] == ')') {
 					while(keywords[i - st_pos][0] != '(' || parentheses > 0) {
@@ -239,10 +240,15 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						if(keywords[i - st_pos][0] == ')') parentheses++;
 						if(parentheses && keywords[i - st_pos][0] == '(') parentheses--;
 						
-						if(keywords[i - st_pos][0] == ']') brackets++;
+						if(keywords[i - st_pos][0] == ']') {
+							brackets++;
+							brackets2++;
+						}
 						if(brackets && keywords[i - st_pos][0] == '[') brackets--;
 					}
 				}
+				
+				unsigned int st_pos_bef = st_pos;
 				
 				if(keywords[i - st_pos - 1][0] == '=' && strstr(specials, keywords[i - st_pos - 2]) == NULL) {
 					// WIP
@@ -355,28 +361,10 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					typeToOutput(it_name);
 					typeToOutput("++){if(!(");
 					
-					// Get start pos of expression before comparison operator
+					// Get start pos of comparison operator
 					st_pos++;
 					while(keywords[i - st_pos][0] == '>' || keywords[i - st_pos][0] == '<' || keywords[i - st_pos][0] == '=' || keywords[i - st_pos][0] == '!' || keywords[i - st_pos][0] == '&' || keywords[i - st_pos][0] == '|') {
 						st_pos++;
-					}
-					
-					unsigned int st_pos_bef = st_pos;
-					while(keywords[i - st_pos_bef][0] != '[' || brackets > 0) {
-						if(keywords[i - st_pos_bef][0] == '[') brackets++;
-						if(brackets && keywords[i - st_pos_bef][0] == ']') brackets--;
-						
-						st_pos_bef++;
-					}
-					st_pos_bef++;
-					
-					if(keywords[i - st_pos_bef][0] == ')') {
-						while(keywords[i - st_pos_bef][0] != '(' || parentheses > 0) {
-							if(keywords[i - st_pos_bef][0] == '(') parentheses++;
-							if(parentheses && keywords[i - st_pos_bef][0] == ')') parentheses--;
-							
-							st_pos_bef++;
-						}
 					}
 					
 					unsigned int st_pos_bef_c = st_pos_bef;
