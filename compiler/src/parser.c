@@ -220,10 +220,27 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		unsigned int i_pos = 2;
 		for(; keywords[i + i_pos][0] != ']'; i_pos++) {
 			if(keywords[i + i_pos][0] == '>' && keywords[i + i_pos + 1][0] == '>' && keywords[i + i_pos + 2][0] == '>') {
+				unsigned short parentheses = 0;
+				unsigned short brackets = 0;
+				
+				// Get list
 				unsigned int st_pos = 0;
 				if(keywords[i][0] == ')') {
-					while(keywords[i - st_pos][0] != '(') {
+					while(keywords[i - st_pos][0] != '(' || parentheses > 0) {
 						st_pos++;
+						
+						if(keywords[i - st_pos][0] == ')') parentheses++;
+						if(parentheses && keywords[i - st_pos][0] == '(') parentheses--;
+					}
+				} else if(keywords[i][0] == ']') {
+					while(keywords[i - st_pos][0] != '[' || brackets > 0 || (keywords[i - st_pos - 1][0] == ']' && st_pos++) || (keywords[i - st_pos - 1][0] == ')' && st_pos++)) {
+						st_pos++;
+						
+						if(keywords[i - st_pos][0] == ')') parentheses++;
+						if(parentheses && keywords[i - st_pos][0] == '(') parentheses--;
+						
+						if(keywords[i - st_pos][0] == ']') brackets++;
+						if(brackets && keywords[i - st_pos][0] == '[') brackets--;
 					}
 				}
 				
@@ -290,8 +307,6 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					typeToOutput(cond_bool);
 					typeToOutput("=0;");
 					
-					unsigned short brackets = 0;
-					
 					// Get sublist end pos
 					if(keywords[i + i_pos][0] == ']') { // Use default
 //						typeToOutput(list_length); // TODO: Define 'list_length'
@@ -356,9 +371,9 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 					st_pos_bef++;
 					
 					if(keywords[i - st_pos_bef][0] == ')') {
-						while(keywords[i - st_pos_bef][0] != '(' || brackets > 0) {
-							if(keywords[i - st_pos_bef][0] == '(') brackets++;
-							if(brackets && keywords[i - st_pos_bef][0] == ')') brackets--;
+						while(keywords[i - st_pos_bef][0] != '(' || parentheses > 0) {
+							if(keywords[i - st_pos_bef][0] == '(') parentheses++;
+							if(parentheses && keywords[i - st_pos_bef][0] == ')') parentheses--;
 							
 							st_pos_bef++;
 						}
