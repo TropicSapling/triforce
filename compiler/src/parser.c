@@ -75,14 +75,6 @@ void addID(char *str_end, size_t *IDs) {
 }
 
 size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, size_t *output_size, size_t *pos, char specials[], unsigned short status, char *cItem) {
-	if(keywords[i][0] == '\n') { // TMP; makes it possible to include C functions without the need of 'import clib'
-		INCR_MEM(1);
-		(*outputp)[*pos] = '\n';
-		(*pos)++;
-		
-		return i;
-	}
-	
 	if(strcmp(keywords[i], "false") == 0) {
 		INCR_MEM(1);
 		
@@ -432,33 +424,37 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		
 		if(!foundSublist) {
 			typeToOutput(keywords[i]);
-			typeToOutput("_ppl");
+//			typeToOutput("_ppl");
 		}
-	} else if(keywords[i][0] != '$' && keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
-		typeToOutput(keywords[i]);
-		typeToOutput("_ppl");
-		
-		if(strstr(specials, keywords[i + 1]) == NULL) {
-			INCR_MEM(1);
+	} else {
+		if(strcmp(keywords[i], "#include") == 0) { // TMP; makes it possible to include C functions without the need of 'import clib'
+			INCR_MEM(2);
+			
+			if((*outputp)[*pos - 1] != '\n') {
+				INCR_MEM(1);
+				(*outputp)[*pos] = '\n';
+				(*pos)++;
+			}
+			
+			typeToOutput(keywords[i]);
+			i++;
 			
 			(*outputp)[*pos] = ' ';
 			(*pos)++;
-		}
-	} else {
-		if(keywords[i][0] == '$' && keywords[i][1] == '#') { // TMP; makes it possible to include C functions without the need of 'import clib'
-			keywords[i][0] = '\n';
 			
-			typeToOutput(keywords[i]);
+			while(keywords[i][0] != ';') {
+				typeToOutput(keywords[i]);
+				i++;
+			}
 			
-			unsigned int d_pos = 1;
-			while(keywords[i + d_pos][0] != ';') d_pos++;
-			keywords[i + d_pos][0] = '\n';
-			
-			INCR_MEM(1);
-			(*outputp)[*pos] = ' ';
+			(*outputp)[*pos] = '\n';
 			(*pos)++;
 		} else {
 			typeToOutput(keywords[i]);
+		}
+		
+		if(keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
+//			typeToOutput("_ppl");
 		}
 		
 		if(strstr(specials, keywords[i]) == NULL && strstr(specials, keywords[i + 1]) == NULL) {
