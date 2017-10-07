@@ -14,7 +14,7 @@
 	if(*ekey + (size) > *exports_size) addSpaceForFileChars(exports, exports_size); \
 } while(0)
 
-void *addSpaceForFileChars(char **str, size_t *str_size) {
+void addSpaceForFileChars(char **str, size_t *str_size) {
 	*str_size *= 2;
 	
 	char *res = realloc(*str, *str_size);
@@ -23,7 +23,7 @@ void *addSpaceForFileChars(char **str, size_t *str_size) {
 		fprintf(stderr, "ID: %d\n", errno);
 		exit(EXIT_FAILURE);
 	} else {
-		*str = (char*) res;
+		*str = res;
 	}
 }
 
