@@ -203,7 +203,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		(*outputp)[pos] = '1';
 		pos++;
 	} else if(strcmp(keywords[i], "unique") == 0) {
-		typeToOutput("restrict");
+		typeToOutput("restrict ");
 	} else if(strcmp(keywords[i], "pointer") == 0) {
 		INCR_MEM(1);
 		
