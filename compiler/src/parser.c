@@ -209,6 +209,17 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		
 		(*outputp)[pos] = '*';
 		pos++;
+		
+		if(i + 2 < key && keywords[i + 1][0] == '*') {
+			i += 2;
+			
+			for(unsigned short s = 0; s < keywords[i][0] - 49; s++) {
+				INCR_MEM(1);
+				
+				(*outputp)[pos] = '*';
+				pos++;
+			}
+		}
 	} else if(keywords[i][0] == '-' && keywords[i + 1][0] == '>') {
 		// POINTER CREATION
 		
