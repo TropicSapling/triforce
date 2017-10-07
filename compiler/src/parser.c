@@ -122,6 +122,75 @@ static unsigned int getListExpEndPos(char **keywords) {
 	return en_pos;
 }
 
+static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned short *status, char *cItem, unsigned int listdata[2]);
+
+static void typeSublistStartPos(unsigned int *sp_pos, char **keywords, char **outputp, unsigned short *stat, char *it_name, unsigned int i_pos) {
+	if(keywords[i_pos - 1][0] == '[') {
+		typeToOutput("0;"); // Use default start pos
+	} else if(strcmp(keywords[*sp_pos], "when") == 0) {
+		typeToOutput("0;while(!(");
+		
+		// Get sublist start pos condition
+		for((*sp_pos)++; keywords[*sp_pos][0] != '>'; (*sp_pos)++) {
+			*sp_pos = parseKey(*sp_pos, keywords, outputp, stat, it_name, NULL);
+		}
+		
+		typeToOutput(")){");
+		typeToOutput(it_name);
+		
+		// Create while loop
+		typeToOutput("++;}");
+	} else {
+		for(; keywords[*sp_pos][0] != '>'; (*sp_pos)++) {
+			*sp_pos = parseKey(*sp_pos, keywords, outputp, stat, it_name, NULL);
+		}
+		
+		INCR_MEM(1);
+		(*outputp)[pos] = ';';
+		pos++;
+	}
+}
+
+static void typeSublistEndPos(char **keywords, char **outputp, unsigned short *stat, char *it_name, unsigned int i_pos) {
+	if(keywords[i_pos][0] == ']') { // Use default
+//		typeToOutput(list_length); // TODO: Define 'list_length'
+	} else {
+		// Create for loop
+		typeToOutput("for(;");
+		
+		if(strcmp(keywords[i_pos], "until") == 0) {
+			INCR_MEM(1);
+			
+			(*outputp)[pos] = '!';
+			pos++;
+			
+			i_pos++;
+		} else {
+			typeToOutput(it_name);
+			
+			INCR_MEM(1);
+			(*outputp)[pos] = '<';
+			pos++;
+		}
+		
+		INCR_MEM(2);
+		
+		(*outputp)[pos] = '(';
+		pos++;
+		
+		unsigned short brackets = 0;
+		for(unsigned int ep_pos = i_pos; keywords[ep_pos][0] != ']' || brackets > 0; ep_pos++) {
+			ep_pos = parseKey(ep_pos, keywords, outputp, stat, it_name, NULL);
+			
+			if(keywords[ep_pos][0] == '[') brackets++;
+			if(brackets && keywords[ep_pos][0] == ']') brackets--;
+		}
+		
+		(*outputp)[pos] = ')';
+		pos++;
+	}
+}
+
 static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned short *status, char *cItem, unsigned int listdata[2]) {
 	if(strcmp(keywords[i], "false") == 0) {
 		INCR_MEM(1);
@@ -384,32 +453,8 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						(*outputp)[pos] = '=';
 						pos++;
 						
-						// Get sublist start pos
 						unsigned int sp_pos = i + 2;
-						if(keywords[i + i_pos - 1][0] == '[') {
-							typeToOutput("0;"); // Use default start pos
-						} else if(strcmp(keywords[sp_pos], "when") == 0) {
-							typeToOutput("0;while(!(");
-							
-							// Get sublist start pos condition
-							for(sp_pos++; keywords[sp_pos][0] != '>'; sp_pos++) {
-								sp_pos = parseKey(sp_pos, keywords, outputp, &stat, it_name, NULL);
-							}
-							
-							typeToOutput(")){");
-							typeToOutput(it_name);
-							
-							// Create while loop
-							typeToOutput("++;}");
-						} else {
-							for(; keywords[sp_pos][0] != '>'; sp_pos++) {
-								sp_pos = parseKey(sp_pos, keywords, outputp, &stat, it_name, NULL);
-							}
-							
-							INCR_MEM(1);
-							(*outputp)[pos] = ';';
-							pos++;
-						}
+						typeSublistStartPos(&sp_pos, keywords, outputp, &stat, it_name, i + i_pos);
 						
 						i_pos += 3;
 						
@@ -421,45 +466,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						typeToOutput(cond_bool);
 						typeToOutput("=0;");
 						
-						// Get sublist end pos
-						if(keywords[i + i_pos][0] == ']') { // Use default
-	//						typeToOutput(list_length); // TODO: Define 'list_length'
-							break; // TMP
-						} else {
-							// Create for loop
-							typeToOutput("for(;");
-							
-							if(strcmp(keywords[i + i_pos], "until") == 0) {
-								INCR_MEM(1);
-								
-								(*outputp)[pos] = '!';
-								pos++;
-								
-								i_pos++;
-							} else {
-								typeToOutput(it_name);
-								
-								INCR_MEM(1);
-								(*outputp)[pos] = '<';
-								pos++;
-							}
-							
-							INCR_MEM(2);
-							
-							(*outputp)[pos] = '(';
-							pos++;
-							
-							unsigned short brackets = 0;
-							for(unsigned int ep_pos = i + i_pos; keywords[ep_pos][0] != ']' || brackets > 0; ep_pos++) {
-								ep_pos = parseKey(ep_pos, keywords, outputp, &stat, it_name, NULL);
-								
-								if(keywords[ep_pos][0] == '[') brackets++;
-								if(brackets && keywords[ep_pos][0] == ']') brackets--;
-							}
-							
-							(*outputp)[pos] = ')';
-							pos++;
-						}
+						typeSublistEndPos(keywords, outputp, &stat, it_name, i + i_pos);
 						
 						(*outputp)[pos] = ';';
 						pos++;
@@ -571,33 +578,6 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 	}
 	
 	return i;
-}
-
-static void typeSublistStartPos(unsigned short sp_pos, char **keywords, char **outputp, unsigned short *stat, char *it_name, unsigned int i_pos) {
-	if(keywords[i_pos - 1][0] == '[') {
-		typeToOutput("0;"); // Use default start pos
-	} else if(strcmp(keywords[sp_pos], "when") == 0) {
-		typeToOutput("0;while(!(");
-		
-		// Get sublist start pos condition
-		for(sp_pos++; keywords[sp_pos][0] != '>'; sp_pos++) {
-			sp_pos = parseKey(sp_pos, keywords, outputp, stat, it_name, NULL);
-		}
-		
-		typeToOutput(")){");
-		typeToOutput(it_name);
-		
-		// Create while loop
-		typeToOutput("++;}");
-	} else {
-		for(; keywords[sp_pos][0] != '>'; sp_pos++) {
-			sp_pos = parseKey(sp_pos, keywords, outputp, stat, it_name, NULL);
-		}
-		
-		INCR_MEM(1);
-		(*outputp)[pos] = ';';
-		pos++;
-	}
 }
 
 char *parse(char **keywords) {
