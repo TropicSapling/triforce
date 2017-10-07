@@ -120,7 +120,7 @@ unsigned int getListExpEndPos(char **keywords) {
 	return en_pos;
 }
 
-size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, size_t *output_size, size_t *pos, char specials[], unsigned short *status, char *cItem) {
+size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, size_t *output_size, size_t *pos, char specials[], unsigned short *status, char *cItem, unsigned int listdata[2]) {
 	if(strcmp(keywords[i], "false") == 0) {
 		INCR_MEM(1);
 		
@@ -269,20 +269,62 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 		unsigned int i_pos = 2;
 		for(; keywords[i + i_pos][0] != ']'; i_pos++) {
 			if(keywords[i + i_pos][0] == '>' && keywords[i + i_pos + 1][0] == '>' && keywords[i + i_pos + 2][0] == '>') {
+				unsigned short stat = 0;
+				
 				if(*status == 1) {
 					// WIP
 					foundSublist = true;
 					
 					typeToOutput(keywords[i]);
-					i += 2;
 					
-					INCR_MEM(2);
+					INCR_MEM(1);
 					
 					(*outputp)[*pos] = '[';
 					(*pos)++;
 					typeToOutput(cItem);
-					(*outputp)[*pos] = ']';
-					(*pos)++;
+					typeToOutput("-(");
+					
+					// Type sublist 1 start pos
+					if(listdata[0] == listdata[1]) {
+						INCR_MEM(1);
+						(*outputp)[*pos] = '0';
+						(*pos)++;
+					} else {
+						for(; listdata[0] < listdata[1]; listdata[0]++) {
+							typeToOutput(keywords[listdata[0]]);
+						}
+					}
+					
+					if(keywords[i + i_pos - 1][0] != '[') {
+						INCR_MEM(1);
+						
+						(*outputp)[*pos] = '-';
+						(*pos)++;
+						
+						// Type sublist 2 start pos
+						if(strcmp(keywords[i + 2], "when") == 0) {
+/*							typeToOutput("0;while(!(");
+							
+							// Get sublist start pos condition
+							for(unsigned int sp_pos = i + 3; keywords[sp_pos][0] != '>'; sp_pos++) {
+								sp_pos = parseKey(keywords, sp_pos, keys, outputp, output_size, pos, specials, &stat, cItem, NULL);
+							}
+							
+							typeToOutput(")){");
+							typeToOutput(cItem);
+							
+							// Create while loop
+							typeToOutput("++;}"); */
+						} else {
+							for(unsigned int sp_pos = i + 2; keywords[sp_pos][0] != '>'; sp_pos++) {
+								sp_pos = parseKey(keywords, sp_pos, keys, outputp, output_size, pos, specials, &stat, cItem, NULL);
+							}
+						}
+					}
+					
+					typeToOutput(")]");
+					
+					i += 2;
 					
 					unsigned short brackets = 0;
 					while(keywords[i][0] != ']' || brackets > 0) {
@@ -333,17 +375,16 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						(*outputp)[*pos] = '=';
 						(*pos)++;
 						
-						unsigned short stat = 0;
-						
 						// Get sublist start pos
+						unsigned int sp_pos = i + 2;
 						if(keywords[i + i_pos - 1][0] == '[') {
 							typeToOutput("0;"); // Use default start pos
-						} else if(strcmp(keywords[i + 2], "when") == 0) {
+						} else if(strcmp(keywords[sp_pos], "when") == 0) {
 							typeToOutput("0;while(!(");
 							
 							// Get sublist start pos condition
-							for(unsigned int sp_pos = i + 3; keywords[sp_pos][0] != '>'; sp_pos++) {
-								sp_pos = parseKey(keywords, sp_pos, keys, outputp, output_size, pos, specials, &stat, it_name);
+							for(sp_pos++; keywords[sp_pos][0] != '>'; sp_pos++) {
+								sp_pos = parseKey(keywords, sp_pos, keys, outputp, output_size, pos, specials, &stat, it_name, NULL);
 							}
 							
 							typeToOutput(")){");
@@ -352,8 +393,8 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 							// Create while loop
 							typeToOutput("++;}");
 						} else {
-							for(unsigned int sp_pos = i + 2; keywords[sp_pos][0] != '>'; sp_pos++) {
-								sp_pos = parseKey(keywords, sp_pos, keys, outputp, output_size, pos, specials, &stat, it_name);
+							for(; keywords[sp_pos][0] != '>'; sp_pos++) {
+								sp_pos = parseKey(keywords, sp_pos, keys, outputp, output_size, pos, specials, &stat, it_name, NULL);
 							}
 							
 							INCR_MEM(1);
@@ -401,7 +442,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 							
 							unsigned short brackets = 0;
 							for(unsigned int ep_pos = i + i_pos; keywords[ep_pos][0] != ']' || brackets > 0; ep_pos++) {
-								ep_pos = parseKey(keywords, ep_pos, keys, outputp, output_size, pos, specials, &stat, it_name);
+								ep_pos = parseKey(keywords, ep_pos, keys, outputp, output_size, pos, specials, &stat, it_name, NULL);
 								
 								if(keywords[ep_pos][0] == '[') brackets++;
 								if(brackets && keywords[ep_pos][0] == ']') brackets--;
@@ -423,7 +464,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						// Type first sublist expression
 						stat = 3;
 						for(; listExpStart_pos < i + 1; listExpStart_pos++) {
-							listExpStart_pos = parseKey(keywords, listExpStart_pos, keys, outputp, output_size, pos, specials, &stat, cItem);
+							listExpStart_pos = parseKey(keywords, listExpStart_pos, keys, outputp, output_size, pos, specials, &stat, cItem, NULL);
 						}
 						
 						stat = 0;
@@ -442,7 +483,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						// Type second sublist expression
 						stat = 1;
 						for(; 1; sop_pos++) {
-							sop_pos = parseKey(keywords, sop_pos, keys, outputp, output_size, pos, specials, &stat, it_name);
+							sop_pos = parseKey(keywords, sop_pos, keys, outputp, output_size, pos, specials, &stat, it_name, (unsigned int[]) {i + 2, sp_pos});
 							if(stat == 2) break;
 						}
 						
@@ -462,7 +503,7 @@ size_t parseKey(char **keywords, unsigned int i, size_t keys, char **outputp, si
 						
 						// Type statement before comparison
 						for(; stBef_pos < listExpStart_pos2; stBef_pos++) {
-							stBef_pos = parseKey(keywords, stBef_pos, keys, outputp, output_size, pos, specials, &stat, cItem);
+							stBef_pos = parseKey(keywords, stBef_pos, keys, outputp, output_size, pos, specials, &stat, cItem, NULL);
 						}
 						
 						// Include comparison results
@@ -530,7 +571,7 @@ char *parse(char **keywords, size_t keys, size_t *pos, char specials[]) {
 	unsigned short status = 0;
 	
 	for(size_t i = 0; i < keys; i++) {
-		i = parseKey(keywords, i, keys, &output, &output_size, pos, specials, &status, NULL);
+		i = parseKey(keywords, i, keys, &output, &output_size, pos, specials, &status, NULL, NULL);
 	}
 	
 	if(*pos + 1 > output_size) addSpaceForChars(&output, &output_size);
