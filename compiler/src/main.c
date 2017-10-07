@@ -6,6 +6,14 @@
 
 #include "def.h"
 
+const char* const restrict specials = ";,[]{}()?><=+-*/%!&|^~@\\.:";
+
+size_t keywords_size = sizeof(char*) * 32;
+size_t pointers_size = sizeof(char*) * 32;
+size_t key = 0;
+size_t pkey = 0;
+size_t pos = 0;
+
 int main(int argc, char *argv[]) {
 	
 	//////////////// PREPARE FOR LEXING ////////////////
@@ -25,8 +33,6 @@ int main(int argc, char *argv[]) {
 	
 	///////////////// PREPROCESS INPUT /////////////////
 	
-	char specials[] = ";,[]{}()?><=+-*/%!&|^~@\\.:";
-	
 	size_t processed_input_size = 256;
 	char *processed_input = malloc(processed_input_size);
 	preprocess(&input, &processed_input, processed_input_size, argv, NULL, NULL, NULL);
@@ -37,21 +43,16 @@ int main(int argc, char *argv[]) {
 	
 	/////////////////// START LEXING ///////////////////
 	
-	size_t keywords_size = sizeof(char*) * 32;
-	size_t pointers_size = sizeof(char*) * 32;
 	char **keywords = malloc(keywords_size);
 	char **pointers = malloc(pointers_size);
-	size_t key = 0;
-	size_t pkey = 0;
 	
-	lex_parse(processed_input, &keywords, keywords_size, &key, &pointers, pointers_size, &pkey, specials);
+	lex_parse(processed_input, &keywords, &pointers);
 	
 	puts("[DEBUG] Lex-parsed input.");
 	
 	/////////////////// START PARSING //////////////////
 	
-	size_t pos = 0;
-	char *parsed_output = parse(keywords, key, &pos, specials);
+	char *parsed_output = parse(keywords);
 	
 	free(processed_input);
 	
