@@ -19,7 +19,7 @@
 #define GREEN   "\x1B[32m"
 #define YELLOW   "\x1B[33m"
 #define BLUE   "\x1B[34m"
-#define WHITE   "\x1B[37m"
+#define WHITE   "\x1B[37;1m"
 #define RESET "\x1B[0m"
 
 char *file;
@@ -344,7 +344,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 	} else if(strcmp(keywords[i], "__item") == 0) {
 		if(cItem == NULL) {
 			puts("----------------------------------------------------------------");
-			printf(WHITE "%s:%zu: " RED "Error:" RESET " Invalid placement of '" WHITE "__item" RESET "'.\n", file, lineno);
+			printf(WHITE "%s:%zu: " RESET RED "Error:" RESET " Invalid placement of '" WHITE "__item" RESET "'.\n", file, lineno);
 			printf("	...%s %s %s" RED "__item" RESET "%s %s %s...\n", keywords[i - 3], keywords[i - 2], keywords[i - 1], keywords[i + 1], keywords[i + 2], keywords[i + 3]);
 			puts("----------------------------------------------------------------");
 			
