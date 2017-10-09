@@ -237,6 +237,8 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 			} else if(exports_size && strcmp(skey, "export") == 0) {
 				exporting = true;
 			}
+			
+			continue;
 		}
 		
 		if(exporting) {

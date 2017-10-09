@@ -330,8 +330,11 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 			}
 		}
 		
+		// WIP
+		
 		puts("----------------------------------------------------------------");
-		printf(YELLOW "[WARNING]" RESET " 'clang' is not implemented yet.\n"); // WIP
+		printf(WHITE "%s:%zu: " RESET YELLOW "Warning:" RESET " '" WHITE "clang" RESET "' is not implemented yet.\n", file, lineno);
+		printf("	...%s %s %s" YELLOW "clang" RESET "%s %s %s...\n", keywords[i - 3], keywords[i - 2], keywords[i - 1], keywords[i + 1], keywords[i + 2], keywords[i + 3]);
 		puts("----------------------------------------------------------------");
 	} else if(strcmp(keywords[i], "__args") == 0) {
 		typeToOutput("argv");
