@@ -32,6 +32,7 @@ size_t bools = 0;
 size_t output_size = 256;
 
 size_t lineno = 1;
+size_t linecol = 1;
 
 void addSpaceForChars(char **output) {
 	output_size *= 2;
@@ -136,9 +137,11 @@ static void typeSublistStartPos(unsigned int *sp_pos, char **keywords, char **ou
 		typeToOutput("0;while(!(");
 		
 		// Get sublist start pos condition
-		for((*sp_pos)++; keywords[*sp_pos][0] != '>'; (*sp_pos)++) {
+		for((*sp_pos)++; !(keywords[*sp_pos][0] == '>' && keywords[*sp_pos + 1][0] == '>' && keywords[*sp_pos + 2][0] == '>'); (*sp_pos)++) {
 			*sp_pos = parseKey(*sp_pos, keywords, outputp, stat, it_name);
 		}
+		
+		*sp_pos += 3;
 		
 		typeToOutput(")){");
 		typeToOutput(it_name);
@@ -146,9 +149,11 @@ static void typeSublistStartPos(unsigned int *sp_pos, char **keywords, char **ou
 		// Create while loop
 		typeToOutput("++;}");
 	} else {
-		for(; keywords[*sp_pos][0] != '>'; (*sp_pos)++) {
+		for(; !(keywords[*sp_pos][0] == '>' && keywords[*sp_pos + 1][0] == '>' && keywords[*sp_pos + 2][0] == '>'); (*sp_pos)++) {
 			*sp_pos = parseKey(*sp_pos, keywords, outputp, stat, it_name);
 		}
+		
+		*sp_pos += 3;
 		
 		INCR_MEM(1);
 		(*outputp)[pos] = ';';
@@ -160,25 +165,17 @@ static void typeSublistEndPos(char **keywords, char **outputp, unsigned short *s
 	if(keywords[i_pos][0] == ']') { // Use default
 //		typeToOutput(list_length); // TODO: Define 'list_length'
 	} else {
+		bool isNormal = false;
+		
 		if(strcmp(keywords[i_pos], "until") == 0) {
-			INCR_MEM(1);
-			
-			(*outputp)[pos] = '!';
-			pos++;
-			
 			i_pos++;
 		} else {
+			typeToOutput("!(");
 			typeToOutput(it_name);
+			typeToOutput("<(");
 			
-			INCR_MEM(1);
-			(*outputp)[pos] = '<';
-			pos++;
+			isNormal = true;
 		}
-		
-		INCR_MEM(2);
-		
-		(*outputp)[pos] = '(';
-		pos++;
 		
 		unsigned short brackets = 0;
 		for(unsigned int ep_pos = i_pos; keywords[ep_pos][0] != ']' || brackets > 0; ep_pos++) {
@@ -188,8 +185,7 @@ static void typeSublistEndPos(char **keywords, char **outputp, unsigned short *s
 			if(brackets && keywords[ep_pos][0] == ']') brackets--;
 		}
 		
-		(*outputp)[pos] = ')';
-		pos++;
+		if(isNormal) typeToOutput("))");
 	}
 }
 
@@ -333,7 +329,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		// WIP
 		
 		puts("----------------------------------------------------------------");
-		printf(WHITE "%s:%zu: " RESET YELLOW "Warning:" RESET " '" WHITE "clang" RESET "' is not implemented yet.\n", file, lineno);
+		printf(WHITE "%s:%zu:%zu: " RESET YELLOW "Warning:" RESET " '" WHITE "clang" RESET "' is not implemented yet.\n", file, lineno, linecol);
 		printf("	...%s %s %s" YELLOW "clang" RESET "%s %s %s...\n", keywords[i - 3], keywords[i - 2], keywords[i - 1], keywords[i + 1], keywords[i + 2], keywords[i + 3]);
 		puts("----------------------------------------------------------------");
 	} else if(strcmp(keywords[i], "__args") == 0) {
@@ -347,7 +343,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 	} else if(strcmp(keywords[i], "__item") == 0) {
 		if(cItem == NULL) {
 			puts("----------------------------------------------------------------");
-			printf(WHITE "%s:%zu: " RESET RED "Error:" RESET " Invalid placement of '" WHITE "__item" RESET "'.\n", file, lineno);
+			printf(WHITE "%s:%zu:%zu: " RESET RED "Error:" RESET " Invalid placement of '" WHITE "__item" RESET "'.\n", file, lineno, linecol);
 			printf("	...%s %s %s" RED "__item" RESET "%s %s %s...\n", keywords[i - 3], keywords[i - 2], keywords[i - 1], keywords[i + 1], keywords[i + 2], keywords[i + 3]);
 			puts("----------------------------------------------------------------");
 			
@@ -445,17 +441,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						
 						typeToOutput("int ");
 						typeToOutput(cond_bool);
-						typeToOutput("=0;for(;");
-						
-						typeSublistEndPos(keywords, outputp, &stat, it_name, i + i_pos);
-						
-						(*outputp)[pos] = ';';
-						pos++;
-						
-						typeToOutput(it_name);
-						typeToOutput("++,");
-						typeToOutput(it2_name);
-						typeToOutput("++){if(!(");
+						typeToOutput("=1;while(1){if(!(");
 						
 						unsigned int listExpStart_pos = getListExpStartPos(i, keywords);
 						unsigned int listExpStart_pos2 = listExpStart_pos;
@@ -494,9 +480,27 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						typeToOutput(it2_name);
 						typeToOutput("])){");
 						typeToOutput(cond_bool);
-						typeToOutput("=0;break;}else{");
+						typeToOutput("=0;break;}if(");
+						
+						// Check if comparison is done
+						typeSublistEndPos(keywords, outputp, &stat, it_name, i + i_pos);
+						typeToOutput("&&");
+						typeSublistEndPos(keywords, outputp, &stat, it2_name, sp2_pos);
+						typeToOutput("){");
 						typeToOutput(cond_bool);
-						typeToOutput("=1;}}");
+						typeToOutput("=0;break;}else if(");
+						typeSublistEndPos(keywords, outputp, &stat, it_name, i + i_pos);
+						typeToOutput("||");
+						typeSublistEndPos(keywords, outputp, &stat, it2_name, sp2_pos);
+						typeToOutput(")break;}");
+						
+						(*outputp)[pos] = ';';
+						pos++;
+						
+						typeToOutput(it_name);
+						typeToOutput("++;");
+						typeToOutput(it2_name);
+						typeToOutput("++;}");
 						
 						unsigned int stBef_pos = listExpStart_pos2;
 						while(keywords[stBef_pos][0] != ';' && keywords[stBef_pos][0] != '{' && keywords[stBef_pos][0] != '}') {
@@ -513,7 +517,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						typeToOutput(cond_bool);
 						
 						i = sop_pos;
-						while(keywords[i][0] != ']' || parentheses > 0) { // TMP; replace with get second sublist end later
+						while(keywords[i][0] != ']' || parentheses > 0) {
 							if(keywords[i][0] == '(') parentheses++;
 							if(parentheses && keywords[i][0] == ')') parentheses--;
 							
@@ -571,7 +575,12 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		}
 	}
 	
-	if(keywords[i][0] == ';') lineno++;
+	if(keywords[i][0] == ';') {
+		lineno++;
+		linecol = 1;
+	} else {
+		linecol++;
+	}
 	
 	return i;
 }
