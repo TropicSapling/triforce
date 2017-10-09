@@ -141,8 +141,6 @@ static void typeSublistStartPos(unsigned int *sp_pos, char **keywords, char **ou
 			*sp_pos = parseKey(*sp_pos, keywords, outputp, stat, it_name);
 		}
 		
-		*sp_pos += 3;
-		
 		typeToOutput(")){");
 		typeToOutput(it_name);
 		
@@ -153,12 +151,12 @@ static void typeSublistStartPos(unsigned int *sp_pos, char **keywords, char **ou
 			*sp_pos = parseKey(*sp_pos, keywords, outputp, stat, it_name);
 		}
 		
-		*sp_pos += 3;
-		
 		INCR_MEM(1);
 		(*outputp)[pos] = ';';
 		pos++;
 	}
+	
+	*sp_pos += 3;
 }
 
 static void typeSublistEndPos(char **keywords, char **outputp, unsigned short *stat, char *it_name, unsigned int i_pos) {
