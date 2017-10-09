@@ -513,6 +513,13 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						typeToOutput(cond_bool);
 						
 						i = sop_pos;
+						while(keywords[i][0] != ']' || parentheses > 0) { // TMP; replace with get second sublist end later
+							if(keywords[i][0] == '(') parentheses++;
+							if(parentheses && keywords[i][0] == ')') parentheses--;
+							
+							i++;
+						}
+						
 						break;
 					}
 				}
