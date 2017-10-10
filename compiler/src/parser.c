@@ -359,8 +359,9 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		
 		bool foundSublist = false;
 		
+		unsigned short brackets = 0;
 		unsigned int i_pos = 2;
-		for(; keywords[i + i_pos][0] != ']'; i_pos++) {
+		for(; keywords[i + i_pos][0] != ']' || brackets > 0; i_pos++) {
 			if(keywords[i + i_pos][0] == '>' && keywords[i + i_pos + 1][0] == '>' && keywords[i + i_pos + 2][0] == '>') {
 				unsigned short stat = 0;
 				
@@ -524,6 +525,9 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 			} else if(keywords[i + i_pos][0] == '<' && keywords[i + i_pos + 1][0] == '<' && keywords[i + i_pos + 2][0] == '<') {
 				break; // TMP, WIP
 			}
+			
+			if(keywords[i + i_pos][0] == '[') brackets++;
+			if(brackets && keywords[i + i_pos][0] == ']') brackets--;
 		}
 		
 		if(!foundSublist) {
