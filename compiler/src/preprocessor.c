@@ -238,7 +238,7 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 				exporting = true;
 			}
 			
-			continue;
+			if(strcmp(skey, "include") != 0) continue;
 		}
 		
 		if(exporting) {

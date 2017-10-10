@@ -11,7 +11,7 @@ printf("%d\n", arr[3 >>> 7] == arr2[>>> 3]); // 't123' == '123'; out: 0
 printf("%d ", arr4[3 >>> 7] == arr3[>>> until arr3[__item] == '\0']); // 'test' == 'test'; out: 1
 printf("%d\n", arr3[>>> until __item > 4 && arr3[__item] == '\0'] == arr4[3 >>> 7]); // 'test\0456' == 'test'; out: 0
 
-printf("%d ", arr3[5 >>> until arr3[__item] == '\0'] == arr3[when arr3[__item] == '\0' >>> until arr3[__item] == '\0']); // '456' == '456'; out: 1
+printf("%d ", arr3[5 >>> until arr3[__item] == '\0'] == arr3[when arr3[__item - 1] == '\0' >>> until arr3[__item] == '\0']); // '456' == '456'; out: 1
 printf("%d ", arr3[5 >>> until arr3[__item - 1] == '\0'] == arr3[when arr3[__item] == '\0' >>> until arr3[__item] == '\0']); // '456\0' == '456'; out: 0
 
 return 0;
