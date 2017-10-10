@@ -337,7 +337,10 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 	} else if(strcmp(keywords[i], "__argc") == 0) {
 		typeToOutput("argc");
 	} else if(strcmp(keywords[i], "__line") == 0) {
-		typeToOutput("__LINE__");
+		char linestr[64];
+		sprintf(linestr, "%zu", lineno);
+		
+		typeToOutput(linestr);
 	} else if(strcmp(keywords[i], "__path") == 0) {
 		typeToOutput("__PATH__");
 	} else if(strcmp(keywords[i], "__item") == 0) {
