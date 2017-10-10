@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 	
 	/////////////////// START PARSING //////////////////
 	
-	char *parsed_output = parse(keywords);
+	char *parsed_output = parse(keywords, argv[1]);
 	
 	free(processed_input);
 	

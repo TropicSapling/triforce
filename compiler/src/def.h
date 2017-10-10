@@ -5,7 +5,7 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 
 void lex_parse(char *input, char ***keywords, char ***pointers);
 
-char *parse(char **keywords);
+char *parse(char **keywords, char *filename);
 
 void addSpaceForKeys(char ***keywords, size_t *keywords_size);
 
