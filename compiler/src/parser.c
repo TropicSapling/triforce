@@ -312,6 +312,11 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 	} else if(strcmp(keywords[i], "clang") == 0) {
 		// INLINE C
 		
+		puts("----------------------------------------------------------------");
+		printf(WHITE "%s:%zu:%zu: " RESET YELLOW "Warning:" RESET " '" WHITE "clang" RESET "' is not implemented yet.\n", file, lineno, linecol);
+		printf("	...%s %s %s " YELLOW "clang" RESET " %s %s %s...\n", keywords[i - 3], keywords[i - 2], keywords[i - 1], keywords[i + 1], keywords[i + 2], keywords[i + 3]);
+		puts("----------------------------------------------------------------");
+		
 		for(unsigned int j = 1; j < 9; j++) {
 			unsigned int k = 0;
 			for(; k < 22; k++) {
@@ -327,11 +332,6 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		}
 		
 		// WIP
-		
-		puts("----------------------------------------------------------------");
-		printf(WHITE "%s:%zu:%zu: " RESET YELLOW "Warning:" RESET " '" WHITE "clang" RESET "' is not implemented yet.\n", file, lineno, linecol);
-		printf("	...%s %s %s" YELLOW "clang" RESET "%s %s %s...\n", keywords[i - 3], keywords[i - 2], keywords[i - 1], keywords[i + 1], keywords[i + 2], keywords[i + 3]);
-		puts("----------------------------------------------------------------");
 	} else if(strcmp(keywords[i], "__args") == 0) {
 		typeToOutput("argv");
 	} else if(strcmp(keywords[i], "__argc") == 0) {
@@ -344,7 +344,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		if(cItem == NULL) {
 			puts("----------------------------------------------------------------");
 			printf(WHITE "%s:%zu:%zu: " RESET RED "Error:" RESET " Invalid placement of '" WHITE "__item" RESET "'.\n", file, lineno, linecol);
-			printf("	...%s %s %s" RED "__item" RESET "%s %s %s...\n", keywords[i - 3], keywords[i - 2], keywords[i - 1], keywords[i + 1], keywords[i + 2], keywords[i + 3]);
+			printf("	...%s %s %s " RED "__item" RESET " %s %s %s...\n", keywords[i - 3], keywords[i - 2], keywords[i - 1], keywords[i + 1], keywords[i + 2], keywords[i + 3]);
 			puts("----------------------------------------------------------------");
 			
 			exit(EXIT_FAILURE);
