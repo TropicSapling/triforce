@@ -80,6 +80,10 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 		}
 		
 		if(strcmp(trimmed_buf, "\n") == 0 || strcmp(trimmed_buf, "\r\n") == 0 || (*trimmed_buf == '/' && *(trimmed_buf + 1) == '/')) {
+			INCR_MEM(1);
+			(*processed_input)[input_item] = ';';
+			input_item++;
+			
 			continue;
 		}
 		
