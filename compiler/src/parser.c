@@ -366,8 +366,6 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 			printf("	...%s %s %s " RED "__item" RESET " %s %s %s...\n", keywords[i - 3], keywords[i - 2], keywords[i - 1], keywords[i + 1], keywords[i + 2], keywords[i + 3]);
 			puts("----------------------------------------------------------------");
 			
-			puts(*outputp);
-			
 			exit(EXIT_FAILURE);
 		} else {
 			typeToOutput(cItem);
@@ -428,6 +426,8 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						unsigned int sp_pos = i + 2;
 						typeSublistStartPos(&sp_pos, keywords, outputp, &stat, it_name);
 						
+						i_pos += 3;
+						
 						// Create second iterator
 						typeToOutput("size_t ");
 						
@@ -464,9 +464,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 							(*outputp)[pos] = '=';
 							pos++;
 							
-							unsigned int str_len = typeTo(outputp, keywords[sp2_pos]);
-							sp2_pos += str_len;
-							sprintf(str2, "%d", str_len - 1);
+							sprintf(str2, "%d", typeTo(outputp, keywords[sp2_pos]));
 							typeToOutput("\";");
 						} else if(keywords[sp2_pos][0] == '\'') { // Second list is a whole string constant
 							listType2 = 2;
@@ -474,9 +472,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 							typeToOutput("0;char ");
 							typeToOutput(str2_name);
 							typeToOutput("[]={");
-							unsigned int str_len = typeStr(keywords, outputp, sp2_pos);
-							sp2_pos += str_len;
-							sprintf(str2, "%d", str_len - 1);
+							sprintf(str2, "%d", typeStr(keywords, outputp, sp2_pos));
 							typeToOutput("};");
 						} else {
 							while(keywords[sp2_pos][0] != '[' || parentheses > 0) {
@@ -488,8 +484,6 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 							sp2_pos++;
 							
 							typeSublistStartPos(&sp2_pos, keywords, outputp, &stat, it2_name);
-							
-							i_pos += 3;
 						}
 						
 						// Create condition bool
