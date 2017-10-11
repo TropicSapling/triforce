@@ -573,7 +573,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		}
 	}
 	
-	if(keywords[i][0] == ';') {
+	if(keywords[i][0] == ';' || (keywords[i][0] == '{' && keywords[i - 1][0] == ')') || (keywords[i][0] == '}' && keywords[i - 1][0] == ';')) {
 		lineno++;
 		linecol = 1;
 	} else {
