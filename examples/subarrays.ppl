@@ -20,7 +20,7 @@ int main(void) {
 	printf("Current line: %d\n", __line);
 	
 	printf("%d ", arr3[5 >>> until arr3[__item] == '\0'] == '456'); // '456' == '456'; out: 1
-	printf("%d ", "456" == arr3[5 >>> until arr3[__item - 1] == '\0']); // '456\0' == '456\0'; out: 1
+//	printf("%d ", "456" == arr3[5 >>> until arr3[__item - 1] == '\0']); // '456\0' == '456\0'; out: 1
 	printf("%d\n", arr3[5 >>> until arr3[__item] == '\0'] == "456"); // '456' == '456\0'; out: 0
 
 	return 0;
