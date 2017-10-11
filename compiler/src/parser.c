@@ -189,6 +189,33 @@ static unsigned int typeSublistEndPos(char **keywords, char **outputp, unsigned 
 	return i_pos;
 }
 
+static void typeStr(char **keywords, char **outputp, unsigned int i) {
+	for(unsigned int c = 1; keywords[i][c] != '\0'; c++) {
+		INCR_MEM(3);
+		
+		(*outputp)[pos] = '\'';
+		pos++;
+		
+		(*outputp)[pos] = keywords[i][c];
+		pos++;
+		if(keywords[i][c] == '\\' && keywords[i][c + 1] == '0') {
+			INCR_MEM(1);
+			
+			(*outputp)[pos] = keywords[i][c + 1];
+			pos++;
+			c++;
+		}
+		
+		(*outputp)[pos] = '\'';
+		pos++;
+		if(keywords[i][c + 1] != '\0') {
+			INCR_MEM(1);
+			(*outputp)[pos] = ',';
+			pos++;
+		}
+	}
+}
+
 static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned short *status, char *cItem) {
 	if(strcmp(keywords[i], "false") == 0) {
 		INCR_MEM(1);
@@ -269,30 +296,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 			(*outputp)[pos] = '{';
 			pos++;
 			
-			for(unsigned int c = 1; keywords[i][c] != '\0'; c++) {
-				INCR_MEM(3);
-				
-				(*outputp)[pos] = '\'';
-				pos++;
-				
-				(*outputp)[pos] = keywords[i][c];
-				pos++;
-				if(keywords[i][c] == '\\' && keywords[i][c + 1] == '0') {
-					INCR_MEM(1);
-					
-					(*outputp)[pos] = keywords[i][c + 1];
-					pos++;
-					c++;
-				}
-				
-				(*outputp)[pos] = '\'';
-				pos++;
-				if(keywords[i][c + 1] != '\0') {
-					INCR_MEM(1);
-					(*outputp)[pos] = ',';
-					pos++;
-				}
-			}
+			typeStr(keywords, outputp, i);
 			
 			(*outputp)[pos] = '}';
 			pos++;
@@ -424,20 +428,42 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 							sp2_pos++;
 						}
 						
-						// Get second sublist start pos
 						unsigned short parentheses = 0;
-						while(keywords[sp2_pos][0] != '[' || parentheses > 0) {
-							if(keywords[sp2_pos][0] == '(') parentheses++;
-							if(parentheses && keywords[sp2_pos][0] == ')') parentheses--;
+						
+						char str2_name[12] = "ppl_str_";
+						addID(str2_name + 8, &iterators);
+						
+						// Get second sublist start pos
+						if(keywords[sp2_pos][0] == '"') { // Second list is a whole null-terminated string constant
+							typeToOutput("0;char *");
+							typeToOutput(str2_name);
 							
+							INCR_MEM(1);
+							(*outputp)[pos] = '=';
+							pos++;
+							
+							typeToOutput(keywords[sp2_pos]);
+							typeToOutput("\";");
+						} else if(keywords[sp2_pos][0] == '\'') { // Second list is a whole string constant
+							typeToOutput("0;char ");
+							typeToOutput(str2_name);
+							typeToOutput("[]={");
+							typeStr(keywords, outputp, sp2_pos);
+							typeToOutput("};");
+						} else {
+							while(keywords[sp2_pos][0] != '[' || parentheses > 0) {
+								if(keywords[sp2_pos][0] == '(') parentheses++;
+								if(parentheses && keywords[sp2_pos][0] == ')') parentheses--;
+								
+								sp2_pos++;
+							}
 							sp2_pos++;
+						
+							// Type second sublist start pos
+							typeSublistStartPos(&sp2_pos, keywords, outputp, &stat, it2_name);
+							
+							i_pos += 3;
 						}
-						sp2_pos++;
-						
-						// Type second sublist start pos
-						typeSublistStartPos(&sp2_pos, keywords, outputp, &stat, it2_name);
-						
-						i_pos += 3;
 						
 						// Create condition bool
 						char cond_bool[17] = "ppl_condBool_";
