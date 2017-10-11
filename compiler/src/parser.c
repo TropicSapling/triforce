@@ -433,8 +433,12 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						char str2_name[12] = "ppl_str_";
 						addID(str2_name + 8, &iterators);
 						
-						// Get second sublist start pos
+						unsigned short listType2 = 0;
+						
+						// Type second sublist start pos
 						if(keywords[sp2_pos][0] == '"') { // Second list is a whole null-terminated string constant
+							listType2 = 1;
+							
 							typeToOutput("0;char *");
 							typeToOutput(str2_name);
 							
@@ -445,6 +449,8 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 							typeToOutput(keywords[sp2_pos]);
 							typeToOutput("\";");
 						} else if(keywords[sp2_pos][0] == '\'') { // Second list is a whole string constant
+							listType2 = 2;
+							
 							typeToOutput("0;char ");
 							typeToOutput(str2_name);
 							typeToOutput("[]={");
@@ -458,8 +464,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 								sp2_pos++;
 							}
 							sp2_pos++;
-						
-							// Type second sublist start pos
+							
 							typeSublistStartPos(&sp2_pos, keywords, outputp, &stat, it2_name);
 							
 							i_pos += 3;
@@ -496,13 +501,17 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						}
 						
 						// Type second sublist expression
-						while(keywords[sop_pos][0] != '[' || parentheses > 0) {
-							if(keywords[sop_pos][0] == '(') parentheses++;
-							if(parentheses && keywords[sop_pos][0] == ')') parentheses--;
-							
-							sop_pos = parseKey(sop_pos, keywords, outputp, &stat, cItem);
-							
-							sop_pos++;
+						if(listType2) {
+							typeToOutput(str2_name);
+						} else {
+							while(keywords[sop_pos][0] != '[' || parentheses > 0) {
+								if(keywords[sop_pos][0] == '(') parentheses++;
+								if(parentheses && keywords[sop_pos][0] == ')') parentheses--;
+								
+								sop_pos = parseKey(sop_pos, keywords, outputp, &stat, cItem);
+								
+								sop_pos++;
+							}
 						}
 						
 						(*outputp)[pos] = '[';
@@ -519,13 +528,13 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						typeToOutput("++;if(");
 						
 						// Check if comparison is done
-						typeSublistEndPos(keywords, outputp, &stat, it_name, i + i_pos);
+						typeSublistEndPos(keywords, outputp, &stat, it_name, i + i_pos); // First sublist
 						typeToOutput("&&");
-						typeSublistEndPos(keywords, outputp, &stat, it2_name, sp2_pos);
+						typeSublistEndPos(keywords, outputp, &stat, it2_name, sp2_pos); // Second sublist
 						typeToOutput("){break;}else if(");
-						typeSublistEndPos(keywords, outputp, &stat, it_name, i + i_pos);
+						typeSublistEndPos(keywords, outputp, &stat, it_name, i + i_pos); // First sublist
 						typeToOutput("||");
-						sp2_pos = typeSublistEndPos(keywords, outputp, &stat, it2_name, sp2_pos);
+						sp2_pos = typeSublistEndPos(keywords, outputp, &stat, it2_name, sp2_pos); // Second sublist
 						typeToOutput("){");
 						typeToOutput(cond_bool);
 						typeToOutput("=0;break;}}");
