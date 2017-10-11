@@ -29,14 +29,16 @@ void addSpaceForFileChars(char **str, size_t *str_size) {
 
 unsigned int replaceIfDefined(char **exports, size_t *ekey, size_t *exports_size, char **str, char defs[128][2][128], size_t defs_len) {
 	for(size_t i = 0; i < defs_len; i++) {
-		if(strncmp(*str, defs[i][0], strlen(defs[i][0])) == 0) {
-			for(unsigned short s = 0; s < strlen(defs[i][1]); s++) {
+		unsigned short def_len = strlen(defs[i][0]);
+		if(strncmp(*str, defs[i][0], def_len) == 0) {
+			for(unsigned short s = 0, defr_len = strlen(defs[i][1]); s < defr_len; s++) {
 				INCR_EXPORTS_MEM(1);
 				(*exports)[*ekey] = defs[i][1][s];
 				
 				(*ekey)++;
-				(*str)++;
 			}
+			
+			*str += def_len;
 			
 			return 1;
 		}
@@ -45,12 +47,9 @@ unsigned int replaceIfDefined(char **exports, size_t *ekey, size_t *exports_size
 	return 0;
 }
 
-void preprocess(FILE **input, char **processed_input, size_t input_size, char *path[], char **exports, size_t *exports_size, size_t *ekey) {
+void preprocess(FILE **input, char **processed_input, size_t input_size, char *path[], char **exports, size_t *exports_size, size_t *ekey, char defs[128][2][128], size_t *defID) {
 	char buf[65536];
 	size_t input_item = 0;
-	
-	char defs[128][2][128];
-	size_t defID = 0;
 	
 	bool ignoring = false;
 	bool inStr = false;
@@ -106,20 +105,20 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 				// Get what to replace
 				unsigned int i = 0;
 				for(; trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"'; i++) {
-					defs[defID][0][i] = trimmed_buf[c + i];
+					defs[*defID][0][i] = trimmed_buf[c + i];
 				}
-				defs[defID][0][i] = '\0';
+				defs[*defID][0][i] = '\0';
 				
 				c += i + 6;
 				
 				// Get what to replace with
 				unsigned int r_pos = 0;
 				for(; trimmed_buf[c + r_pos] != '\'' && trimmed_buf[c + r_pos] != '"'; r_pos++) {
-					defs[defID][1][r_pos] = trimmed_buf[c + r_pos];
+					defs[*defID][1][r_pos] = trimmed_buf[c + r_pos];
 				}
-				defs[defID][1][r_pos] = '\0';
+				defs[*defID][1][r_pos] = '\0';
 				
-				defID++;
+				(*defID)++;
 			} else if(strcmp(skey, "ifdef") == 0) {
 				// WIP
 			} else if(strcmp(skey, "import") == 0) {
@@ -216,7 +215,7 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 					
 					size_t ec_key = 0;
 					
-					preprocess(&lib, &lib_contents, exported_content_size, path, &exported_content, &exported_content_size, &ec_key);
+					preprocess(&lib, &lib_contents, exported_content_size, path, &exported_content, &exported_content_size, &ec_key, defs, defID);
 					free(lib_contents);
 					
 					if(ec_key > exported_content_size) addSpaceForFileChars(&exported_content, &exported_content_size);
@@ -247,7 +246,7 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 		
 		if(exporting) {
 			while(*trimmed_buf != '\0') {
-				if(!replaceIfDefined(exports, ekey, exports_size, &trimmed_buf, defs, defID)) {
+				if(!replaceIfDefined(exports, ekey, exports_size, &trimmed_buf, defs, *defID)) {
 					INCR_EXPORTS_MEM(1);
 					(*exports)[*ekey] = *trimmed_buf;
 					(*ekey)++;
@@ -256,7 +255,7 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 			}
 		} else {
 			while(*trimmed_buf != '\0') {
-				if(!replaceIfDefined(processed_input, &input_item, &input_size, &trimmed_buf, defs, defID)) {
+				if(!replaceIfDefined(processed_input, &input_item, &input_size, &trimmed_buf, defs, *defID)) {
 					INCR_MEM(1);
 					(*processed_input)[input_item] = *trimmed_buf;
 					
