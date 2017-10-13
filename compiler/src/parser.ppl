@@ -22,7 +22,7 @@
 #define WHITE   "\x1B[37;1m"
 #define RESET "\x1B[0m"
 
-char *file;
+char pointer file;
 
 char types[22][8] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile"};
 char reserved_keys[19][8] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while"};
@@ -34,20 +34,20 @@ size_t output_size = 256;
 size_t lineno = 1;
 size_t linecol = 1;
 
-static void addSpaceForChars(char **output) {
+static void addSpaceForChars(char pointer*2 output) {
 	output_size *= 2;
 	
-	char *res = realloc(*output, output_size);
+	char pointer res = realloc(@output, output_size);
 	if(res == NULL) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
 		exit(EXIT_FAILURE);
 	} else {
-		*output = res;
+		@output = res;
 	}
 }
 
-static bool isReserved(char arr[static 1][8], char *str, unsigned int len) {
+static bool isReserved(char arr[static 1][8], char pointer str, unsigned int len) {
 	for(unsigned int i = 0; i < len; i++) {
 		if(strcmp(arr[i], str) == 0) return true;
 	}
@@ -55,7 +55,7 @@ static bool isReserved(char arr[static 1][8], char *str, unsigned int len) {
 	return false;
 }
 
-static bool isNumber(char *str) {
+static bool isNumber(char pointer str) {
 	for(unsigned int i = 0; str[i] != '\0'; i++) {
 		if(!isdigit(str[i])) return false;
 	}
@@ -63,29 +63,29 @@ static bool isNumber(char *str) {
 	return true;
 }
 
-static unsigned int typeTo(char **outputp, char *str) {
+static unsigned int typeTo(char pointer*2 outputp, char pointer str) {
 	unsigned int i = 0;
 	for(; str[i] != '\0'; i++) {
 		if(pos + 1 > output_size) addSpaceForChars(outputp);
-		(*outputp)[pos] = str[i];
+		(@outputp)[pos] = str[i];
 		pos++;
 	}
 	
 	return i;
 }
 
-static void addID(char *str_end, size_t *IDs) {
-	char *chars = "abcdefghijklmnopqrstuvwxyz";
+static void addID(char pointer str_end, size_t pointer IDs) {
+	char pointer chars -> "abcdefghijklmnopqrstuvwxyz";
 	
-	str_end[0] = chars[(*IDs / (26 * 26)) % 26];
-	str_end[1] = chars[(*IDs / 26) % 26];
-	str_end[2] = chars[*IDs % 26];
+	str_end[0] = chars[(@IDs / (26 * 26)) % 26];
+	str_end[1] = chars[(@IDs / 26) % 26];
+	str_end[2] = chars[@IDs % 26];
 	str_end[3] = '\0';
 	
-	(*IDs)++;
+	(@IDs)++;
 }
 
-static unsigned int getListExpStartPos(unsigned int i, char **keywords) {
+static unsigned int getListExpStartPos(unsigned int i, char pointer*2 keywords) {
 	unsigned int st_pos = i;
 	unsigned short parentheses = 0;
 	unsigned short brackets = 0;
@@ -113,7 +113,7 @@ static unsigned int getListExpStartPos(unsigned int i, char **keywords) {
 	return st_pos;
 }
 
-static unsigned int getListExpEndPos(char **keywords) {
+static unsigned int getListExpEndPos(char pointer*2 keywords) {
 	unsigned int en_pos = 0;
 	unsigned short brackets = 0;
 	
@@ -131,17 +131,17 @@ static unsigned int getListExpEndPos(char **keywords) {
 	return en_pos;
 }
 
-static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned short *status, char *cItem);
+static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 outputp, unsigned short pointer status, char *cItem);
 
-static void typeSublistStartPos(unsigned int *sp_pos, char **keywords, char **outputp, unsigned short *stat, char *it_name) {
-	if(keywords[*sp_pos][0] == '>') {
+static void typeSublistStartPos(unsigned int pointer sp_pos, char pointer*2 keywords, char pointer*2 outputp, unsigned short pointer stat, char pointer it_name) {
+	if(keywords[@sp_pos][0] == '>') {
 		typeToOutput("0;"); // Use default start pos
-	} else if(strcmp(keywords[*sp_pos], "when") == 0) {
+	} else if(strcmp(keywords[@sp_pos], "when") == 0) {
 		typeToOutput("0;while(!(");
 		
 		// Get sublist start pos condition
-		for((*sp_pos)++; !(keywords[*sp_pos][0] == '>' && keywords[*sp_pos + 1][0] == '>' && keywords[*sp_pos + 2][0] == '>'); (*sp_pos)++) {
-			*sp_pos = parseKey(*sp_pos, keywords, outputp, stat, it_name);
+		for((@sp_pos)++; !(keywords[@sp_pos][0] == '>' && keywords[@sp_pos + 1][0] == '>' && keywords[@sp_pos + 2][0] == '>'); (@sp_pos)++) {
+			@sp_pos = parseKey(@sp_pos, keywords, outputp, stat, it_name);
 		}
 		
 		typeToOutput(")){");
@@ -150,19 +150,19 @@ static void typeSublistStartPos(unsigned int *sp_pos, char **keywords, char **ou
 		// Create while loop
 		typeToOutput("++;}");
 	} else {
-		for(; !(keywords[*sp_pos][0] == '>' && keywords[*sp_pos + 1][0] == '>' && keywords[*sp_pos + 2][0] == '>'); (*sp_pos)++) {
-			*sp_pos = parseKey(*sp_pos, keywords, outputp, stat, it_name);
+		for(; !(keywords[@sp_pos][0] == '>' && keywords[@sp_pos + 1][0] == '>' && keywords[@sp_pos + 2][0] == '>'); (@sp_pos)++) {
+			@sp_pos = parseKey(@sp_pos, keywords, outputp, stat, it_name);
 		}
 		
 		INCR_MEM(1);
-		(*outputp)[pos] = ';';
+		(@outputp)[pos] = ';';
 		pos++;
 	}
 	
-	*sp_pos += 3;
+	@sp_pos += 3;
 }
 
-static unsigned int typeSublistEndPos(char **keywords, char **outputp, unsigned short *stat, char *it_name, unsigned int i_pos, char *str_end) {
+static unsigned int typeSublistEndPos(char pointer*2 keywords, char pointer*2 outputp, unsigned short pointer stat, char pointer it_name, unsigned int i_pos, char pointer str_end) {
 	if(keywords[i_pos][0] == ']') { // Use default
 //		typeToOutput(list_length); // TODO: Define 'list_length'
 	} else if(str_end[0] == '\0') {
@@ -198,29 +198,29 @@ static unsigned int typeSublistEndPos(char **keywords, char **outputp, unsigned 
 	return i_pos;
 }
 
-static unsigned int typeStr(char **keywords, char **outputp, unsigned int i) {
+static unsigned int typeStr(char pointer*2 keywords, char pointer*2 outputp, unsigned int i) {
 	unsigned int c = 1;
 	for(; keywords[i][c] != '\0'; c++) {
 		INCR_MEM(3);
 		
-		(*outputp)[pos] = '\'';
+		(@outputp)[pos] = '\'';
 		pos++;
 		
-		(*outputp)[pos] = keywords[i][c];
+		(@outputp)[pos] = keywords[i][c];
 		pos++;
 		if(keywords[i][c] == '\\' && keywords[i][c + 1] == '0') {
 			INCR_MEM(1);
 			
-			(*outputp)[pos] = keywords[i][c + 1];
+			(@outputp)[pos] = keywords[i][c + 1];
 			pos++;
 			c++;
 		}
 		
-		(*outputp)[pos] = '\'';
+		(@outputp)[pos] = '\'';
 		pos++;
 		if(keywords[i][c + 1] != '\0') {
 			INCR_MEM(1);
-			(*outputp)[pos] = ',';
+			(@outputp)[pos] = ',';
 			pos++;
 		}
 	}
@@ -228,23 +228,23 @@ static unsigned int typeStr(char **keywords, char **outputp, unsigned int i) {
 	return c - 1;
 }
 
-static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned short *status, char *cItem) {
+static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 outputp, unsigned short pointer status, char pointer cItem) {
 	if(strcmp(keywords[i], "false") == 0) {
 		INCR_MEM(1);
 		
-		(*outputp)[pos] = '0';
+		(@outputp)[pos] = '0';
 		pos++;
 	} else if(strcmp(keywords[i], "true") == 0) {
 		INCR_MEM(1);
 		
-		(*outputp)[pos] = '1';
+		(@outputp)[pos] = '1';
 		pos++;
 	} else if(strcmp(keywords[i], "unique") == 0) {
 		typeToOutput("restrict ");
 	} else if(strcmp(keywords[i], "pointer") == 0) {
 		INCR_MEM(1);
 		
-		(*outputp)[pos] = '*';
+		(@outputp)[pos] = '*';
 		pos++;
 		
 		if(i + 2 < key && keywords[i + 1][0] == '*') {
@@ -253,24 +253,24 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 			for(unsigned short s = 0; s < keywords[i][0] - 49; s++) {
 				INCR_MEM(1);
 				
-				(*outputp)[pos] = '*';
+				(@outputp)[pos] = '*';
 				pos++;
 			}
 		}
 	} else if(keywords[i][0] == '-' && keywords[i + 1][0] == '>') {
 		// POINTER CREATION
 		
-		if(strstr(specials, keywords[i - 2]) == NULL) { // Assignment
+		if(keywords[i - 1][0] == ']' || strstr(specials, keywords[i - 1]) == NULL) { // Assignment
 			INCR_MEM(1);
 			
-			(*outputp)[pos] = '=';
+			(@outputp)[pos] = '=';
 			pos++;
 		}
 		
 		if(keywords[i + 2][0] != '{' && keywords[i + 2][0] != '\'' && keywords[i + 2][0] != '"') {
 			INCR_MEM(1);
 			
-			(*outputp)[pos] = '&';
+			(@outputp)[pos] = '&';
 			pos++;
 		}
 		
@@ -280,7 +280,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		
 		INCR_MEM(1);
 		
-		(*outputp)[pos] = '*';
+		(@outputp)[pos] = '*';
 		pos++;
 	} else if(keywords[i][0] == '\'') {
 		// STRINGS (without null termination)
@@ -288,29 +288,29 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		if(keywords[i][2] == '\0' || (keywords[i][1] == '\\' && keywords[i][3] == '\0')) {
 			INCR_MEM(3);
 			
-			(*outputp)[pos] = '\'';
+			(@outputp)[pos] = '\'';
 			pos++;
 			
-			(*outputp)[pos] = keywords[i][1];
+			(@outputp)[pos] = keywords[i][1];
 			pos++;
 			if(keywords[i][2] != '\0') {
 				INCR_MEM(1);
 				
-				(*outputp)[pos] = keywords[i][2];
+				(@outputp)[pos] = keywords[i][2];
 				pos++;
 			}
 			
-			(*outputp)[pos] = '\'';
+			(@outputp)[pos] = '\'';
 			pos++;
 		} else {
 			INCR_MEM(2);
 			
-			(*outputp)[pos] = '{';
+			(@outputp)[pos] = '{';
 			pos++;
 			
 			typeStr(keywords, outputp, i);
 			
-			(*outputp)[pos] = '}';
+			(@outputp)[pos] = '}';
 			pos++;
 		}
 	} else if(keywords[i][0] == '"') {
@@ -318,12 +318,12 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		
 		for(unsigned int c = 0; keywords[i][c] != '\0'; c++) {
 			INCR_MEM(1);
-			(*outputp)[pos] = keywords[i][c];
+			(@outputp)[pos] = keywords[i][c];
 			pos++;
 		}
 		
 		INCR_MEM(1);
-		(*outputp)[pos] = '"';
+		(@outputp)[pos] = '"';
 		pos++;
 	} else if(strcmp(keywords[i], "clang") == 0) {
 		// INLINE C
@@ -406,7 +406,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						
 						char str[8] = "";
 						
-						while(pos >= 0 && (*outputp)[pos - 1] != ';' && (*outputp)[pos - 1] != '{' && (*outputp)[pos - 1] != '}') { // NEEDS FIXING
+						while(pos >= 0 && (@outputp)[pos - 1] != ';' && (@outputp)[pos - 1] != '{' && (@outputp)[pos - 1] != '}') { // NEEDS FIXING
 							pos--;
 						}
 						
@@ -419,7 +419,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						addID(it_name + 7, &iterators);
 						
 						typeToOutput(it_name);
-						(*outputp)[pos] = '=';
+						(@outputp)[pos] = '=';
 						pos++;
 						
 						// Type first sublist start pos
@@ -435,7 +435,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						addID(it2_name + 7, &iterators);
 						
 						typeToOutput(it2_name);
-						(*outputp)[pos] = '=';
+						(@outputp)[pos] = '=';
 						pos++;
 						
 						// Get second sublist expression pos
@@ -461,7 +461,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 							typeToOutput(str2_name);
 							
 							INCR_MEM(1);
-							(*outputp)[pos] = '=';
+							(@outputp)[pos] = '=';
 							pos++;
 							
 							sprintf(str2, "%d", typeTo(outputp, keywords[sp2_pos]));
@@ -505,10 +505,10 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						
 						stat = 0;
 						
-						(*outputp)[pos] = '[';
+						(@outputp)[pos] = '[';
 						pos++;
 						typeToOutput(it_name);
-						(*outputp)[pos] = ']';
+						(@outputp)[pos] = ']';
 						pos++;
 						
 						// Type comparison operator
@@ -530,7 +530,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 							}
 						}
 						
-						(*outputp)[pos] = '[';
+						(@outputp)[pos] = '[';
 						pos++;
 						typeToOutput(it2_name);
 						typeToOutput("])){");
@@ -589,16 +589,16 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		if(strcmp(keywords[i], "#include") == 0) { // TMP; makes it possible to include C functions without the need of 'import clib'
 			INCR_MEM(2);
 			
-			if(pos < 1 || (*outputp)[pos - 1] != '\n') {
+			if(pos < 1 || (@outputp)[pos - 1] != '\n') {
 				INCR_MEM(1);
-				(*outputp)[pos] = '\n';
+				(@outputp)[pos] = '\n';
 				pos++;
 			}
 			
 			typeToOutput(keywords[i]);
 			i++;
 			
-			(*outputp)[pos] = ' ';
+			(@outputp)[pos] = ' ';
 			pos++;
 			
 			bool addQM = keywords[i][0] == '"';
@@ -610,11 +610,11 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 			
 			if(addQM) {
 				INCR_MEM(1);
-				(*outputp)[pos] = '"';
+				(@outputp)[pos] = '"';
 				pos++;
 			}
 			
-			(*outputp)[pos] = '\n';
+			(@outputp)[pos] = '\n';
 			pos++;
 		} else {
 			typeToOutput(keywords[i]);
@@ -627,7 +627,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		if(strstr(specials, keywords[i]) == NULL && strstr(specials, keywords[i + 1]) == NULL) {
 			INCR_MEM(1);
 			
-			(*outputp)[pos] = ' ';
+			(@outputp)[pos] = ' ';
 			pos++;
 		}
 	}

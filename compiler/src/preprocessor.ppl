@@ -27,6 +27,10 @@ static void addSpaceForFileChars(char pointer*2 str, size_t pointer str_size) {
 	}
 }
 
+static void addItem(char pointer*2 arrp, size_t pointer arrsize_p) {
+	
+}
+
 static unsigned int replaceIfDefined(char pointer*2 exports, size_t pointer ekey, size_t pointer exports_size, char pointer*2 str, char defs[128][2][128], size_t defs_len) {
 	for(size_t i = 0; i < defs_len; i++) {
 		unsigned short def_len = strlen(defs[i][0]);
