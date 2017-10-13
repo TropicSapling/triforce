@@ -110,19 +110,29 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				
 				// Get what to replace
 				unsigned int i = 0;
-				for(; trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"'; i++) {
+				for(; trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c + i] != '\0'; i++) {
 					defs[@defID][0][i] = trimmed_buf[c + i];
 				}
 				defs[@defID][0][i] = '\0';
+				
+				if(trimmed_buf[c + i] == '\0') {
+					printErr((struct ErrInfo) {.msg = "Missing end quote (' or \") after '" WHITE "#def" RESET "'.", .filename = path[1], .lineno = lineno});
+					exit(EXIT_FAILURE);
+				}
 				
 				c += i + 6;
 				
 				// Get what to replace with
 				unsigned int r_pos = 0;
-				for(; trimmed_buf[c + r_pos] != '\'' && trimmed_buf[c + r_pos] != '"'; r_pos++) {
+				for(; trimmed_buf[c + r_pos] != '\'' && trimmed_buf[c + r_pos] != '"' && trimmed_buf[c + i] != '\0'; r_pos++) {
 					defs[@defID][1][r_pos] = trimmed_buf[c + r_pos];
 				}
 				defs[@defID][1][r_pos] = '\0';
+				
+				if(trimmed_buf[c + r_pos] == '\0') {
+					printErr((struct ErrInfo) {.msg = "Missing end quote (' or \") after '" WHITE "#def" RESET "'.", .filename = path[1], .lineno = lineno});
+					exit(EXIT_FAILURE);
+				}
 				
 				(@defID)++;
 				
@@ -159,8 +169,13 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 					char lib_path[128];
 					c++;
 					i = 0;
-					for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"'; i++) {
+					for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c + i] != '\0'; i++) {
 						lib_path[i] = trimmed_buf[c + i];
+					}
+					
+					if(trimmed_buf[c + i] == '\0') {
+						printErr((struct ErrInfo) {.msg = "Missing " WHITE "'" RESET ", " WHITE "\"" RESET "or " WHITE ">" RESET " after '" WHITE "#import" RESET "'.", .filename = path[1], .lineno = lineno});
+						exit(EXIT_FAILURE);
 					}
 					
 					lib_path[i] = '\0';
@@ -216,7 +231,7 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 					exit(EXIT_FAILURE);
 				}
 				
-				if(trimmed_buf[c + i + 2] == 'a') {
+				if(trimmed_buf[c + i + 2] == 'a') { // import as ...
 					// WIP
 				} else {
 					size_t exported_content_size = 256;
