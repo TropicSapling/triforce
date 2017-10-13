@@ -14,6 +14,10 @@
 	if(@ekey + (size) > @exports_size) addSpaceForFileChars(exports, exports_size); \
 } while(0)
 
+#define printError(msg) do { \
+	printErr((struct ErrInfo) {.msg = msg, .filename = path[1], .lineno = lineno}, 0); \
+} while(0)
+
 static void addSpaceForFileChars(char pointer*2 str, size_t pointer str_size) {
 	@str_size *= 2;
 	
@@ -97,7 +101,7 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 			}
 			
 			if(trimmed_buf[c] == '\0') {
-				printErr((struct ErrInfo) {.msg = "Directive is missing necessary info.", .filename = path[1], .lineno = lineno}, 0);
+				printError("Directive is missing necessary info.");
 				exit(EXIT_FAILURE);
 			}
 			
@@ -116,7 +120,7 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				defs[@defID][0][i] = '\0';
 				
 				if(trimmed_buf[c + i] == '\0') {
-					printErr((struct ErrInfo) {.msg = "Missing end quote (' or \") after '" WHITE "#def" RESET "'.", .filename = path[1], .lineno = lineno}, 0);
+					printError("Missing end quote (' or \") after '" WHITE "#def" RESET "'.");
 					exit(EXIT_FAILURE);
 				}
 				
@@ -130,7 +134,7 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				defs[@defID][1][r_pos] = '\0';
 				
 				if(trimmed_buf[c + r_pos] == '\0') {
-					printErr((struct ErrInfo) {.msg = "Missing end quote (' or \") after '" WHITE "#def" RESET "'.", .filename = path[1], .lineno = lineno}, 0);
+					printError("Missing end quote (' or \") after '" WHITE "#def" RESET "'.");
 					exit(EXIT_FAILURE);
 				}
 				
