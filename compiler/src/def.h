@@ -13,6 +13,7 @@
 	
 	struct ErrInfo {
 		char pointer msg;
+		char pointer msg2;
 		
 		char pointer filename;
 		size_t lineno;
@@ -23,8 +24,7 @@
 		unsigned int i;
 	};
 	
-	void printErr(struct ErrInfo Error);
-	void printWarning(struct ErrInfo Error);
+	void printErr(struct ErrInfo Error, unsigned short errType);
 
 	void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t input_size, char pointer path[static 2], char pointer*2 exports, size_t pointer exports_size, size_t pointer ekey, char defs[128][2][128], size_t pointer defID);
 

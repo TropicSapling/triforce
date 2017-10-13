@@ -97,7 +97,7 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 			}
 			
 			if(trimmed_buf[c] == '\0') {
-				printErr((struct ErrInfo) {.msg = "Directive is missing necessary info.", .filename = path[1], .lineno = lineno});
+				printErr((struct ErrInfo) {.msg = "Directive is missing necessary info.", .filename = path[1], .lineno = lineno}, 0);
 				exit(EXIT_FAILURE);
 			}
 			
@@ -116,7 +116,7 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				defs[@defID][0][i] = '\0';
 				
 				if(trimmed_buf[c + i] == '\0') {
-					printErr((struct ErrInfo) {.msg = "Missing end quote (' or \") after '" WHITE "#def" RESET "'.", .filename = path[1], .lineno = lineno});
+					printErr((struct ErrInfo) {.msg = "Missing end quote (' or \") after '" WHITE "#def" RESET "'.", .filename = path[1], .lineno = lineno}, 0);
 					exit(EXIT_FAILURE);
 				}
 				
@@ -130,7 +130,7 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				defs[@defID][1][r_pos] = '\0';
 				
 				if(trimmed_buf[c + r_pos] == '\0') {
-					printErr((struct ErrInfo) {.msg = "Missing end quote (' or \") after '" WHITE "#def" RESET "'.", .filename = path[1], .lineno = lineno});
+					printErr((struct ErrInfo) {.msg = "Missing end quote (' or \") after '" WHITE "#def" RESET "'.", .filename = path[1], .lineno = lineno}, 0);
 					exit(EXIT_FAILURE);
 				}
 				
@@ -174,7 +174,7 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 					}
 					
 					if(trimmed_buf[c + i] == '\0') {
-						printErr((struct ErrInfo) {.msg = "Missing " WHITE "'" RESET ", " WHITE "\"" RESET "or " WHITE ">" RESET " after '" WHITE "#import" RESET "'.", .filename = path[1], .lineno = lineno});
+						printErr((struct ErrInfo) {.msg = "Missing " WHITE "'" RESET ", " WHITE "\"" RESET "or " WHITE ">" RESET " after '" WHITE "#import" RESET "'.", .filename = path[1], .lineno = lineno}, 0);
 						exit(EXIT_FAILURE);
 					}
 					
