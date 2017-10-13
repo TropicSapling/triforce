@@ -19,7 +19,7 @@ bool inStr2 = false;
 bool escaping = false;
 bool ignoring = false;
 
-void addSpaceForKeys(char ***keywords, size_t *keywords_size) {
+static void addSpaceForKeys(char ***keywords, size_t *keywords_size) {
 	*keywords_size *= 2;
 	
 	char **res = realloc(*keywords, *keywords_size);

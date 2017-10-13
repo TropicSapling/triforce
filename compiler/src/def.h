@@ -1,22 +1,19 @@
 #ifndef DEF_INCLUDED
-#define DEF_INCLUDED
+	#define DEF_INCLUDED
 
-void preprocess(FILE **input, char **processed_input, size_t input_size, char *path[], char **exports, size_t *exports_size, size_t *ekey, char defs[128][2][128], size_t *defID);
+	extern const char* const restrict specials;
 
-void lex_parse(char *input, char ***keywords, char ***pointers);
+	extern size_t keywords_size;
+	extern size_t key;
 
-char *parse(char **keywords, char *filename);
+	extern size_t pointers_size;
+	extern size_t pkey;
 
-void addSpaceForKeys(char ***keywords, size_t *keywords_size);
+	extern size_t pos;
 
-extern const char* const restrict specials;
+	void preprocess(FILE **input, char **processed_input, size_t input_size, char *path[static 2], char **exports, size_t *exports_size, size_t *ekey, char defs[128][2][128], size_t *defID);
 
-extern size_t keywords_size;
-extern size_t key;
+	void lex_parse(char *input, char ***keywords, char ***pointers);
 
-extern size_t pointers_size;
-extern size_t pkey;
-
-extern size_t pos;
-
+	char *parse(char **keywords, char *filename);
 #endif

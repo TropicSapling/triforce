@@ -1,0 +1,25 @@
+#include <stdio.h>;
+
+puts("IN exporting.ppl");
+
+char pointer str -> "public";
+char pointer $str2 -> "private";
+
+void function(void) {
+	puts("function executed");
+}
+
+void $function2(void) {
+	puts("function2 executed");
+}
+
+void function3(void) {
+	puts("IN function3");
+	function();
+	$function2();
+	puts(str);
+	puts($str2);
+	puts("OUT function3");
+}
+
+puts("OUT exporting.ppl");
