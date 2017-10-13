@@ -7,11 +7,11 @@
 #include "def.h";
 
 #define INCR_MEM(size) do { \
-	if(key + (size) > keywords_size / sizeof(char*)) addSpaceForKeys(keywords, &keywords_size); \
+	if(key + (size) > keywords_size / sizeof(char pointer)) addSpaceForKeys(keywords, ->keywords_size); \
 } while(0)
 
 #define INCR_MEM2(size) do { \
-	if(pkey + (size) > pointers_size / sizeof(char*)) addSpaceForKeys(pointers, &pointers_size); \
+	if(pkey + (size) > pointers_size / sizeof(char pointer)) addSpaceForKeys(pointers, ->pointers_size); \
 } while(0)
 
 bool inStr = false;
@@ -19,16 +19,16 @@ bool inStr2 = false;
 bool escaping = false;
 bool ignoring = false;
 
-static void addSpaceForKeys(char ***keywords, size_t *keywords_size) {
-	*keywords_size *= 2;
+static void addSpaceForKeys(char pointer*3 keywords, size_t pointer keywords_size) {
+	@keywords_size *= 2;
 	
-	char **res = realloc(*keywords, *keywords_size);
+	char pointer*2 res = realloc(@keywords, @keywords_size);
 	if(res == NULL) {
 		perror("ERROR");
 		fprintf(stderr, "ID: %d\n", errno);
 		exit(EXIT_FAILURE);
 	} else {
-		*keywords = res;
+		@keywords = res;
 	}
 }
 
@@ -42,60 +42,60 @@ static bool isSpecial(char c) {
 
 void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 pointers) {
 	INCR_MEM(1);
-	(*keywords)[key] = input;
+	(@keywords)[key] = input;
 	key++;
 	
-	while(*input != '\0') {
-		char *special;
+	while(@input != '\0') {
+		char pointer special;
 		bool foundSpecial = false;
 		
 		if(ignoring) {
-			*input = '\0';
+			@input = '\0';
 			input++;
 		}
 		
-		while((ignoring || inStr || inStr2 || *input != ' ') && *input != '\0') {
+		while((ignoring || inStr || inStr2 || @input != ' ') && @input != '\0') {
 			if(ignoring) {
-				if(*input == '*' && *(input + 1) == '/') {
+				if(@input == '*' && @(input + 1) == '/') {
 					ignoring = false;
 					input++;
 					
 					INCR_MEM(1);
 					
-					(*keywords)[key] = input + 1;
+					(@keywords)[key] = input + 1;
 					key++;
 				}
-			} else if(!inStr && !inStr2 && isSpecial(*input)) {
+			} else if(!inStr && !inStr2 && isSpecial(@input)) {
 				special = calloc(2, 1);
-				special[0] = *input;
+				special[0] = @input;
 				foundSpecial = true;
 				
 				break;
 			} else if(escaping) {
 				escaping = false;
-			} else if(!inStr2 && *input == '\'') {
+			} else if(!inStr2 && @input == '\'') {
 				if(inStr) {
 					inStr = false;
 					break;
 				} else {
 					inStr = true;
 				}
-			} else if(!inStr && *input == '"') {
+			} else if(!inStr && @input == '"') {
 				if(inStr2) {
 					inStr2 = false;
 					break;
 				} else {
 					inStr2 = true;
 				}
-			} else if(*input == '\\') {
+			} else if(@input == '\\') {
 				escaping = true;
 			}
 			
 			input++;
 		}
 		
-		if(*input == ';' || *input == '{' || *input == '}') {
-			*input = '\0';
+		if(@input == ';' || @input == '{' || @input == '}') {
+			@input = '\0';
 			input++;
 			
 			while(*input == ' ') input++;
