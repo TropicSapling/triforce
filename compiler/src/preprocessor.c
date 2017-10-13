@@ -14,7 +14,7 @@
 	if(*ekey + (size) > *exports_size) addSpaceForFileChars(exports, exports_size); \
 } while(0)
 
-void addSpaceForFileChars(char **str, size_t *str_size) {
+static void addSpaceForFileChars(char **str, size_t *str_size) {
 	*str_size *= 2;
 	
 	char *res = realloc(*str, *str_size);
@@ -27,7 +27,7 @@ void addSpaceForFileChars(char **str, size_t *str_size) {
 	}
 }
 
-unsigned int replaceIfDefined(char **exports, size_t *ekey, size_t *exports_size, char **str, char defs[128][2][128], size_t defs_len) {
+static unsigned int replaceIfDefined(char **exports, size_t *ekey, size_t *exports_size, char **str, char defs[128][2][128], size_t defs_len) {
 	for(size_t i = 0; i < defs_len; i++) {
 		unsigned short def_len = strlen(defs[i][0]);
 		if(strncmp(*str, defs[i][0], def_len) == 0) {
@@ -47,7 +47,7 @@ unsigned int replaceIfDefined(char **exports, size_t *ekey, size_t *exports_size
 	return 0;
 }
 
-void preprocess(FILE **input, char **processed_input, size_t input_size, char *path[], char **exports, size_t *exports_size, size_t *ekey, char defs[128][2][128], size_t *defID) {
+void preprocess(FILE **input, char **processed_input, size_t input_size, char *path[static 2], char **exports, size_t *exports_size, size_t *ekey, char defs[128][2][128], size_t *defID) {
 	char buf[65536];
 	size_t input_item = 0;
 	

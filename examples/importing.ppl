@@ -1,0 +1,12 @@
+#import 'exporting.ppl';
+
+puts("IN importing.ppl");
+
+puts(str);
+function();
+function3();
+
+puts(str2);
+function2();
+
+puts("OUT importing.ppl");

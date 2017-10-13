@@ -34,7 +34,7 @@ size_t output_size = 256;
 size_t lineno = 1;
 size_t linecol = 1;
 
-void addSpaceForChars(char **output) {
+static void addSpaceForChars(char **output) {
 	output_size *= 2;
 	
 	char *res = realloc(*output, output_size);
@@ -47,7 +47,7 @@ void addSpaceForChars(char **output) {
 	}
 }
 
-static bool isReserved(char arr[][8], char *str, unsigned int len) {
+static bool isReserved(char arr[static 1][8], char *str, unsigned int len) {
 	for(unsigned int i = 0; i < len; i++) {
 		if(strcmp(arr[i], str) == 0) return true;
 	}
