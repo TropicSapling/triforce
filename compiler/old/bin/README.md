@@ -1,0 +1,1 @@
+`./ppc path/to/input.p path/to/output.c`

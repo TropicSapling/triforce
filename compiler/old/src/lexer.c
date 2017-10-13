@@ -101,14 +101,12 @@ void lex_parse(char *input, char ***keywords, char ***pointers) {
 			while(*input == ' ') input++;
 			if(*input == '/' && *(input + 1) == '/') while(*input != '\n') input++;
 			
-			if(*input == '\r') {
-				input++;
-			} else if(*input == '/' && *(input + 1) == '*') {
+			if(*input == '/' && *(input + 1) == '*') {
 				ignoring = true;
 				input++;
 				
 				continue;
-			} else if(*input != '\n') {
+			} else {
 				input--;
 			}
 		}

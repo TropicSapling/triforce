@@ -6,15 +6,15 @@
 
 #include "def.h"
 
-const char* const restrict specials = ";,[]{}()?><=+-*/%!&|^~@\\.:";
+const char pointer const unique specials -> ";,[]{}()?><=+-*/%!&|^~@\\.:";
 
-size_t keywords_size = sizeof(char*) * 32;
-size_t pointers_size = sizeof(char*) * 32;
+size_t keywords_size = sizeof(char pointer) * 32;
+size_t pointers_size = sizeof(char pointer) * 32;
 size_t key = 0;
 size_t pkey = 0;
 size_t pos = 0;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char pointer argv[]) {
 	
 	//////////////// PREPARE FOR LEXING ////////////////
 	
@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	
-	FILE *input = fopen(argv[1], "r"); // Will be "r+" if automatic compiled GC gets added in the future and/or if needed to fix 'read-dir' bug
+	FILE pointer input = fopen(argv[1], "r"); // Will be "r+" if automatic compiled GC gets added in the future and/or if needed to fix 'read-dir' bug
 	
 	if(input == NULL) {
 		perror("ERROR");
@@ -37,8 +37,8 @@ int main(int argc, char *argv[]) {
 	size_t defID = 0;
 	
 	size_t processed_input_size = 256;
-	char *processed_input = malloc(processed_input_size);
-	preprocess(&input, &processed_input, processed_input_size, argv, NULL, NULL, NULL, defs, &defID);
+	char pointer processed_input = malloc(processed_input_size);
+	preprocess(->input, ->processed_input, processed_input_size, argv, NULL, NULL, NULL, defs, ->defID);
 	
 	fclose(input);
 	
@@ -46,16 +46,16 @@ int main(int argc, char *argv[]) {
 	
 	/////////////////// START LEXING ///////////////////
 	
-	char **keywords = malloc(keywords_size);
-	char **pointers = malloc(pointers_size);
+	char pointer*2 keywords = malloc(keywords_size);
+	char pointer*2 pointers = malloc(pointers_size);
 	
-	lex_parse(processed_input, &keywords, &pointers);
+	lex_parse(processed_input, ->keywords, ->pointers);
 	
 	puts("[DEBUG] Lex-parsed input.");
 	
 	/////////////////// START PARSING //////////////////
 	
-	char *parsed_output = parse(keywords, argv[1]);
+	char pointer parsed_output = parse(keywords, argv[1]);
 	
 	free(processed_input);
 	
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 	
 	//////////////// PREPARE FOR OUTPUT ////////////////
 	
-	FILE *output;
+	FILE pointer output;
 	
 	if(argc < 3) {
 		size_t file_length = strlen(argv[1]);
@@ -113,7 +113,6 @@ int main(int argc, char *argv[]) {
 	/////////////////// PRINT OUTPUT ///////////////////
 	
 	for(size_t i = 0; i < pos; i++) {
-		if(parsed_output[i] == '$') continue; // TMP; makes it possible to use C functions without the need of 'clang'
 		fprintf(output, "%c", parsed_output[i]);
 		
 		printf("[DEBUG] Printing output... %.2Lf%%\r", (((long double) i + 1) / key) * 100);

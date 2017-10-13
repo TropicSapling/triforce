@@ -229,7 +229,12 @@ static unsigned int typeStr(char **keywords, char **outputp, unsigned int i) {
 }
 
 static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned short *status, char *cItem) {
-	if(strcmp(keywords[i], "false") == 0) {
+	if(keywords[i][0] == '\t' || keywords[i][0] == '\r' || keywords[i][0] == '\n') {
+		INCR_MEM(1);
+		
+		(*outputp)[pos] = keywords[i][0];
+		pos++;
+	} else if(strcmp(keywords[i], "false") == 0) {
 		INCR_MEM(1);
 		
 		(*outputp)[pos] = '0';
@@ -366,6 +371,8 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 			printf("	...%s %s %s " RED "__item" RESET " %s %s %s...\n", keywords[i - 3], keywords[i - 2], keywords[i - 1], keywords[i + 1], keywords[i + 2], keywords[i + 3]);
 			puts("----------------------------------------------------------------");
 			
+			puts(*outputp); // DEBUG
+			
 			exit(EXIT_FAILURE);
 		} else {
 			typeToOutput(cItem);
@@ -406,7 +413,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						
 						char str[8] = "";
 						
-						while(pos >= 0 && (*outputp)[pos - 1] != ';' && (*outputp)[pos - 1] != '{' && (*outputp)[pos - 1] != '}') { // NEEDS FIXING
+						while(pos >= 0 && (*outputp)[pos - 1] != ';' && (*outputp)[pos - 1] != '\n' && (*outputp)[pos - 1] != '\t') {
 							pos--;
 						}
 						
@@ -553,10 +560,10 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 						sp2_pos = typeSublistEndPos(keywords, outputp, &stat, it2_name, sp2_pos, str2); // Second sublist
 						typeToOutput("){");
 						typeToOutput(cond_bool);
-						typeToOutput("=0;break;}}");
+						typeToOutput("=0;break;}}\n");
 						
 						unsigned int stBef_pos = listExpStart_pos2;
-						while(keywords[stBef_pos][0] != ';' && keywords[stBef_pos][0] != '{' && keywords[stBef_pos][0] != '}') {
+						while(keywords[stBef_pos][0] != ';' && keywords[stBef_pos][0] != '\n') {
 							stBef_pos--;
 						}
 						stBef_pos++;
@@ -624,7 +631,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 		}
 	}
 	
-	if(keywords[i][0] == ';' || (keywords[i][0] == '{' && keywords[i - 1][0] == ')') || (keywords[i][0] == '}' && keywords[i - 1][0] == ';')) {
+	if(keywords[i][0] == '\n') {
 		lineno++;
 		linecol = 1;
 	} else {
