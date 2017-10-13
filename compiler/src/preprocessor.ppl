@@ -27,10 +27,6 @@ static void addSpaceForFileChars(char pointer*2 str, size_t pointer str_size) {
 	}
 }
 
-static void addItem(char pointer*2 arrp, size_t pointer arrsize_p) {
-	
-}
-
 static unsigned int replaceIfDefined(char pointer*2 exports, size_t pointer ekey, size_t pointer exports_size, char pointer*2 str, char defs[128][2][128], size_t defs_len) {
 	for(size_t i = 0; i < defs_len; i++) {
 		unsigned short def_len = strlen(defs[i][0]);
@@ -54,6 +50,7 @@ static unsigned int replaceIfDefined(char pointer*2 exports, size_t pointer ekey
 void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t input_size, char pointer path[static 2], char pointer*2 exports, size_t pointer exports_size, size_t pointer ekey, char defs[128][2][128], size_t pointer defID) {
 	char buf[65536];
 	size_t input_item = 0;
+	size_t lineno = 1;
 	
 	bool ignoring = false;
 	bool inStr = false;
@@ -97,6 +94,11 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 			while(trimmed_buf[c] != ' ' && trimmed_buf[c] != '\r' && trimmed_buf[c] != '\n' && trimmed_buf[c] != '\0') {
 				skey[c - 1] = trimmed_buf[c];
 				c++;
+			}
+			
+			if(trimmed_buf[c] == '\0') {
+				printErr((struct ErrInfo) {.msg = "Directive is missing necessary info.", .filename = path[1], .lineno = lineno});
+				exit(EXIT_FAILURE);
 			}
 			
 			skey[c - 1] = '\0';
@@ -276,6 +278,8 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				}
 			}
 		}
+		
+		lineno++;
 	}
 	
 	INCR_MEM(1);

@@ -14,6 +14,39 @@ size_t key = 0;
 size_t pkey = 0;
 size_t pos = 0;
 
+void printErrInfo(struct ErrInfo Error) {
+	puts("----------------------------------------------------------------");
+	
+	if(Error.data == NULL && Error.data2 == NULL) {
+		printf(WHITE "%s:%zu:" RESET " %s\n", Error.filename, Error.lineno, Error.msg);
+	} else {
+		printf(WHITE "%s:%zu:%zu:" RESET " %s\n", Error.filename, Error.lineno, Error.linecol, Error.msg);
+		printf("	...%s %s %s " RED "__item" RESET " %s %s %s...\n", Error.data2[Error.i - 3], Error.data2[Error.i - 2], Error.data2[Error.i - 1], Error.data2[Error.i + 1], Error.data2[Error.i + 2], Error.data2[Error.i + 3]);
+	}
+	
+	puts("----------------------------------------------------------------");
+}
+
+void printWarning(struct ErrInfo Error) {
+	char pointer msg = malloc(strlen(Error.msg) + 7);
+	strcpy(msg, YELLOW "Warning:" RESET);
+	strcat(msg, Error.msg);
+	
+	printErrInfo((struct ErrInfo) {msg, Error.filename, Error.lineno, Error.linecol, Error.data, Error.data2, Error.i});
+	
+	free(msg);
+}
+
+void printErr(struct ErrInfo Error) {
+	char pointer msg = malloc(strlen(Error.msg) + 7);
+	strcpy(msg, RED "Error:" RESET);
+	strcat(msg, Error.msg);
+	
+	printErrInfo((struct ErrInfo) {msg, Error.filename, Error.lineno, Error.linecol, Error.data, Error.data2, Error.i});
+	
+	free(msg);
+}
+
 int main(int argc, char pointer argv[]) {
 	
 	//////////////// PREPARE FOR LEXING ////////////////
