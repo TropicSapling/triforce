@@ -1,10 +1,10 @@
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <errno.h>
+#include <stdlib.h>;
+#include <string.h>;
+#include <stdbool.h>;
+#include <stdio.h>;
+#include <errno.h>;
 
-#include "def.h"
+#include "def.h";
 
 #define INCR_MEM(size) do { \
 	if(input_item + (size) > input_size) addSpaceForFileChars(processed_input, ->input_size); \
@@ -119,8 +119,12 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				defs[*defID][1][r_pos] = '\0';
 				
 				(*defID)++;
+				
+				continue;
 			} else if(strcmp(skey, "ifdef") == 0) {
 				// WIP
+				
+				continue;
 			} else if(strcmp(skey, "import") == 0) {
 				char full_path[256];
 				unsigned short i;
@@ -235,13 +239,17 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				}
 				
 				fclose(lib);
+				
+				continue;
 			} else if(strcmp(skey, "endexp") == 0) {
 				exporting = false;
+				
+				continue;
 			} else if(exports_size && strcmp(skey, "export") == 0) {
 				exporting = true;
+				
+				continue;
 			}
-			
-			if(strcmp(skey, "include") != 0) continue;
 		}
 		
 		if(exporting) {

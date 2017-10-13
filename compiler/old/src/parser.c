@@ -265,7 +265,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 	} else if(keywords[i][0] == '-' && keywords[i + 1][0] == '>') {
 		// POINTER CREATION
 		
-		if(!(keywords[i - 1][0] == '=' && strstr(specials, keywords[i - 2]) == NULL)) { // Assignment
+		if(strstr(specials, keywords[i - 1]) == NULL) { // Assignment
 			INCR_MEM(1);
 			
 			(*outputp)[pos] = '=';
@@ -290,7 +290,7 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 	} else if(keywords[i][0] == '\'') {
 		// STRINGS (without null termination)
 		
-		if(keywords[i][2] == '\0' || (keywords[i][1] == '\\' && keywords[i][2] == '0' && keywords[i][3] == '\0')) {
+		if(keywords[i][2] == '\0' || (keywords[i][1] == '\\' && keywords[i][3] == '\0')) {
 			INCR_MEM(3);
 			
 			(*outputp)[pos] = '\'';
@@ -608,9 +608,17 @@ static size_t parseKey(unsigned int i, char **keywords, char **outputp, unsigned
 			(*outputp)[pos] = ' ';
 			pos++;
 			
+			bool addQM = keywords[i][0] == '"';
+			
 			while(keywords[i][0] != ';') {
 				typeToOutput(keywords[i]);
 				i++;
+			}
+			
+			if(addQM) {
+				INCR_MEM(1);
+				(*outputp)[pos] = '"';
+				pos++;
 			}
 			
 			(*outputp)[pos] = '\n';

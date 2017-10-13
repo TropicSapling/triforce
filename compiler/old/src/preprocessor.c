@@ -123,8 +123,12 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 				defs[*defID][1][r_pos] = '\0';
 				
 				(*defID)++;
+				
+				continue;
 			} else if(strcmp(skey, "ifdef") == 0) {
 				// WIP
+				
+				continue;
 			} else if(strcmp(skey, "import") == 0) {
 				char full_path[256];
 				unsigned short i;
@@ -239,13 +243,17 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 				}
 				
 				fclose(lib);
+				
+				continue;
 			} else if(strcmp(skey, "endexp") == 0) {
 				exporting = false;
+				
+				continue;
 			} else if(exports_size && strcmp(skey, "export") == 0) {
 				exporting = true;
+				
+				continue;
 			}
-			
-			if(strcmp(skey, "include") != 0) continue;
 		}
 		
 		if(exporting) {
