@@ -162,6 +162,20 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 					full_path[i] = '\0';
 					
 					strcat(full_path, "/lib/");
+					c++;
+					
+					char lib_path[128];
+					i = 0;
+					for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c + i] != '\0'; i++) {
+						lib_path[i] = trimmed_buf[c + i];
+					}
+					
+					if(trimmed_buf[c + i] == '\0') {
+						printError("Missing " WHITE "'" RESET ", " WHITE "\"" RESET "or " WHITE ">" RESET " after '" WHITE "#import" RESET "'.");
+					}
+					
+					lib_path[i] = '\0';
+					strcat(full_path, lib_path);
 				} else {
 					// Import custom library
 					
@@ -213,16 +227,6 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 						strcat(full_path, new_lib_path);
 					}
 				}
-				
-				char lib_path[128];
-				c++;
-				i = 0;
-				for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"'; i++) {
-					lib_path[i] = trimmed_buf[c + i];
-				}
-				
-				lib_path[i] = '\0';
-				strcat(full_path, lib_path);
 					
 				FILE pointer lib = fopen(full_path, "r");
 				if(lib == NULL) {
