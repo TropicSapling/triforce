@@ -38,6 +38,8 @@ void printErr(struct ErrInfo Error, unsigned short errType) {
 	}
 	
 	puts("----------------------------------------------------------------");
+	
+	if(errType != 1) exit(EXIT_FAILURE);
 }
 
 int main(int argc, char pointer argv[]) {

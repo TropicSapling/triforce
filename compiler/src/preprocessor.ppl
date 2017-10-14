@@ -14,8 +14,8 @@
 	if(@ekey + (size) > @exports_size) addSpaceForFileChars(exports, exports_size); \
 } while(0)
 
-#define printError(msg) do { \
-	printErr((struct ErrInfo) {.msg = msg, .filename = path[1], .lineno = lineno}, 0); \
+#define printError(message) do { \
+	printErr((struct ErrInfo) {.msg = message, .filename = path[1], .lineno = lineno}, 0); \
 } while(0)
 
 static void addSpaceForFileChars(char pointer*2 str, size_t pointer str_size) {
@@ -102,7 +102,6 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 			
 			if(trimmed_buf[c] == '\0') {
 				printError("Directive is missing necessary info.");
-				exit(EXIT_FAILURE);
 			}
 			
 			skey[c - 1] = '\0';
@@ -121,7 +120,6 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				
 				if(trimmed_buf[c + i] == '\0') {
 					printError("Missing end quote (' or \") after '" WHITE "#def" RESET "'.");
-					exit(EXIT_FAILURE);
 				}
 				
 				c += i + 6;
@@ -135,7 +133,6 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				
 				if(trimmed_buf[c + r_pos] == '\0') {
 					printError("Missing end quote (' or \") after '" WHITE "#def" RESET "'.");
-					exit(EXIT_FAILURE);
 				}
 				
 				(@defID)++;
@@ -178,8 +175,7 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 					}
 					
 					if(trimmed_buf[c + i] == '\0') {
-						printErr((struct ErrInfo) {.msg = "Missing " WHITE "'" RESET ", " WHITE "\"" RESET "or " WHITE ">" RESET " after '" WHITE "#import" RESET "'.", .filename = path[1], .lineno = lineno}, 0);
-						exit(EXIT_FAILURE);
+						printError("Missing " WHITE "'" RESET ", " WHITE "\"" RESET "or " WHITE ">" RESET " after '" WHITE "#import" RESET "'.");
 					}
 					
 					lib_path[i] = '\0';
