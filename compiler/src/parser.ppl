@@ -15,8 +15,8 @@
 	typeTo(outputp, str); \
 } while(0)
 
-#define printError(message, errType) do { \
-	printErr((struct ErrInfo) {.msg = message, .msg2 = keywords[i], .filename = file, .lineno = lineno, .linecol = linecol, .data2 = keywords, .i = i}, errType); \
+#define printError(message, errType, i_pos) do { \
+	printErr((struct ErrInfo) {.msg = message, .msg2 = keywords[i_pos], .filename = file, .lineno = lineno, .linecol = linecol, .data2 = keywords, .i = i_pos}, errType); \
 } while(0)
 
 char pointer file;
@@ -87,10 +87,10 @@ static unsigned int getListExpStartPos(unsigned int i, char pointer*2 keywords) 
 	unsigned short parentheses = 0;
 	unsigned short brackets = 0;
 	
-	while(keywords[st_pos][0] == ')' || keywords[st_pos][0] == ']') {
+	while(st_pos >= 0 && (keywords[st_pos][0] == ')' || keywords[st_pos][0] == ']')) {
 		if(keywords[st_pos][0] == ')') {
 			st_pos--;
-			while(keywords[st_pos][0] != '(' || parentheses > 0 || (keywords[st_pos - 1][0] == ')' && st_pos--)) {
+			while(st_pos >= 0 && (keywords[st_pos][0] != '(' || parentheses > 0 || (keywords[st_pos - 1][0] == ')' && st_pos--))) {
 				if(keywords[st_pos][0] == ')') parentheses++;
 				if(parentheses && keywords[st_pos][0] == '(') parentheses--;
 				
@@ -98,7 +98,7 @@ static unsigned int getListExpStartPos(unsigned int i, char pointer*2 keywords) 
 			}
 		} else if(keywords[st_pos][0] == ']') {
 			st_pos--;
-			while(keywords[st_pos][0] != '[' || brackets > 0 || (keywords[st_pos - 1][0] == ']' && st_pos--)) {
+			while(st_pos >= 0 && (keywords[st_pos][0] != '[' || brackets > 0 || (keywords[st_pos - 1][0] == ']' && st_pos--))) {
 				if(keywords[st_pos][0] == ']') brackets++;
 				if(brackets && keywords[st_pos][0] == '[') brackets--;
 				
@@ -116,11 +116,15 @@ static unsigned int getListExpEndPos(char pointer*2 keywords) {
 	unsigned int en_pos = 0;
 	unsigned short brackets = 0;
 	
-	while(keywords[en_pos][0] != ']' || brackets > 0) {
+	while(en_pos < key && keywords[en_pos][0] != ';' && (keywords[en_pos][0] != ']' || brackets > 0)) {
 		if(keywords[en_pos][0] == '[') brackets++;
 		if(brackets && keywords[en_pos][0] == ']') brackets--;
 		
 		en_pos++;
+	}
+	
+	if(en_pos >= key || keywords[en_pos][0] == ';') {
+		printError("Missing '" WHITE "]" RESET "' after list access.", 0, en_pos);
 	}
 	
 	en_pos++;
@@ -139,8 +143,12 @@ static void typeSublistStartPos(unsigned int pointer sp_pos, char pointer*2 keyw
 		typeToOutput("0;while(!(");
 		
 		// Get sublist start pos condition
-		for((@sp_pos)++; !(keywords[@sp_pos][0] == '>' && keywords[@sp_pos + 1][0] == '>' && keywords[@sp_pos + 2][0] == '>'); (@sp_pos)++) {
+		for((@sp_pos)++; @sp_pos < key && keywords[@sp_pos][0] != ';' && !(keywords[@sp_pos][0] == '>' && keywords[@sp_pos + 1][0] == '>' && keywords[@sp_pos + 2][0] == '>'); (@sp_pos)++) {
 			@sp_pos = parseKey(@sp_pos, keywords, outputp, stat, it_name);
+		}
+		
+		if(@sp_pos >= key || keywords[@sp_pos][0] == ';') {
+			printError("Unexpected end of statement.", 0, @sp_pos);
 		}
 		
 		typeToOutput(")){");
@@ -149,8 +157,12 @@ static void typeSublistStartPos(unsigned int pointer sp_pos, char pointer*2 keyw
 		// Create while loop
 		typeToOutput("++;}");
 	} else {
-		for(; !(keywords[@sp_pos][0] == '>' && keywords[@sp_pos + 1][0] == '>' && keywords[@sp_pos + 2][0] == '>'); (@sp_pos)++) {
+		for(; @sp_pos < key && keywords[@sp_pos][0] != ';' && !(keywords[@sp_pos][0] == '>' && keywords[@sp_pos + 1][0] == '>' && keywords[@sp_pos + 2][0] == '>'); (@sp_pos)++) {
 			@sp_pos = parseKey(@sp_pos, keywords, outputp, stat, it_name);
+		}
+		
+		if(@sp_pos >= key || keywords[@sp_pos][0] == ';') {
+			printError("Unexpected end of statement.", 0, @sp_pos);
 		}
 		
 		INCR_MEM(1);
@@ -178,11 +190,15 @@ static unsigned int typeSublistEndPos(char pointer*2 keywords, char pointer*2 ou
 		}
 		
 		unsigned short brackets = 0;
-		for(; keywords[i_pos][0] != ']' || brackets > 0; i_pos++) {
+		for(; i_pos < key && keywords[i_pos][0] != ';' && (keywords[i_pos][0] != ']' || brackets > 0); i_pos++) {
 			i_pos = parseKey(i_pos, keywords, outputp, stat, it_name);
 			
 			if(keywords[i_pos][0] == '[') brackets++;
 			if(brackets && keywords[i_pos][0] == ']') brackets--;
+		}
+		
+		if(i_pos >= key || keywords[i_pos][0] == ';') {
+			printError("Missing '" WHITE "]" RESET "' after list access.", 0, i_pos);
 		}
 		
 		if(isNormal) typeToOutput("))");
@@ -327,7 +343,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 	} else if(strcmp(keywords[i], "clang") == 0) {
 		// INLINE C
 		
-		printError("'" WHITE "clang" RESET "' is not implemented yet.", 1);
+		printError("'" WHITE "clang" RESET "' is not implemented yet.", 1, i);
 		
 		for(unsigned int j = 1; j < 9; j++) {
 			unsigned int k = 0;
@@ -357,7 +373,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 		typeToOutput("__PATH__");
 	} else if(strcmp(keywords[i], "__item") == 0) {
 		if(cItem == NULL) {
-			printError("Invalid placement of '" WHITE "__item" RESET "'.", 0);
+			printError("Invalid placement of '" WHITE "__item" RESET "'.", 0, i);
 		} else {
 			typeToOutput(cItem);
 		}
@@ -368,7 +384,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 		
 		unsigned short brackets = 0;
 		unsigned int i_pos = 2;
-		for(; keywords[i + i_pos][0] != ']' || brackets > 0; i_pos++) {
+		for(; i + i_pos < key && keywords[i + i_pos][0] != ';' && (keywords[i + i_pos][0] != ']' || brackets > 0); i_pos++) {
 			if(keywords[i + i_pos][0] == '>' && keywords[i + i_pos + 1][0] == '>' && keywords[i + i_pos + 2][0] == '>') {
 				unsigned short stat = 0;
 				
@@ -431,8 +447,12 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						
 						// Get second sublist expression pos
 						unsigned int sp2_pos = sop_pos;
-						while(keywords[sp2_pos][0] == '>' || keywords[sp2_pos][0] == '<' || keywords[sp2_pos][0] == '=' || keywords[sp2_pos][0] == '!' || keywords[sp2_pos][0] == '&' || keywords[sp2_pos][0] == '|') {
+						while(sp2_pos < key && keywords[sp2_pos][0] != ';' && (keywords[sp2_pos][0] == '>' || keywords[sp2_pos][0] == '<' || keywords[sp2_pos][0] == '=' || keywords[sp2_pos][0] == '!' || keywords[sp2_pos][0] == '&' || keywords[sp2_pos][0] == '|')) {
 							sp2_pos++;
+						}
+						
+						if(sp2_pos >= key || keywords[sp2_pos][0] == ';') {
+							printError("Unexpected end of statement.", 0, sp2_pos);
 						}
 						
 						unsigned short parentheses = 0;
@@ -466,12 +486,17 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 							sprintf(str2, "%d", typeStr(keywords, outputp, sp2_pos));
 							typeToOutput("};");
 						} else {
-							while(keywords[sp2_pos][0] != '[' || parentheses > 0) {
+							while(sp2_pos < key && keywords[sp2_pos][0] != ';' && (keywords[sp2_pos][0] != '[' || parentheses > 0)) {
 								if(keywords[sp2_pos][0] == '(') parentheses++;
 								if(parentheses && keywords[sp2_pos][0] == ')') parentheses--;
 								
 								sp2_pos++;
 							}
+							
+							if(sp2_pos >= key || keywords[sp2_pos][0] == ';') {
+								printError("Missing '" WHITE "[" RESET "' after list.", 0, sp2_pos);
+							}
+							
 							sp2_pos++;
 							
 							typeSublistStartPos(&sp2_pos, keywords, outputp, &stat, it2_name);
@@ -511,13 +536,17 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						if(listType2) {
 							typeToOutput(str2_name);
 						} else {
-							while(keywords[sop_pos][0] != '[' || parentheses > 0) {
+							while(sop_pos < key && keywords[sop_pos][0] != ';' && (keywords[sop_pos][0] != '[' || parentheses > 0)) {
 								if(keywords[sop_pos][0] == '(') parentheses++;
 								if(parentheses && keywords[sop_pos][0] == ')') parentheses--;
 								
 								sop_pos = parseKey(sop_pos, keywords, outputp, &stat, cItem);
 								
 								sop_pos++;
+							}
+							
+							if(sop_pos >= key || keywords[sop_pos][0] == ';') {
+								printError("Missing '" WHITE "[" RESET "' after list.", 0, sop_pos);
 							}
 						}
 						
@@ -547,7 +576,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						typeToOutput("=0;break;}}");
 						
 						unsigned int stBef_pos = listExpStart_pos2;
-						while(keywords[stBef_pos][0] != ';' && keywords[stBef_pos][0] != '{' && keywords[stBef_pos][0] != '}') {
+						while(stBef_pos >= 0 && (keywords[stBef_pos][0] != ';' && keywords[stBef_pos][0] != '{' && keywords[stBef_pos][0] != '}')) {
 							stBef_pos--;
 						}
 						stBef_pos++;
@@ -572,6 +601,10 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 			if(brackets && keywords[i + i_pos][0] == ']') brackets--;
 		}
 		
+		if(i + i_pos >= key) {
+			printError("Missing '" WHITE "]" RESET "' after list access.", 0, i + i_pos);
+		}
+		
 		if(!foundSublist) {
 			typeToOutput(keywords[i]);
 //			typeToOutput("_ppl");
@@ -594,9 +627,13 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 			
 			bool addQM = keywords[i][0] == '"';
 			
-			while(keywords[i][0] != ';') {
+			while(i < key && keywords[i][0] != ';') {
 				typeToOutput(keywords[i]);
 				i++;
+			}
+			
+			if(i >= key) {
+				printError("Missing semicolon at end of line.", 0, i);
 			}
 			
 			if(addQM) {

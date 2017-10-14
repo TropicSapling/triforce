@@ -99,7 +99,7 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 			input++;
 			
 			while(@input == ' ') input++;
-			if(@input == '/' && @(input + 1) == '/') while(@input != '\n') input++;
+			if(@input == '/' && @(input + 1) == '/') while(@input != '\n' && @input != '\0') input++;
 			
 			if(@input == '\r') {
 				input++;
@@ -147,7 +147,7 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 			key++;
 		}
 		
-		while(@input == ' ') input++;
+		while(@input == ' ' && @input != '\0') input++;
 		
 		if(!isSpecial(@input)) {
 			INCR_MEM(1);
