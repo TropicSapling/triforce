@@ -2,6 +2,7 @@
 #include <stdlib.h>;
 #include <errno.h>;
 #include <string.h>;
+#include <stdbool.h>;
 #include <sys/stat.h>;
 
 #include "def.h";
@@ -44,12 +45,34 @@ void printErr(struct ErrInfo Error, unsigned short errType) {
 
 int main(int argc, char pointer argv[]) {
 	
-	//////////////// PREPARE FOR LEXING ////////////////
-	
-	if(argc < 2 || argc > 3) {
+	if(argc < 2 || argc > 4) {
 		puts("Invalid usage. Please specify an input file as the first argument and an output file as the second argument.");
 		return 1;
 	}
+	
+	if(argv[1][1] == 'h' || argv[1][2 >>> until argv[1][__item] == '\0'] == 'help') {
+		puts("----------------------------------------------------------------");
+		puts("Usage: ppc <input> [<output>] [<options>...]");
+		puts("Options:");
+		puts("	-h, --help				Display this information.");
+		puts("	-d, --debug				Display debbuging information.");
+		puts("----------------------------------------------------------------");
+		
+		return 0;
+	}
+	
+	bool debugging = false;
+	if(argc > 2) {
+		if(argv[2][1] == 'd' || argv[2][2 >>> until argv[2][__item] == '\0'] == 'debug') {
+			debugging = true;
+		} else if(argc > 3) {
+			if(argv[3][1] == 'd' || argv[3][2 >>> until argv[2][__item] == '\0'] == 'debug') {
+				debugging = true;
+			}
+		}
+	}
+	
+	//////////////// PREPARE FOR PREPROCESSING ////////////////
 	
 	FILE pointer input = fopen(argv[1], "r"); // Will be "r+" if automatic compiled GC gets added in the future and/or if needed to fix 'read-dir' bug
 	
@@ -70,7 +93,7 @@ int main(int argc, char pointer argv[]) {
 	
 	fclose(input);
 	
-	puts("[DEBUG] Read and preprocessed file.");
+	if(debugging) puts("[DEBUG] Read and preprocessed file.");
 	
 	/////////////////// START LEXING ///////////////////
 	
@@ -79,7 +102,7 @@ int main(int argc, char pointer argv[]) {
 	
 	lex_parse(processed_input, ->keywords, ->pointers);
 	
-	puts("[DEBUG] Lex-parsed input.");
+	if(debugging) puts("[DEBUG] Lex-parsed input.");
 	
 	/////////////////// START PARSING //////////////////
 	
@@ -87,13 +110,13 @@ int main(int argc, char pointer argv[]) {
 	
 	free(processed_input);
 	
-	puts("[DEBUG] Parsed input.");
+	if(debugging) puts("[DEBUG] Parsed input.");
 	
 	//////////////// PREPARE FOR OUTPUT ////////////////
 	
 	FILE pointer output;
 	
-	if(argc < 3) {
+	if(argc < 3 || argv[2][0] == '-') {
 		size_t file_length = strlen(argv[1]);
 		char filename[file_length];
 		strcpy(filename, argv[1]);
@@ -143,11 +166,11 @@ int main(int argc, char pointer argv[]) {
 	for(size_t i = 0; i < pos; i++) {
 		fprintf(output, "%c", parsed_output[i]);
 		
-		printf("[DEBUG] Printing output... %.2Lf%%\r", (((long double) i + 1) / key) * 100);
+		if(debugging) printf("[DEBUG] Printing output... %.2Lf%%\r", (((long double) i + 1) / key) * 100);
 	}
 	
 	fclose(output);
-	puts("[DEBUG] Printing output... 100.00%");
+	if(debugging) puts("[DEBUG] Printing output... 100.00%");
 	
 	/////////////////// FREE MEMORY ////////////////////
 	

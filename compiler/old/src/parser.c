@@ -92,6 +92,7 @@ static unsigned int getListExpStartPos(unsigned int i, char **keywords) {
 	
 	while(keywords[st_pos][0] == ')' || keywords[st_pos][0] == ']') {
 		if(keywords[st_pos][0] == ')') {
+			st_pos--;
 			while(keywords[st_pos][0] != '(' || parentheses > 0 || (keywords[st_pos - 1][0] == ')' && st_pos--)) {
 				if(keywords[st_pos][0] == ')') parentheses++;
 				if(parentheses && keywords[st_pos][0] == '(') parentheses--;
@@ -99,6 +100,7 @@ static unsigned int getListExpStartPos(unsigned int i, char **keywords) {
 				st_pos--;
 			}
 		} else if(keywords[st_pos][0] == ']') {
+			st_pos--;
 			while(keywords[st_pos][0] != '[' || brackets > 0 || (keywords[st_pos - 1][0] == ']' && st_pos--)) {
 				if(keywords[st_pos][0] == ']') brackets++;
 				if(brackets && keywords[st_pos][0] == '[') brackets--;
