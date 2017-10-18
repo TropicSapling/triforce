@@ -192,9 +192,11 @@ comment> */
 
 --------
 
-#### Lists
+#### Lists & arrays
 * `pointer sublist -> some_list[start >>> stop]`
 * `pointer sublist2 -> some_list[when <condition> >>> until <condition>]`
+* `pointer new_sublist -> [1, 2, 3]`
+* `pointer new_subarr -> {1, 2, 3}`
 * `str[<<<] == "tseT"`
 * `str[stop <<< start]`
 * `str[when <condition> >>> until <condition>]`
