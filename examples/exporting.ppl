@@ -2,8 +2,8 @@
 
 puts("IN exporting.ppl");
 
-char pointer str -> "public";
-char pointer $str2 -> "private";
+unique const char pointer const str -> "public";
+unique const char pointer const $str2 -> "private";
 
 void function(void) {
 	puts("function executed");

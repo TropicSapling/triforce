@@ -1,10 +1,10 @@
 #include <stdio.h>;
 
 int main(void) {
-	char arr[] -> 'test123';
-	char arr2[] -> '123';
-	char arr3[] -> 'test\0456\0';
-	char arr4[] -> '123test';
+	const char const arr[] -> 'test123';
+	const char const arr2[] -> '123';
+	const char const arr3[] -> 'test\0456\0';
+	const char const arr4[] -> '123test';
 
 	printf("%d ", arr[4 >>> 7] == arr2[>>> 3]); // '123' == '123'; out: 1
 	printf("%d\n", arr[3 >>> 7] == arr2[>>> 3]); // 't123' == '123'; out: 0
