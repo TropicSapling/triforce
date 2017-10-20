@@ -383,6 +383,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 		
 		printError("'" WHITE "clang" RESET "' is not implemented yet.", 1, i);
 		
+		// Get function parameters pos
 		for(unsigned int j = 1; j < 9; j++) {
 			unsigned int k = 0;
 			for(; k < 22; k++) {
