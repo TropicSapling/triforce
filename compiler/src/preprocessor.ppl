@@ -63,8 +63,6 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 	bool exporting = false;
 	
 	while(fgets(buf, 65536, @input) != NULL) {
-		if(strlen(buf) == 65535) break; // File is compressed; skip preprocessing
-		
 		char pointer trimmed_buf -> buf[0];
 		while(@trimmed_buf == '\t' || @trimmed_buf == ' ') {
 			trimmed_buf++;
@@ -95,12 +93,12 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 			size_t c = 1;
 			char skey[8];
 			
-			while(trimmed_buf[c] != ' ' && trimmed_buf[c] != '\r' && trimmed_buf[c] != '\n' && trimmed_buf[c] != '\0') {
+			while(trimmed_buf[c] != ' ' && trimmed_buf[c] != ';' && trimmed_buf[c] != '\0') {
 				skey[c - 1] = trimmed_buf[c];
 				c++;
 			}
 			
-			if(trimmed_buf[c] == '\0') {
+			if(trimmed_buf[c] == '\0' || trimmed_buf[c] == ';') {
 				printError("Directive is missing necessary info.");
 			}
 			
@@ -113,12 +111,12 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				
 				// Get what to replace
 				unsigned int i = 0;
-				for(; trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c + i] != '\0'; i++) {
+				for(; trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c + i] != ';' && trimmed_buf[c + i] != '\0'; i++) {
 					defs[@defID][0][i] = trimmed_buf[c + i];
 				}
 				defs[@defID][0][i] = '\0';
 				
-				if(trimmed_buf[c + i] == '\0') {
+				if(trimmed_buf[c + i] == '\0' || trimmed_buf[c + i] == ';') {
 					printError("Missing end quote (' or \") after '" WHITE "#def" RESET "'.");
 				}
 				
@@ -126,12 +124,12 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 				
 				// Get what to replace with
 				unsigned int r_pos = 0;
-				for(; trimmed_buf[c + r_pos] != '\'' && trimmed_buf[c + r_pos] != '"' && trimmed_buf[c + i] != '\0'; r_pos++) {
+				for(; trimmed_buf[c + r_pos] != '\'' && trimmed_buf[c + r_pos] != '"' && trimmed_buf[c + r_pos] != ';' && trimmed_buf[c + r_pos] != '\0'; r_pos++) {
 					defs[@defID][1][r_pos] = trimmed_buf[c + r_pos];
 				}
 				defs[@defID][1][r_pos] = '\0';
 				
-				if(trimmed_buf[c + r_pos] == '\0') {
+				if(trimmed_buf[c + r_pos] == '\0' || trimmed_buf[c + r_pos] == ';') {
 					printError("Missing end quote (' or \") after '" WHITE "#def" RESET "'.");
 				}
 				
@@ -166,11 +164,11 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 					
 					char lib_path[128];
 					i = 0;
-					for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c + i] != '\0'; i++) {
+					for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c + i] != ';' && trimmed_buf[c + i] != '\0'; i++) {
 						lib_path[i] = trimmed_buf[c + i];
 					}
 					
-					if(trimmed_buf[c + i] == '\0') {
+					if(trimmed_buf[c + i] == '\0' || trimmed_buf[c + i] == ';') {
 						printError("Missing " WHITE "'" RESET ", " WHITE "\"" RESET "or " WHITE ">" RESET " after '" WHITE "#import" RESET "'.");
 					}
 					
@@ -184,11 +182,11 @@ void preprocess(FILE pointer*2 input, char pointer*2 processed_input, size_t inp
 					char lib_path[128];
 					c++;
 					i = 0;
-					for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c + i] != '\0'; i++) {
+					for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c] != ';' && trimmed_buf[c + i] != '\0'; i++) {
 						lib_path[i] = trimmed_buf[c + i];
 					}
 					
-					if(trimmed_buf[c + i] == '\0') {
+					if(trimmed_buf[c + i] == '\0' || trimmed_buf[c + i] == ';') {
 						printError("Missing " WHITE "'" RESET ", " WHITE "\"" RESET "or " WHITE ">" RESET " after '" WHITE "#import" RESET "'.");
 					}
 					
