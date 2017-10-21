@@ -452,7 +452,15 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						
 						char str[8] = "";
 						
-						while(pos > 0 && (@outputp)[pos - 1] != ';' && (@outputp)[pos - 1] != '{' && (@outputp)[pos - 1] != '}') { // NEEDS FIXING
+						// Go back to start of line
+						bool inStr = false;
+						while(pos > 0 && (inStr || ((@outputp)[pos - 1] != ';' && ((@outputp)[pos - 1] != '{' || (@outputp)[pos - 2] != ')') && ((@outputp)[pos - 1] != '}' || (@outputp)[pos - 2] != ';')))) {
+							if(inStr) {
+								if((@outputp)[pos] == '"' && (@outputp)[pos - 1] != '\\') inStr = false;
+							} else if((@outputp)[pos] == '\'') {
+								pos -= 2;
+							} else if((@outputp)[pos] == '"') inStr = true;
+							
 							pos--;
 						}
 						
@@ -615,10 +623,9 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						typeToOutput("=0;break;}}");
 						
 						unsigned int stBef_pos = listExpStart_pos2;
-						while(stBef_pos >= 0 && (keywords[stBef_pos][0] != ';' && keywords[stBef_pos][0] != '{' && keywords[stBef_pos][0] != '}')) {
+						while(stBef_pos > 0 && keywords[stBef_pos - 1][0] != ';' && (keywords[stBef_pos - 1][0] != '{' || keywords[stBef_pos - 2][0] != ')') && (keywords[stBef_pos - 1][0] != '}' || keywords[stBef_pos - 2][0] != ';')) {
 							stBef_pos--;
 						}
-						stBef_pos++;
 						
 						// Type statement before comparison
 						for(; stBef_pos < listExpStart_pos2; stBef_pos++) {
