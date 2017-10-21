@@ -19,17 +19,17 @@
 	printErr((struct ErrInfo) {.msg = message, .msg2 = keywords[i_pos], .filename = file, .lineno = lineno, .linecol = linecol, .data2 = keywords, .i = i_pos}, errType); \
 } while(0)
 
-char pointer file;
+static char pointer file;
 
-char types[22][8] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile"};
-char reserved_keys[19][8] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while"};
-size_t iterators = 0;
-size_t bools = 0;
+static char types[22][8] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile"};
+static char reserved_keys[19][8] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while"};
+static size_t iterators = 0;
+static size_t bools = 0;
 
-size_t output_size = 256;
+static size_t output_size = 256;
 
-size_t lineno = 1;
-size_t linecol = 1;
+static size_t lineno = 1;
+static size_t linecol = 1;
 
 static void addSpaceForChars(char pointer*2 output) {
 	output_size *= 2;

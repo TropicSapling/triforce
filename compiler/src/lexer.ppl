@@ -14,10 +14,10 @@
 	if(pkey + (size) > pointers_size / sizeof(char pointer)) addSpaceForKeys(pointers, ->pointers_size); \
 } while(0)
 
-bool inStr = false;
-bool inStr2 = false;
-bool escaping = false;
-bool ignoring = false;
+static bool inStr = false;
+static bool inStr2 = false;
+static bool escaping = false;
+static bool ignoring = false;
 
 static void addSpaceForKeys(char pointer*3 keywords, size_t pointer keywords_size) {
 	@keywords_size *= 2;
