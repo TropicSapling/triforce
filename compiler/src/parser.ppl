@@ -378,6 +378,31 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 		INCR_MEM(1);
 		(@outputp)[pos] = '"';
 		pos++;
+	} else if(strcmp(keywords[i], "else") == 0 && keywords[i + 1][0] != '{') {
+		// Make sure code inside 'else' is surrounded by curly braces (prevents some bugs with sublist comparisons)
+		
+		typeToOutput("else");
+		
+		INCR_MEM(1);
+		(@outputp)[pos] = '{';
+		pos++;
+		
+		for(; i < key && (strcmp(keywords[i], "else") != 0 || keywords[i + 1][0] != '{'); i++) {
+			for(i++; i < key && keywords[i][0] != '}'; i++) {
+				i = parseKey(i, keywords, outputp, status, cItem);
+			}
+			
+			INCR_MEM(1);
+			(@outputp)[pos] = '}';
+			pos++;
+		}
+		
+		typeToOutput("else");
+		for(i++; i < key && keywords[i][0] != '}'; i++) {
+			i = parseKey(i, keywords, outputp, status, cItem);
+		}
+			
+		typeToOutput("}}");
 	} else if(strcmp(keywords[i], "clang") == 0) {
 		// INLINE C
 		
@@ -454,7 +479,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						
 						// Go back to start of line
 						bool inStr = false;
-						while(pos > 0 && (inStr || ((@outputp)[pos - 1] != ';' && ((@outputp)[pos - 1] != '{' || (@outputp)[pos - 2] != ')') && ((@outputp)[pos - 1] != '}' || (@outputp)[pos - 2] != ';')))) {
+						while(pos > 0 && (inStr || ((@outputp)[pos - 1] != ';' && ((@outputp)[pos - 1] != '{' || ((@outputp)[pos - 2] != ')' && !((@outputp)[pos - 2] == 'e' && (@outputp)[pos - 3] == 's' && (@outputp)[pos - 4] == 'l' && (@outputp)[pos - 5] == 'e'))) && ((@outputp)[pos - 1] != '}' || (@outputp)[pos - 2] != ';')))) {
 							if(inStr) {
 								if((@outputp)[pos] == '"' && (@outputp)[pos - 1] != '\\') inStr = false;
 							} else if((@outputp)[pos] == '\'') {
@@ -623,7 +648,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						typeToOutput("=0;break;}}");
 						
 						unsigned int stBef_pos = listExpStart_pos2;
-						while(stBef_pos > 0 && keywords[stBef_pos - 1][0] != ';' && (keywords[stBef_pos - 1][0] != '{' || keywords[stBef_pos - 2][0] != ')') && (keywords[stBef_pos - 1][0] != '}' || keywords[stBef_pos - 2][0] != ';')) {
+						while(stBef_pos > 0 && keywords[stBef_pos - 1][0] != ';' && strcmp(keywords[stBef_pos - 1], "else") != 0 && (keywords[stBef_pos - 1][0] != '{' || keywords[stBef_pos - 2][0] != ')') && (keywords[stBef_pos - 1][0] != '}' || keywords[stBef_pos - 2][0] != ';')) {
 							stBef_pos--;
 						}
 						
