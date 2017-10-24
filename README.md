@@ -116,7 +116,7 @@ P+ is for...
 
 #### Special
 * `goto <label>`
-* ``#import '(<path>|`<`<std lib path>`>`)' [as <name>]``
+* ``#import (('|")<path>('|")|`<`<std lib path>`>`) [as <name>]``
 * `#export <function1>[, <function2>...]`
 
 --------
