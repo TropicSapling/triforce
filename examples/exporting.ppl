@@ -1,25 +1,28 @@
 #include <stdio.h>;
 
-puts("IN exporting.ppl");
+#export;
 
 unique const char pointer const str -> "public";
-unique const char pointer const $str2 -> "private";
 
 void function(void) {
-	puts("function executed");
+	puts$("function executed");
 }
 
-void $function2(void) {
-	puts("function2 executed");
+#endexp;
+
+unique const char pointer const str2 -> "private";
+
+void function2(void) {
+	puts$("function2 executed");
 }
 
+#export;
 void function3(void) {
-	puts("IN function3");
+	puts$("IN function3");
 	function();
-	$function2();
-	puts(str);
-	puts($str2);
-	puts("OUT function3");
+	function2();
+	puts$(str);
+	puts$(str2);
+	puts$("OUT function3");
 }
-
-puts("OUT exporting.ppl");
+#endexp;
