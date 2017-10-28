@@ -21,8 +21,8 @@
 
 static char pointer file;
 
-static char types[22][8] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile"};
-static char reserved_keys[19][8] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while"};
+const char types[22][8] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile"};
+const char reserved_keys[26][8] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while", "false", "true", "__args", "__argc", "__line", "__path", "__item"};
 static size_t iterators = 0;
 static size_t bools = 0;
 
@@ -44,7 +44,7 @@ static void addSpaceForChars(char pointer*2 output) {
 	}
 }
 
-static bool isReserved(char arr[static 1][8], char pointer str, unsigned int len) {
+static bool isReserved(const char arr[static 1][8], char pointer str, unsigned int len) {
 	for(unsigned int i = 0; i < len; i++) {
 		if(strcmp(arr[i], str) == 0) return true;
 	}
@@ -83,7 +83,7 @@ static void addID(char pointer str_end, size_t pointer IDs) {
 }
 
 static unsigned int getListExpStartPos(unsigned int i, char pointer*2 keywords) {
-	unsigned int st_pos = i;
+	int st_pos = i;
 	unsigned short parentheses = 0;
 	unsigned short brackets = 0;
 	
@@ -719,7 +719,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 			typeToOutput(keywords[i]);
 		}
 		
-		if(keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 19) && strstr(specials, keywords[i]) == NULL) {
+		if(keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 26) && strstr(specials, keywords[i]) == NULL) {
 //			typeToOutput("_ppl");
 		}
 		

@@ -2,6 +2,8 @@
 	#define DEF_INCLUDED
 
 	extern const char pointer const unique specials;
+	extern const char types[22][8];
+	extern const char reserved_keys[26][8];
 
 	extern size_t keywords_size;
 	extern size_t key;
@@ -29,7 +31,7 @@
 	void preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[128][2][128], size_t pointer defID);
 
 	void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 pointers);
-
+	
 	char pointer parse(char pointer*2 keywords, char pointer filename);
 	
 	#define RED   "\x1B[31m"

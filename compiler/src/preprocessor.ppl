@@ -14,6 +14,50 @@
 	printErr((struct ErrInfo) {.msg = message, .filename = path[1], .lineno = lineno}, 0); \
 } while(0)
 
+char pointer strdup(const char pointer str) {
+	size_t len = strlen(str) + 1;
+	char pointer ptr = malloc(len);
+	
+	return ptr ? memcpy(ptr, str, len) : NULL;
+}
+
+static bool isSpecial(char c) {
+	for(unsigned short i = 0; specials[i] != '\0'; i++) {
+		if(c == specials[i]) return true;
+	}
+	
+	return false;
+}
+
+static bool isReserved(const char arr[static 1][8], char pointer strp, unsigned int len) {
+	for(unsigned int i = 0; i < len; i++) {
+		bool reserved = false;
+		for(short s = strlen(arr[i]) - 1, s2 = 0; s >= 0; s--, s2--) {
+			if(strp[s2] != arr[i][s] || strp[s2] == ' ' || strp[s2] == ';' || strp[s2] == '{' || strp[s2] == '}' || isSpecial(strp[s2])) {
+				reserved = false;
+				break;
+			} else {
+				reserved = true;
+			}
+		}
+		
+		if(reserved) return true;
+	}
+	
+	return false;
+}
+
+static char pointer sanitize(char pointer strp) {
+	char pointer new_strp = strdup(strp);
+	for(unsigned short i = 0; new_strp[i] != '\0'; i++) {
+		if(new_strp[i] == '/' || new_strp[i] == '.' || new_strp[i] == '-') {
+			new_strp[i] = '$';
+		}
+	}
+	
+	return new_strp;
+}
+
 static void addSpaceForFileChars(char pointer*2 str, size_t pointer str_size) {
 	@str_size *= 2;
 	
@@ -27,7 +71,18 @@ static void addSpaceForFileChars(char pointer*2 str, size_t pointer str_size) {
 	}
 }
 
-static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_item, size_t pointer input_size, char pointer*2 str, char defs[128][2][128], size_t defs_len) {
+static void typeTo(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer strp) {
+	while(@strp != '\0') {
+		INCR_MEM(1);
+		
+		(@processed_input)[@input_item] = @strp;
+		(@input_item)++;
+		
+		strp++;
+	}
+}
+
+static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[128][2][128], size_t defs_len) {
 	for(size_t i = 0; i < defs_len; i++) {
 		unsigned short def_len = strlen(defs[i][0]);
 		if(strncmp(@str, defs[i][0], def_len) == 0) {
@@ -56,6 +111,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 	bool inStr2 = false;
 	
 	bool exporting = false;
+	bool including = false; // TMP; allows use of #include
 	
 	while(fgets(buf, 65536, input) != NULL) {
 		char pointer trimmed_buf -> buf[0];
@@ -247,10 +303,12 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				exporting = true;
 				
 				continue;
+			} else if(strcmp(skey, "include") == 0) {
+				including = true;
 			}
 		}
 		
-		if(exporting) {
+		if(exporting || including) { // 'including' part is temporary; allows for use of #include
 			while(@trimmed_buf != '\0') {
 				if(!inStr2 && (@processed_input)[@input_item] == '\'' && (@processed_input)[@input_item - 1] != '\\') {
 					inStr = inStr ? false : true;
@@ -258,7 +316,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 					inStr2 = inStr2 ? false : true;
 				}
 				
-				if(inStr || inStr2 || !replaceIfDefined(processed_input, input_item, input_size, ->trimmed_buf, defs, @defID)) {
+				if(inStr || inStr2 || !replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID)) {
 					INCR_MEM(1);
 					(@processed_input)[@input_item] = @trimmed_buf;
 					
@@ -266,7 +324,9 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 					trimmed_buf++;
 				}
 			}
-		} else { // WIP
+			
+			including = false;
+		} else {
 			while(@trimmed_buf != '\0') {
 				if(!inStr2 && @trimmed_buf == '\'' && @trimmed_buf - 1 != '\\') {
 					inStr = inStr ? false : true;
@@ -274,12 +334,29 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 					inStr2 = inStr2 ? false : true;
 				}
 				
-				if(inStr || inStr2 || !replaceIfDefined(processed_input, input_item, input_size, ->trimmed_buf, defs, @defID)) {
+				if(inStr || inStr2) {
 					INCR_MEM(1);
 					(@processed_input)[@input_item] = @trimmed_buf;
 					
 					(@input_item)++;
 					trimmed_buf++;
+				} else {
+					if(!isSpecial(@(trimmed_buf - 1)) && !isReserved(types, trimmed_buf - 1, 22) && !isReserved(reserved_keys, trimmed_buf - 1, 26)) {
+						typeTo(processed_input, input_size, input_item, "_ppl_");
+						
+						char pointer path_ext = sanitize(path[1]);
+						typeTo(processed_input, input_size, input_item, path_ext);
+						
+						free(path_ext);
+					}
+					
+					if(!replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID)) {
+						INCR_MEM(1);
+						(@processed_input)[@input_item] = @trimmed_buf;
+						
+						(@input_item)++;
+						trimmed_buf++;
+					}
 				}
 			}
 		}
