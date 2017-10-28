@@ -3,6 +3,7 @@
 #include <stdbool.h>;
 #include <stdio.h>;
 #include <errno.h>;
+#include <ctype.h>;
 
 #include "def.h";
 
@@ -21,10 +22,6 @@ char pointer strdup(const char pointer str) {
 	return ptr ? memcpy(ptr, str, len) : NULL;
 }
 
-static bool isNumber(char c) {
-	return c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9';
-}
-
 static bool isSpecial(char c) {
 	for(unsigned short i = 0; specials[i] != '\0'; i++) {
 		if(c == specials[i]) return true;
@@ -33,11 +30,19 @@ static bool isSpecial(char c) {
 	return false;
 }
 
+static bool isNumber(char pointer strp) {
+	for(short i = 0; strp[i] != ' ' && !isSpecial(strp[i]); i--) {
+		if(!isdigit(strp[i])) return false;
+	}
+	
+	return true;
+}
+
 static bool isReserved(const char arr[static 1][8], char pointer strp, unsigned int len) {
 	for(unsigned int i = 0; i < len; i++) {
 		bool reserved = false;
 		for(short s = strlen(arr[i]) - 1, s2 = 0; s >= 0; s--, s2--) {
-			if(strp[s2] != arr[i][s] || strp[s2] == ' ' || strp[s2] == ';' || strp[s2] == '{' || strp[s2] == '}' || isSpecial(strp[s2])) {
+			if(strp[s2] != arr[i][s] || strp[s2] == ' ' || isSpecial(strp[s2])) {
 				reserved = false;
 				break;
 			} else {
@@ -345,7 +350,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 					(@input_item)++;
 					trimmed_buf++;
 				} else {
-					if(@trimmed_buf != buf[0] && isSpecial(@trimmed_buf) && !isNumber(@(trimmed_buf - 1)) && @(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\n' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\'' && @(trimmed_buf - 1) != '"' && !isSpecial(@(trimmed_buf - 1)) && !isReserved(types, trimmed_buf - 1, 22) && !isReserved(reserved_keys, trimmed_buf - 1, 26)) {
+					if(@trimmed_buf != buf[0] && isSpecial(@trimmed_buf) && !isNumber(trimmed_buf - 1) && @(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\n' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\'' && @(trimmed_buf - 1) != '"' && !isSpecial(@(trimmed_buf - 1)) && !isReserved(types, trimmed_buf - 1, 22) && !isReserved(reserved_keys, trimmed_buf - 1, 26)) {
 						if(@(trimmed_buf - 1) == '$') {
 							(@processed_input)[@input_item - 1] = @trimmed_buf;
 							trimmed_buf++;
