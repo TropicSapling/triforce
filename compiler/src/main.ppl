@@ -96,8 +96,9 @@ int main(int argc, char pointer argv[]) {
 	size_t defID = 0;
 	
 	size_t processed_input_size = 256;
+	size_t input_item = 0;
 	char pointer processed_input = malloc(processed_input_size);
-	preprocess(->input, ->processed_input, processed_input_size, argv, NULL, NULL, NULL, defs, ->defID);
+	preprocess(input, ->processed_input, ->processed_input_size, ->input_item, argv, defs, ->defID);
 	
 	fclose(input);
 	

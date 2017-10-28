@@ -32,6 +32,10 @@ int main(void) {
 	} else {
 		puts("default");
 	}
+	
+/*	if(arr[3 >>> 7] == arr2[>>> 3] && arr[3 >>> 7] == arr2[>>> 3]) {
+		puts("true");
+	} */
 
 	return 0;
 }
