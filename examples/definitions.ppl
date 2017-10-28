@@ -9,4 +9,5 @@ def000 111;
 ghi000 111;
 jkl000 111;
 
-String test -> 'hello';
+String str = 'hello';
+String str2 = 'String';
