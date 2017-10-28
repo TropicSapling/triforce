@@ -5,7 +5,7 @@
 unique const char pointer const str -> "public";
 
 void function(void) {
-	puts$("function executed");
+	puts("function executed");
 }
 
 #endexp;
@@ -13,16 +13,16 @@ void function(void) {
 unique const char pointer const str2 -> "private";
 
 void function2(void) {
-	puts$("function2 executed");
+	puts("function2 executed");
 }
 
 #export;
 void function3(void) {
-	puts$("IN function3");
+	puts("IN function3");
 	function();
 	function2();
-	puts$(str);
-	puts$(str2);
-	puts$("OUT function3");
+	puts(str);
+	puts(str2);
+	puts("OUT function3");
 }
 #endexp;

@@ -268,30 +268,30 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 					
 					char pointer new_lib_path = "";
 					unsigned short levels = 1;
-					i = strlen(lib_path) - 1;
+					unsigned short sh = strlen(lib_path) - 1;
 					do {
-						i--;
-						if(i > 0 && lib_path[i] == '.' && lib_path[i - 1] == '.') {
-							if(levels == 1) new_lib_path = &lib_path[i + 1];
+						sh--;
+						if(sh > 0 && lib_path[sh] == '.' && lib_path[sh - 1] == '.') {
+							if(levels == 1) new_lib_path = &lib_path[sh + 1];
 							levels++;
-							i--;
-						} else if(levels > 1 && lib_path[i] != '/') {
+							sh--;
+						} else if(levels > 1 && lib_path[sh] != '/') {
 							break;
 						}
-					} while(i > 0);
+					} while(sh > 0);
 					
-					i = strlen(full_path) - 1;
+					sh = strlen(full_path) - 1;
 					for(unsigned short s = 0; s < levels; s++) {
 						do {
-							i--;
-						} while(full_path[i] != '/' && i > 0);
+							sh--;
+						} while(full_path[sh] != '/' && sh > 0);
 						
-						if(i == 0) break;
+						if(sh == 0) break;
 					}
 					
-					if(levels == 1 && lib_path[0] != '/') i++;
+					if(levels == 1 && lib_path[0] != '/') sh++;
 					
-					full_path[i] = '\0';
+					full_path[sh] = '\0';
 					
 					if(new_lib_path[0] == '\0') {
 						strcat(full_path, lib_path);
@@ -363,7 +363,9 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 							typeTo(processed_input, input_size, input_item, "_ppl");
 							
 							strncpy(defs[@defID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
+							defs[@defID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
 							strncpy(defs[@defID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
+							defs[@defID][1][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
 							strcat(defs[@defID][1], "_ppl");
 							(@defID)++;
 						} else {
@@ -373,8 +375,10 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 							typeTo(processed_input, input_size, input_item, path_ext);
 							
 							strncpy(defs[@defID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
+							defs[@defID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
 							
 							strncpy(defs[@defID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
+							defs[@defID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
 							strcat(defs[@defID][1], "_ppl_");
 							strcat(defs[@defID][1], path_ext);
 							(@defID)++;

@@ -1,14 +1,14 @@
 #import 'exporting.ppl';
 
 int main(void) {
-	puts$("IN importing.ppl");
+	puts("IN importing.ppl");
 
-	puts$(str);
+	puts(str);
 	function();
 	function3();
 
-//	puts$(str2); // 'str2' is not exported, so cannot print
+//	puts(str2); // 'str2' is not exported, so cannot print
 //	function2(); // 'function2' is not exported, so cannot execute
 
-	puts$("OUT importing.ppl");
+	puts("OUT importing.ppl");
 }
