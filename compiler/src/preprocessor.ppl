@@ -21,6 +21,10 @@ char pointer strdup(const char pointer str) {
 	return ptr ? memcpy(ptr, str, len) : NULL;
 }
 
+static bool isNumber(char c) {
+	return c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7' || c == '8' || c == '9';
+}
+
 static bool isSpecial(char c) {
 	for(unsigned short i = 0; specials[i] != '\0'; i++) {
 		if(c == specials[i]) return true;
@@ -328,9 +332,9 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 			including = false;
 		} else {
 			while(@trimmed_buf != '\0') {
-				if(!inStr2 && @trimmed_buf == '\'' && @trimmed_buf - 1 != '\\') {
+				if(!inStr2 && @trimmed_buf == '\'' && @(trimmed_buf - 1) != '\\') {
 					inStr = inStr ? false : true;
-				} else if(!inStr && @trimmed_buf == '"' && @trimmed_buf - 1 != '\\') {
+				} else if(!inStr && @trimmed_buf == '"' && @(trimmed_buf - 1) != '\\') {
 					inStr2 = inStr2 ? false : true;
 				}
 				
@@ -341,13 +345,18 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 					(@input_item)++;
 					trimmed_buf++;
 				} else {
-					if(!isSpecial(@(trimmed_buf - 1)) && !isReserved(types, trimmed_buf - 1, 22) && !isReserved(reserved_keys, trimmed_buf - 1, 26)) {
-						typeTo(processed_input, input_size, input_item, "_ppl_");
-						
-						char pointer path_ext = sanitize(path[1]);
-						typeTo(processed_input, input_size, input_item, path_ext);
-						
-						free(path_ext);
+					if(@trimmed_buf != buf[0] && isSpecial(@trimmed_buf) && !isNumber(@(trimmed_buf - 1)) && @(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\n' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\'' && @(trimmed_buf - 1) != '"' && !isSpecial(@(trimmed_buf - 1)) && !isReserved(types, trimmed_buf - 1, 22) && !isReserved(reserved_keys, trimmed_buf - 1, 26)) {
+						if(@(trimmed_buf - 1) == '$') {
+							(@processed_input)[@input_item - 1] = @trimmed_buf;
+							trimmed_buf++;
+						} else {
+							typeTo(processed_input, input_size, input_item, "_ppl_");
+							
+							char pointer path_ext = sanitize(path[1]);
+							typeTo(processed_input, input_size, input_item, path_ext);
+							
+							free(path_ext);
+						}
 					}
 					
 					if(!replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID)) {

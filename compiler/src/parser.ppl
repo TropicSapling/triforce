@@ -44,7 +44,7 @@ static void addSpaceForChars(char pointer*2 output) {
 	}
 }
 
-static bool isReserved(const char arr[static 1][8], char pointer str, unsigned int len) {
+/* static bool isReserved(const char arr[static 1][8], char pointer str, unsigned int len) {
 	for(unsigned int i = 0; i < len; i++) {
 		if(strcmp(arr[i], str) == 0) return true;
 	}
@@ -58,7 +58,7 @@ static bool isNumber(char pointer str) {
 	}
 	
 	return true;
-}
+} */
 
 static unsigned int typeTo(char pointer*2 outputp, char pointer str) {
 	unsigned int i = 0;
@@ -719,9 +719,9 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 			typeToOutput(keywords[i]);
 		}
 		
-		if(keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 26) && strstr(specials, keywords[i]) == NULL) {
-//			typeToOutput("_ppl");
-		}
+/*		if(keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 26) && strstr(specials, keywords[i]) == NULL) {
+			typeToOutput("_ppl");
+		} */
 		
 		if(strstr(specials, keywords[i]) == NULL && strstr(specials, keywords[i + 1]) == NULL) {
 			INCR_MEM(1);
