@@ -107,9 +107,9 @@ static unsigned int getListExpStartPos(unsigned int i, char **keywords) {
 				
 				st_pos--;
 			}
+			
+			st_pos--;
 		}
-		
-		st_pos--;
 	}
 	
 	return st_pos;
