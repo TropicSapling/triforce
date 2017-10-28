@@ -719,10 +719,6 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 			typeToOutput(keywords[i]);
 		}
 		
-/*		if(keywords[i][0] != '"' && keywords[i][0] != '\'' && !isNumber(keywords[i]) && !isReserved(types, keywords[i], 22) && !isReserved(reserved_keys, keywords[i], 26) && strstr(specials, keywords[i]) == NULL) {
-			typeToOutput("_ppl");
-		} */
-		
 		if(strstr(specials, keywords[i]) == NULL && strstr(specials, keywords[i + 1]) == NULL) {
 			INCR_MEM(1);
 			

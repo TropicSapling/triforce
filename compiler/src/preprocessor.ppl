@@ -158,10 +158,6 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				c++;
 			}
 			
-			if(trimmed_buf[c] == '\0' || trimmed_buf[c] == ';') {
-				printError("Directive is missing necessary info.");
-			}
-			
 			skey[c - 1] = '\0';
 			
 			c++;
@@ -354,6 +350,8 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 						if(@(trimmed_buf - 1) == '$') {
 							(@processed_input)[@input_item - 1] = @trimmed_buf;
 							trimmed_buf++;
+							
+							continue;
 						} else {
 							typeTo(processed_input, input_size, input_item, "_ppl_");
 							
