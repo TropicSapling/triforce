@@ -1,6 +1,6 @@
 #include <stdio.h>;
 
-int main(void) {
+int init(void) {
 	const char const arr[] -> 'test123';
 	const char const arr2[] -> '123';
 	const char const arr3[] -> 'test\0456\0';

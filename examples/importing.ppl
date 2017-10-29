@@ -1,6 +1,6 @@
 #import 'exporting.ppl';
 
-int main(void) {
+int init(void) {
 	puts("IN importing.ppl");
 
 	puts(str);

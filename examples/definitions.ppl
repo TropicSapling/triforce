@@ -32,22 +32,22 @@
 	#def 'jklm' as '-456';
 #endif;
 
-int main(void) {
+int init(void) {
 	int a = abc;
 	int b = deff;
 	int c = ghi;
 	int d = abc;
 	int e = def;
 	int f = jklm;
-	int g = jkl;
+//	int g = jkl;
 	int h = mno;
 //	int i = pqr; // 'pqr' is undefined
 	
-	String str = "hello";
+/*	String str = "hello";
 	String String2 = "String";
 
 	puts(str);
-	puts(str2);
+	puts(str2); */
 
 	printf("%d ", a);
 	printf("%d ", b);
@@ -55,9 +55,10 @@ int main(void) {
 	printf("%d ", d);
 	printf("%d ", e);
 	printf("%d ", f);
-	printf("%d ", g);
+//	printf("%d ", g);
 	printf("%d ", h);
-	printf("%d\n", i);
+//	printf("%d\n", i); // 'i' is undefined since 'pqr' is undefined
 	
 	puts(__OS);
+	printf("%d\n", __line);
 }
