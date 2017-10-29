@@ -27,6 +27,7 @@
 	};
 	
 	void printErr(struct ErrInfo Error, unsigned short errType);
+	void safe_realloc(void pointer*2 ptr, size_t size);
 
 	void preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[128][2][128], size_t pointer defID);
 

@@ -8,7 +8,10 @@
 #include "def.h";
 
 #define INCR_MEM(size) do { \
-	if(@input_item + (size) > @input_size) addSpaceForFileChars(processed_input, input_size); \
+	if(@input_item + (size) > @input_size) { \
+		@input_size *= 2; \
+		safe_realloc((void pointer*2) processed_input, @input_size); \
+	} \
 } while(0)
 
 #define printError(message) do { \
@@ -30,11 +33,11 @@ static bool isSpecial(char c) {
 	return false;
 }
 
-static short isNumber(char pointer strp) {
+static short isNumber(char pointer strp, char buf[65536]) {
 	bool isNum = true;
 	
 	short i = 0;
-	for(; strp[i] != ' ' && !isSpecial(strp[i]); i--) {
+	for(; strp + i != buf && strp[i] != ' ' && !isSpecial(strp[i]); i--) {
 		if(!isdigit(strp[i])) isNum = false;
 	}
 	
@@ -82,19 +85,6 @@ static char pointer sanitize(char pointer strp) {
 	}
 	
 	return new_strp;
-}
-
-static void addSpaceForFileChars(char pointer*2 str, size_t pointer str_size) {
-	@str_size *= 2;
-	
-	char pointer res = realloc(@str, @str_size);
-	if(res == NULL) {
-		perror("ERROR");
-		fprintf(stderr, "ID: %d\n", errno);
-		exit(EXIT_FAILURE);
-	} else {
-		@str = res;
-	}
 }
 
 static void typeTo(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer strp) {
@@ -370,7 +360,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				if(!including && trimmed_buf != buf && isVarDef(trimmed_buf)) { // 'including' part is temporary; allows for use of #include
 					char pointer trimmed_buf_bef = trimmed_buf - 1;
 					while(trimmed_buf_bef != buf && (@trimmed_buf_bef == ' ' || @trimmed_buf_bef == '\t')) trimmed_buf_bef--;
-					short isNum = isNumber(trimmed_buf_bef);
+					short isNum = isNumber(trimmed_buf_bef, buf);
 					
 					if(trimmed_buf_bef != buf && isNum != 1 && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 22) && !isReserved(reserved_keys, trimmed_buf_bef, 26)) {
 						@input_item -= trimmed_buf - trimmed_buf_bef - 1;
@@ -401,7 +391,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 							locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
 							
 							strncpy(locals[locID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-							locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+							locals[locID][1][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
 							strcat(locals[locID][1], "_ppl_");
 							strcat(locals[locID][1], path_ext);
 							
