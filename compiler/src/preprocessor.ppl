@@ -158,6 +158,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 	bool inStr2 = false;
 	
 	bool exporting = false;
+	unsigned short scope = 0;
 	bool including = false; // TMP; allows use of #include
 	
 	while(fgets(buf, 65536, input) != NULL) {
@@ -379,7 +380,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 							trimmed_buf++;
 							
 							continue;
-						} else if(exporting) {
+						} else if(exporting || scope) {
 							typeTo(processed_input, input_size, input_item, "_ppl");
 							
 							strncpy(defs[@defID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
@@ -409,6 +410,12 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 							free(path_ext);
 						}
 					}
+				}
+				
+				if(@trimmed_buf == '{') {
+					scope++;
+				} else if(@trimmed_buf == '}') {
+					scope--;
 				}
 				
 				INCR_MEM(1);
