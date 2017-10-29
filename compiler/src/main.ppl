@@ -1,0 +1,196 @@
+#include <stdio.h>;
+#include <stdlib.h>;
+#include <errno.h>;
+#include <string.h>;
+#include <stdbool.h>;
+#include <sys/stat.h>;
+
+#include "def.h";
+
+const char pointer const unique specials -> ";,[]{}()?><=+-*/%!&|^~@\\.:";
+
+size_t keywords_size = sizeof(char pointer) * 32;
+size_t pointers_size = sizeof(char pointer) * 32;
+size_t key = 0;
+size_t pkey = 0;
+size_t pos = 0;
+
+void printErr(struct ErrInfo Error, unsigned short errType) {
+	puts("----------------------------------------------------------------");
+	
+	if(Error.linecol == 0) {
+		printf(WHITE "%s:%zu: ", Error.filename, Error.lineno);
+	} else {
+		printf(WHITE "%s:%zu:%zu: ", Error.filename, Error.lineno, Error.linecol);
+	}
+	
+	if(errType == 0) {
+		printf(RED "Error:");
+	} else {
+		printf(YELLOW "Warning:");
+	}
+	
+	printf(RESET " %s\n", Error.msg);
+	
+	if(Error.data != NULL) {
+		if(Error.data[Error.i] == '\0') {
+			printf("	...%c%c%c%c%c%c " RED "%s" RESET "\n", Error.data[Error.i - 6], Error.data[Error.i - 5], Error.data[Error.i - 4], Error.data[Error.i - 3], Error.data[Error.i - 2], Error.data[Error.i - 1], Error.msg2);
+		} else {
+			printf("	...%c%c%c " RED "%s" RESET " %c%c%c...\n", Error.data[Error.i - 3], Error.data[Error.i - 2], Error.data[Error.i - 1], Error.msg2, Error.data[Error.i + 1], Error.data[Error.i + 2], Error.data[Error.i + 3]);
+		}
+	} else if(Error.data2 != NULL) {
+		if(Error.data2[Error.i] == '\0') {
+			printf("	...%s %s %s %s %s %s " RED "%s" RESET "\n", Error.data2[Error.i - 6], Error.data2[Error.i - 5], Error.data2[Error.i - 4], Error.data2[Error.i - 3], Error.data2[Error.i - 2], Error.data2[Error.i - 1], Error.msg2);
+		} else {
+			printf("	...%s %s %s " RED "%s" RESET " %s %s %s...\n", Error.data2[Error.i - 3], Error.data2[Error.i - 2], Error.data2[Error.i - 1], Error.msg2, Error.data2[Error.i + 1], Error.data2[Error.i + 2], Error.data2[Error.i + 3]);
+		}
+	}
+	
+	puts("----------------------------------------------------------------");
+	
+	if(errType != 1) exit(EXIT_FAILURE);
+}
+
+int main(int argc, char pointer argv[]) {
+	
+	if(argc < 2 || argc > 4) {
+		puts("Invalid usage. Please specify an input file as the first argument and an output file as the second argument.");
+		return 1;
+	}
+	
+	if(argv[1][1] == 'h' || argv[1][2 >>> until argv[1][__item] == '\0'] == 'help') {
+		puts("----------------------------------------------------------------");
+		puts("Usage: ppc <input> [<output>] [<options>...]");
+		puts("Options:");
+		puts("	-h, --help				Display this information.");
+		puts("	-d, --debug				Display debbuging information.");
+		puts("----------------------------------------------------------------");
+		
+		return 0;
+	}
+	
+	bool debugging = false;
+	if(argc > 2) {
+		if(argv[2][1] == 'd' || argv[2][2 >>> until argv[2][__item] == '\0'] == 'debug') {
+			debugging = true;
+		} else if(argc > 3) {
+			if(argv[3][1] == 'd' || argv[3][2 >>> until argv[2][__item] == '\0'] == 'debug') {
+				debugging = true;
+			}
+		}
+	}
+	
+	//////////////// PREPARE FOR PREPROCESSING ////////////////
+	
+	FILE pointer input = fopen(argv[1], "r"); // Will be "r+" if automatic compiled GC gets added in the future and/or if needed to fix 'read-dir' bug
+	
+	if(input == NULL) {
+		perror("ERROR");
+		fprintf(stderr, "ID: %d\n", errno);
+		return 1;
+	}
+	
+	///////////////// PREPROCESS INPUT /////////////////
+	
+	char defs[128][2][128];
+	size_t defID = 0;
+	
+	size_t processed_input_size = 256;
+	size_t input_item = 0;
+	char pointer processed_input = malloc(processed_input_size);
+	preprocess(input, ->processed_input, ->processed_input_size, ->input_item, argv, defs, ->defID);
+	
+	fclose(input);
+	
+	if(debugging) puts("[DEBUG] Read and preprocessed file.");
+	
+	/////////////////// START LEXING ///////////////////
+	
+	char pointer*2 keywords = malloc(keywords_size);
+	char pointer*2 pointers = malloc(pointers_size);
+	
+	lex_parse(processed_input, ->keywords, ->pointers);
+	
+	if(debugging) puts("[DEBUG] Lex-parsed input.");
+	
+	/////////////////// START PARSING //////////////////
+	
+	char pointer parsed_output = parse(keywords, argv[1]);
+	
+	free(processed_input);
+	
+	if(debugging) puts("[DEBUG] Parsed input.");
+	
+	//////////////// PREPARE FOR OUTPUT ////////////////
+	
+	FILE pointer output;
+	
+	if(argc < 3 || argv[2][0] == '-') {
+		size_t file_length = strlen(argv[1]);
+		char filename[file_length];
+		strcpy(filename, argv[1]);
+		
+		size_t c = file_length - 1;
+		while(filename[c] != '.') {
+			c--;
+		}
+		
+		memset(->filename[c + 1], 'c', 1);
+		memset(->filename[c + 2], '\0', 1);
+		
+		while(filename[c] != '/' && c > 0) {
+			c--;
+		}
+		
+		char finalname[strlen(filename) + 4];
+		char success;
+		
+		if(c == 0) {
+			success = mkdir("bin", 0777);
+			
+			strcpy(finalname, "bin/");
+			strcat(finalname, filename);
+		} else {
+			strncpy(finalname, filename, c + 1);
+			finalname[c + 1] = '\0';
+			strcat(finalname, "bin/");
+			success = mkdir(finalname, 0777);
+			strcat(finalname, ->filename[c + 1]);
+		}
+		
+		if(success != 0 && errno != 17) {
+			perror("ERROR");
+			fprintf(stderr, "ID: %d\n", errno);
+			
+			return 1;
+		}
+		
+		output = fopen(finalname, "w");
+	} else {
+		output = fopen(argv[2], "w");
+	}
+	
+	/////////////////// PRINT OUTPUT ///////////////////
+	
+	for(size_t i = 0; i < pos; i++) {
+		fprintf(output, "%c", parsed_output[i]);
+		
+		if(debugging) printf("[DEBUG] Printing output... %.2Lf%%\r", (((long double) i + 1) / key) * 100);
+	}
+	
+	fclose(output);
+	if(debugging) puts("[DEBUG] Printing output... 100.00%");
+	
+	/////////////////// FREE MEMORY ////////////////////
+	
+	free(parsed_output);
+	
+	for(size_t i = 0; i < pkey; i++) {
+		free(pointers[i]);
+	}
+	
+	free(keywords);
+	free(pointers);
+	
+	return 0;
+}

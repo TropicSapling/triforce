@@ -1,0 +1,436 @@
+#include <stdlib.h>;
+#include <string.h>;
+#include <stdbool.h>;
+#include <stdio.h>;
+#include <errno.h>;
+#include <ctype.h>;
+
+#include "def.h";
+
+#define INCR_MEM(size) do { \
+	if(@input_item + (size) > @input_size) addSpaceForFileChars(processed_input, input_size); \
+} while(0)
+
+#define printError(message) do { \
+	printErr((struct ErrInfo) {.msg = message, .filename = path[1], .lineno = lineno}, 0); \
+} while(0)
+
+static char pointer strdup(const char pointer str) {
+	size_t len = strlen(str) + 1;
+	char pointer ptr = malloc(len);
+	
+	return ptr ? memcpy(ptr, str, len) : NULL;
+}
+
+static bool isSpecial(char c) {
+	for(unsigned short i = 0; specials[i] != '\0'; i++) {
+		if(c == specials[i]) return true;
+	}
+	
+	return false;
+}
+
+static short isNumber(char pointer strp) {
+	bool isNum = true;
+	
+	short i = 0;
+	for(; strp[i] != ' ' && !isSpecial(strp[i]); i--) {
+		if(!isdigit(strp[i])) isNum = false;
+	}
+	
+	return isNum ? 1 : i + 1;
+}
+
+static bool isReserved(const char arr[static 1][8], char pointer strp, unsigned int len) {
+	for(unsigned int i = 0; i < len; i++) {
+		bool reserved = false;
+		for(short s = strlen(arr[i]) - 1, s2 = 0; s >= 0; s--, s2--) {
+			if(strp[s2] != arr[i][s] || strp[s2] == ' ' || isSpecial(strp[s2])) {
+				reserved = false;
+				break;
+			} else {
+				reserved = true;
+			}
+		}
+		
+		if(reserved) return true;
+	}
+	
+	return false;
+}
+
+static bool isVarDef(char pointer strp) {
+	if(@strp == '=' || @strp == '-') return true;
+	
+	if(@strp == '(') {
+		while(@strp != ';' && @strp != '{' && @strp != '\0') {
+			strp++;
+		}
+		
+		if(@strp == '{') return true;
+	}
+	
+	return false;
+}
+
+static char pointer sanitize(char pointer strp) {
+	char pointer new_strp = strdup(strp);
+	for(unsigned short i = 0; new_strp[i] != '\0'; i++) {
+		if(new_strp[i] == '/' || new_strp[i] == '.' || new_strp[i] == '-') {
+			new_strp[i] = '$';
+		}
+	}
+	
+	return new_strp;
+}
+
+static void addSpaceForFileChars(char pointer*2 str, size_t pointer str_size) {
+	@str_size *= 2;
+	
+	char pointer res = realloc(@str, @str_size);
+	if(res == NULL) {
+		perror("ERROR");
+		fprintf(stderr, "ID: %d\n", errno);
+		exit(EXIT_FAILURE);
+	} else {
+		@str = res;
+	}
+}
+
+static void typeTo(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer strp) {
+	while(@strp != '\0') {
+		INCR_MEM(1);
+		
+		(@processed_input)[@input_item] = @strp;
+		(@input_item)++;
+		
+		strp++;
+	}
+}
+
+static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[128][2][128], size_t defs_len, char locs[256][2][256], size_t locs_len) {
+	for(size_t i = 0; i < defs_len; i++) {
+		unsigned short def_len = strlen(defs[i][0]);
+		char pointer cdef = defs[i][0];
+		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == cdef[>>> def_len]) {
+			for(unsigned short s = 0, defr_len = strlen(defs[i][1]); s < defr_len; s++) {
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = defs[i][1][s];
+				
+				(@input_item)++;
+			}
+			
+			@str += def_len;
+			
+			return 1;
+		}
+	}
+	
+	for(size_t i = 0; i < locs_len; i++) {
+		unsigned short loc_len = strlen(locs[i][0]);
+		char pointer cloc = locs[i][0];
+		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == cloc[>>> loc_len]) {
+			for(unsigned short s = 0, locr_len = strlen(locs[i][1]); s < locr_len; s++) {
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = locs[i][1][s];
+				
+				(@input_item)++;
+			}
+			
+			@str += loc_len;
+			
+			return 1;
+		}
+	}
+	
+	return 0;
+}
+
+void preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[128][2][128], size_t pointer defID) {
+	char buf[65536];
+	size_t lineno = 1;
+	
+	char locals[256][2][256];
+	size_t locID = 0;
+	
+	bool ignoring = false;
+	bool inStr = false;
+	bool inStr2 = false;
+	
+	bool exporting = false;
+	unsigned short scope = 0;
+	bool including = false; // TMP; allows use of #include
+	
+	while(fgets(buf, 65536, input) != NULL) {
+		char pointer trimmed_buf -> buf[0];
+		while(@trimmed_buf == '\t' || @trimmed_buf == ' ') {
+			trimmed_buf++;
+		}
+		
+		if(ignoring || (@trimmed_buf == '/' && @(trimmed_buf + 1) == '*')) {
+			ignoring = true;
+			
+			while(@trimmed_buf != '\0' && !(@trimmed_buf == '*' && @(trimmed_buf + 1) == '/')) trimmed_buf++;
+			
+			if(@trimmed_buf != '\0') {
+				ignoring = false;
+				trimmed_buf += 2;
+			} else {
+				continue;
+			}
+		}
+		
+		if(@trimmed_buf == '\n' || strcmp(trimmed_buf, "\r\n") == 0 || (@trimmed_buf == '/' && @(trimmed_buf + 1) == '/')) {
+			INCR_MEM(1);
+			(@processed_input)[@input_item] = ';';
+			(@input_item)++;
+			
+			continue;
+		}
+		
+		if(trimmed_buf[0] == '#') {
+			size_t c = 1;
+			char skey[8];
+			
+			while(trimmed_buf[c] != ' ' && trimmed_buf[c] != ';' && trimmed_buf[c] != '\0') {
+				skey[c - 1] = trimmed_buf[c];
+				c++;
+			}
+			
+			skey[c - 1] = '\0';
+			
+			c++;
+			
+			if(skey[>>> until skey[__item] == '\0'] == 'def') {
+				c++;
+				
+				// Get what to replace
+				unsigned int i = 0;
+				for(; trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c + i] != ';' && trimmed_buf[c + i] != '\0'; i++) {
+					defs[@defID][0][i] = trimmed_buf[c + i];
+				}
+				defs[@defID][0][i] = '\0';
+				
+				if(trimmed_buf[c + i] == '\0' || trimmed_buf[c + i] == ';') {
+					printError("Missing end quote (' or \") after '" WHITE "#def" RESET "'.");
+				}
+				
+				c += i + 6;
+				
+				// Get what to replace with
+				unsigned int r_pos = 0;
+				for(; trimmed_buf[c + r_pos] != '\'' && trimmed_buf[c + r_pos] != '"' && trimmed_buf[c + r_pos] != ';' && trimmed_buf[c + r_pos] != '\0'; r_pos++) {
+					defs[@defID][1][r_pos] = trimmed_buf[c + r_pos];
+				}
+				defs[@defID][1][r_pos] = '\0';
+				
+				if(trimmed_buf[c + r_pos] == '\0' || trimmed_buf[c + r_pos] == ';') {
+					printError("Missing end quote (' or \") after '" WHITE "#def" RESET "'.");
+				}
+				
+				(@defID)++;
+				
+				continue;
+			} else if(strcmp(skey, "ifdef") == 0) {
+				// WIP
+				
+				continue;
+			} else if(strcmp(skey, "import") == 0) {
+				char full_path[256];
+				unsigned short i;
+				
+				if(trimmed_buf[c] == '<') {
+					// Import standard library
+					
+					strcpy(full_path, path[0]); // Path to executable
+					
+					i = strlen(full_path) - 1;
+					for(unsigned short s = 0; s < 3; s++) {
+						do {
+							i--;
+						} while(full_path[i] != '/' && i > 0);
+						
+						if(i == 0) break;
+					}
+					full_path[i] = '\0';
+					
+					strcat(full_path, "/lib/");
+					c++;
+					
+					char lib_path[128];
+					i = 0;
+					for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c + i] != ';' && trimmed_buf[c + i] != '\0'; i++) {
+						lib_path[i] = trimmed_buf[c + i];
+					}
+					
+					if(trimmed_buf[c + i] == '\0' || trimmed_buf[c + i] == ';') {
+						printError("Missing " WHITE "'" RESET ", " WHITE "\"" RESET "or " WHITE ">" RESET " after '" WHITE "#import" RESET "'.");
+					}
+					
+					lib_path[i] = '\0';
+					strcat(full_path, lib_path);
+				} else {
+					// Import custom library
+					
+					strcpy(full_path, path[1]); // Path to P+ file
+					
+					char lib_path[128];
+					c++;
+					i = 0;
+					for(; trimmed_buf[c + i] != '>' && trimmed_buf[c + i] != '\'' && trimmed_buf[c + i] != '"' && trimmed_buf[c] != ';' && trimmed_buf[c + i] != '\0'; i++) {
+						lib_path[i] = trimmed_buf[c + i];
+					}
+					
+					if(trimmed_buf[c + i] == '\0' || trimmed_buf[c + i] == ';') {
+						printError("Missing " WHITE "'" RESET ", " WHITE "\"" RESET "or " WHITE ">" RESET " after '" WHITE "#import" RESET "'.");
+					}
+					
+					lib_path[i] = '\0';
+					
+					char pointer new_lib_path = "";
+					unsigned short levels = 1;
+					unsigned short sh = strlen(lib_path) - 1;
+					do {
+						sh--;
+						if(sh > 0 && lib_path[sh] == '.' && lib_path[sh - 1] == '.') {
+							if(levels == 1) new_lib_path = &lib_path[sh + 1];
+							levels++;
+							sh--;
+						} else if(levels > 1 && lib_path[sh] != '/') {
+							break;
+						}
+					} while(sh > 0);
+					
+					sh = strlen(full_path) - 1;
+					for(unsigned short s = 0; s < levels; s++) {
+						do {
+							sh--;
+						} while(full_path[sh] != '/' && sh > 0);
+						
+						if(sh == 0) break;
+					}
+					
+					if(levels == 1 && lib_path[0] != '/') sh++;
+					
+					full_path[sh] = '\0';
+					
+					if(new_lib_path[0] == '\0') {
+						strcat(full_path, lib_path);
+					} else {
+						strcat(full_path, new_lib_path);
+					}
+				}
+					
+				FILE pointer lib = fopen(full_path, "r");
+				if(lib == NULL) {
+					perror("ERROR");
+					fprintf(stderr, "ID: %d\n", errno);
+					exit(EXIT_FAILURE);
+				}
+				
+				if(trimmed_buf[c + i + 2] == 'a') { // import as ...
+					// WIP
+				} else {
+					char pointer lib_paths[2] = {path[0], full_path};
+					preprocess(lib, processed_input, input_size, input_item, lib_paths, defs, defID);
+					
+					// TODO: Add support for importing specific functions
+				}
+				
+				fclose(lib);
+				
+				continue;
+			} else if(strcmp(skey, "endexp") == 0) {
+				exporting = false;
+				
+				continue;
+			} else if(strcmp(skey, "export") == 0) {
+				exporting = true;
+				
+				continue;
+			} else if(strcmp(skey, "include") == 0) {
+				including = true;
+			}
+		}
+		
+		while(@trimmed_buf != '\0') {
+			if(!inStr2 && @trimmed_buf == '\'' && @(trimmed_buf - 1) != '\\') {
+				inStr = inStr ? false : true;
+			} else if(!inStr && @trimmed_buf == '"' && @(trimmed_buf - 1) != '\\') {
+				inStr2 = inStr2 ? false : true;
+			}
+			
+			if(inStr || inStr2) {
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = @trimmed_buf;
+				
+				(@input_item)++;
+				trimmed_buf++;
+			} else if(!replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID)) {
+				if(!including && trimmed_buf != buf && isVarDef(trimmed_buf)) { // 'including' part is temporary; allows for use of #include
+					char pointer trimmed_buf_bef = trimmed_buf - 1;
+					while(trimmed_buf_bef != buf && (@trimmed_buf_bef == ' ' || @trimmed_buf_bef == '\t')) trimmed_buf_bef--;
+					short isNum = isNumber(trimmed_buf_bef);
+					
+					if(trimmed_buf_bef != buf && isNum != 1 && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 22) && !isReserved(reserved_keys, trimmed_buf_bef, 26)) {
+						@input_item -= trimmed_buf - trimmed_buf_bef - 1;
+						
+						if(@trimmed_buf_bef == '$') {
+							(@processed_input)[@input_item - 1] = @trimmed_buf;
+							trimmed_buf++;
+							
+							continue;
+						} else if(exporting || scope) {
+							typeTo(processed_input, input_size, input_item, "_ppl");
+							
+							strncpy(defs[@defID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
+							defs[@defID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+							
+							strncpy(defs[@defID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
+							defs[@defID][1][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+							strcat(defs[@defID][1], "_ppl");
+							
+							(@defID)++;
+						} else {
+							typeTo(processed_input, input_size, input_item, "_ppl_");
+							
+							char pointer path_ext = sanitize(path[1]);
+							typeTo(processed_input, input_size, input_item, path_ext);
+							
+							strncpy(locals[locID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
+							locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+							
+							strncpy(locals[locID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
+							locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+							strcat(locals[locID][1], "_ppl_");
+							strcat(locals[locID][1], path_ext);
+							
+							locID++;
+							
+							free(path_ext);
+						}
+					}
+				}
+				
+				if(@trimmed_buf == '{') {
+					scope++;
+				} else if(@trimmed_buf == '}') {
+					scope--;
+				}
+				
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = @trimmed_buf;
+				
+				(@input_item)++;
+				trimmed_buf++;
+			}
+		}
+		
+		including = false;
+		
+		lineno++;
+	}
+	
+	INCR_MEM(1);
+	(@processed_input)[@input_item] = '\0';
+}

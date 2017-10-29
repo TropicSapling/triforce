@@ -1,12 +1,14 @@
 #import 'exporting.ppl';
 
-puts("IN importing.ppl");
+int main(void) {
+	puts("IN importing.ppl");
 
-puts(str);
-function();
-function3();
+	puts(str);
+	function();
+	function3();
 
-puts(str2);
-function2();
+//	puts(str2); // 'str2' is not exported, so cannot print
+//	function2(); // 'function2' is not exported, so cannot execute
 
-puts("OUT importing.ppl");
+	puts("OUT importing.ppl");
+}

@@ -6,7 +6,7 @@
 
 #include "def.h"
 
-const char* const restrict specials = ";,[]{}()?><=+-*/%!&|^~@\\.:";
+const char* const restrict specials = ";,[]{}()?><=+-*/%!&|^~@\\.:\t\r\n";
 
 size_t keywords_size = sizeof(char*) * 32;
 size_t pointers_size = sizeof(char*) * 32;
@@ -113,7 +113,6 @@ int main(int argc, char *argv[]) {
 	/////////////////// PRINT OUTPUT ///////////////////
 	
 	for(size_t i = 0; i < pos; i++) {
-		if(parsed_output[i] == '$') continue; // TMP; makes it possible to use C functions without the need of 'clang'
 		fprintf(output, "%c", parsed_output[i]);
 		
 		printf("[DEBUG] Printing output... %.2Lf%%\r", (((long double) i + 1) / key) * 100);

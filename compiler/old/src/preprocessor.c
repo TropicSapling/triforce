@@ -62,6 +62,10 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 		
 		char *trimmed_buf = &buf[0];
 		while(*trimmed_buf == '\t' || *trimmed_buf == ' ') {
+			INCR_MEM(1);
+			(*processed_input)[input_item] = *trimmed_buf;
+			
+			input_item++;
 			trimmed_buf++;
 		}
 		
@@ -78,9 +82,9 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 			}
 		}
 		
-		if(strcmp(trimmed_buf, "\n") == 0 || strcmp(trimmed_buf, "\r\n") == 0 || (*trimmed_buf == '/' && *(trimmed_buf + 1) == '/')) {
+		if(*trimmed_buf == '/' && *(trimmed_buf + 1) == '/') {
 			INCR_MEM(1);
-			(*processed_input)[input_item] = ';';
+			(*processed_input)[input_item] = '\n';
 			input_item++;
 			
 			continue;
@@ -119,8 +123,12 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 				defs[*defID][1][r_pos] = '\0';
 				
 				(*defID)++;
+				
+				continue;
 			} else if(strcmp(skey, "ifdef") == 0) {
 				// WIP
+				
+				continue;
 			} else if(strcmp(skey, "import") == 0) {
 				char full_path[256];
 				unsigned short i;
@@ -131,7 +139,7 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 					strcpy(full_path, path[0]); // Path to executable
 					
 					i = strlen(full_path) - 1;
-					for(unsigned short s = 0; s < 3; s++) {
+					for(unsigned short s = 0; s < 4; s++) {
 						do {
 							i--;
 						} while(full_path[i] != '/' && i > 0);
@@ -235,13 +243,17 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 				}
 				
 				fclose(lib);
+				
+				continue;
 			} else if(strcmp(skey, "endexp") == 0) {
 				exporting = false;
+				
+				continue;
 			} else if(exports_size && strcmp(skey, "export") == 0) {
 				exporting = true;
+				
+				continue;
 			}
-			
-			if(strcmp(skey, "include") != 0) continue;
 		}
 		
 		if(exporting) {
