@@ -108,7 +108,7 @@ static void typeTo(char pointer*2 processed_input, size_t pointer input_size, si
 	}
 }
 
-static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[128][2][128], size_t defs_len) {
+static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[128][2][128], size_t defs_len, char locs[256][2][256], size_t locs_len) {
 	for(size_t i = 0; i < defs_len; i++) {
 		unsigned short def_len = strlen(defs[i][0]);
 		char pointer cdef = defs[i][0];
@@ -126,12 +126,32 @@ static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t poin
 		}
 	}
 	
+	for(size_t i = 0; i < locs_len; i++) {
+		unsigned short loc_len = strlen(locs[i][0]);
+		char pointer cloc = locs[i][0];
+		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == cloc[>>> loc_len]) {
+			for(unsigned short s = 0, locr_len = strlen(locs[i][1]); s < locr_len; s++) {
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = locs[i][1][s];
+				
+				(@input_item)++;
+			}
+			
+			@str += loc_len;
+			
+			return 1;
+		}
+	}
+	
 	return 0;
 }
 
 void preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[128][2][128], size_t pointer defID) {
 	char buf[65536];
 	size_t lineno = 1;
+	
+	char locals[256][2][256];
+	size_t locID = 0;
 	
 	bool ignoring = false;
 	bool inStr = false;
@@ -345,7 +365,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				
 				(@input_item)++;
 				trimmed_buf++;
-			} else if(!replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID)) {
+			} else if(!replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID)) {
 				if(!including && trimmed_buf != buf && isVarDef(trimmed_buf)) { // 'including' part is temporary; allows for use of #include
 					char pointer trimmed_buf_bef = trimmed_buf - 1;
 					while(trimmed_buf_bef != buf && (@trimmed_buf_bef == ' ' || @trimmed_buf_bef == '\t')) trimmed_buf_bef--;
@@ -364,9 +384,11 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 							
 							strncpy(defs[@defID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
 							defs[@defID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+							
 							strncpy(defs[@defID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
 							defs[@defID][1][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
 							strcat(defs[@defID][1], "_ppl");
+							
 							(@defID)++;
 						} else {
 							typeTo(processed_input, input_size, input_item, "_ppl_");
@@ -374,14 +396,15 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 							char pointer path_ext = sanitize(path[1]);
 							typeTo(processed_input, input_size, input_item, path_ext);
 							
-							strncpy(defs[@defID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-							defs[@defID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+							strncpy(locals[locID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
+							locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
 							
-							strncpy(defs[@defID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-							defs[@defID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
-							strcat(defs[@defID][1], "_ppl_");
-							strcat(defs[@defID][1], path_ext);
-							(@defID)++;
+							strncpy(locals[locID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
+							locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+							strcat(locals[locID][1], "_ppl_");
+							strcat(locals[locID][1], path_ext);
+							
+							locID++;
 							
 							free(path_ext);
 						}
