@@ -391,7 +391,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 							locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
 							
 							strncpy(locals[locID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-							locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+							locals[locID][1][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
 							strcat(locals[locID][1], "_ppl_");
 							strcat(locals[locID][1], path_ext);
 							
