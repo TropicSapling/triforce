@@ -106,7 +106,7 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 			}
 		}
 		
-		if(@(input - 1) != '\0') {
+		if(input == (@keywords)[0] || @(input - 1) != '\0') {
 			@input = '\0';
 		}
 		
