@@ -143,12 +143,14 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 	char locals[256][2][256];
 	size_t locID = 0;
 	
+	unsigned short scope = 0;
+	unsigned short ifDefs = 0;
+	
 	bool ignoring = false;
 	bool inStr = false;
 	bool inStr2 = false;
 	
 	bool exporting = false;
-	unsigned short scope = 0;
 	bool including = false; // TMP; allows use of #include
 	
 	while(fgets(buf, 65536, input) != NULL) {
@@ -191,6 +193,14 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 			
 			c++;
 			
+			if(ifDefs) {
+				if(strcmp(skey, "endif") == 0) {
+					ifDefs--;
+				}
+				
+				continue;
+			}
+			
 			if(skey[>>> until skey[__item] == '\0'] == 'def') {
 				c++;
 				
@@ -226,23 +236,24 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 					unsigned short def_len = strlen(defs[i][0]);
 					char pointer cdef = defs[i][0];
 					if(trimmed_buf[c >>> until trimmed_buf[__item] == ';'] == cdef[>>> def_len]) {
-						// WIP (defined)
-						break;
+						continue;
 					}
 				}
 				
+				ifDefs++;
 				continue;
 			} else if(strcmp(skey, "ifndef") == 0) {
 				for(size_t i = 0; i < @defID; i++) {
 					unsigned short def_len = strlen(defs[i][0]);
 					char pointer cdef = defs[i][0];
 					if(trimmed_buf[c >>> until trimmed_buf[__item] == ';'] == cdef[>>> def_len]) {
+						ifDefs++;
 						continue;
 					}
 				}
 				
-				// WIP (not defined)
-				
+				continue;
+			} else if(strcmp(skey, "endif") == 0) {
 				continue;
 			} else if(strcmp(skey, "import") == 0) {
 				char full_path[256];

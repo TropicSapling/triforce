@@ -7,6 +7,30 @@
 
 #include "def.h";
 
+#ifdef _WIN32
+	#define THIS_OS "\"Win32\""
+#endif
+
+#ifdef _WIN64
+	#define THIS_OS "\"Win64\""
+#endif
+
+#if defined(unix) || defined(__unix) || defined(__unix__)
+	#define THIS_OS "\"Unix\""
+#endif
+
+#if defined(linux) || defined(__linux) || defined(__linux__)
+	#define THIS_OS "\"Linux\""
+#endif
+
+#if defined(__APPLE__) || defined(__MACH__)
+	#define THIS_OS "\"Apple\""
+#endif
+
+#ifdef __FreeBSD__
+	#define THIS_OS "\"FreeBSD\""
+#endif
+
 #define INCR_MEM(size) do { \
 	if(pos + (size) > output_size) { \
 		output_size *= 2; \
@@ -438,6 +462,8 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 		typeToOutput(linestr);
 	} else if(strcmp(keywords[i], "__path") == 0) {
 		typeToOutput("__PATH__");
+	} else if(strcmp(keywords[i], "__OS") == 0) {
+		typeToOutput(THIS_OS);
 	} else if(strcmp(keywords[i], "__item") == 0) {
 		if(cItem == NULL) {
 			printError("Invalid placement of '" WHITE "__item" RESET "'.", 0, i);

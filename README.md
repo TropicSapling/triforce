@@ -122,6 +122,7 @@ P+ is for...
 --------
 
 #### Built-in global variables
+* `__OS`
 * `__path`
 * `__args`
 * `__argc`

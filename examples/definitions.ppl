@@ -1,15 +1,63 @@
 #import <def/stddef.ppl>;
+#include <stdio.h>;
 
 #def 'abc' as '123';
 #def 'def' as '456';
 #def 'ghi' as '789';
 
-abc000 111;
-def000 111;
-ghi 000 111;
-abc 000 111;
-def 123 456;
-jkl000 111;
+#ifdef abc;
+	#def 'jkl' as '012';
+#endif;
 
-String str = 'hello';
-String str2 = 'String';
+#ifdef mno;
+	#def 'pqr' as '456';
+#endif;
+
+#ifndef abc;
+	#def 'mno' as '345';
+#endif;
+
+#ifndef mno;
+	#def 'mno' as '678';
+	
+	#ifdef 'def';
+		#def 'def' as '901';
+	#endif;
+#endif;
+
+#ifndef deff;
+	#def 'deff' as '-123';
+#endif;
+#ifndef jklm;
+	#def 'jklm' as '-456';
+#endif;
+
+int main(void) {
+	int a = abc;
+	int b = deff;
+	int c = ghi;
+	int d = abc;
+	int e = def;
+	int f = jklm;
+	int g = jkl;
+	int h = mno;
+//	int i = pqr; // 'pqr' is undefined
+	
+	String str = "hello";
+	String String2 = "String";
+
+	puts(str);
+	puts(str2);
+
+	printf("%d ", a);
+	printf("%d ", b);
+	printf("%d ", c);
+	printf("%d ", d);
+	printf("%d ", e);
+	printf("%d ", f);
+	printf("%d ", g);
+	printf("%d ", h);
+	printf("%d\n", i);
+	
+	puts(__OS);
+}
