@@ -10,7 +10,7 @@
 #endif;
 
 #ifdef mno;
-	#def 'pqr' as '456';
+	#def 'pqr' as '234';
 #endif;
 
 #ifndef abc;
@@ -39,7 +39,7 @@ int init(void) {
 	int d = abc;
 	int e = def;
 	int f = jklm;
-//	int g = jkl;
+	int g = jkl;
 	int h = mno;
 //	int i = pqr; // 'pqr' is undefined
 	
@@ -55,7 +55,7 @@ int init(void) {
 	printf("%d ", d);
 	printf("%d ", e);
 	printf("%d ", f);
-//	printf("%d ", g);
+	printf("%d ", g);
 	printf("%d ", h);
 //	printf("%d\n", i); // 'i' is undefined since 'pqr' is undefined
 	
