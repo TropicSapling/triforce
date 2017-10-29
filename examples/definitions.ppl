@@ -1,8 +1,8 @@
-#import <def/stddef.ppl>
+#import <def/stddef.ppl>;
 
-#def 'abc' as '123'
-#def 'def' as '456'
-#def 'ghi' as '789'
+#def 'abc' as '123';
+#def 'def' as '456';
+#def 'ghi' as '789';
 
 abc000 111;
 def000 111;

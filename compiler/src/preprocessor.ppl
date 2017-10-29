@@ -222,7 +222,26 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				
 				continue;
 			} else if(strcmp(skey, "ifdef") == 0) {
-				// WIP
+				for(size_t i = 0; i < @defID; i++) {
+					unsigned short def_len = strlen(defs[i][0]);
+					char pointer cdef = defs[i][0];
+					if(trimmed_buf[c >>> until trimmed_buf[__item] == ';'] == cdef[>>> def_len]) {
+						// WIP (defined)
+						break;
+					}
+				}
+				
+				continue;
+			} else if(strcmp(skey, "ifndef") == 0) {
+				for(size_t i = 0; i < @defID; i++) {
+					unsigned short def_len = strlen(defs[i][0]);
+					char pointer cdef = defs[i][0];
+					if(trimmed_buf[c >>> until trimmed_buf[__item] == ';'] == cdef[>>> def_len]) {
+						continue;
+					}
+				}
+				
+				// WIP (not defined)
 				
 				continue;
 			} else if(strcmp(skey, "import") == 0) {
