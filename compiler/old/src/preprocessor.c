@@ -125,10 +125,6 @@ void preprocess(FILE **input, char **processed_input, size_t input_size, char *p
 				(*defID)++;
 				
 				continue;
-			} else if(strcmp(skey, "ifdef") == 0) {
-				// WIP
-				
-				continue;
 			} else if(strcmp(skey, "import") == 0) {
 				char full_path[256];
 				unsigned short i;

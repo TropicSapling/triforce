@@ -47,7 +47,8 @@ static short isNumber(char pointer strp, char buf[65536]) {
 static bool isReserved(const char arr[static 1][8], char pointer strp, unsigned int len) {
 	for(unsigned int i = 0; i < len; i++) {
 		bool reserved = false;
-		for(short s = strlen(arr[i]) - 1, s2 = 0; s >= 0; s--, s2--) {
+		short s2 = 0;
+		for(short s = strlen(arr[i]) - 1; s >= 0; s--, s2--) {
 			if(strp[s2] != arr[i][s] || strp[s2] == ' ' || isSpecial(strp[s2])) {
 				reserved = false;
 				break;
@@ -56,7 +57,7 @@ static bool isReserved(const char arr[static 1][8], char pointer strp, unsigned 
 			}
 		}
 		
-		if(reserved) return true;
+		if(reserved && (strp[s2] == ' ' || isSpecial(strp[s2]))) return true;
 	}
 	
 	return false;
@@ -143,12 +144,14 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 	char locals[256][2][256];
 	size_t locID = 0;
 	
+	unsigned short scope = 0;
+	unsigned short ifDefs = 0;
+	
 	bool ignoring = false;
 	bool inStr = false;
 	bool inStr2 = false;
 	
 	bool exporting = false;
-	unsigned short scope = 0;
 	bool including = false; // TMP; allows use of #include
 	
 	while(fgets(buf, 65536, input) != NULL) {
@@ -191,6 +194,14 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 			
 			c++;
 			
+			if(ifDefs) {
+				if(strcmp(skey, "endif") == 0) {
+					ifDefs--;
+				}
+				
+				continue;
+			}
+			
 			if(skey[>>> until skey[__item] == '\0'] == 'def') {
 				c++;
 				
@@ -222,8 +233,30 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				
 				continue;
 			} else if(strcmp(skey, "ifdef") == 0) {
-				// WIP
+				size_t i = 0;
+				for(; i < @defID; i++) {
+					unsigned short def_len = strlen(defs[i][0]);
+					char pointer cdef = defs[i][0];
+					if(trimmed_buf[c >>> until trimmed_buf[__item] == ';'] == cdef[>>> def_len]) {
+						break;
+					}
+				}
 				
+				if(i >= @defID) ifDefs++;
+				continue;
+			} else if(strcmp(skey, "ifndef") == 0) {
+				size_t i = 0;
+				for(; i < @defID; i++) {
+					unsigned short def_len = strlen(defs[i][0]);
+					char pointer cdef = defs[i][0];
+					if(trimmed_buf[c >>> until trimmed_buf[__item] == ';'] == cdef[>>> def_len]) {
+						ifDefs++;
+						break;
+					}
+				}
+				
+				continue;
+			} else if(strcmp(skey, "endif") == 0) {
 				continue;
 			} else if(strcmp(skey, "import") == 0) {
 				char full_path[256];
@@ -350,7 +383,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				inStr2 = inStr2 ? false : true;
 			}
 			
-			if(inStr || inStr2) {
+			if(trimmed_buf != buf && (inStr || inStr2 || (@(trimmed_buf - 1) != ' ' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1))))) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = @trimmed_buf;
 				
@@ -362,7 +395,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 					while(trimmed_buf_bef != buf && (@trimmed_buf_bef == ' ' || @trimmed_buf_bef == '\t')) trimmed_buf_bef--;
 					short isNum = isNumber(trimmed_buf_bef, buf);
 					
-					if(trimmed_buf_bef != buf && isNum != 1 && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 22) && !isReserved(reserved_keys, trimmed_buf_bef, 26)) {
+					if(trimmed_buf_bef != buf && isNum != 1 && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 22) && !isReserved(reserved_keys, trimmed_buf_bef, 29)) {
 						@input_item -= trimmed_buf - trimmed_buf_bef - 1;
 						
 						if(@trimmed_buf_bef == '$') {
