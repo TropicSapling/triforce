@@ -15,12 +15,12 @@
 	#define THIS_OS "\"Win64\""
 #endif
 
-#if defined(unix) || defined(__unix) || defined(__unix__)
-	#define THIS_OS "\"Unix\""
-#endif
-
 #if defined(linux) || defined(__linux) || defined(__linux__)
 	#define THIS_OS "\"Linux\""
+#else
+	#if defined(unix) || defined(__unix) || defined(__unix__)
+		#define THIS_OS "\"Unix\""
+	#endif
 #endif
 
 #if defined(__APPLE__) || defined(__MACH__)

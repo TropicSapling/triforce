@@ -21,7 +21,7 @@
 	#def 'mno' as '678';
 	
 	#ifdef 'def';
-		#def 'def' as '901';
+		#def 'def' as '901'; // Won't work because 'def' has already been defined
 	#endif;
 #endif;
 
