@@ -31,6 +31,10 @@
 	#define THIS_OS "\"FreeBSD\""
 #endif
 
+#ifndef THIS_OS
+	#define THIS_OS "\"UNDEFINED\""
+#endif
+
 #define INCR_MEM(size) do { \
 	if(pos + (size) > output_size) { \
 		output_size *= 2; \
