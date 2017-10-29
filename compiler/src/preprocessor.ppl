@@ -112,7 +112,7 @@ static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t poin
 	for(size_t i = 0; i < defs_len; i++) {
 		unsigned short def_len = strlen(defs[i][0]);
 		char pointer cdef = defs[i][0];
-		if((@str)[>>> until (isSpecial((@str)[__item]) || (@str)[__item] == ' ')] == cdef[>>> def_len]) {
+		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == cdef[>>> def_len]) {
 			for(unsigned short s = 0, defr_len = strlen(defs[i][1]); s < defr_len; s++) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = defs[i][1][s];

@@ -172,6 +172,10 @@ static unsigned int typeSublistEndPos(char **keywords, char **outputp, unsigned 
 		
 		if(strcmp(keywords[i_pos], "until") == 0) {
 			i_pos++;
+			
+			INCR_MEM(1);
+			(*outputp)[pos] = '(';
+			pos++;
 		} else {
 			typeToOutput("!(");
 			typeToOutput(it_name);
@@ -188,7 +192,15 @@ static unsigned int typeSublistEndPos(char **keywords, char **outputp, unsigned 
 			if(brackets && keywords[i_pos][0] == ']') brackets--;
 		}
 		
-		if(isNormal) typeToOutput("))");
+		INCR_MEM(1);
+		(*outputp)[pos] = ')';
+		pos++;
+		
+		if(isNormal) {
+			INCR_MEM(1);
+			(*outputp)[pos] = ')';
+			pos++;
+		}
 	} else {
 		typeToOutput("!(");
 		typeToOutput(it_name);
