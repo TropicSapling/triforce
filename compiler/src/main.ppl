@@ -51,6 +51,17 @@ void printErr(struct ErrInfo Error, unsigned short errType) {
 	if(errType != 1) exit(EXIT_FAILURE);
 }
 
+void safe_realloc(void pointer*2 ptr, size_t size) {
+	void pointer res = realloc(@ptr, size);
+	if(res == NULL) {
+		perror("ERROR");
+		fprintf(stderr, "ID: %d\n", errno);
+		exit(EXIT_FAILURE);
+	} else {
+		@ptr = res;
+	}
+}
+
 int main(int argc, char pointer argv[]) {
 	
 	if(argc < 2 || argc > 4) {

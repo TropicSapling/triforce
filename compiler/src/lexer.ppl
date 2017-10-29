@@ -7,30 +7,23 @@
 #include "def.h";
 
 #define INCR_MEM(size) do { \
-	if(key + (size) > keywords_size / sizeof(char pointer)) addSpaceForKeys(keywords, ->keywords_size); \
+	if(key + (size) > keywords_size / sizeof(char pointer)) { \
+		keywords_size *= 2; \
+		safe_realloc((void pointer*2) keywords, keywords_size); \
+	} \
 } while(0)
 
 #define INCR_MEM2(size) do { \
-	if(pkey + (size) > pointers_size / sizeof(char pointer)) addSpaceForKeys(pointers, ->pointers_size); \
+	if(pkey + (size) > pointers_size / sizeof(char pointer)) { \
+		pointers_size *= 2; \
+		safe_realloc((void pointer*2) pointers, pointers_size); \
+	} \
 } while(0)
 
 static bool inStr = false;
 static bool inStr2 = false;
 static bool escaping = false;
 static bool ignoring = false;
-
-static void addSpaceForKeys(char pointer*3 keywords, size_t pointer keywords_size) {
-	@keywords_size *= 2;
-	
-	char pointer*2 res = realloc(@keywords, @keywords_size);
-	if(res == NULL) {
-		perror("ERROR");
-		fprintf(stderr, "ID: %d\n", errno);
-		exit(EXIT_FAILURE);
-	} else {
-		@keywords = res;
-	}
-}
 
 static bool isSpecial(char c) {
 	for(unsigned int i = 0; specials[i] != '\0'; i++) {

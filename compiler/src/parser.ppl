@@ -8,7 +8,10 @@
 #include "def.h";
 
 #define INCR_MEM(size) do { \
-	if(pos + (size) > output_size) addSpaceForChars(outputp); \
+	if(pos + (size) > output_size) { \
+		output_size *= 2; \
+		safe_realloc((void pointer*2) outputp, output_size); \
+	} \
 } while(0)
 
 #define typeToOutput(str) do { \
@@ -31,19 +34,6 @@ static size_t output_size = 256;
 static size_t lineno = 1;
 static size_t linecol = 1;
 
-static void addSpaceForChars(char pointer*2 output) {
-	output_size *= 2;
-	
-	char pointer res = realloc(@output, output_size);
-	if(res == NULL) {
-		perror("ERROR");
-		fprintf(stderr, "ID: %d\n", errno);
-		exit(EXIT_FAILURE);
-	} else {
-		@output = res;
-	}
-}
-
 /* static bool isReserved(const char arr[static 1][8], char pointer str, unsigned int len) {
 	for(unsigned int i = 0; i < len; i++) {
 		if(strcmp(arr[i], str) == 0) return true;
@@ -63,7 +53,7 @@ static bool isNumber(char pointer str) {
 static unsigned int typeTo(char pointer*2 outputp, char pointer str) {
 	unsigned int i = 0;
 	for(; str[i] != '\0'; i++) {
-		if(pos + 1 > output_size) addSpaceForChars(outputp);
+		INCR_MEM(1);
 		(@outputp)[pos] = str[i];
 		pos++;
 	}
@@ -759,7 +749,10 @@ char pointer parse(char pointer*2 keywords, char pointer filename) {
 		i = parseKey(i, keywords, ->output, ->status, NULL);
 	}
 	
-	if(pos + 1 > output_size) addSpaceForChars(->output);
+	if(pos + 1 > output_size) {
+		output_size *= 2;
+		safe_realloc((void pointer*2) output, output_size);
+	}
 	output[pos] = '\0';
 	
 	return output;
