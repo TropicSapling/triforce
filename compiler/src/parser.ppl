@@ -490,23 +490,11 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 				if(*status != 1) {
 					unsigned int sop_pos = i + i_pos + getListExpEndPos(&keywords[i + i_pos]);
 					
-					if(keywords[sop_pos][0] == '=' && strstr(specials, keywords[sop_pos - 1]) == NULL) {
-						// WIP
-						break;
-					} else if(keywords[sop_pos - 1][0] == '+' && keywords[i - 1][0] == '=') {
-						// WIP
-						break;
-					} else if(keywords[sop_pos - 1][0] == '*' && keywords[i - 1][0] == '=') {
-						// WIP
-						break;
-					} else if(keywords[sop_pos - 1][0] == '-' && keywords[i - 1][0] == '=') {
-						// WIP
-						break;
-					} else if(keywords[sop_pos - 1][0] == '/' && keywords[i - 1][0] == '=') {
-						// WIP
+					if((keywords[sop_pos][0] == '=' && keywords[sop_pos + 1][0] != '=') || (keywords[sop_pos + 1][0] == '=' && (keywords[sop_pos][0] == '+' || keywords[sop_pos][0] == '-' || keywords[sop_pos][0] == '*' || keywords[sop_pos][0] == '/'))) {
+						printError("L-value required as left operand of assignment.", 0, sop_pos);
 						break;
 					} else if(keywords[sop_pos][0] == '>' || keywords[sop_pos][0] == '<' || keywords[sop_pos][0] == '=' || keywords[sop_pos][0] == '!' || keywords[sop_pos][0] == '&' || keywords[sop_pos][0] == '|') {
-						// keywords[sop_pos] is a comparison operator
+						// COMPARISONS
 						
 						foundSublist = true;
 						
@@ -643,7 +631,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						if(listType2) {
 							typeToOutput(str2_name);
 						} else {
-							while(sop_pos < key && keywords[sop_pos][0] != ';' && (keywords[sop_pos][0] != '[' || parentheses > 0)) {
+							while(sop_pos < key && keywords[sop_pos][0] != ';' && (keywords[sop_pos][0] != '[' || parentheses > 0)) { // NEEDS FIXING; doesn't work with 'arr[x][y][z][a >>> b]', workaround: '(arr[x][y][z])[a >>> b]'
 								if(keywords[sop_pos][0] == '(') parentheses++;
 								if(parentheses && keywords[sop_pos][0] == ')') parentheses--;
 								
@@ -718,7 +706,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 		if(strcmp(keywords[i], "#include") == 0) { // TMP; makes it possible to include C functions without the need of 'import clib'
 			INCR_MEM(2);
 			
-			if(pos < 1 || (@outputp)[pos - 1] != '\n') {
+			if(pos > 0 && (@outputp)[pos - 1] != '\n') {
 				INCR_MEM(1);
 				(@outputp)[pos] = '\n';
 				pos++;
