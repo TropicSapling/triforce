@@ -57,7 +57,7 @@ static bool isReserved(const char arr[static 1][8], char pointer strp, unsigned 
 			}
 		}
 		
-		if(reserved && (strp[s2] == ' ' || isSpecial(strp[s2]))) return true;
+		if(reserved && (strp[s2] == ' ' || strp[s2] == '\t' || strp[s2] == '\n' || isSpecial(strp[s2]))) return true;
 	}
 	
 	return false;

@@ -36,6 +36,8 @@ int init(void) {
 /*	if(arr[3 >>> 7] == arr2[>>> 3] && arr[3 >>> 7] == arr2[>>> 3]) {
 		puts("true");
 	} */
+	
+	printf("Current line: %d\n", __line);
 
 	return 0;
 }
