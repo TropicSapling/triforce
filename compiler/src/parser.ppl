@@ -706,7 +706,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 		if(strcmp(keywords[i], "#include") == 0) { // TMP; makes it possible to include C functions without the need of 'import clib'
 			INCR_MEM(2);
 			
-			if(pos < 1 || (@outputp)[pos - 1] != '\n') {
+			if(pos > 0 && (@outputp)[pos - 1] != '\n') {
 				INCR_MEM(1);
 				(@outputp)[pos] = '\n';
 				pos++;
