@@ -47,7 +47,7 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 			input++;
 		}
 		
-		while((ignoring || inStr || inStr2 || @input != ' ') && @input != '\0') {
+		while((ignoring || ignoring2 || inStr || inStr2 || @input != ' ') && @input != '\0') {
 			if(!inStr && !inStr2) {
 				if(@input == '/' && @(input + 1) == '/') {
 					ignoring2 = true;
@@ -57,7 +57,7 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 					special = calloc(2, 1);
 					special[0] = @input;
 					foundSpecial = true;
-					ignoring2 = false;
+					if(@input == '\n') ignoring2 = false;
 					
 					break;
 				}

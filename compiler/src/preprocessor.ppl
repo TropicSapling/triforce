@@ -422,9 +422,21 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 			}
 			
 			if(!inStr && !inStr2 && @trimmed_buf == '/') {
-				if(@(trimmed_buf + 1) == '/') break;
+				if(@(trimmed_buf + 1) == '/') {
+					INCR_MEM(1);
+					(@processed_input)[@input_item] = '\n';
+					(@input_item)++;
+					
+					break;
+				}
+				
 				if(@(trimmed_buf + 1) == '*') {
 					ignoring = true;
+					
+					INCR_MEM(1);
+					(@processed_input)[@input_item] = '\n';
+					(@input_item)++;
+					
 					break;
 				}
 			}
