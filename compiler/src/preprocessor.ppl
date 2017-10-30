@@ -118,8 +118,7 @@ static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t poin
 	
 	for(size_t i = 0; i < locs_len; i++) {
 		unsigned short loc_len = strlen(locs[i][0]);
-		char pointer cloc = locs[i][0];
-		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == cloc[>>> loc_len]) {
+		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (locs[i][0])[>>> loc_len]) {
 			for(unsigned short s = 0, locr_len = strlen(locs[i][1]); s < locr_len; s++) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = locs[i][1][s];
@@ -426,7 +425,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				}
 			}
 			
-			if(trimmed_buf != buf && (inStr || inStr2 || (@(trimmed_buf - 1) != ' ' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1))))) {
+			if(trimmed_buf != buf && (inStr || inStr2 || (@(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\n' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1))))) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = @trimmed_buf;
 				
