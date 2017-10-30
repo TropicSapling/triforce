@@ -102,8 +102,7 @@ static void typeTo(char pointer*2 processed_input, size_t pointer input_size, si
 static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[128][2][128], size_t defs_len, char locs[256][2][256], size_t locs_len) {
 	for(size_t i = 0; i < defs_len; i++) {
 		unsigned short def_len = strlen(defs[i][0]);
-		char pointer cdef = defs[i][0];
-		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == cdef[>>> def_len]) {
+		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (defs[i][0])[>>> def_len]) {
 			for(unsigned short s = 0, defr_len = strlen(defs[i][1]); s < defr_len; s++) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = defs[i][1][s];
@@ -169,6 +168,10 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				ignoring = false;
 				trimmed_buf += 2;
 			} else {
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = ';';
+				(@input_item)++;
+				
 				continue;
 			}
 		}
@@ -198,6 +201,10 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				if(strcmp(skey, "endif") == 0) {
 					ifDefs--;
 				}
+				
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = ';';
+				(@input_item)++;
 				
 				continue;
 			}
@@ -231,6 +238,10 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				
 				(@defID)++;
 				
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = ';';
+				(@input_item)++;
+				
 				continue;
 			} else if(strcmp(skey, "ifdef") == 0) {
 				size_t i = 0;
@@ -241,6 +252,10 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 						break;
 					}
 				}
+				
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = ';';
+				(@input_item)++;
 				
 				if(i >= @defID) ifDefs++;
 				continue;
@@ -255,8 +270,16 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 					}
 				}
 				
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = ';';
+				(@input_item)++;
+				
 				continue;
 			} else if(strcmp(skey, "endif") == 0) {
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = ';';
+				(@input_item)++;
+				
 				continue;
 			} else if(strcmp(skey, "import") == 0) {
 				char full_path[256];
@@ -362,13 +385,25 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				
 				fclose(lib);
 				
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = ';';
+				(@input_item)++;
+				
 				continue;
 			} else if(strcmp(skey, "endexp") == 0) {
 				exporting = false;
 				
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = ';';
+				(@input_item)++;
+				
 				continue;
 			} else if(strcmp(skey, "export") == 0) {
 				exporting = true;
+				
+				INCR_MEM(1);
+				(@processed_input)[@input_item] = ';';
+				(@input_item)++;
 				
 				continue;
 			} else if(strcmp(skey, "include") == 0) {
@@ -381,6 +416,14 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				inStr = inStr ? false : true;
 			} else if(!inStr && @trimmed_buf == '"' && @(trimmed_buf - 1) != '\\') {
 				inStr2 = inStr2 ? false : true;
+			}
+			
+			if(!inStr && !inStr2 && @trimmed_buf == '/') {
+				if(@(trimmed_buf + 1) == '/') break;
+				if(@(trimmed_buf + 1) == '*') {
+					ignoring = true;
+					break;
+				}
 			}
 			
 			if(trimmed_buf != buf && (inStr || inStr2 || (@(trimmed_buf - 1) != ' ' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1))))) {

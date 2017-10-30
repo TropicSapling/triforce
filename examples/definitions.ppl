@@ -41,9 +41,9 @@ int init(void) {
 	int f = jklm;
 	int g = jkl;
 	int h = mno;
-//	int i = pqr; // 'pqr' is undefined
+/*	int i = pqr; // 'pqr' is undefined
 	
-/*	String str = "hello";
+	String str = "hello";
 	String String2 = "String";
 
 	puts(str);
@@ -55,8 +55,8 @@ int init(void) {
 	printf("%d ", d);
 	printf("%d ", e);
 	printf("%d ", f);
-	printf("%d ", g);
-	printf("%d ", h);
+	printf("%d ", g); // NOTE: prints 10 because that's what 012 is in octet
+	printf("%d\n", h);
 //	printf("%d\n", i); // 'i' is undefined since 'pqr' is undefined
 	
 	puts(__OS);
