@@ -741,7 +741,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 			typeToOutput(keywords[i]);
 		}
 		
-		if(strstr(specials, keywords[i]) == NULL && strstr(specials, keywords[i + 1]) == NULL) {
+		if(keywords[i][0] != '\n' && keywords[i][0] != '\t' && strstr(specials, keywords[i]) == NULL && strstr(specials, keywords[i + 1]) == NULL) {
 			INCR_MEM(1);
 			
 			(@outputp)[pos] = ' ';
@@ -749,7 +749,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 		}
 	}
 	
-	if(keywords[i][0] == ';' || (keywords[i][0] == '{' && keywords[i - 1][0] == ')') || (keywords[i][0] == '}' && keywords[i - 1][0] == ';')) {
+	if(keywords[i][0] == '\n') {
 		lineno++;
 		linecol = 1;
 	} else {
