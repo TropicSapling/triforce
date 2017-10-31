@@ -64,7 +64,7 @@ static bool isReserved(const char arr[static 1][8], char pointer strp, unsigned 
 }
 
 static bool isVarDef(char pointer strp) {
-	if(@strp == '=' || @strp == '-') return true;
+	if(@strp == '=' || @strp == '-' || @strp == ';') return true;
 	
 	if(@strp == '(') {
 		while(@strp != ';' && @strp != '{' && @strp != '\0') {
@@ -72,6 +72,12 @@ static bool isVarDef(char pointer strp) {
 		}
 		
 		if(@strp == '{') return true;
+	} else if(@strp == '[' && @(strp - 1) != ']' && @(strp - 1) != ')') {
+		while(@strp != ';' && @strp != '=' && @strp != '-' && @strp != '\0') {
+			strp++;
+		}
+		
+		if(@strp == '=' || (@strp == '-' && @(strp + 1) == '>')) return true;
 	}
 	
 	return false;
@@ -99,7 +105,7 @@ static void typeTo(char pointer*2 processed_input, size_t pointer input_size, si
 	}
 }
 
-static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[128][2][128], size_t defs_len, char locs[256][2][256], size_t locs_len) {
+static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[256][2][256], size_t defs_len, char locs[256][2][256], size_t locs_len) {
 	for(size_t i = 0; i < defs_len; i++) {
 		unsigned short def_len = strlen(defs[i][0]);
 		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (defs[i][0])[>>> def_len]) {
@@ -135,7 +141,7 @@ static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t poin
 	return 0;
 }
 
-void preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[128][2][128], size_t pointer defID) {
+void preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[256][2][256], size_t pointer defID) {
 	char buf[65536];
 	size_t lineno = 1;
 	
@@ -150,7 +156,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 	bool inStr2 = false;
 	
 	bool exporting = false;
-	bool including = false; // TMP; allows use of #include
+	bool including = false, defining = false; // TMP; allows use of #include and #define
 	
 	while(fgets(buf, 65536, input) != NULL) {
 		char pointer trimmed_buf -> buf[0];
@@ -411,6 +417,11 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				continue;
 			} else if(strcmp(skey, "include") == 0) {
 				including = true;
+			} else if(strcmp(skey, "define") == 0) {
+				defining = true;
+			} else if(strcmp(skey, "enddef") == 0) {
+				defining = false;
+				continue;
 			}
 		}
 		
@@ -448,7 +459,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				(@input_item)++;
 				trimmed_buf++;
 			} else if(!replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID)) {
-				if(!including && trimmed_buf != buf && isVarDef(trimmed_buf)) { // 'including' part is temporary; allows for use of #include
+				if(!including && !defining && trimmed_buf != buf && isVarDef(trimmed_buf)) { // 'including' & 'defining' parts are temporary; allows for use of #include and #define
 					char pointer trimmed_buf_bef = trimmed_buf - 1;
 					while(trimmed_buf_bef != buf && (@trimmed_buf_bef == ' ' || @trimmed_buf_bef == '\t')) trimmed_buf_bef--;
 					short isNum = isNumber(trimmed_buf_bef, buf);
@@ -493,9 +504,9 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 					}
 				}
 				
-				if(@trimmed_buf == '{') {
+				if(@trimmed_buf == '{' || @trimmed_buf == '(') {
 					scope++;
-				} else if(@trimmed_buf == '}') {
+				} else if(@trimmed_buf == '}' || @trimmed_buf == ')') {
 					scope--;
 				}
 				
