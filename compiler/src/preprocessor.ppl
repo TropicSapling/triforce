@@ -33,31 +33,27 @@ static bool isSpecial(char c) {
 	return false;
 }
 
-static short isNumber(char pointer strp, char buf[65536]) {
-	bool isNum = true;
-	
-	short i = 0;
-	for(; strp + i != buf && strp[i] != ' ' && !isSpecial(strp[i]); i--) {
-		if(!isdigit(strp[i])) isNum = false;
-	}
-	
-	return isNum ? 1 : i + 1;
-}
-
 static bool isReserved(const char arr[static 1][9], char pointer strp, unsigned int len) {
-	for(unsigned int i = 0; i < len; i++) {
-		bool reserved = false;
-		short s2 = 0;
-		for(short s = strlen(arr[i]) - 1; s >= 0; s--, s2--) {
-			if(strp[s2] != arr[i][s] || strp[s2] == ' ' || isSpecial(strp[s2])) {
-				reserved = false;
-				break;
-			} else {
-				reserved = true;
-			}
-		}
+	if(isdigit(strp[0])) { // Pointers
+		while(isdigit(@strp)) strp--;
+		strp--;
 		
-		if(reserved && (strp[s2] == ' ' || strp[s2] == '\t' || strp[s2] == '\n' || isSpecial(strp[s2]))) return true;
+		if(strp[0] == 'r' && strp[-1] == 'e' && strp[-2] == 't' && strp[-3] == 'n' && strp[-4] == 'i' && strp[-5] == 'o' && strp[-6] == 'p') return true;
+	} else {
+		for(unsigned int i = 0; i < len; i++) {
+			bool reserved = false;
+			unsigned short s2 = 0;
+			for(short s = strlen(arr[i]) - 1; s >= 0; s--, s2++) {
+				if(strp[-s2] != arr[i][s] || strp[-s2] == ' ' || isSpecial(strp[-s2])) {
+					reserved = false;
+					break;
+				} else {
+					reserved = true;
+				}
+			}
+			
+			if(reserved && (strp[-s2] == ' ' || strp[-s2] == '\t' || strp[-s2] == '\n' || isSpecial(strp[-s2]))) return true;
+		}
 	}
 	
 	return false;
@@ -444,12 +440,16 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 					
 					while(trimmed_buf_bef != buf && (@trimmed_buf_bef == ' ' || @trimmed_buf_bef == '\t')) trimmed_buf_bef--;
 					
-					short isNum = isNumber(trimmed_buf_bef, buf);
-					if(trimmed_buf_bef != buf && trimmed_buf_bef + isNum != buf && isNum != 1) {
-						short cbef = isNum - 1;
-						while(trimmed_buf_bef + cbef != buf && (@(trimmed_buf_bef + cbef) == ' ' || @(trimmed_buf_bef + cbef) == '\t')) cbef--;
+					unsigned short def_start = 0;
+					while(trimmed_buf_bef - def_start != buf && @(trimmed_buf_bef - def_start) != ' ' && !isSpecial(@(trimmed_buf_bef - def_start))) {
+						def_start++;
+					}
+					
+					if(trimmed_buf_bef != buf && trimmed_buf_bef - def_start != buf) {
+						unsigned short cbef = def_start + 1;
+						while(trimmed_buf_bef - cbef != buf && (@(trimmed_buf_bef - cbef) == ' ' || @(trimmed_buf_bef - cbef) == '\t')) cbef--;
 						
-						if(trimmed_buf_bef + cbef != buf && !isSpecial(@(trimmed_buf_bef + cbef)) && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 23) && !isReserved(reserved_keys, trimmed_buf_bef, 29)) {
+						if(trimmed_buf_bef - cbef != buf && isReserved(types, trimmed_buf_bef - cbef, 27) && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 27) && !isReserved(reserved_keys, trimmed_buf_bef, 29)) {
 							@input_item -= trimmed_buf - trimmed_buf_bef - 1;
 							
 							if(@trimmed_buf_bef == '$') {
@@ -460,11 +460,11 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 							} else if(exporting || scope) {
 								typeTo(processed_input, input_size, input_item, "_ppl");
 								
-								strncpy(defs[@defID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-								defs[@defID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+								strncpy(defs[@defID][0], trimmed_buf_bef - def_start, trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1);
+								defs[@defID][0][trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1] = '\0';
 								
-								strncpy(defs[@defID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-								defs[@defID][1][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+								strncpy(defs[@defID][1], trimmed_buf_bef - def_start, trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1);
+								defs[@defID][1][trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1] = '\0';
 								strcat(defs[@defID][1], "_ppl");
 								
 								(@defID)++;
@@ -474,11 +474,11 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 								char pointer path_ext = sanitize(path[1]);
 								typeTo(processed_input, input_size, input_item, path_ext);
 								
-								strncpy(locals[locID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-								locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+								strncpy(locals[locID][0], trimmed_buf_bef - def_start, trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1);
+								locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1] = '\0';
 								
-								strncpy(locals[locID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-								locals[locID][1][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
+								strncpy(locals[locID][1], trimmed_buf_bef - def_start, trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1);
+								locals[locID][1][trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1] = '\0';
 								strcat(locals[locID][1], "_ppl_");
 								strcat(locals[locID][1], path_ext);
 								
