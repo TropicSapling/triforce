@@ -38,6 +38,7 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 	(@keywords)[key] = input;
 	key++;
 	
+	bool done = false;
 	while(@input != '\0') {
 		char pointer special;
 		bool foundSpecial = false;
@@ -47,6 +48,7 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 			input++;
 		}
 		
+		bool escaping = false;
 		while((ignoring || ignoring2 || inStr || inStr2 || @input != ' ') && @input != '\0') {
 			if(!inStr && !inStr2) {
 				if(@input == '/' && @(input + 1) == '/') {
@@ -73,26 +75,28 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 					(@keywords)[key] = input + 1;
 					key++;
 				}
-			} else if(!ignoring2) {
-				if(!inStr2 && @input == '\'' && @(input - 1) != '\\') {
+			} else if(!ignoring2 && !escaping) {
+				if(!inStr2 && @input == '\'') {
 					if(inStr) {
 						inStr = false;
 						break;
 					} else {
 						inStr = true;
 					}
-				} else if(!inStr && @input == '"' && @(input - 1) != '\\') {
+				} else if(!inStr && @input == '"') {
 					if(inStr2) {
 						inStr2 = false;
 						break;
 					} else {
 						inStr2 = true;
 					}
-				}
-			}
+				} else if(@input == '\\') escaping = true;
+			} else if(escaping) escaping = false;
 			
 			input++;
 		}
+		
+		if(@input == '\0') done = true;
 		
 		if(input == (@keywords)[0] || @(input - 1) != '\0') {
 			@input = '\0';
@@ -127,6 +131,8 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 			(@keywords)[key] = special;
 			key++;
 		}
+		
+		if(done) break;
 		
 		while(@input == ' ' && @input != '\0') input++;
 		
