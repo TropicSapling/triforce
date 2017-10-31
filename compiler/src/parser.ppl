@@ -411,7 +411,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 	} else if(strcmp(keywords[i], "else") == 0 && keywords[i + 1][0] != '{') {
 		// Make sure code inside 'else' is surrounded by curly brackets (prevents some bugs with sublist comparisons)
 		
-		for(; i < key && (strcmp(keywords[i], "else") != 0 || keywords[i + 1][0] != '{'); i++) {
+		for(; i < key && strcmp(keywords[i], "else") == 0 && keywords[i + 1][0] != '{'; i++) {
 			typeToOutput("else");
 			i++;
 			
@@ -428,16 +428,18 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 				if(braces && keywords[i][0] == '}') braces--;
 			}
 			
+			i++;
+			
 			(@outputp)[pos] = '}';
 			pos++;
 		}
 		
-		typeToOutput("else");
+/*		typeToOutput("else");
 		for(i++; i < key && keywords[i][0] != '}'; i++) {
 			i = parseKey(i, keywords, outputp, status, cItem);
-		}
+		} */
 		
-		typeToOutput("}}}");
+		typeToOutput("}");
 	} else if(strcmp(keywords[i], "clang") == 0) {
 		// INLINE C
 		
