@@ -2,8 +2,8 @@
 	#define DEF_INCLUDED
 
 	extern const char pointer const unique specials;
-	extern const char types[22][8];
-	extern const char reserved_keys[29][8];
+	extern const char types[23][9];
+	extern const char reserved_keys[29][9];
 
 	extern size_t keywords_size;
 	extern size_t key;

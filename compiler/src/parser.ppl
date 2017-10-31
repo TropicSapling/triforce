@@ -52,8 +52,8 @@
 
 static char pointer file;
 
-const char types[22][8] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile"};
-const char reserved_keys[29][8] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while", "false", "true", "__args", "__argc", "__line", "__OS", "__path", "__item", "__app", "init"};
+const char types[23][9] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile", "size_t"};
+const char reserved_keys[29][9] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while", "false", "true", "__args", "__argc", "__line", "__OS", "__path", "__item", "__app", "init"};
 static size_t iterators = 0;
 static size_t bools = 0;
 
@@ -62,7 +62,7 @@ static size_t output_size = 256;
 static size_t lineno = 1;
 static size_t linecol = 1;
 
-/* static bool isReserved(const char arr[static 1][8], char pointer str, unsigned int len) {
+/* static bool isReserved(const char arr[static 1][9], char pointer str, unsigned int len) {
 	for(unsigned int i = 0; i < len; i++) {
 		if(strcmp(arr[i], str) == 0) return true;
 	}
