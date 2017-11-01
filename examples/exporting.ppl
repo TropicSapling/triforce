@@ -1,4 +1,6 @@
-#include <stdio.h>;
+#clang;
+	#include <stdio.h>
+#endc;
 
 #export;
 

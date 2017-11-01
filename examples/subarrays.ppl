@@ -1,7 +1,5 @@
 #clang;
-
-#include <stdio.h>
-
+	#include <stdio.h>
 #endc;
 
 int init(void) {

@@ -1,5 +1,7 @@
 #import <def/stddef.ppl>;
-#include <stdio.h>;
+#clang;
+	#include <stdio.h>
+#endc;
 
 #def 'abc' as '123';
 #def 'def' as '456';
