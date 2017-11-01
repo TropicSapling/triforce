@@ -428,7 +428,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				}
 			}
 			
-			if(trimmed_buf != buf && (inStr || inStr2 || (@(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\n' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1))))) {
+			if(trimmed_buf != buf && (inStr || inStr2 || @trimmed_buf == ' ' || (@(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\n' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1))))) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = @trimmed_buf;
 				
@@ -445,9 +445,11 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 						def_start++;
 					}
 					
+					def_start--;
+					
 					if(trimmed_buf_bef != buf && trimmed_buf_bef - def_start != buf) {
 						unsigned short cbef = def_start + 1;
-						while(trimmed_buf_bef - cbef != buf && (@(trimmed_buf_bef - cbef) == ' ' || @(trimmed_buf_bef - cbef) == '\t')) cbef--;
+						while(trimmed_buf_bef - cbef != buf && (@(trimmed_buf_bef - cbef) == ' ' || @(trimmed_buf_bef - cbef) == '\t')) cbef++;
 						
 						if(trimmed_buf_bef - cbef != buf && isReserved(types, trimmed_buf_bef - cbef, 27) && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 27) && !isReserved(reserved_keys, trimmed_buf_bef, 29)) {
 							@input_item -= trimmed_buf - trimmed_buf_bef - 1;
