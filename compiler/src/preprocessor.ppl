@@ -128,6 +128,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 	unsigned short ifDefs = 0;
 	
 	bool ignoring = false;
+	bool escaping = false;
 	bool inStr = false;
 	bool inStr2 = false;
 	
@@ -402,11 +403,13 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 		}
 		
 		while(@trimmed_buf != '\0') {
-			if(!inStr2 && @trimmed_buf == '\'' && @(trimmed_buf - 1) != '\\') {
-				inStr = inStr ? false : true;
-			} else if(!inStr && @trimmed_buf == '"' && @(trimmed_buf - 1) != '\\') {
-				inStr2 = inStr2 ? false : true;
-			}
+			if(!escaping) {
+				if(!inStr2 && @trimmed_buf == '\'') {
+					inStr = inStr ? false : true;
+				} else if(!inStr && @trimmed_buf == '"') {
+					inStr2 = inStr2 ? false : true;
+				} else if(@trimmed_buf == '\\') escaping = true;
+			} else escaping = false;
 			
 			if(!inStr && !inStr2 && @trimmed_buf == '/') {
 				if(@(trimmed_buf + 1) == '/') {
