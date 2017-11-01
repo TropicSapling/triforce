@@ -33,45 +33,27 @@ static bool isSpecial(char c) {
 	return false;
 }
 
-static short isNumber(char pointer strp, char buf[65536]) {
-	bool isNum = true;
-	
-	short i = 0;
-	for(; strp + i != buf && strp[i] != ' ' && !isSpecial(strp[i]); i--) {
-		if(!isdigit(strp[i])) isNum = false;
-	}
-	
-	return isNum ? 1 : i + 1;
-}
-
-static bool isReserved(const char arr[static 1][8], char pointer strp, unsigned int len) {
-	for(unsigned int i = 0; i < len; i++) {
-		bool reserved = false;
-		short s2 = 0;
-		for(short s = strlen(arr[i]) - 1; s >= 0; s--, s2--) {
-			if(strp[s2] != arr[i][s] || strp[s2] == ' ' || isSpecial(strp[s2])) {
-				reserved = false;
-				break;
-			} else {
-				reserved = true;
+static bool isReserved(const char arr[static 1][9], char pointer strp, unsigned int len) {
+	if(isdigit(strp[0])) { // Pointers
+		while(isdigit(@strp)) strp--;
+		strp--;
+		
+		if(strp[0] == 'r' && strp[-1] == 'e' && strp[-2] == 't' && strp[-3] == 'n' && strp[-4] == 'i' && strp[-5] == 'o' && strp[-6] == 'p') return true;
+	} else {
+		for(unsigned int i = 0; i < len; i++) {
+			bool reserved = false;
+			unsigned short s2 = 0;
+			for(short s = strlen(arr[i]) - 1; s >= 0; s--, s2++) {
+				if(strp[-s2] != arr[i][s] || strp[-s2] == ' ' || isSpecial(strp[-s2])) {
+					reserved = false;
+					break;
+				} else {
+					reserved = true;
+				}
 			}
+			
+			if(reserved && (strp[-s2] == ' ' || strp[-s2] == '\t' || strp[-s2] == '\n' || isSpecial(strp[-s2]))) return true;
 		}
-		
-		if(reserved && (strp[s2] == ' ' || strp[s2] == '\t' || strp[s2] == '\n' || isSpecial(strp[s2]))) return true;
-	}
-	
-	return false;
-}
-
-static bool isVarDef(char pointer strp) {
-	if(@strp == '=' || @strp == '-') return true;
-	
-	if(@strp == '(') {
-		while(@strp != ';' && @strp != '{' && @strp != '\0') {
-			strp++;
-		}
-		
-		if(@strp == '{') return true;
 	}
 	
 	return false;
@@ -99,7 +81,7 @@ static void typeTo(char pointer*2 processed_input, size_t pointer input_size, si
 	}
 }
 
-static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[128][2][128], size_t defs_len, char locs[256][2][256], size_t locs_len) {
+static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[256][2][256], size_t defs_len, char locs[256][2][256], size_t locs_len) {
 	for(size_t i = 0; i < defs_len; i++) {
 		unsigned short def_len = strlen(defs[i][0]);
 		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (defs[i][0])[>>> def_len]) {
@@ -135,7 +117,7 @@ static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t poin
 	return 0;
 }
 
-void preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[128][2][128], size_t pointer defID) {
+void preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[256][2][256], size_t pointer defID) {
 	char buf[65536];
 	size_t lineno = 1;
 	
@@ -150,11 +132,15 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 	bool inStr2 = false;
 	
 	bool exporting = false;
-	bool including = false; // TMP; allows use of #include
+	bool including = false, defining = false; // TMP; allows use of #include and #define
 	
 	while(fgets(buf, 65536, input) != NULL) {
 		char pointer trimmed_buf -> buf[0];
 		while(@trimmed_buf == '\t' || @trimmed_buf == ' ') {
+			INCR_MEM(1);
+			(@processed_input)[@input_item] = @trimmed_buf;
+			
+			(@input_item)++;
 			trimmed_buf++;
 		}
 		
@@ -168,16 +154,16 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				trimmed_buf += 2;
 			} else {
 				INCR_MEM(1);
-				(@processed_input)[@input_item] = ';';
+				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
 				continue;
 			}
 		}
 		
-		if(@trimmed_buf == '\n' || strcmp(trimmed_buf, "\r\n") == 0 || (@trimmed_buf == '/' && @(trimmed_buf + 1) == '/')) {
+		if(strcmp(trimmed_buf, "\r\n") == 0 || (@trimmed_buf == '/' && @(trimmed_buf + 1) == '/')) {
 			INCR_MEM(1);
-			(@processed_input)[@input_item] = ';';
+			(@processed_input)[@input_item] = '\n';
 			(@input_item)++;
 			
 			continue;
@@ -202,7 +188,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				}
 				
 				INCR_MEM(1);
-				(@processed_input)[@input_item] = ';';
+				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
 				continue;
@@ -238,7 +224,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				(@defID)++;
 				
 				INCR_MEM(1);
-				(@processed_input)[@input_item] = ';';
+				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
 				continue;
@@ -253,7 +239,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				}
 				
 				INCR_MEM(1);
-				(@processed_input)[@input_item] = ';';
+				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
 				if(i >= @defID) ifDefs++;
@@ -270,13 +256,13 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				}
 				
 				INCR_MEM(1);
-				(@processed_input)[@input_item] = ';';
+				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
 				continue;
 			} else if(strcmp(skey, "endif") == 0) {
 				INCR_MEM(1);
-				(@processed_input)[@input_item] = ';';
+				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
 				continue;
@@ -385,7 +371,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				fclose(lib);
 				
 				INCR_MEM(1);
-				(@processed_input)[@input_item] = ';';
+				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
 				continue;
@@ -393,7 +379,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				exporting = false;
 				
 				INCR_MEM(1);
-				(@processed_input)[@input_item] = ';';
+				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
 				continue;
@@ -401,12 +387,17 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 				exporting = true;
 				
 				INCR_MEM(1);
-				(@processed_input)[@input_item] = ';';
+				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
 				continue;
 			} else if(strcmp(skey, "include") == 0) {
 				including = true;
+			} else if(strcmp(skey, "define") == 0) {
+				defining = true;
+			} else if(strcmp(skey, "enddef") == 0) {
+				defining = false;
+				continue;
 			}
 		}
 		
@@ -418,75 +409,102 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 			}
 			
 			if(!inStr && !inStr2 && @trimmed_buf == '/') {
-				if(@(trimmed_buf + 1) == '/') break;
+				if(@(trimmed_buf + 1) == '/') {
+					INCR_MEM(1);
+					(@processed_input)[@input_item] = '\n';
+					(@input_item)++;
+					
+					break;
+				}
+				
 				if(@(trimmed_buf + 1) == '*') {
 					ignoring = true;
+					
+					INCR_MEM(1);
+					(@processed_input)[@input_item] = '\n';
+					(@input_item)++;
+					
 					break;
 				}
 			}
 			
-			if(trimmed_buf != buf && (inStr || inStr2 || (@(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\n' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1))))) {
+			if(trimmed_buf != buf && (inStr || inStr2 || @trimmed_buf == ' ' || (@(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\n' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1))))) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = @trimmed_buf;
 				
 				(@input_item)++;
 				trimmed_buf++;
 			} else if(!replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID)) {
-				if(!including && trimmed_buf != buf && isVarDef(trimmed_buf)) { // 'including' part is temporary; allows for use of #include
+				if(!including && !defining && trimmed_buf != buf) { // 'including' & 'defining' parts are temporary; allows for use of #include and #define
 					char pointer trimmed_buf_bef = trimmed_buf - 1;
-					while(trimmed_buf_bef != buf && (@trimmed_buf_bef == ' ' || @trimmed_buf_bef == '\t')) trimmed_buf_bef--;
-					short isNum = isNumber(trimmed_buf_bef, buf);
 					
-					if(trimmed_buf_bef != buf && isNum != 1 && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 22) && !isReserved(reserved_keys, trimmed_buf_bef, 29)) {
-						@input_item -= trimmed_buf - trimmed_buf_bef - 1;
+					while(trimmed_buf_bef != buf && (@trimmed_buf_bef == ' ' || @trimmed_buf_bef == '\t')) trimmed_buf_bef--;
+					
+					unsigned short def_start = 0;
+					while(trimmed_buf_bef - def_start != buf && @(trimmed_buf_bef - def_start) != ' ' && !isSpecial(@(trimmed_buf_bef - def_start))) {
+						def_start++;
+					}
+					
+					def_start--;
+					
+					if(trimmed_buf_bef != buf && trimmed_buf_bef - def_start != buf) {
+						unsigned short cbef = def_start + 1;
+						while(trimmed_buf_bef - cbef != buf && (@(trimmed_buf_bef - cbef) == ' ' || @(trimmed_buf_bef - cbef) == '\t')) cbef++;
 						
-						if(@trimmed_buf_bef == '$') {
-							(@processed_input)[@input_item - 1] = @trimmed_buf;
-							trimmed_buf++;
+						if(trimmed_buf_bef - cbef != buf && isReserved(types, trimmed_buf_bef - cbef, 27) && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 27) && !isReserved(reserved_keys, trimmed_buf_bef, 29)) {
+							@input_item -= trimmed_buf - trimmed_buf_bef - 1;
 							
-							continue;
-						} else if(exporting || scope) {
-							typeTo(processed_input, input_size, input_item, "_ppl");
-							
-							strncpy(defs[@defID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-							defs[@defID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
-							
-							strncpy(defs[@defID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-							defs[@defID][1][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
-							strcat(defs[@defID][1], "_ppl");
-							
-							(@defID)++;
-						} else {
-							typeTo(processed_input, input_size, input_item, "_ppl_");
-							
-							char pointer path_ext = sanitize(path[1]);
-							typeTo(processed_input, input_size, input_item, path_ext);
-							
-							strncpy(locals[locID][0], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-							locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
-							
-							strncpy(locals[locID][1], trimmed_buf_bef + isNum, trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1);
-							locals[locID][1][trimmed_buf_bef - (trimmed_buf_bef + isNum) + 1] = '\0';
-							strcat(locals[locID][1], "_ppl_");
-							strcat(locals[locID][1], path_ext);
-							
-							locID++;
-							
-							free(path_ext);
+							if(@trimmed_buf_bef == '$') {
+								(@processed_input)[@input_item - 1] = @trimmed_buf;
+								trimmed_buf++;
+								
+								continue;
+							} else if(exporting || scope) {
+								typeTo(processed_input, input_size, input_item, "_ppl");
+								
+								strncpy(defs[@defID][0], trimmed_buf_bef - def_start, trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1);
+								defs[@defID][0][trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1] = '\0';
+								
+								strncpy(defs[@defID][1], trimmed_buf_bef - def_start, trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1);
+								defs[@defID][1][trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1] = '\0';
+								strcat(defs[@defID][1], "_ppl");
+								
+								(@defID)++;
+							} else {
+								typeTo(processed_input, input_size, input_item, "_ppl_");
+								
+								char pointer path_ext = sanitize(path[1]);
+								typeTo(processed_input, input_size, input_item, path_ext);
+								
+								strncpy(locals[locID][0], trimmed_buf_bef - def_start, trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1);
+								locals[locID][0][trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1] = '\0';
+								
+								strncpy(locals[locID][1], trimmed_buf_bef - def_start, trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1);
+								locals[locID][1][trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1] = '\0';
+								strcat(locals[locID][1], "_ppl_");
+								strcat(locals[locID][1], path_ext);
+								
+								locID++;
+								
+								free(path_ext);
+							}
 						}
 					}
 				}
 				
-				if(@trimmed_buf == '{') {
+				if(@trimmed_buf == '{' || @trimmed_buf == '(') {
 					scope++;
-				} else if(@trimmed_buf == '}') {
+				} else if(@trimmed_buf == '}' || @trimmed_buf == ')') {
 					scope--;
 				}
 				
-				INCR_MEM(1);
-				(@processed_input)[@input_item] = @trimmed_buf;
+				if(@trimmed_buf != '\r') {
+					INCR_MEM(1);
+					
+					(@processed_input)[@input_item] = @trimmed_buf;
+					(@input_item)++;
+				}
 				
-				(@input_item)++;
 				trimmed_buf++;
 			}
 		}

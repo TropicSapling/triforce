@@ -2,8 +2,8 @@
 	#define DEF_INCLUDED
 
 	extern const char pointer const unique specials;
-	extern const char types[22][8];
-	extern const char reserved_keys[29][8];
+	extern const char types[27][9];
+	extern const char reserved_keys[29][9];
 
 	extern size_t keywords_size;
 	extern size_t key;
@@ -29,7 +29,7 @@
 	void printErr(struct ErrInfo Error, unsigned short errType);
 	void safe_realloc(void pointer*2 ptr, size_t size);
 
-	void preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[128][2][128], size_t pointer defID);
+	void preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[256][2][256], size_t pointer defID);
 
 	void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 pointers);
 	

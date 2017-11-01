@@ -103,7 +103,7 @@ int main(int argc, char pointer argv[]) {
 	
 	///////////////// PREPROCESS INPUT /////////////////
 	
-	char defs[128][2][128];
+	char defs[256][2][256];
 	size_t defID = 0;
 	
 	size_t processed_input_size = 256;
