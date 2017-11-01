@@ -109,7 +109,7 @@ int main(int argc, char pointer argv[]) {
 	size_t processed_input_size = 256;
 	size_t input_item = 0;
 	char pointer processed_input = malloc(processed_input_size);
-	preprocess(input, ->processed_input, ->processed_input_size, ->input_item, argv, defs, ->defID);
+	size_t extra_lines = preprocess(input, ->processed_input, ->processed_input_size, ->input_item, argv, defs, ->defID);
 	
 	fclose(input);
 	
@@ -126,7 +126,7 @@ int main(int argc, char pointer argv[]) {
 	
 	/////////////////// START PARSING //////////////////
 	
-	char pointer parsed_output = parse(keywords, argv[1]);
+	char pointer parsed_output = parse(keywords, argv[1], extra_lines);
 	
 	free(processed_input);
 	

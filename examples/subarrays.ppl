@@ -1,4 +1,8 @@
-#include <stdio.h>;
+#clang;
+
+#include <stdio.h>
+
+#endc;
 
 int init(void) {
 	const char const arr[] -> 'test123';

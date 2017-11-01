@@ -24,6 +24,7 @@ static bool inStr = false;
 static bool inStr2 = false;
 static bool ignoring = false;
 static bool ignoring2 = false;
+static bool ignoring3 = false; // TMP; allows for use of C directives
 
 static bool isSpecial(char c) {
 	for(unsigned int i = 0; specials[i] != '\0'; i++) {
@@ -49,49 +50,67 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 		}
 		
 		bool escaping = false;
-		while((ignoring || ignoring2 || inStr || inStr2 || @input != ' ') && @input != '\0') {
-			if(!inStr && !inStr2) {
-				if(@input == '/' && @(input + 1) == '/') {
-					ignoring2 = true;
-				} else if(@input == '/' && @(input + 1) == '*') {
-					ignoring = true;
-				} else if(@input == '\n' || @input == '\t' || (!ignoring && !ignoring2 && isSpecial(@input))) {
-					special = calloc(2, 1);
-					special[0] = @input;
-					foundSpecial = true;
-					if(@input == '\n') ignoring2 = false;
+		while((ignoring || ignoring2 || ignoring3 || inStr || inStr2 || @input != ' ') && @input != '\0') {
+			if(ignoring3) {
+				if(strncmp(input, "#endc;", 6) == 0) {
+					ignoring3 = false;
+					
+					@input = '\0';
+					input += 5;
 					
 					break;
 				}
-			}
-			
-			if(ignoring) {
-				if(@input == '*' && @(input + 1) == '/') {
-					ignoring = false;
-					input++;
-					
-					INCR_MEM(1);
-					
-					(@keywords)[key] = input + 1;
-					key++;
+			} else {
+				if(!inStr && !inStr2) {
+					if(@input == '/' && @(input + 1) == '/') {
+						ignoring2 = true;
+					} else if(@input == '/' && @(input + 1) == '*') {
+						ignoring = true;
+					} else if(@input == '\n' || @input == '\t' || (!ignoring && !ignoring2 && isSpecial(@input))) {
+						special = calloc(2, 1);
+						special[0] = @input;
+						foundSpecial = true;
+						if(@input == '\n') ignoring2 = false;
+						
+						break;
+					} else if(strncmp(input, "#clang;", 7) == 0) {
+						ignoring3 = true;
+						
+						@input = '\0';
+						input += 6;
+						
+						break;
+					}
 				}
-			} else if(!ignoring2 && !escaping) {
-				if(!inStr2 && @input == '\'') {
-					if(inStr) {
-						inStr = false;
-						break;
-					} else {
-						inStr = true;
+				
+				if(ignoring) {
+					if(@input == '*' && @(input + 1) == '/') {
+						ignoring = false;
+						input++;
+						
+						INCR_MEM(1);
+						
+						(@keywords)[key] = input + 1;
+						key++;
 					}
-				} else if(!inStr && @input == '"') {
-					if(inStr2) {
-						inStr2 = false;
-						break;
-					} else {
-						inStr2 = true;
-					}
-				} else if(@input == '\\') escaping = true;
-			} else if(escaping) escaping = false;
+				} else if(!ignoring2 && !escaping) {
+					if(!inStr2 && @input == '\'') {
+						if(inStr) {
+							inStr = false;
+							break;
+						} else {
+							inStr = true;
+						}
+					} else if(!inStr && @input == '"') {
+						if(inStr2) {
+							inStr2 = false;
+							break;
+						} else {
+							inStr2 = true;
+						}
+					} else if(@input == '\\') escaping = true;
+				} else if(escaping) escaping = false;
+			}
 			
 			input++;
 		}
