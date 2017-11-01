@@ -246,7 +246,7 @@ static unsigned int typeSublistEndPos(char pointer*2 keywords, char pointer*2 ou
 static unsigned int typeStr(char pointer*2 keywords, char pointer*2 outputp, unsigned int i) {
 	unsigned int c = 1;
 	for(; keywords[i][c] != '\0'; c++) {
-		INCR_MEM(3);
+		INCR_MEM(2);
 		
 		(@outputp)[pos] = '\'';
 		pos++;
@@ -261,6 +261,7 @@ static unsigned int typeStr(char pointer*2 keywords, char pointer*2 outputp, uns
 			c++;
 		}
 		
+		INCR_MEM(1);
 		(@outputp)[pos] = '\'';
 		pos++;
 		if(keywords[i][c + 1] != '\0') {
@@ -369,7 +370,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 		// STRINGS (without null termination)
 		
 		if(keywords[i][2] == '\0' || (keywords[i][1] == '\\' && keywords[i][3] == '\0')) {
-			INCR_MEM(3);
+			INCR_MEM(2);
 			
 			(@outputp)[pos] = '\'';
 			pos++;
@@ -383,16 +384,17 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 				pos++;
 			}
 			
+			INCR_MEM(1);
 			(@outputp)[pos] = '\'';
 			pos++;
 		} else {
-			INCR_MEM(2);
-			
+			INCR_MEM(1);
 			(@outputp)[pos] = '{';
 			pos++;
 			
 			typeStr(keywords, outputp, i);
 			
+			INCR_MEM(1);
 			(@outputp)[pos] = '}';
 			pos++;
 		}
@@ -411,12 +413,12 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 	} else if(strcmp(keywords[i], "else") == 0 && keywords[i + 1][0] != '{') {
 		// Make sure code inside 'else' is surrounded by curly brackets (prevents some bugs with sublist comparisons)
 		
-		for(; i < key && strcmp(keywords[i], "else") == 0 && keywords[i + 1][0] != '{'; i++) {
+		unsigned short elses = 0;
+		for(; i < key && strcmp(keywords[i], "else") == 0 && keywords[i + 1][0] != '{'; i++, elses++) {
 			typeToOutput("else");
 			i++;
 			
-			INCR_MEM(2);
-			
+			INCR_MEM(1);
 			(@outputp)[pos] = '{';
 			pos++;
 			
@@ -428,18 +430,33 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 				if(braces && keywords[i][0] == '}') braces--;
 			}
 			
-			i++;
-			
+			INCR_MEM(1);
 			(@outputp)[pos] = '}';
 			pos++;
 		}
 		
-/*		typeToOutput("else");
-		for(i++; i < key && keywords[i][0] != '}'; i++) {
-			i = parseKey(i, keywords, outputp, status, cItem);
-		} */
+		if(strcmp(keywords[i], "else") == 0) {
+			typeToOutput("else");
+			i++;
+			
+			unsigned short braces = 0;
+			for(; i < key && (keywords[i][0] != '}' || braces > 1); i++) {
+				i = parseKey(i, keywords, outputp, status, cItem);
+				
+				if(keywords[i][0] == '{') braces++;
+				if(braces && keywords[i][0] == '}') braces--;
+			}
+			
+			INCR_MEM(1);
+			(@outputp)[pos] = '}';
+			pos++;
+		}
 		
-		typeToOutput("}");
+		for(; elses > 0; elses--) {
+			INCR_MEM(1);
+			(@outputp)[pos] = '}';
+			pos++;
+		}
 	} else if(strcmp(keywords[i], "clang") == 0) {
 		// INLINE C
 		
@@ -520,8 +537,6 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 							} else if((@outputp)[pos] == '\n') lineno--;
 						}
 						
-						INCR_MEM(5);
-						
 						// Create first iterator
 						typeToOutput("size_t ");
 						
@@ -529,6 +544,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						addID(it_name + 7, &iterators);
 						
 						typeToOutput(it_name);
+						INCR_MEM(1);
 						(@outputp)[pos] = '=';
 						pos++;
 						
@@ -545,6 +561,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						addID(it2_name + 7, &iterators);
 						
 						typeToOutput(it2_name);
+						INCR_MEM(1);
 						(@outputp)[pos] = '=';
 						pos++;
 						
@@ -624,6 +641,8 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						
 						stat = 0;
 						
+						INCR_MEM(2);
+						
 						(@outputp)[pos] = '[';
 						pos++;
 						typeToOutput(it_name);
@@ -653,6 +672,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 							}
 						}
 						
+						INCR_MEM(1);
 						(@outputp)[pos] = '[';
 						pos++;
 						typeToOutput(it2_name);
@@ -712,8 +732,6 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 		}
 	} else {
 		if(strcmp(keywords[i], "#include") == 0) { // TMP; makes it possible to include C functions without the need of 'import clib'
-			INCR_MEM(2);
-			
 			if(pos > 0 && (@outputp)[pos - 1] != '\n') {
 				INCR_MEM(1);
 				(@outputp)[pos] = '\n';
@@ -723,6 +741,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 			typeToOutput(keywords[i]);
 			i++;
 			
+			INCR_MEM(1);
 			(@outputp)[pos] = ' ';
 			pos++;
 			
@@ -744,6 +763,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 			}
 			
 			if(keywords[i + 1][0] != '\n') {
+				INCR_MEM(1);
 				(@outputp)[pos] = '\n';
 				pos++;
 			}
