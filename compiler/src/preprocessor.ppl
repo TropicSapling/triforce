@@ -33,7 +33,7 @@ static bool isSpecial(char c) {
 	return false;
 }
 
-static bool isReserved(const char arr[static 1][9], char pointer strp, unsigned int len) {
+static bool isReserved(const char arr[static 1][9], char pointer strp, unsigned int len, char pointer SOL) {
 	if(isdigit(strp[0])) { // Pointers
 		while(isdigit(@strp)) strp--;
 		strp--;
@@ -43,7 +43,7 @@ static bool isReserved(const char arr[static 1][9], char pointer strp, unsigned 
 		for(unsigned int i = 0; i < len; i++) {
 			bool reserved = false;
 			unsigned short s2 = 0;
-			for(short s = strlen(arr[i]) - 1; s >= 0; s--, s2++) {
+			for(short s = strlen(arr[i]) - 1; s >= 0 && strp - s2 + 1 != SOL; s--, s2++) {
 				if(strp[-s2] != arr[i][s] || strp[-s2] == ' ' || isSpecial(strp[-s2])) {
 					reserved = false;
 					break;
@@ -52,7 +52,7 @@ static bool isReserved(const char arr[static 1][9], char pointer strp, unsigned 
 				}
 			}
 			
-			if(reserved && (strp[-s2] == ' ' || strp[-s2] == '\t' || strp[-s2] == '\n' || isSpecial(strp[-s2]))) return true;
+			if(reserved && strp - s2 + 1 != SOL) return true;
 		}
 	}
 	
@@ -84,7 +84,7 @@ static void typeTo(char pointer*2 processed_input, size_t pointer input_size, si
 static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[256][2][256], size_t defs_len, char locs[256][2][256], size_t locs_len) {
 	for(size_t i = 0; i < defs_len; i++) {
 		unsigned short def_len = strlen(defs[i][0]);
-		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (defs[i][0])[>>> def_len]) {
+		if((@str)[>>> until (@str)[__item] == '\0' || isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (defs[i][0])[>>> def_len]) {
 			for(unsigned short s = 0, defr_len = strlen(defs[i][1]); s < defr_len; s++) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = defs[i][1][s];
@@ -100,7 +100,7 @@ static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t poin
 	
 	for(size_t i = 0; i < locs_len; i++) {
 		unsigned short loc_len = strlen(locs[i][0]);
-		if((@str)[>>> until isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (locs[i][0])[>>> loc_len]) {
+		if((@str)[>>> until (@str)[__item] == '\0' || isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (locs[i][0])[>>> loc_len]) {
 			for(unsigned short s = 0, locr_len = strlen(locs[i][1]); s < locr_len; s++) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = locs[i][1][s];
@@ -451,7 +451,7 @@ void preprocess(FILE pointer input, char pointer*2 processed_input, size_t point
 						unsigned short cbef = def_start + 1;
 						while(trimmed_buf_bef - cbef != buf && (@(trimmed_buf_bef - cbef) == ' ' || @(trimmed_buf_bef - cbef) == '\t')) cbef++;
 						
-						if(trimmed_buf_bef - cbef != buf && isReserved(types, trimmed_buf_bef - cbef, 27) && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 27) && !isReserved(reserved_keys, trimmed_buf_bef, 29)) {
+						if(trimmed_buf_bef - cbef != buf && isReserved(types, trimmed_buf_bef - cbef, 27, buf) && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 27, buf) && !isReserved(reserved_keys, trimmed_buf_bef, 29, buf)) {
 							@input_item -= trimmed_buf - trimmed_buf_bef - 1;
 							
 							if(@trimmed_buf_bef == '$') {
