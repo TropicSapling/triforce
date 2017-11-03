@@ -33,7 +33,7 @@ void replace(pointer listp, toReplace, replacer) {
 		i++;
 	} else while(i < listp<length>) {
 		if(listp[i >>> i + toReplace<length>] == toReplace) {
-			move(->(listp[i]), replacer<length> - toReplace<length>);
+			move(->listp[i], replacer<length> - toReplace<length>);
 			listp[i >>> i + replacer<length> - toReplace<length>] = replacer;
 			i += toReplace<length> - 1;
 		}
@@ -41,9 +41,26 @@ void replace(pointer listp, toReplace, replacer) {
 		i++;
 	}
 }
+#endexp;
+
+void fastCopy(pointer dest, pointer src, unsigned int c) {
+	unsigned int i = 0;
+	while(c--) {
+		dest[i] = src[i];
+		i++;
+	}
+}
+
+#export;
+void copy(pointer dest, pointer src, unsigned int c) {
+	pointer tmp = ->dest[>>> c];
+	
+	fastCopy(tmp, src, c);
+	fastCopy(dest, tmp, c);
+}
 
 void move(pointer listp, int steps) {
-	steps < 0 ? listp[>>> listp<length> - steps] = listp[__item + steps] : listp[steps >>> listp<length> + steps] = listp[__item - steps];
+	copy(listp, listp - steps, (listp - steps)<length>);
 }
 
 void rotBits(pointer bitsp, int rots, int size) {
