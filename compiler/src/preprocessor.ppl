@@ -125,6 +125,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 	char locals[256][2][256];
 	size_t locID = 0;
 	
+	unsigned short scoped_exts[128] = {0};
 	unsigned short scope = 0;
 	unsigned short ifDefs = 0;
 	
@@ -478,6 +479,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 								strcat(defs[@defID][1], "_ppl");
 								
 								(@defID)++;
+								if(scope) scoped_exts[scope - 1]++;
 							} else {
 								typeTo(processed_input, input_size, input_item, "_ppl_");
 								
@@ -502,7 +504,14 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				
 				if(@trimmed_buf == '{' || @trimmed_buf == '(') {
 					scope++;
-				} else if(@trimmed_buf == '}' || @trimmed_buf == ')') {
+				} else if(@trimmed_buf == '}') {
+					scope--;
+					
+					while(scoped_exts[scope] > 0) {
+						(@defID)--;
+						scoped_exts[scope]--;
+					}
+				} else if(@trimmed_buf == ')') {
 					scope--;
 				}
 				
