@@ -1,2 +1,2 @@
-#import <std.ppl>
+#import <std.ppl>;
 print("Hello world!\n");

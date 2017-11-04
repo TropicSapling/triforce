@@ -731,45 +731,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 			typeToOutput(keywords[i]);
 		}
 	} else {
-		if(strcmp(keywords[i], "#include") == 0) { // TMP; makes it possible to include C functions without the need of 'import clib'
-			if(pos > 0 && (@outputp)[pos - 1] != '\n') {
-				INCR_MEM(1);
-				(@outputp)[pos] = '\n';
-				pos++;
-			}
-			
-			typeToOutput(keywords[i]);
-			i++;
-			
-			INCR_MEM(1);
-			(@outputp)[pos] = ' ';
-			pos++;
-			
-			bool addQM = keywords[i][0] == '"';
-			
-			while(i < key && keywords[i][0] != ';') {
-				typeToOutput(keywords[i]);
-				i++;
-			}
-			
-			if(i >= key) {
-				printError("Missing semicolon at end of line.", 0, i);
-			}
-			
-			if(addQM) {
-				INCR_MEM(1);
-				(@outputp)[pos] = '"';
-				pos++;
-			}
-			
-			if(keywords[i + 1][0] != '\n') {
-				INCR_MEM(1);
-				(@outputp)[pos] = '\n';
-				pos++;
-			}
-		} else {
-			typeToOutput(keywords[i]);
-		}
+		typeToOutput(keywords[i]);
 		
 		if(keywords[i][0] != '\n' && keywords[i][0] != '\t' && strstr(specials, keywords[i]) == NULL && strstr(specials, keywords[i + 1]) == NULL) {
 			INCR_MEM(1);
@@ -789,9 +751,11 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 	return i;
 }
 
-char pointer parse(char pointer*2 keywords, char pointer filename) {
+char pointer parse(char pointer*2 keywords, char pointer filename, size_t extra_lines) {
 	char pointer output = malloc(output_size);
+	
 	file = filename;
+	lineno += extra_lines;
 	
 	unsigned short status = 0;
 	
