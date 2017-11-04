@@ -436,7 +436,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				}
 			}
 			
-			if(trimmed_buf != buf && (inStr || inStr2 || ignoring2 || @trimmed_buf == ' ' || (@(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\n' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1))))) {
+			if(ignoring2 || (trimmed_buf != buf && (inStr || inStr2 || @trimmed_buf == ' ' || (@(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\n' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1)))))) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = @trimmed_buf;
 				
