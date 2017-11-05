@@ -34,17 +34,19 @@ static bool isSpecial(char c) {
 }
 
 static bool isReserved(const char arr[static 1][9], char pointer strp, unsigned int len, char pointer SOL) {
-	if(isdigit(strp[0])) { // Pointers
+	if(isdigit(strp[0])) { // Pointers, arrays & lists
 		while(isdigit(@strp)) strp--;
 		strp--;
 		
 		if(strp[0] == 'r' && strp[-1] == 'e' && strp[-2] == 't' && strp[-3] == 'n' && strp[-4] == 'i' && strp[-5] == 'o' && strp[-6] == 'p') return true;
+		if(strp[0] == 'y' && strp[-1] == 'a' && strp[-2] == 'r' && strp[-3] == 'r' && strp[-4] == 'a') return true;
+		if(strp[0] == 't' && strp[-1] == 's' && strp[-2] == 'i' && strp[-3] == 'l') return true;
 	} else {
 		for(unsigned int i = 0; i < len; i++) {
 			bool reserved = false;
 			unsigned short s2 = 0;
 			for(short s = strlen(arr[i]) - 1; s >= 0 && strp - s2 + 1 != SOL; s--, s2++) {
-				if(strp[-s2] != arr[i][s] || strp[-s2] == ' ' || isSpecial(strp[-s2])) {
+				if(strp[-s2] != arr[i][s] || strp[-s2] == ' ' || strp[-s2] == '\t' || isSpecial(strp[-s2])) {
 					reserved = false;
 					break;
 				} else {
@@ -54,6 +56,9 @@ static bool isReserved(const char arr[static 1][9], char pointer strp, unsigned 
 			
 			if(reserved && strp - s2 + 1 != SOL) return true;
 		}
+		
+		while(@strp != ' ' && @strp != '\t' && !isSpecial(@strp) && strp != SOL) strp--;
+		if(@strp == '#') return true;
 	}
 	
 	return false;
@@ -437,13 +442,13 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				}
 			}
 			
-			if(ignoring2 || (trimmed_buf != buf && (inStr || inStr2 || @trimmed_buf == ' ' || (@(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\n' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1)))))) {
+			if(trimmed_buf != buf && (inStr || inStr2 || @trimmed_buf == ' ' || (@(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\n' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1))))) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = @trimmed_buf;
 				
 				(@input_item)++;
 				trimmed_buf++;
-			} else if(replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID)) {
+			} else if(replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID) || ignoring2) {
 				if(@trimmed_buf == '{' || @trimmed_buf == '(') {
 					scope++;
 				} else if(@trimmed_buf == '}' && scope) {
@@ -530,15 +535,23 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				
 				if(@trimmed_buf == '{' || @trimmed_buf == '(') {
 					scope++;
-				} else if(@trimmed_buf == '}' && scope) {
-					scope--;
+				} else if(@trimmed_buf == '}') {
+					if(scope) {
+						scope--;
+					} else {
+						printError("Missing starting brace '" WHITE "{" RESET "' before end brace '" WHITE "}" RESET "'.");
+					}
 					
 					while(scoped_exts[scope] > 0) {
 						(@defID)--;
 						scoped_exts[scope]--;
 					}
-				} else if(@trimmed_buf == ')' && scope) {
-					scope--;
+				} else if(@trimmed_buf == ')') {
+					if(scope) {
+						scope--;
+					} else {
+						printError("Missing starting parenthesis '" WHITE "(" RESET "' before end parenthesis '" WHITE ")" RESET "'.");
+					}
 					
 					if(@(trimmed_buf + 1) == ';') while(scoped_exts[scope] > 0) {
 						(@defID)--;
