@@ -443,7 +443,33 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				
 				(@input_item)++;
 				trimmed_buf++;
-			} else if(!replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID)) {
+			} else if(replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID)) {
+				if(@trimmed_buf == '{' || @trimmed_buf == '(') {
+					scope++;
+				} else if(@trimmed_buf == '}' && scope) {
+					scope--;
+					
+					while(scoped_exts[scope] > 0) {
+						(@defID)--;
+						scoped_exts[scope]--;
+					}
+				} else if(@trimmed_buf == ')' && scope) {
+					scope--;
+					
+					if(@(trimmed_buf + 1) == ';') while(scoped_exts[scope] > 0) {
+						(@defID)--;
+						scoped_exts[scope]--;
+					}
+				}
+				
+				if(@trimmed_buf != '\r') {
+					INCR_MEM(1);
+					(@processed_input)[@input_item] = @trimmed_buf;
+					(@input_item)++;
+				}
+				
+				trimmed_buf++;
+			} else {
 				if(trimmed_buf != buf) {
 					char pointer trimmed_buf_bef = trimmed_buf - 1;
 					
@@ -504,14 +530,14 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				
 				if(@trimmed_buf == '{' || @trimmed_buf == '(') {
 					scope++;
-				} else if(@trimmed_buf == '}') {
+				} else if(@trimmed_buf == '}' && scope) {
 					scope--;
 					
 					while(scoped_exts[scope] > 0) {
 						(@defID)--;
 						scoped_exts[scope]--;
 					}
-				} else if(@trimmed_buf == ')') {
+				} else if(@trimmed_buf == ')' && scope) {
 					scope--;
 					
 					if(@(trimmed_buf + 1) == ';') while(scoped_exts[scope] > 0) {
