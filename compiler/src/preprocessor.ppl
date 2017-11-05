@@ -513,6 +513,11 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					}
 				} else if(@trimmed_buf == ')') {
 					scope--;
+					
+					if(@(trimmed_buf + 1) == ';') while(scoped_exts[scope] > 0) {
+						(@defID)--;
+						scoped_exts[scope]--;
+					}
 				}
 				
 				if(@trimmed_buf != '\r') {
