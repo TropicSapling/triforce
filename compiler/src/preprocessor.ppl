@@ -448,7 +448,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				
 				(@input_item)++;
 				trimmed_buf++;
-			} else if(replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID) || ignoring2) {
+			} else if(replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID)) {
 				if(@trimmed_buf == '{' || @trimmed_buf == '(') {
 					scope++;
 				} else if(@trimmed_buf == '}' && scope) {
@@ -476,25 +476,28 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				trimmed_buf++;
 			} else {
 				if(trimmed_buf != buf) {
-					char pointer trimmed_buf_bef = trimmed_buf - 1;
+					char pointer trimmed_buf_bef = trimmed_buf - 1; // End of variable name
 					
 					while(trimmed_buf_bef != buf && (@trimmed_buf_bef == ' ' || @trimmed_buf_bef == '\t')) trimmed_buf_bef--;
 					
-					unsigned short def_start = 0;
+					unsigned short def_start = 0; // Start of variable name
 					while(trimmed_buf_bef - def_start != buf && @(trimmed_buf_bef - def_start) != ' ' && !isSpecial(@(trimmed_buf_bef - def_start))) {
 						def_start++;
 					}
 					
 					def_start--;
 					
-					if(trimmed_buf_bef != buf && trimmed_buf_bef - def_start != buf) {
-						unsigned short cbef = def_start + 1;
+					if(trimmed_buf_bef != buf && trimmed_buf_bef - def_start != buf && (!ignoring2 || @trimmed_buf_bef == '$')) {
+						unsigned short cbef = def_start + 1; // End of data type
 						while(trimmed_buf_bef - cbef != buf && (@(trimmed_buf_bef - cbef) == ' ' || @(trimmed_buf_bef - cbef) == '\t')) cbef++;
 						
-						if(trimmed_buf_bef - cbef != buf && isReserved(types, trimmed_buf_bef - cbef, 27, buf) && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 27, buf) && !isReserved(reserved_keys, trimmed_buf_bef, 29, buf)) {
+						if(trimmed_buf_bef - cbef != buf && (isReserved(types, trimmed_buf_bef - cbef, 27, buf) || @trimmed_buf_bef == '$') && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 27, buf) && !isReserved(reserved_keys, trimmed_buf_bef, 29, buf)) {
 							@input_item -= trimmed_buf - trimmed_buf_bef - 1;
 							
-							if(exporting || scope) {
+							if(@trimmed_buf_bef == '$') {
+								(@input_item)--;
+								typeTo(processed_input, input_size, input_item, "_ppl");
+							} else if(exporting || scope) {
 								typeTo(processed_input, input_size, input_item, "_ppl");
 								
 								strncpy(defs[@defID][0], trimmed_buf_bef - def_start, trimmed_buf_bef - (trimmed_buf_bef - def_start) + 1);
