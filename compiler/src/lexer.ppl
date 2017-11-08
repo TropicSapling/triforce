@@ -155,7 +155,7 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 		
 		while(@input == ' ' && @input != '\0') input++;
 		
-		if(@input != '\n' && @input != '\t' && !isSpecial(@input)) {
+		if(ignoring3 || (@input != '\n' && @input != '\t' && !isSpecial(@input))) {
 			INCR_MEM(1);
 			
 			(@keywords)[key] = input;

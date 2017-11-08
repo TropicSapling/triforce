@@ -33,18 +33,28 @@ static bool isSpecial(char c) {
 	return false;
 }
 
+static bool isNumber(char pointer strp, char pointer SOL) {
+	for(unsigned short i = 0; strp[-i] != ' ' && strp[-i] != '\t' && !isSpecial(strp[-i]) && strp - i != SOL; i++) {
+		if(!isdigit(strp[-i])) return false;
+	}
+	
+	return true;
+}
+
 static bool isReserved(const char arr[static 1][9], char pointer strp, unsigned int len, char pointer SOL) {
-	if(isdigit(strp[0])) { // Pointers
+	if(isdigit(strp[0])) { // Pointers, arrays & lists
 		while(isdigit(@strp)) strp--;
 		strp--;
 		
 		if(strp[0] == 'r' && strp[-1] == 'e' && strp[-2] == 't' && strp[-3] == 'n' && strp[-4] == 'i' && strp[-5] == 'o' && strp[-6] == 'p') return true;
+		if(strp[0] == 'y' && strp[-1] == 'a' && strp[-2] == 'r' && strp[-3] == 'r' && strp[-4] == 'a') return true;
+		if(strp[0] == 't' && strp[-1] == 's' && strp[-2] == 'i' && strp[-3] == 'l') return true;
 	} else {
 		for(unsigned int i = 0; i < len; i++) {
 			bool reserved = false;
 			unsigned short s2 = 0;
 			for(short s = strlen(arr[i]) - 1; s >= 0 && strp - s2 + 1 != SOL; s--, s2++) {
-				if(strp[-s2] != arr[i][s] || strp[-s2] == ' ' || isSpecial(strp[-s2])) {
+				if(strp[-s2] != arr[i][s] || strp[-s2] == ' ' || strp[-s2] == '\t' || isSpecial(strp[-s2])) {
 					reserved = false;
 					break;
 				} else {
@@ -54,6 +64,9 @@ static bool isReserved(const char arr[static 1][9], char pointer strp, unsigned 
 			
 			if(reserved && strp - s2 + 1 != SOL) return true;
 		}
+		
+		while(@strp != ' ' && @strp != '\t' && !isSpecial(@strp) && strp != SOL) strp--;
+		if(@strp == '#') return true;
 	}
 	
 	return false;
@@ -125,6 +138,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 	char locals[256][2][256];
 	size_t locID = 0;
 	
+	unsigned short scoped_exts[128] = {0};
 	unsigned short scope = 0;
 	unsigned short ifDefs = 0;
 	
@@ -161,6 +175,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
+				lineno++;
 				continue;
 			}
 		}
@@ -170,6 +185,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 			(@processed_input)[@input_item] = '\n';
 			(@input_item)++;
 			
+			lineno++;
 			continue;
 		}
 		
@@ -195,6 +211,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
+				lineno++;
 				continue;
 			}
 			
@@ -232,6 +249,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "ifdef") == 0) {
 					size_t i = 0;
@@ -248,6 +266,8 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@input_item)++;
 					
 					if(i >= @defID) ifDefs++;
+					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "ifndef") == 0) {
 					size_t i = 0;
@@ -264,12 +284,14 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "endif") == 0) {
 					INCR_MEM(1);
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "import") == 0) {
 					char full_path[256];
@@ -379,6 +401,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "endexp") == 0) {
 					exporting = false;
@@ -387,6 +410,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "export") == 0) {
 					exporting = true;
@@ -395,6 +419,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				}
 			}
@@ -404,6 +429,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				ignoring2 = true;
 			} else if(strcmp(skey, "endc") == 0) {
 				ignoring2 = false;
+				extra_lines--;
 			}
 		}
 		
@@ -436,37 +462,61 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				}
 			}
 			
-			if(ignoring2 || (trimmed_buf != buf && (inStr || inStr2 || @trimmed_buf == ' ' || (@(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\n' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1)))))) {
+			if(trimmed_buf != buf && (inStr || inStr2 || @trimmed_buf == ' ' || (@(trimmed_buf - 1) != ' ' && @(trimmed_buf - 1) != '\t' && @(trimmed_buf - 1) != '\n' && !isSpecial(@trimmed_buf) && !isSpecial(@(trimmed_buf - 1))))) {
 				INCR_MEM(1);
 				(@processed_input)[@input_item] = @trimmed_buf;
 				
 				(@input_item)++;
 				trimmed_buf++;
-			} else if(!replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID)) {
+			} else if(replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID)) {
+				if(@trimmed_buf == '{' || @trimmed_buf == '(') {
+					scope++;
+				} else if(@trimmed_buf == '}' && scope) {
+					scope--;
+					
+					while(scoped_exts[scope] > 0) {
+						(@defID)--;
+						scoped_exts[scope]--;
+					}
+				} else if(@trimmed_buf == ')' && scope) {
+					scope--;
+					
+					if(@(trimmed_buf + 1) == ';') while(scoped_exts[scope] > 0) {
+						(@defID)--;
+						scoped_exts[scope]--;
+					}
+				}
+				
+				if(@trimmed_buf != '\r') {
+					INCR_MEM(1);
+					(@processed_input)[@input_item] = @trimmed_buf;
+					(@input_item)++;
+				}
+				
+				trimmed_buf++;
+			} else {
 				if(trimmed_buf != buf) {
-					char pointer trimmed_buf_bef = trimmed_buf - 1;
+					char pointer trimmed_buf_bef = trimmed_buf - 1; // End of variable name
 					
 					while(trimmed_buf_bef != buf && (@trimmed_buf_bef == ' ' || @trimmed_buf_bef == '\t')) trimmed_buf_bef--;
 					
-					unsigned short def_start = 0;
+					unsigned short def_start = 0; // Start of variable name
 					while(trimmed_buf_bef - def_start != buf && @(trimmed_buf_bef - def_start) != ' ' && !isSpecial(@(trimmed_buf_bef - def_start))) {
 						def_start++;
 					}
 					
 					def_start--;
 					
-					if(trimmed_buf_bef != buf && trimmed_buf_bef - def_start != buf) {
-						unsigned short cbef = def_start + 1;
+					if(trimmed_buf_bef != buf && trimmed_buf_bef - def_start != buf && (!ignoring2 || @trimmed_buf_bef == '$')) {
+						unsigned short cbef = def_start + 1; // End of data type
 						while(trimmed_buf_bef - cbef != buf && (@(trimmed_buf_bef - cbef) == ' ' || @(trimmed_buf_bef - cbef) == '\t')) cbef++;
 						
-						if(trimmed_buf_bef - cbef != buf && isReserved(types, trimmed_buf_bef - cbef, 27, buf) && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 27, buf) && !isReserved(reserved_keys, trimmed_buf_bef, 29, buf)) {
+						if(trimmed_buf_bef - cbef != buf && (isReserved(types, trimmed_buf_bef - cbef, 27, buf) || @trimmed_buf_bef == '$') && @trimmed_buf_bef != '\'' && @trimmed_buf_bef != '"' && !isNumber(trimmed_buf_bef, buf) && !isSpecial(@trimmed_buf_bef) && !isReserved(types, trimmed_buf_bef, 27, buf) && !isReserved(reserved_keys, trimmed_buf_bef, 29, buf)) {
 							@input_item -= trimmed_buf - trimmed_buf_bef - 1;
 							
 							if(@trimmed_buf_bef == '$') {
-								(@processed_input)[@input_item - 1] = @trimmed_buf;
-								trimmed_buf++;
-								
-								continue;
+								(@input_item)--;
+								typeTo(processed_input, input_size, input_item, "_ppl");
 							} else if(exporting || scope) {
 								typeTo(processed_input, input_size, input_item, "_ppl");
 								
@@ -478,6 +528,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 								strcat(defs[@defID][1], "_ppl");
 								
 								(@defID)++;
+								if(scope) scoped_exts[scope - 1]++;
 							} else {
 								typeTo(processed_input, input_size, input_item, "_ppl_");
 								
@@ -502,8 +553,28 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				
 				if(@trimmed_buf == '{' || @trimmed_buf == '(') {
 					scope++;
-				} else if(@trimmed_buf == '}' || @trimmed_buf == ')') {
-					scope--;
+				} else if(@trimmed_buf == '}') {
+					if(scope) {
+						scope--;
+					} else {
+						printError("Missing starting brace '" WHITE "{" RESET "' before end brace '" WHITE "}" RESET "'.");
+					}
+					
+					while(scoped_exts[scope] > 0) {
+						(@defID)--;
+						scoped_exts[scope]--;
+					}
+				} else if(@trimmed_buf == ')') {
+					if(scope) {
+						scope--;
+					} else {
+						printError("Missing starting parenthesis '" WHITE "(" RESET "' before end parenthesis '" WHITE ")" RESET "'.");
+					}
+					
+					if(@(trimmed_buf + 1) == ';') while(scoped_exts[scope] > 0) {
+						(@defID)--;
+						scoped_exts[scope]--;
+					}
 				}
 				
 				if(@trimmed_buf != '\r') {
