@@ -175,6 +175,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
+				lineno++;
 				continue;
 			}
 		}
@@ -184,6 +185,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 			(@processed_input)[@input_item] = '\n';
 			(@input_item)++;
 			
+			lineno++;
 			continue;
 		}
 		
@@ -209,6 +211,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				(@processed_input)[@input_item] = '\n';
 				(@input_item)++;
 				
+				lineno++;
 				continue;
 			}
 			
@@ -246,6 +249,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "ifdef") == 0) {
 					size_t i = 0;
@@ -262,6 +266,8 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@input_item)++;
 					
 					if(i >= @defID) ifDefs++;
+					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "ifndef") == 0) {
 					size_t i = 0;
@@ -278,12 +284,14 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "endif") == 0) {
 					INCR_MEM(1);
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "import") == 0) {
 					char full_path[256];
@@ -393,6 +401,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "endexp") == 0) {
 					exporting = false;
@@ -401,6 +410,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				} else if(strcmp(skey, "export") == 0) {
 					exporting = true;
@@ -409,6 +419,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					(@processed_input)[@input_item] = '\n';
 					(@input_item)++;
 					
+					lineno++;
 					continue;
 				}
 			}
@@ -418,6 +429,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 				ignoring2 = true;
 			} else if(strcmp(skey, "endc") == 0) {
 				ignoring2 = false;
+				extra_lines--;
 			}
 		}
 		
