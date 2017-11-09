@@ -41,5 +41,11 @@ int init(void) {
 	
 	printf("Current line: %d\n", __line);
 	
+	repeat(16) {
+		printf("Repeat without condition. ");
+	}
+	
+	printf("\n");
+	
 	return 0;
 }

@@ -104,6 +104,7 @@ P+ is for...
 
 #### Loops
 * `while(<condition>) { <code> }`
+* `repeat(<n times>) { <code> }`
 * `break`
 * `continue`
 
@@ -215,7 +216,6 @@ comment> */
 
 #### Loops
 * `foreach <item> in <list> { <code> }`
-* `repeat(<n times>) { <code> }`
 
 --------
 

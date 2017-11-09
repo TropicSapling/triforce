@@ -341,6 +341,25 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 				pos++;
 			}
 		}
+	} else if(strcmp(keywords[i], "repeat") == 0) {
+		i += 2;
+		
+		unsigned short count = numberify(keywords[i]);
+		
+		i += 3;
+		
+		unsigned short s = 0;
+		for(unsigned short r = 0; r < count; r++) {
+			s = 0;
+			for(unsigned short braces = 0; i + s < key && (keywords[i + s + 1][0] != '}' || braces > 0); s++) {
+				s = parseKey(i + s, keywords, outputp, status, cItem) - i;
+				
+				if(keywords[i + s][0] == '{') braces++;
+				if(braces && keywords[i + s + 1][0] == '}') braces--;
+			}
+		}
+		
+		i += s + 1;
 	} else if(keywords[i][0] == '-' && keywords[i + 1][0] == '>') {
 		// POINTER CREATION
 		
