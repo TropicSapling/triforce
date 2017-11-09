@@ -341,7 +341,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 				pos++;
 			}
 		}
-	} else if(strcmp(keywords[i], "repeat") == 0) {
+	} else if(strcmp(keywords[i], "repeat") == 0) { // Compile-time loops; runs faster on -O0 & is faster to write. Runs equally fast as a normal loop if using 'clang -O2'
 		i += 2;
 		
 		unsigned short count = numberify(keywords[i]);
