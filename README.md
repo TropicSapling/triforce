@@ -85,6 +85,7 @@ P+ is for...
 * `str[>>>] == "Test"`
 * `str[start >>> stop]`
 * `str == address`
+* `str[when <condition> >>> until <condition>]`
 
 --------
 
@@ -104,6 +105,7 @@ P+ is for...
 
 #### Loops
 * `while(<condition>) { <code> }`
+* `repeat(<n times>) { <code> }`
 * `break`
 * `continue`
 
@@ -111,6 +113,9 @@ P+ is for...
 
 #### Defining
 * `#def '<code>' as '<code>'` (will support regex in the future using `#{<regex>}`, as well as `%{(property|properties|var)}`)
+* `#ifdef <const>`
+* `#ifndef <const>`
+* `#endif`
 
 --------
 
@@ -200,7 +205,6 @@ comment> */
 * `pointer new_subarr -> {1, 2, 3}`
 * `str[<<<] == "tseT"`
 * `str[stop <<< start]`
-* `str[when <condition> >>> until <condition>]`
 
 --------
 
@@ -215,7 +219,6 @@ comment> */
 
 #### Loops
 * `foreach <item> in <list> { <code> }`
-* `repeat(<n times>) { <code> }`
 
 --------
 
@@ -229,11 +232,8 @@ comment> */
 
 #### Defining
 * `#if <condition>`
-* `#ifdef <const>`
-* `#ifndef <const>`
 * `#else`
 * `#elif <condition>`
-* `#endif`
 
 --------
 

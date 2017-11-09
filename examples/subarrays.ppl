@@ -39,7 +39,13 @@ int init(void) {
 		puts("true");
 	} */
 	
-	printf("Current line: %d\n", __line);
+	printf("Current line: %d\n\n", __line);
+	
+	repeat(16) {
+		printf("Repeat without condition. ");
+	}
+	
+	printf("\n\nCurrent line: %d\n", __line);
 	
 	return 0;
 }
