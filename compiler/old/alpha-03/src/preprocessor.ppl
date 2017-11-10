@@ -1,24 +1,22 @@
-#clang;
-	
-	#include <stdlib.h>
-	#include <string.h>
-	#include <stdbool.h>
-	#include <stdio.h>
-	#include <errno.h>
-	#include <ctype.h>
+#include <stdlib.h>;
+#include <string.h>;
+#include <stdbool.h>;
+#include <stdio.h>;
+#include <errno.h>;
+#include <ctype.h>;
 
-	#define INCR_MEM(size) do { \
-		if(*input_item$ + (size) > *input_size$) { \
-			*input_size$ *= 2; \
-			safe_realloc((void**) processed_input$, *input_size$); \
-		} \
-	} while(0)
+#include "def.h";
 
-	#define printError(message) do { \
-		printErr((struct ErrInfo) {.msg = message, .filename = path[1], .lineno = lineno}, 0); \
-	} while(0)
-	
-#endc;
+#define INCR_MEM(size) do { \
+	if(@input_item + (size) > @input_size) { \
+		@input_size *= 2; \
+		safe_realloc((void pointer*2) processed_input, @input_size); \
+	} \
+} while(0)
+
+#define printError(message) do { \
+	printErr((struct ErrInfo) {.msg = message, .filename = path[1], .lineno = lineno}, 0); \
+} while(0)
 
 static char pointer strdup(const char pointer str) {
 	size_t len = strlen(str) + 1;
@@ -132,7 +130,6 @@ static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t poin
 	return 0;
 }
 
-#export;
 size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[256][2][256], size_t pointer defID) {
 	char buf[65536];
 	size_t lineno = 1;
@@ -528,6 +525,8 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 							if(@trimmed_buf_bef == '$') {
 								(@input_item)--;
 								typeTo(processed_input, input_size, input_item, "_ppl");
+							} else if(@(trimmed_buf_bef - def_start) == '$') {
+								(@processed_input)[@input_item - def_start - 1] = ' ';
 							} else if(exporting || scope) {
 								typeTo(processed_input, input_size, input_item, "_ppl");
 								
@@ -607,4 +606,3 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 	
 	return extra_lines;
 }
-#endexp;

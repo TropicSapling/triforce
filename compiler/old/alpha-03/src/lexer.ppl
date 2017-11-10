@@ -1,26 +1,24 @@
-#clang;
-	
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <errno.h>
-	#include <string.h>
-	#include <stdbool.h>
+#include <stdio.h>;
+#include <stdlib.h>;
+#include <errno.h>;
+#include <string.h>;
+#include <stdbool.h>;
 
-	#define INCR_MEM(size) do { \
-		if(key + (size) > keywords_size / sizeof(char*)) { \
-			keywords_size *= 2; \
-			safe_realloc((void**) keywords, keywords_size); \
-		} \
-	} while(0)
+#include "def.h";
 
-	#define INCR_MEM2(size) do { \
-		if(pkey + (size) > pointers_size / sizeof(char pointer)) { \
-			pointers_size *= 2; \
-			safe_realloc((void**) pointers, pointers_size); \
-		} \
-	} while(0)
-	
-#endc;
+#define INCR_MEM(size) do { \
+	if(key + (size) > keywords_size / sizeof(char pointer)) { \
+		keywords_size *= 2; \
+		safe_realloc((void pointer*2) keywords, keywords_size); \
+	} \
+} while(0)
+
+#define INCR_MEM2(size) do { \
+	if(pkey + (size) > pointers_size / sizeof(char pointer)) { \
+		pointers_size *= 2; \
+		safe_realloc((void pointer*2) pointers, pointers_size); \
+	} \
+} while(0)
 
 static bool inStr = false;
 static bool inStr2 = false;
@@ -36,7 +34,6 @@ static bool isSpecial(char c) {
 	return false;
 }
 
-#export;
 void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 pointers) {
 	INCR_MEM(1);
 	(@keywords)[key] = input;
@@ -166,4 +163,3 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 		}
 	}
 }
-#endexp;

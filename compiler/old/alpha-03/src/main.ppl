@@ -1,25 +1,12 @@
-#clang;
-	
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <errno.h>
-	#include <string.h>
-	#include <stdbool.h>
-	#include <sys/stat.h>
-	
-#endc;
+#include <stdio.h>;
+#include <stdlib.h>;
+#include <errno.h>;
+#include <string.h>;
+#include <stdbool.h>;
+#include <sys/stat.h>;
 
-#export;
+#include "def.h";
 
-#def 'RED' as '\"\x1B[31m\"';
-#def 'GREEN' as '\"\x1B[32m\"';
-#def 'YELLOW' as '\"\x1B[33m\"';
-#def 'BLUE' as '\"\x1B[34m\"';
-#def 'WHITE' as '\"\x1B[37\;1m\"';
-#def 'RESET' as '\"\x1B[0m\"';
-
-const char types[27][9] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile", "size_t", "short", "long", "float", "double"}; // Last items in list are C data types and will be removed in the final version
-const char reserved_keys[29][9] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while", "false", "true", "__args", "__argc", "__line", "__OS", "__path", "__item", "__app", "init"};
 const char pointer const unique specials -> ";,[]{}()?><=+-*/%!&|^~@\\.:";
 
 size_t keywords_size = sizeof(char pointer) * 32;
@@ -27,19 +14,6 @@ size_t pointers_size = sizeof(char pointer) * 32;
 size_t key = 0;
 size_t pkey = 0;
 size_t pos = 0;
-
-struct ErrInfo {
-	char pointer $msg;
-	char pointer $msg2;
-	
-	char pointer $filename;
-	size_t $lineno;
-	size_t $linecol;
-	
-	char pointer $data;
-	char pointer*2 $data2;
-	unsigned int $i;
-};
 
 void printErr(struct ErrInfo Error, unsigned short errType) {
 	puts("----------------------------------------------------------------");
@@ -87,11 +61,6 @@ void safe_realloc(void pointer*2 ptr, size_t size) {
 		@ptr = res;
 	}
 }
-#endexp;
-
-#import 'preprocessor.ppl';
-#import 'lexer.ppl';
-#import 'parser.ppl';
 
 int main(int argc, char pointer argv[]) {
 	
