@@ -186,7 +186,7 @@ int main(int argc, char pointer argv[]) {
 	for(size_t i = 0; i < pos; i++) {
 		fprintf(output, "%c", parsed_output[i]);
 		
-		if(debugging) printf("[DEBUG] Printing output... %.2Lf%%\r", (((long double) i + 1) / key) * 100);
+		if(debugging) printf("[DEBUG] Printing output... %.2Lf%%\r", (((long double) i + 1) / pos) * 100);
 	}
 	
 	fclose(output);
