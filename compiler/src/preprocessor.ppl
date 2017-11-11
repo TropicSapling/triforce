@@ -15,7 +15,7 @@
 	} while(0)
 
 	#define printError(message) do { \
-		printErr((struct ErrInfo) {.msg = message, .filename = path[1], .lineno = lineno}, 0); \
+		printErr((struct ErrInfo) {.msg = message, .filename = path$[1], .lineno = lineno$}, 0); \
 	} while(0)
 	
 #endc;
