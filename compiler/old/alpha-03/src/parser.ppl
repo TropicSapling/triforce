@@ -477,6 +477,9 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 			(@outputp)[pos] = '}';
 			pos++;
 		}
+		
+		i++;
+		i = parseKey(i, keywords, outputp, status, cItem);
 	} else if(strcmp(keywords[i], "clang") == 0) {
 		// INLINE C
 		

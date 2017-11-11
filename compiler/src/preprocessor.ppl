@@ -389,7 +389,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 							strcat(full_path, new_lib_path);
 						}
 					}
-						
+					
 					FILE pointer lib = fopen(full_path, "r");
 					if(lib == NULL) {
 						perror("ERROR");
@@ -450,8 +450,12 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					inStr = inStr ? false : true;
 				} else if(!inStr && @trimmed_buf == '"') {
 					inStr2 = inStr2 ? false : true;
-				} else if(@trimmed_buf == '\\') escaping = true;
-			} else escaping = false;
+				} else if(@trimmed_buf == '\\') {
+					escaping = true;
+				}
+			} else {
+				escaping = false;
+			}
 			
 			if(!inStr && !inStr2 && @trimmed_buf == '/') {
 				if(@(trimmed_buf + 1) == '/') {

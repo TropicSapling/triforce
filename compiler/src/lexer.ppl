@@ -9,14 +9,14 @@
 	#define INCR_MEM(size) do { \
 		if(key + (size) > keywords_size / sizeof(char*)) { \
 			keywords_size *= 2; \
-			safe_realloc((void**) keywords, keywords_size); \
+			safe_realloc((void**) keywords$, keywords_size); \
 		} \
 	} while(0)
 
 	#define INCR_MEM2(size) do { \
-		if(pkey + (size) > pointers_size / sizeof(char pointer)) { \
+		if(pkey + (size) > pointers_size / sizeof(char*)) { \
 			pointers_size *= 2; \
-			safe_realloc((void**) pointers, pointers_size); \
+			safe_realloc((void**) pointers$, pointers_size); \
 		} \
 	} while(0)
 	
@@ -111,8 +111,12 @@ void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 point
 						} else {
 							inStr2 = true;
 						}
-					} else if(@input == '\\') escaping = true;
-				} else if(escaping) escaping = false;
+					} else if(@input == '\\') {
+						escaping = true;
+					}
+				} else if(escaping) {
+					escaping = false;
+				}
 			}
 			
 			input++;

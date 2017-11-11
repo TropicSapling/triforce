@@ -34,21 +34,6 @@
 	#ifndef THIS_OS
 		#define THIS_OS "\"UNDEFINED\""
 	#endif
-
-	#define INCR_MEM(size) do { \
-		if(pos + (size) > output_size) { \
-			output_size *= 2; \
-			safe_realloc((void**) outputp, output_size); \
-		} \
-	} while(0)
-
-	#define typeToOutput(str) do { \
-		typeTo(outputp, str); \
-	} while(0)
-
-	#define printError(message, errType, i_pos) do { \
-		printErr((struct ErrInfo) {.msg = message, .msg2 = keywords[i_pos], .filename = file, .lineno = lineno, .linecol = linecol, .data2 = keywords, .i = i_pos}, errType); \
-	} while(0)
 	
 #endc;
 
@@ -78,6 +63,21 @@ static bool isNumber(char pointer str) {
 	return true;
 } */
 
+#clang;
+	
+	#define INCR_MEM(size) do { \
+		if(pos + (size) > output_size) { \
+			output_size *= 2; \
+			safe_realloc((void**) outputp$, output_size); \
+		} \
+	} while(0)
+
+	#define printError(message, errType, i_pos) do { \
+		printErr((struct ErrInfo) {.msg = message, .msg2 = keywords$[i_pos], .filename = file, .lineno = lineno, .linecol = linecol, .data2 = keywords$, .i = i_pos}, errType); \
+	} while(0)
+	
+#endc;
+
 static unsigned int typeTo(char pointer*2 outputp, char pointer str) {
 	unsigned int i = 0;
 	for(; str[i] != '\0'; i++) {
@@ -88,6 +88,14 @@ static unsigned int typeTo(char pointer*2 outputp, char pointer str) {
 	
 	return i;
 }
+
+#clang;
+	
+	#define typeToOutput(str) do { \
+		typeTo(outputp$, str); \
+	} while(0)
+	
+#endc;
 
 static void addID(char pointer str_end, size_t pointer IDs) {
 	char pointer chars -> "abcdefghijklmnopqrstuvwxyz";
@@ -771,6 +779,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 	return i;
 }
 
+#export;
 static char pointer parse(char pointer*2 keywords, char pointer filename, size_t extra_lines) {
 	char pointer output = malloc(output_size);
 	
@@ -791,3 +800,4 @@ static char pointer parse(char pointer*2 keywords, char pointer filename, size_t
 	
 	return output;
 }
+#endexp;

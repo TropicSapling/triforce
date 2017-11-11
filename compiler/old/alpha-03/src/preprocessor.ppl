@@ -95,35 +95,37 @@ static void typeTo(char pointer*2 processed_input, size_t pointer input_size, si
 }
 
 static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[256][2][256], size_t defs_len, char locs[256][2][256], size_t locs_len) {
-	for(size_t i = 0; i < defs_len; i++) {
-		unsigned short def_len = strlen(defs[i][0]);
-		if((@str)[>>> until (@str)[__item] == '\0' || isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (defs[i][0])[>>> def_len]) {
-			for(unsigned short s = 0, defr_len = strlen(defs[i][1]); s < defr_len; s++) {
-				INCR_MEM(1);
-				(@processed_input)[@input_item] = defs[i][1][s];
+	if((@str)[-1] != '.') {
+		for(size_t i = 0; i < defs_len; i++) {
+			unsigned short def_len = strlen(defs[i][0]);
+			if((@str)[>>> until (@str)[__item] == '\0' || isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (defs[i][0])[>>> def_len]) {
+				for(unsigned short s = 0, defr_len = strlen(defs[i][1]); s < defr_len; s++) {
+					INCR_MEM(1);
+					(@processed_input)[@input_item] = defs[i][1][s];
+					
+					(@input_item)++;
+				}
 				
-				(@input_item)++;
+				@str += def_len;
+				
+				return 1;
 			}
-			
-			@str += def_len;
-			
-			return 1;
 		}
-	}
-	
-	for(size_t i = 0; i < locs_len; i++) {
-		unsigned short loc_len = strlen(locs[i][0]);
-		if((@str)[>>> until (@str)[__item] == '\0' || isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (locs[i][0])[>>> loc_len]) {
-			for(unsigned short s = 0, locr_len = strlen(locs[i][1]); s < locr_len; s++) {
-				INCR_MEM(1);
-				(@processed_input)[@input_item] = locs[i][1][s];
+		
+		for(size_t i = 0; i < locs_len; i++) {
+			unsigned short loc_len = strlen(locs[i][0]);
+			if((@str)[>>> until (@str)[__item] == '\0' || isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (locs[i][0])[>>> loc_len]) {
+				for(unsigned short s = 0, locr_len = strlen(locs[i][1]); s < locr_len; s++) {
+					INCR_MEM(1);
+					(@processed_input)[@input_item] = locs[i][1][s];
+					
+					(@input_item)++;
+				}
 				
-				(@input_item)++;
+				@str += loc_len;
+				
+				return 1;
 			}
-			
-			@str += loc_len;
-			
-			return 1;
 		}
 	}
 	
