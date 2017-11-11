@@ -2,7 +2,7 @@
 
 set -e
 
-./old/alpha-03/bin/ppc.out src/main.ppl bin/main.c
+./old/alpha-03/bin/ppc.out src/main.ppl bin/main.c -d
 
 gcc -std=c11 -g bin/main.c -o bin/ppc.out
 
