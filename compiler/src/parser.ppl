@@ -302,6 +302,7 @@ static unsigned short numberify(char pointer str) {
 }
 
 static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 outputp, unsigned short pointer status, char pointer cItem) {
+	
 	if(strcmp(keywords[i], "false") == 0) {
 		INCR_MEM(1);
 		
@@ -562,7 +563,9 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 								pos -= 2;
 							} else if((@outputp)[pos] == '"') {
 								inStr = true;
-							} else if((@outputp)[pos] == '\n') lineno--;
+							} else if((@outputp)[pos] == '\n') {
+								lineno--;
+							}
 						}
 						
 						// Create first iterator
@@ -780,24 +783,24 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 }
 
 #export;
-static char pointer parse(char pointer*2 keywords, char pointer filename, size_t extra_lines) {
-	char pointer output = malloc(output_size);
-	
-	file = filename;
-	lineno += extra_lines;
-	
-	unsigned short status = 0;
-	
-	for(size_t i = 0; i < key; i++) {
-		i = parseKey(i, keywords, ->output, ->status, NULL);
+	static char pointer parse(char pointer*2 keywords, char pointer filename, size_t extra_lines) {
+		char pointer output = malloc(output_size);
+		
+		file = filename;
+		lineno += extra_lines;
+		
+		unsigned short status = 0;
+		
+		for(size_t i = 0; i < key; i++) {
+			i = parseKey(i, keywords, ->output, ->status, NULL);
+		}
+		
+		if(pos + 1 > output_size) {
+			output_size *= 2;
+			safe_realloc((void pointer*2) output, output_size);
+		}
+		output[pos] = '\0';
+		
+		return output;
 	}
-	
-	if(pos + 1 > output_size) {
-		output_size *= 2;
-		safe_realloc((void pointer*2) output, output_size);
-	}
-	output[pos] = '\0';
-	
-	return output;
-}
 #endexp;

@@ -28,146 +28,138 @@ static bool ignoring = false;
 static bool ignoring2 = false;
 static bool ignoring3 = false; // TMP; allows for use of C directives
 
-static bool isSpecial(char c) {
-	for(unsigned int i = 0; specials[i] != '\0'; i++) {
-		if(c == specials[i]) return true;
-	}
-	
-	return false;
-}
-
 #export;
-void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 pointers) {
-	INCR_MEM(1);
-	(@keywords)[key] = input;
-	key++;
-	
-	bool done = false;
-	while(@input != '\0') {
-		char pointer special;
-		bool foundSpecial = false;
+	void lex_parse(char pointer input, char pointer*3 keywords, char pointer*3 pointers) {
+		INCR_MEM(1);
+		(@keywords)[key] = input;
+		key++;
 		
-		if(ignoring) {
-			@input = '\0';
-			input++;
-		}
-		
-		bool escaping = false;
-		while((ignoring || ignoring2 || ignoring3 || inStr || inStr2 || @input != ' ') && @input != '\0') {
-			if(ignoring3) {
-				if(strncmp(input, "#endc;", 6) == 0) {
-					ignoring3 = false;
-					
-					@input = '\0';
-					input += 5;
-					
-					break;
-				}
-			} else {
-				if(!inStr && !inStr2) {
-					if(@input == '/' && @(input + 1) == '/') {
-						ignoring2 = true;
-					} else if(@input == '/' && @(input + 1) == '*') {
-						ignoring = true;
-					} else if(@input == '\n' || @input == '\t' || (!ignoring && !ignoring2 && isSpecial(@input))) {
-						special = calloc(2, 1);
-						special[0] = @input;
-						foundSpecial = true;
-						if(@input == '\n') ignoring2 = false;
-						
-						break;
-					} else if(strncmp(input, "#clang;", 7) == 0) {
-						ignoring3 = true;
+		bool done = false;
+		while(@input != '\0') {
+			char pointer special;
+			bool foundSpecial = false;
+			
+			if(ignoring) {
+				@input = '\0';
+				input++;
+			}
+			
+			bool escaping = false;
+			while((ignoring || ignoring2 || ignoring3 || inStr || inStr2 || @input != ' ') && @input != '\0') {
+				if(ignoring3) {
+					if(strncmp(input, "#endc;", 6) == 0) {
+						ignoring3 = false;
 						
 						@input = '\0';
-						input += 6;
+						input += 5;
 						
 						break;
+					}
+				} else {
+					if(!inStr && !inStr2) {
+						if(@input == '/' && @(input + 1) == '/') {
+							ignoring2 = true;
+						} else if(@input == '/' && @(input + 1) == '*') {
+							ignoring = true;
+						} else if(@input == '\n' || @input == '\t' || (!ignoring && !ignoring2 && isSpecial(@input))) {
+							special = calloc(2, 1);
+							special[0] = @input;
+							foundSpecial = true;
+							if(@input == '\n') ignoring2 = false;
+							
+							break;
+						} else if(strncmp(input, "#clang;", 7) == 0) {
+							ignoring3 = true;
+							
+							@input = '\0';
+							input += 6;
+							
+							break;
+						}
+					}
+					
+					if(ignoring) {
+						if(@input == '*' && @(input + 1) == '/') {
+							ignoring = false;
+							input++;
+							
+							INCR_MEM(1);
+							
+							(@keywords)[key] = input + 1;
+							key++;
+						}
+					} else if(!ignoring2 && !escaping) {
+						if(!inStr2 && @input == '\'') {
+							if(inStr) {
+								inStr = false;
+								break;
+							} else {
+								inStr = true;
+							}
+						} else if(!inStr && @input == '"') {
+							if(inStr2) {
+								inStr2 = false;
+								break;
+							} else {
+								inStr2 = true;
+							}
+						} else if(@input == '\\') {
+							escaping = true;
+						}
+					} else if(escaping) {
+						escaping = false;
 					}
 				}
 				
-				if(ignoring) {
-					if(@input == '*' && @(input + 1) == '/') {
-						ignoring = false;
-						input++;
-						
-						INCR_MEM(1);
-						
-						(@keywords)[key] = input + 1;
-						key++;
-					}
-				} else if(!ignoring2 && !escaping) {
-					if(!inStr2 && @input == '\'') {
-						if(inStr) {
-							inStr = false;
-							break;
-						} else {
-							inStr = true;
-						}
-					} else if(!inStr && @input == '"') {
-						if(inStr2) {
-							inStr2 = false;
-							break;
-						} else {
-							inStr2 = true;
-						}
-					} else if(@input == '\\') {
-						escaping = true;
-					}
-				} else if(escaping) {
-					escaping = false;
-				}
+				input++;
+			}
+			
+			if(@input == '\0') done = true;
+			
+			if(input == (@keywords)[0] || @(input - 1) != '\0') {
+				@input = '\0';
 			}
 			
 			input++;
-		}
-		
-		if(@input == '\0') done = true;
-		
-		if(input == (@keywords)[0] || @(input - 1) != '\0') {
-			@input = '\0';
-		}
-		
-		input++;
-		
-		if(foundSpecial) {
-/*			if((special[0] == '>' || special[0] == '<' || special[0] == '=' || special[0] == '+' || special[0] == '-' || special[0] == '*' || special[0] == '/' || special[0] == '%') && (@keywords)[key - 1][strlen((@keywords)[key - 1]) - 1] != ')') {
-				char pointer extra_special = malloc(2);
-				extra_special[0] = '(';
-				extra_special[1] = '\0';
+			
+			if(foundSpecial) {
+	/*			if((special[0] == '>' || special[0] == '<' || special[0] == '=' || special[0] == '+' || special[0] == '-' || special[0] == '*' || special[0] == '/' || special[0] == '%') && (@keywords)[key - 1][strlen((@keywords)[key - 1]) - 1] != ')') {
+					char pointer extra_special = malloc(2);
+					extra_special[0] = '(';
+					extra_special[1] = '\0';
+					
+					INCR_MEM(1);
+					INCR_MEM2(1);
+					
+					(@keywords)[key] = (@keywords)[@key - 1];
+					(@keywords)[key - 1] = extra_special;
+					key++;
+					
+					(@pointers)[pkey] = extra_special;
+					pkey++;
+					// WIP
+				} */
 				
 				INCR_MEM(1);
 				INCR_MEM2(1);
 				
-				(@keywords)[key] = (@keywords)[@key - 1];
-				(@keywords)[key - 1] = extra_special;
-				key++;
-				
-				(@pointers)[pkey] = extra_special;
+				(@pointers)[pkey] = special; // This is used to mark where memory was allocated for 'special'
 				pkey++;
-				// WIP
-			} */
+				
+				(@keywords)[key] = special;
+				key++;
+			}
 			
-			INCR_MEM(1);
-			INCR_MEM2(1);
+			if(done) break;
 			
-			(@pointers)[pkey] = special; // This is used to mark where memory was allocated for 'special'
-			pkey++;
+			while(@input == ' ' && @input != '\0') input++;
 			
-			(@keywords)[key] = special;
-			key++;
-		}
-		
-		if(done) break;
-		
-		while(@input == ' ' && @input != '\0') input++;
-		
-		if(ignoring3 || (@input != '\n' && @input != '\t' && !isSpecial(@input))) {
-			INCR_MEM(1);
-			
-			(@keywords)[key] = input;
-			key++;
+			if(ignoring3 || (@input != '\n' && @input != '\t' && !isSpecial(@input))) {
+				INCR_MEM(1);
+				
+				(@keywords)[key] = input;
+				key++;
+			}
 		}
 	}
-}
 #endexp;

@@ -10,83 +10,84 @@
 #endc;
 
 #export;
+	
+	#def 'RED' as '\"\x1B[31m\"';
+	#def 'GREEN' as '\"\x1B[32m\"';
+	#def 'YELLOW' as '\"\x1B[33m\"';
+	#def 'BLUE' as '\"\x1B[34m\"';
+	#def 'WHITE' as '\"\x1B[37\;1m\"';
+	#def 'RESET' as '\"\x1B[0m\"';
 
-#def 'RED' as '\"\x1B[31m\"';
-#def 'GREEN' as '\"\x1B[32m\"';
-#def 'YELLOW' as '\"\x1B[33m\"';
-#def 'BLUE' as '\"\x1B[34m\"';
-#def 'WHITE' as '\"\x1B[37\;1m\"';
-#def 'RESET' as '\"\x1B[0m\"';
+	const char types[27][9] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile", "size_t", "short", "long", "float", "double"}; // Last items in list are C data types and will be removed in the final version
+	const char reserved_keys[29][9] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while", "false", "true", "__args", "__argc", "__line", "__OS", "__path", "__item", "__app", "init"};
+	const char pointer const unique specials -> ";,[]{}()?><=+-*/%!&|^~@\\.:";
 
-const char types[27][9] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile", "size_t", "short", "long", "float", "double"}; // Last items in list are C data types and will be removed in the final version
-const char reserved_keys[29][9] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while", "false", "true", "__args", "__argc", "__line", "__OS", "__path", "__item", "__app", "init"};
-const char pointer const unique specials -> ";,[]{}()?><=+-*/%!&|^~@\\.:";
+	size_t keywords_size = sizeof(char pointer) * 32;
+	size_t pointers_size = sizeof(char pointer) * 32;
+	size_t key = 0;
+	size_t pkey = 0;
+	size_t pos = 0;
 
-size_t keywords_size = sizeof(char pointer) * 32;
-size_t pointers_size = sizeof(char pointer) * 32;
-size_t key = 0;
-size_t pkey = 0;
-size_t pos = 0;
+	struct ErrInfo {
+		char pointer $msg;
+		char pointer $msg2;
+		
+		char pointer $filename;
+		size_t $lineno;
+		size_t $linecol;
+		
+		char pointer $data;
+		char pointer*2 $data2;
+		unsigned int $i;
+	};
 
-struct ErrInfo {
-	char pointer $msg;
-	char pointer $msg2;
-	
-	char pointer $filename;
-	size_t $lineno;
-	size_t $linecol;
-	
-	char pointer $data;
-	char pointer*2 $data2;
-	unsigned int $i;
-};
-
-void printErr(struct ErrInfo Error, unsigned short errType) {
-	puts("----------------------------------------------------------------");
-	
-	if(Error.linecol == 0) {
-		printf(WHITE "%s:%zu: ", Error.filename, Error.lineno);
-	} else {
-		printf(WHITE "%s:%zu:%zu: ", Error.filename, Error.lineno, Error.linecol);
-	}
-	
-	if(errType == 0) {
-		printf(RED "Error:");
-	} else {
-		printf(YELLOW "Warning:");
-	}
-	
-	printf(RESET " %s\n", Error.msg);
-	
-	if(Error.data != NULL) {
-		if(Error.data[Error.i] == '\0') {
-			printf("	...%c%c%c%c%c%c " RED "%s" RESET "\n", Error.data[Error.i - 6], Error.data[Error.i - 5], Error.data[Error.i - 4], Error.data[Error.i - 3], Error.data[Error.i - 2], Error.data[Error.i - 1], Error.msg2);
+	void printErr(struct ErrInfo Error, unsigned short errType) {
+		puts("----------------------------------------------------------------");
+		
+		if(Error.linecol == 0) {
+			printf(WHITE "%s:%zu: ", Error.filename, Error.lineno);
 		} else {
-			printf("	...%c%c%c " RED "%s" RESET " %c%c%c...\n", Error.data[Error.i - 3], Error.data[Error.i - 2], Error.data[Error.i - 1], Error.msg2, Error.data[Error.i + 1], Error.data[Error.i + 2], Error.data[Error.i + 3]);
+			printf(WHITE "%s:%zu:%zu: ", Error.filename, Error.lineno, Error.linecol);
 		}
-	} else if(Error.data2 != NULL) {
-		if(Error.data2[Error.i] == '\0') {
-			printf("	...%s %s %s %s %s %s " RED "%s" RESET "\n", Error.data2[Error.i - 6], Error.data2[Error.i - 5], Error.data2[Error.i - 4], Error.data2[Error.i - 3], Error.data2[Error.i - 2], Error.data2[Error.i - 1], Error.msg2);
+		
+		if(errType == 0) {
+			printf(RED "Error:");
 		} else {
-			printf("	...%s %s %s " RED "%s" RESET " %s %s %s...\n", Error.data2[Error.i - 3], Error.data2[Error.i - 2], Error.data2[Error.i - 1], Error.msg2, Error.data2[Error.i + 1], Error.data2[Error.i + 2], Error.data2[Error.i + 3]);
+			printf(YELLOW "Warning:");
+		}
+		
+		printf(RESET " %s\n", Error.msg);
+		
+		if(Error.data != NULL) {
+			if(Error.data[Error.i] == '\0') {
+				printf("	...%c%c%c%c%c%c " RED "%s" RESET "\n", Error.data[Error.i - 6], Error.data[Error.i - 5], Error.data[Error.i - 4], Error.data[Error.i - 3], Error.data[Error.i - 2], Error.data[Error.i - 1], Error.msg2);
+			} else {
+				printf("	...%c%c%c " RED "%s" RESET " %c%c%c...\n", Error.data[Error.i - 3], Error.data[Error.i - 2], Error.data[Error.i - 1], Error.msg2, Error.data[Error.i + 1], Error.data[Error.i + 2], Error.data[Error.i + 3]);
+			}
+		} else if(Error.data2 != NULL) {
+			if(Error.data2[Error.i] == '\0') {
+				printf("	...%s %s %s %s %s %s " RED "%s" RESET "\n", Error.data2[Error.i - 6], Error.data2[Error.i - 5], Error.data2[Error.i - 4], Error.data2[Error.i - 3], Error.data2[Error.i - 2], Error.data2[Error.i - 1], Error.msg2);
+			} else {
+				printf("	...%s %s %s " RED "%s" RESET " %s %s %s...\n", Error.data2[Error.i - 3], Error.data2[Error.i - 2], Error.data2[Error.i - 1], Error.msg2, Error.data2[Error.i + 1], Error.data2[Error.i + 2], Error.data2[Error.i + 3]);
+			}
+		}
+		
+		puts("----------------------------------------------------------------");
+		
+		if(errType != 1) exit(EXIT_FAILURE);
+	}
+
+	void safe_realloc(void pointer*2 ptr, size_t size) {
+		void pointer res = realloc(@ptr, size);
+		if(res == NULL) {
+			perror("ERROR");
+			fprintf(stderr, "ID: %d\n", errno);
+			exit(EXIT_FAILURE);
+		} else {
+			@ptr = res;
 		}
 	}
 	
-	puts("----------------------------------------------------------------");
-	
-	if(errType != 1) exit(EXIT_FAILURE);
-}
-
-void safe_realloc(void pointer*2 ptr, size_t size) {
-	void pointer res = realloc(@ptr, size);
-	if(res == NULL) {
-		perror("ERROR");
-		fprintf(stderr, "ID: %d\n", errno);
-		exit(EXIT_FAILURE);
-	} else {
-		@ptr = res;
-	}
-}
 #endexp;
 
 #import 'preprocessor.ppl';
