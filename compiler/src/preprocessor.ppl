@@ -98,36 +98,38 @@ static void typeTo(char pointer*2 processed_input, size_t pointer input_size, si
 	}
 }
 
-static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char defs[256][2][256], size_t defs_len, char locs[256][2][256], size_t locs_len) {
-	for(size_t i = 0; i < defs_len; i++) {
-		unsigned short def_len = strlen(defs[i][0]);
-		if((@str)[>>> until (@str)[__item] == '\0' || isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (defs[i][0])[>>> def_len]) {
-			for(unsigned short s = 0, defr_len = strlen(defs[i][1]); s < defr_len; s++) {
-				INCR_MEM(1);
-				(@processed_input)[@input_item] = defs[i][1][s];
+static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer*2 str, char pointer SOL, char defs[256][2][256], size_t defs_len, char locs[256][2][256], size_t locs_len) {
+	if(@str == SOL || (@str)[-1] != '.') {
+		for(size_t i = 0; i < defs_len; i++) {
+			unsigned short def_len = strlen(defs[i][0]);
+			if((@str)[>>> until (@str)[__item] == '\0' || isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (defs[i][0])[>>> def_len]) {
+				for(unsigned short s = 0, defr_len = strlen(defs[i][1]); s < defr_len; s++) {
+					INCR_MEM(1);
+					(@processed_input)[@input_item] = defs[i][1][s];
+					
+					(@input_item)++;
+				}
 				
-				(@input_item)++;
+				@str += def_len;
+				
+				return 1;
 			}
-			
-			@str += def_len;
-			
-			return 1;
 		}
-	}
-	
-	for(size_t i = 0; i < locs_len; i++) {
-		unsigned short loc_len = strlen(locs[i][0]);
-		if((@str)[>>> until (@str)[__item] == '\0' || isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (locs[i][0])[>>> loc_len]) {
-			for(unsigned short s = 0, locr_len = strlen(locs[i][1]); s < locr_len; s++) {
-				INCR_MEM(1);
-				(@processed_input)[@input_item] = locs[i][1][s];
+		
+		for(size_t i = 0; i < locs_len; i++) {
+			unsigned short loc_len = strlen(locs[i][0]);
+			if((@str)[>>> until (@str)[__item] == '\0' || isSpecial((@str)[__item]) || (@str)[__item] == ' '] == (locs[i][0])[>>> loc_len]) {
+				for(unsigned short s = 0, locr_len = strlen(locs[i][1]); s < locr_len; s++) {
+					INCR_MEM(1);
+					(@processed_input)[@input_item] = locs[i][1][s];
+					
+					(@input_item)++;
+				}
 				
-				(@input_item)++;
+				@str += loc_len;
+				
+				return 1;
 			}
-			
-			@str += loc_len;
-			
-			return 1;
 		}
 	}
 	
@@ -485,7 +487,7 @@ static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t poin
 					
 					(@input_item)++;
 					trimmed_buf++;
-				} else if(replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, defs, @defID, locals, locID)) {
+				} else if(replaceIfDefined(processed_input, input_size, input_item, ->trimmed_buf, buf, defs, @defID, locals, locID)) {
 					if(@trimmed_buf == '{' || @trimmed_buf == '(') {
 						scope++;
 					} else if(@trimmed_buf == '}' && scope) {
@@ -534,6 +536,8 @@ static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t poin
 								if(@trimmed_buf_bef == '$') {
 									(@input_item)--;
 									typeTo(processed_input, input_size, input_item, "_ppl");
+								} else if(@(trimmed_buf_bef - def_start) == '$') {
+									(@processed_input)[@input_item - def_start - 1] = ' ';
 								} else if(exporting || scope) {
 									typeTo(processed_input, input_size, input_item, "_ppl");
 									

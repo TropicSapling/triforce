@@ -302,7 +302,6 @@ static unsigned short numberify(char pointer str) {
 }
 
 static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 outputp, unsigned short pointer status, char pointer cItem) {
-	
 	if(strcmp(keywords[i], "false") == 0) {
 		INCR_MEM(1);
 		
@@ -486,6 +485,9 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 			(@outputp)[pos] = '}';
 			pos++;
 		}
+		
+		i++;
+		i = parseKey(i, keywords, outputp, status, cItem);
 	} else if(strcmp(keywords[i], "clang") == 0) {
 		// INLINE C
 		
@@ -554,7 +556,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						
 						// Go back to start of line
 						bool inStr = false;
-						while(pos > 0 && (inStr || ((@outputp)[pos - 1] != ';' && ((@outputp)[pos - 1] != '{' || ((@outputp)[pos - 2] != ')' && !((@outputp)[pos - 2] == 'e' && (@outputp)[pos - 3] == 's' && (@outputp)[pos - 4] == 'l' && (@outputp)[pos - 5] == 'e'))) && ((@outputp)[pos - 1] != '}' || (@outputp)[pos - 2] != ';')))) {
+						while(pos > 0 && (inStr || ((@outputp)[pos - 1] != ';' && ((@outputp)[pos - 1] != '{' || ((@outputp)[pos - 2] != ')' && !((@outputp)[pos - 2] == 'e' && (@outputp)[pos - 3] == 's' && (@outputp)[pos - 4] == 'l' && (@outputp)[pos - 5] == 'e'))) && ((@outputp)[pos - 1] != '}' || ((@outputp)[pos - 2] != '\t' && (@outputp)[pos - 2] != '\n' && (@outputp)[pos - 2] != ';'))))) {
 							pos--;
 							
 							if(inStr) {
@@ -730,7 +732,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 						typeToOutput("=0;break;}}");
 						
 						unsigned int stBef_pos = listExpStart_pos2;
-						while(stBef_pos > 0 && keywords[stBef_pos - 1][0] != ';' && strcmp(keywords[stBef_pos - 1], "else") != 0 && (keywords[stBef_pos - 1][0] != '{' || keywords[stBef_pos - 2][0] != ')') && (keywords[stBef_pos - 1][0] != '}' || keywords[stBef_pos - 2][0] != ';')) {
+						while(stBef_pos > 0 && keywords[stBef_pos - 1][0] != ';' && strcmp(keywords[stBef_pos - 1], "else") != 0 && (keywords[stBef_pos - 1][0] != '{' || keywords[stBef_pos - 2][0] != ')') && (keywords[stBef_pos - 1][0] != '}' || (keywords[stBef_pos - 2][0] != '\t' && keywords[stBef_pos - 2][0] != '\n' && keywords[stBef_pos - 2][0] != ';'))) {
 							stBef_pos--;
 						}
 						
