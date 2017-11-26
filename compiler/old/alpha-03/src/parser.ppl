@@ -1,44 +1,59 @@
-#clang;
-	
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <errno.h>
-	#include <string.h>
-	#include <stdbool.h>
-	#include <ctype.h>
+#include <stdio.h>;
+#include <stdlib.h>;
+#include <errno.h>;
+#include <string.h>;
+#include <stdbool.h>;
+#include <ctype.h>;
 
-	#ifdef _WIN32
-		#define THIS_OS "\"Win32\""
-	#endif
+#include "def.h";
 
-	#ifdef _WIN64
-		#define THIS_OS "\"Win64\""
-	#endif
+#ifdef _WIN32
+	#define THIS_OS "\"Win32\""
+#endif
 
-	#if defined(linux) || defined(__linux) || defined(__linux__)
-		#define THIS_OS "\"Linux\""
-	#else
-		#if defined(unix) || defined(__unix) || defined(__unix__)
-			#define THIS_OS "\"Unix\""
-		#endif
-	#endif
+#ifdef _WIN64
+	#define THIS_OS "\"Win64\""
+#endif
 
-	#if defined(__APPLE__) || defined(__MACH__)
-		#define THIS_OS "\"Apple\""
+#if defined(linux) || defined(__linux) || defined(__linux__)
+	#define THIS_OS "\"Linux\""
+#else
+	#if defined(unix) || defined(__unix) || defined(__unix__)
+		#define THIS_OS "\"Unix\""
 	#endif
+#endif
 
-	#ifdef __FreeBSD__
-		#define THIS_OS "\"FreeBSD\""
-	#endif
+#if defined(__APPLE__) || defined(__MACH__)
+	#define THIS_OS "\"Apple\""
+#endif
 
-	#ifndef THIS_OS
-		#define THIS_OS "\"UNDEFINED\""
-	#endif
-	
-#endc;
+#ifdef __FreeBSD__
+	#define THIS_OS "\"FreeBSD\""
+#endif
+
+#ifndef THIS_OS
+	#define THIS_OS "\"UNDEFINED\""
+#endif
+
+#define INCR_MEM(size) do { \
+	if(pos + (size) > output_size) { \
+		output_size *= 2; \
+		safe_realloc((void pointer*2) outputp, output_size); \
+	} \
+} while(0)
+
+#define typeToOutput(str) do { \
+	typeTo(outputp, str); \
+} while(0)
+
+#define printError(message, errType, i_pos) do { \
+	printErr((struct ErrInfo) {.msg = message, .msg2 = keywords[i_pos], .filename = file, .lineno = lineno, .linecol = linecol, .data2 = keywords, .i = i_pos}, errType); \
+} while(0)
 
 static char pointer file;
 
+const char types[27][9] = {"bool", "chan", "char", "clang", "const", "fraction", "func", "heap", "int", "list", "noscope", "number", "only", "pointer", "register", "signed", "stack", "static", "unique", "unsigned", "void", "volatile", "size_t", "short", "long", "float", "double"}; // Last items in list are C data types and will be removed in the final version
+const char reserved_keys[29][9] = {"async", "break", "case", "continue", "default", "do", "else", "eval", "export", "foreach", "goto", "if", "import", "in", "repeat", "return", "switch", "type", "while", "false", "true", "__args", "__argc", "__line", "__OS", "__path", "__item", "__app", "init"};
 static size_t iterators = 0;
 static size_t bools = 0;
 
@@ -63,21 +78,6 @@ static bool isNumber(char pointer str) {
 	return true;
 } */
 
-#clang;
-	
-	#define INCR_MEM(size) do { \
-		if(pos + (size) > output_size) { \
-			output_size *= 2; \
-			safe_realloc((void**) outputp$, output_size); \
-		} \
-	} while(0)
-
-	#define printError(message, errType, i_pos) do { \
-		printErr((struct ErrInfo) {.msg = message, .msg2 = keywords$[i_pos], .filename = file, .lineno = lineno, .linecol = linecol, .data2 = keywords$, .i = i_pos}, errType); \
-	} while(0)
-	
-#endc;
-
 static unsigned int typeTo(char pointer*2 outputp, char pointer str) {
 	unsigned int i = 0;
 	for(; str[i] != '\0'; i++) {
@@ -88,14 +88,6 @@ static unsigned int typeTo(char pointer*2 outputp, char pointer str) {
 	
 	return i;
 }
-
-#clang;
-	
-	#define typeToOutput(str) do { \
-		typeTo(outputp$, str); \
-	} while(0)
-	
-#endc;
 
 static void addID(char pointer str_end, size_t pointer IDs) {
 	char pointer chars -> "abcdefghijklmnopqrstuvwxyz";
@@ -565,9 +557,7 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 								pos -= 2;
 							} else if((@outputp)[pos] == '"') {
 								inStr = true;
-							} else if((@outputp)[pos] == '\n') {
-								lineno--;
-							}
+							} else if((@outputp)[pos] == '\n') lineno--;
 						}
 						
 						// Create first iterator
@@ -784,25 +774,23 @@ static size_t parseKey(unsigned int i, char pointer*2 keywords, char pointer*2 o
 	return i;
 }
 
-#export;
-	static char pointer parse(char pointer*2 keywords, char pointer filename, size_t extra_lines) {
-		char pointer output = malloc(output_size);
-		
-		file = filename;
-		lineno += extra_lines;
-		
-		unsigned short status = 0;
-		
-		for(size_t i = 0; i < key; i++) {
-			i = parseKey(i, keywords, ->output, ->status, NULL);
-		}
-		
-		if(pos + 1 > output_size) {
-			output_size *= 2;
-			safe_realloc((void pointer*2) output, output_size);
-		}
-		output[pos] = '\0';
-		
-		return output;
+char pointer parse(char pointer*2 keywords, char pointer filename, size_t extra_lines) {
+	char pointer output = malloc(output_size);
+	
+	file = filename;
+	lineno += extra_lines;
+	
+	unsigned short status = 0;
+	
+	for(size_t i = 0; i < key; i++) {
+		i = parseKey(i, keywords, ->output, ->status, NULL);
 	}
-#endexp;
+	
+	if(pos + 1 > output_size) {
+		output_size *= 2;
+		safe_realloc((void pointer*2) output, output_size);
+	}
+	output[pos] = '\0';
+	
+	return output;
+}
