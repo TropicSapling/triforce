@@ -132,7 +132,7 @@ static unsigned int replaceIfDefined(char pointer*2 processed_input, size_t poin
 	return 0;
 }
 
-size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], char defs[256][2][256], size_t pointer defID) {
+size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t pointer input_size, size_t pointer input_item, char pointer path[static 2], int argc, char defs[256][2][256], size_t pointer defID) {
 	char buf[65536];
 	size_t lineno = 1;
 	size_t extra_lines = 0;
@@ -396,20 +396,88 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 						exit(EXIT_FAILURE);
 					}
 					
+					typeTo(processed_input, input_size, input_item, "#include \"");
+					
+					FILE pointer lib_f;
+					if(argc < 3 || path[2][0] == '-') {
+						size_t file_length = strlen(path[1]);
+						char filename[file_length];
+						strcpy(filename, path[1]);
+						
+						size_t c = file_length - 1;
+						while(filename[c] != '.') {
+							c--;
+						}
+						
+						memset(->filename[c + 1], 'c', 1);
+						memset(->filename[c + 2], '\0', 1);
+						
+						while(filename[c] != '/' && c > 0) {
+							c--;
+						}
+						
+						char finalname[strlen(filename) + 4];
+						char success;
+						
+						if(c == 0) {
+							success = mkdir("bin", 0777);
+							
+							strcpy(finalname, "bin/");
+							strcat(finalname, filename);
+						} else {
+							strncpy(finalname, filename, c + 1);
+							finalname[c + 1] = '\0';
+							strcat(finalname, "bin/");
+							success = mkdir(finalname, 0777);
+							strcat(finalname, ->filename[c + 1]);
+						}
+						
+						if(success != 0 && errno != 17) {
+							perror("ERROR");
+							fprintf(stderr, "ID: %d\n", errno);
+							
+							return 1;
+						}
+						
+						typeTo(processed_input, input_size, input_item, finalname);
+						
+						lib_f = fopen(finalname, "w");
+						if(lib_f == NULL) {
+							perror("ERROR");
+							fprintf(stderr, "ID: %d\n", errno);
+							exit(EXIT_FAILURE);
+						}
+					} else {
+						typeTo(processed_input, input_size, input_item, path[2]);
+						
+						lib_f = fopen(path[2], "w");
+						if(lib_f == NULL) {
+							perror("ERROR");
+							fprintf(stderr, "ID: %d\n", errno);
+							exit(EXIT_FAILURE);
+						}
+					}
+					
+					typeTo(processed_input, input_size, input_item, "\"\n");
+					
 					if(trimmed_buf[c + i + 2] == 'a') { // import as ...
 						// WIP
 					} else {
 						char pointer lib_paths[2] = {path[0], full_path};
-						preprocess(lib, processed_input, input_size, input_item, lib_paths, defs, defID);
+						size_t lib_file_size = 256;
+						size_t lib_file_item = 0;
+						char pointer lib_file = malloc(lib_file_size);
+						
+						preprocess(lib, lib_file, lib_file_size, lib_file_item, lib_paths, argc, defs, defID);
+						
+						for(size_t i = 0; i < lib_file_item; i++) {
+							fprintf(lib_f, "%c", lib_file[i]);
+						}
 						
 						// TODO: Add support for importing specific functions
 					}
 					
 					fclose(lib);
-					
-					INCR_MEM(1);
-					(@processed_input)[@input_item] = '\n';
-					(@input_item)++;
 					
 					lineno++;
 					continue;
