@@ -453,6 +453,14 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 						char filename[file_length];
 						strcpy(filename, path[2]);
 						
+						size_t c2 = strlen(full_path) - 1;
+						while(full_path[c2] != '.') {
+							c2--;
+						}
+						
+						memset(->full_path[c2 + 1], 'c', 1);
+						memset(->full_path[c2 + 2], '\0', 1);
+						
 						size_t c = file_length - 1;
 						while(filename[c] != '/' && c > 0) {
 							c--;
