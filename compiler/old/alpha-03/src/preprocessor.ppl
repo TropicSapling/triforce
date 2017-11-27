@@ -4,6 +4,7 @@
 #include <stdio.h>;
 #include <errno.h>;
 #include <ctype.h>;
+#include <sys/stat.h>;
 
 #include "def.h";
 
@@ -400,9 +401,9 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					
 					FILE pointer lib_f;
 					if(argc < 3 || path[2][0] == '-') {
-						size_t file_length = strlen(path[1]);
+						size_t file_length = strlen(full_path);
 						char filename[file_length];
-						strcpy(filename, path[1]);
+						strcpy(filename, full_path);
 						
 						size_t c = file_length - 1;
 						while(filename[c] != '.') {
@@ -448,9 +449,11 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 							exit(EXIT_FAILURE);
 						}
 					} else {
-						typeTo(processed_input, input_size, input_item, path[2]);
+						// WIP
 						
-						lib_f = fopen(path[2], "w");
+						typeTo(processed_input, input_size, input_item, finalname);
+						
+						lib_f = fopen(finalname, "w");
 						if(lib_f == NULL) {
 							perror("ERROR");
 							fprintf(stderr, "ID: %d\n", errno);
@@ -468,7 +471,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 						size_t lib_file_item = 0;
 						char pointer lib_file = malloc(lib_file_size);
 						
-						preprocess(lib, lib_file, lib_file_size, lib_file_item, lib_paths, argc, defs, defID);
+						preprocess(lib, ->lib_file, ->lib_file_size, ->lib_file_item, lib_paths, argc, defs, defID);
 						
 						for(size_t i = 0; i < lib_file_item; i++) {
 							fprintf(lib_f, "%c", lib_file[i]);
@@ -478,6 +481,7 @@ size_t preprocess(FILE pointer input, char pointer*2 processed_input, size_t poi
 					}
 					
 					fclose(lib);
+					fclose(lib_f);
 					
 					lineno++;
 					continue;

@@ -176,8 +176,8 @@ int main(int argc, char pointer argv[]) {
 			c--;
 		}
 		
-		memset(->filename[c + 1], 'c', 1);
-		memset(->filename[c + 2], '\0', 1);
+		memset(filename + c + 1, 'c', 1);
+		memset(filename + c + 2, '\0', 1);
 		
 		while(filename[c] != '/' && c > 0) {
 			c--;
