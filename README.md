@@ -91,7 +91,7 @@ P+ is for...
 
 #### Conditionals
 * `if(<condition>) { <code> } [else if(<condition>) { <code> } else if...] [else { <code> }]`
-* `switch(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }`
+* `match(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }` (equivalent of C's `switch`)
 
 --------
 
