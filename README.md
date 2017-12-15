@@ -91,7 +91,7 @@ P+ is for...
 
 #### Conditionals
 * `if(<condition>) { <code> } [else if(<condition>) { <code> } else if...] [else { <code> }]`
-* `switch(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }`
+* `match(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }` (equivalent of C's `switch`)
 
 --------
 
@@ -209,8 +209,7 @@ comment> */
 --------
 
 #### Functions
-* `<return type> <function name>([<parameters>]) { <code> }`
-* `func <function name>([<parameters>]) { <code> }`
+* `func <function name>([<parameters>]) [returns <return type>] { <code> }`
 * `<function name>([parameters])`
 * `return [from <function>] <value>`
 * P+ allows ad-hoc polymorphism; you can create multiple functions with the same name but with different parameters.
