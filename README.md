@@ -166,7 +166,7 @@ comment> */
 * `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) [func] (array|list|pointer)[*<n>] [chan]`
 
 ##### Special
-* ``type <custom type> = <type1>[`|`<type2>`|`<type3>...]``
+* ``type <custom type> extends <type1>[`|`<type2>`|`<type3>...]``
 * `clang <type> <function name>([<parameters>]) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
 
