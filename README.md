@@ -73,7 +73,7 @@ P+ is for...
 * `<=`
 
 ##### Misc.
-* `? :`
+* `? :` (**NOTE:** Might get replaced by `if` in the future, and the `?` might be used for exception handling instead)
 * `->`
 * `[]`
 * `@`
@@ -209,9 +209,10 @@ comment> */
 --------
 
 #### Functions
-* `func <function name>([<parameters>]) [returns <return type>] { <code> }`
+* `func <function name>([<parameters>]) [-> <return type>] { <code> }`
 * `<function name>([parameters])`
 * `return [from <function>] <value>`
+* Functions return the result of the last statement by default; no need to use `return` unless you want to return from somewhere else.
 * P+ allows ad-hoc polymorphism; you can create multiple functions with the same name but with different parameters.
 
 --------
