@@ -1,18 +1,25 @@
-use std::env;
+extern crate clap;
+
+use clap::{Arg, App};
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+	let matches = App::new("ppc")
+		.version("0.1.0-alpha")
+		.about("P+ compiler written in Rust.")
+		.author("TropicSapling")
+		.arg(Arg::with_name("input")
+			.short("i")
+			.long("input")
+			.value_name("file")
+			.help("Specifies an input file")
+			.required(true))
+		.arg(Arg::with_name("output")
+			.short("o")
+			.long("output")
+			.value_name("file")
+			.help("Specifies an output file"))
+		.get_matches();
 	
-	if args.len() < 2 {
-		println!("Please specify an input file.");
-	} else {
-		let input = &args[1];
-		let mut output = &String::from("default");
-		if args.len() > 2 {
-			output = &args[2];
-		}
-
-		println!("In: {}", input);
-		println!("Out: {}", output);
-	}
+	println!("IN: {}", matches.value_of("input").unwrap());
+	println!("OUT: {}", matches.value_of("output").unwrap_or("default"));
 }
