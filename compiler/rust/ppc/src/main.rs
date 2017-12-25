@@ -1,6 +1,9 @@
 extern crate clap;
+extern crate term_painter;
 
 use clap::{Arg, App};
+use term_painter::Color::*;
+use term_painter::ToStyle;
 
 fn get_default_output(input: &str) -> String {
 	let mut file_start = 0;
@@ -34,12 +37,20 @@ fn main() {
 			.long("output")
 			.value_name("file")
 			.help("Specifies an output file"))
+		.arg(Arg::with_name("debug")
+			.short("d")
+			.long("debug")
+			.help("Turns on debug mode"))
 		.get_matches();
+	
+	let debugging = matches.is_present("debug");
 	
 	let input = matches.value_of("input").unwrap();
 	let default_out = &get_default_output(input);
 	let output = matches.value_of("output").unwrap_or(default_out);
 	
-	println!("IN: {}", input);
-	println!("OUT: {}", output);
+	if debugging {
+		println!("{} INPUT FILE: {}", BrightYellow.paint("[DEBUG]"), input);
+		println!("{} OUTPUT FILE: {}", BrightYellow.paint("[DEBUG]"), output);
+	}
 }

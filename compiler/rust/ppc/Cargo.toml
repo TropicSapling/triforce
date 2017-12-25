@@ -5,3 +5,4 @@ authors = ["TropicSapling <tropical.productions.scratch@gmail.com>"]
 
 [dependencies]
 clap = "2.29.0"
+term-painter = "0.2.4"
