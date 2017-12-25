@@ -2,8 +2,12 @@ extern crate clap;
 extern crate term_painter;
 
 use clap::{Arg, App};
+
 use term_painter::Color::*;
 use term_painter::ToStyle;
+
+use std::fs::File;
+use std::io::prelude::*;
 
 fn get_default_output(input: &str) -> String {
 	let mut file_start = 0;
@@ -40,7 +44,7 @@ fn main() {
 		.arg(Arg::with_name("debug")
 			.short("d")
 			.long("debug")
-			.help("Turns on debug mode"))
+			.help("Enables debug mode"))
 		.get_matches();
 	
 	let debugging = matches.is_present("debug");
@@ -52,5 +56,11 @@ fn main() {
 	if debugging {
 		println!("{} INPUT FILE: {}", BrightYellow.paint("[DEBUG]"), input);
 		println!("{} OUTPUT FILE: {}", BrightYellow.paint("[DEBUG]"), output);
+		println!("\n{} Lexing...", BrightYellow.paint("[DEBUG]"));
 	}
+	
+	let mut in_file = File::open(input).expect("file not found");
+	let mut in_contents = String::new();
+	
+	in_file.read_to_string(&mut in_contents).expect("failed to read file");
 }
