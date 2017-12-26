@@ -44,6 +44,8 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	
 	for item in tokens {
 		if escaping {
+			string.val += item;
+			
 			escaping = false;
 		} else if in_str {
 			if item == "\"" {
@@ -108,6 +110,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				};
 				
 				res.push(string.clone());
+				string.val = String::from("");
 			}
 		}
 	}
