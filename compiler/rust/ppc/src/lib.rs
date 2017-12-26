@@ -39,78 +39,101 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	let mut in_str = false;
 	let mut in_str2 = false;
 	let mut escaping = false;
+	let mut ignoring = false;
+	let mut possible_comment = false;
 	
 	let mut num_pos = 0;
 	
 	for item in tokens {
-		if escaping {
-			string.val += item;
-			
-			escaping = false;
-		} else if in_str {
-			if item == "\"" {
-				res.push(string.clone());
-				string.val = String::from("");
-				in_str = false;
-			} else if item == "\\" {
-				escaping = true;
-			} else {
-				string.val += item;
+		if ignoring {
+			if item == "\r" || item == "\n" {
+				res.push(Token {val: item.to_string(), t: "whitespace"});
+				
+				ignoring = false;
 			}
-		} else if in_str2 {
-			if item == "'" {
-				res.push(string.clone());
-				string.val = String::from("");
-				in_str2 = false;
-			} else if item == "\\" {
-				escaping = true;
-			} else {
-				string.val += item;
-			}
-		} else if item == "\"" {
-			string.t = "str1";
-			in_str = true;
-		} else if item == "'" {
-			string.t = "str2";
-			in_str2 = true;
 		} else {
-			if num_pos > 0 && (item == "." || num_pos == 2) {
+			if possible_comment {
+				if item == "/" {
+					ignoring = true;
+					possible_comment = false;
+					
+					continue;
+				} else {
+					possible_comment = false;
+				}
+			}
+			
+			if escaping {
 				string.val += item;
-				if num_pos == 2 {
+				
+				escaping = false;
+			} else if in_str {
+				if item == "\"" {
+					res.push(string.clone());
+					string.val = String::from("");
+					in_str = false;
+				} else if item == "\\" {
+					escaping = true;
+				} else {
+					string.val += item;
+				}
+			} else if in_str2 {
+				if item == "'" {
+					res.push(string.clone());
+					string.val = String::from("");
+					in_str2 = false;
+				} else if item == "\\" {
+					escaping = true;
+				} else {
+					string.val += item;
+				}
+			} else if item == "\"" {
+				string.t = "str1";
+				in_str = true;
+			} else if item == "'" {
+				string.t = "str2";
+				in_str2 = true;
+			} else {
+				if num_pos > 0 && (item == "." || num_pos == 2) {
+					string.val += item;
+					if num_pos == 2 {
+						res.push(string.clone());
+						string.val = String::from("");
+						
+						num_pos = 0;
+					} else {
+						num_pos = 2;
+					}
+					
+					continue;
+				} else if num_pos == 1 {
 					res.push(string.clone());
 					string.val = String::from("");
 					
 					num_pos = 0;
-				} else {
-					num_pos = 2;
 				}
 				
-				continue;
-			} else if num_pos == 1 {
-				res.push(string.clone());
-				string.val = String::from("");
-				
-				num_pos = 0;
-			}
-			
-			if item.parse::<u64>().is_ok() {
-				string.val = item.to_string();
-				string.t = "number";
-				
-				num_pos = 1;
-			} else {
-				string.val = item.to_string();
-				string.t = match item {
-					"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "[" | "]" | "(" | ")" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" | "{" | "}" => "operator",
-					"array" | "bool" | "chan" | "char" | "const" | "fraction" | "func" | "heap" | "int" | "list" | "number" | "only" | "pointer" | "register" | "signed" | "stack" | "unique" | "unsigned" | "void" | "volatile" => "type",
-					"as" | "async" | "break" | "continue" | "else" | "foreach" | "from" | "goto" | "if" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => "reserved",
-					"false" | "true" => "literal",
-					"\n" | "\r" | "\t" | " " => "whitespace",
-					_ => "variable"
-				};
-				
-				res.push(string.clone());
-				string.val = String::from("");
+				if item == "/" {
+					possible_comment = true;
+				} else if item.parse::<u64>().is_ok() {
+					string.val = item.to_string();
+					string.t = "number";
+					
+					num_pos = 1;
+				} else {
+					string.val = item.to_string();
+					string.t = match item {
+						"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "[" | "]" | "(" | ")" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" | "{" | "}" => "operator",
+						"array" | "bool" | "chan" | "char" | "const" | "fraction" | "func" | "heap" | "int" | "list" | "number" | "only" | "pointer" | "register" | "signed" | "stack" | "unique" | "unsigned" | "void" | "volatile" => "type",
+						"as" | "async" | "break" | "continue" | "else" | "foreach" | "from" | "goto" | "if" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => "reserved",
+						"false" | "true" => "literal",
+						"\n" | "\r" | "\t" | " " => "whitespace",
+						_ => "variable"
+					};
+					
+					res.push(string.clone());
+					string.val = String::from("");
+				}
 			}
 		}
 	}
