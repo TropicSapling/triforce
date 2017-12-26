@@ -1,6 +1,8 @@
 extern crate clap;
 extern crate term_painter;
 
+mod lib;
+
 use clap::{Arg, App};
 
 use term_painter::Color::*;
@@ -8,6 +10,8 @@ use term_painter::ToStyle;
 
 use std::fs::File;
 use std::io::prelude::*;
+
+use lib::lex;
 
 fn get_default_output(input: &str) -> String {
 	let mut file_start = 0;
@@ -63,4 +67,6 @@ fn main() {
 	let mut in_contents = String::new();
 	
 	in_file.read_to_string(&mut in_contents).expect("failed to read file");
+	
+	println!("{:?}", lex(&in_contents));
 }
