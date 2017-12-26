@@ -1,12 +1,8 @@
+#[derive(Clone)]
+#[derive(Debug)]
 pub struct Token {
 	val: String,
 	t: &'static str
-}
-
-impl Clone for Token {
-    fn clone(&self) -> Token {
-        *self
-    }
 }
 
 pub fn lex<'a>(contents: &'a String) -> Vec<&'a str> {
@@ -57,12 +53,16 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 			}
 		} else if item == "\"" {
 			string.t = "str1";
+			in_str = true;
 		} else if item == "'" {
 			string.t = "str2";
+			in_str2 = true;
 		} else {
 			string.val = item.to_string();
 			string.t = if item.parse::<u64>().is_ok() {
 				"num"
+			} else if item == "+" || item == "-" || item == "*" || item == "/" || item == "=" || item == "&" || item == "|" || item == "^" || item == ">" || item == "<" || item == "[" || item == "]" || item == "(" || item == ")" || item == "<" || item == ">" {
+				"operator"
 			} else {
 				"var"
 			};
