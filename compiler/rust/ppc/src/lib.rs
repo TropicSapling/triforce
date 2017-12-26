@@ -72,7 +72,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				"number"
 			} else {
 				match item {
-					"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "[" | "]" | "(" | ")" | "!" | "~" | "?" | ":" | "," | "@" | ";" | "{" | "}" => "operator",
+					"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "[" | "]" | "(" | ")" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" | "{" | "}" => "operator",
 					"array" | "bool" | "chan" | "char" | "const" | "fraction" | "func" | "heap" | "int" | "list" | "number" | "only" | "pointer" | "register" | "signed" | "stack" | "unique" | "unsigned" | "void" | "volatile" => "type",
 					"as" | "async" | "break" | "continue" | "else" | "foreach" | "from" | "goto" | "if" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => "reserved",
 					"false" | "true" => "literal",
