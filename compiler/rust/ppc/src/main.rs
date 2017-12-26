@@ -11,7 +11,7 @@ use term_painter::ToStyle;
 use std::fs::File;
 use std::io::prelude::*;
 
-use lib::lex;
+use lib::{lex, lex2};
 
 fn get_default_output(input: &str) -> String {
 	let mut file_start = 0;
@@ -59,8 +59,7 @@ fn main() {
 	
 	if debugging {
 		println!("{} INPUT FILE: {}", BrightYellow.paint("[DEBUG]"), input);
-		println!("{} OUTPUT FILE: {}", BrightYellow.paint("[DEBUG]"), output);
-		println!("\n{} Lexing...", BrightYellow.paint("[DEBUG]"));
+		println!("{} OUTPUT FILE: {}\n", BrightYellow.paint("[DEBUG]"), output);
 	}
 	
 	let mut in_file = File::open(input).expect("file not found");
@@ -68,5 +67,13 @@ fn main() {
 	
 	in_file.read_to_string(&mut in_contents).expect("failed to read file");
 	
-	println!("{:?}", lex(&in_contents));
+	let lexed_contents = lex(&in_contents);
+	if debugging {
+		println!("{} LEX1: {:#?}\n", BrightYellow.paint("[DEBUG]"), lexed_contents);
+	}
+	
+	let tokens = lex2(lexed_contents);
+	if debugging {
+		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
+	}
 }
