@@ -35,9 +35,12 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 		val: String::from(""),
 		t: "str1"
 	};
+	
 	let mut in_str = false;
 	let mut in_str2 = false;
 	let mut escaping = false;
+	
+	let mut num_pos = 0;
 	
 	for item in tokens {
 		if escaping {
@@ -58,27 +61,43 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 			} else {
 				string.val += item;
 			}
+		} else if num_pos > 0 && (item == "." || num_pos == 2) {
+			string.val += item;
+			if num_pos == 2 {
+				res.push(string.clone());
+				string.val = String::from("");
+				
+				num_pos = 0;
+			} else {
+				num_pos = 2;
+			}
+		} else if num_pos == 1 && item != "." {
+			res.push(string.clone());
+			string.val = String::from("");
+			
+			num_pos = 0;
 		} else if item == "\"" {
 			string.t = "str1";
 			in_str = true;
 		} else if item == "'" {
 			string.t = "str2";
 			in_str2 = true;
+		} else if item.parse::<u64>().is_ok() {
+			string.val = item.to_string();
+			string.t = "number";
+			
+			num_pos = 1;
 		} else if item == "\\" {
 			escaping = true;
 		} else {
 			string.val = item.to_string();
-			string.t = if item.parse::<u64>().is_ok() {
-				"number"
-			} else {
-				match item {
-					"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "[" | "]" | "(" | ")" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" | "{" | "}" => "operator",
-					"array" | "bool" | "chan" | "char" | "const" | "fraction" | "func" | "heap" | "int" | "list" | "number" | "only" | "pointer" | "register" | "signed" | "stack" | "unique" | "unsigned" | "void" | "volatile" => "type",
-					"as" | "async" | "break" | "continue" | "else" | "foreach" | "from" | "goto" | "if" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => "reserved",
-					"false" | "true" => "literal",
-					"\n" | "\r" | "\t" | " " => "whitespace",
-					_ => "variable"
-				}
+			string.t = match item {
+				"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "[" | "]" | "(" | ")" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" | "{" | "}" => "operator",
+				"array" | "bool" | "chan" | "char" | "const" | "fraction" | "func" | "heap" | "int" | "list" | "number" | "only" | "pointer" | "register" | "signed" | "stack" | "unique" | "unsigned" | "void" | "volatile" => "type",
+				"as" | "async" | "break" | "continue" | "else" | "foreach" | "from" | "goto" | "if" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => "reserved",
+				"false" | "true" => "literal",
+				"\n" | "\r" | "\t" | " " => "whitespace",
+				_ => "variable"
 			};
 			
 			res.push(string.clone());
