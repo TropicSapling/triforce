@@ -40,6 +40,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	let mut in_str2 = false;
 	let mut escaping = false;
 	let mut ignoring = false;
+	let mut ignoring2 = false;
 	let mut possible_comment = false;
 	
 	let mut num_pos = 0;
@@ -51,10 +52,27 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				
 				ignoring = false;
 			}
+		} else if ignoring2 {
+			if possible_comment {
+				if item == "/" {
+					ignoring2 = false;
+				}
+				
+				possible_comment = false;
+			}
+			
+			if item == "*" {
+				possible_comment = true;
+			}
 		} else {
 			if possible_comment {
 				if item == "/" {
 					ignoring = true;
+					possible_comment = false;
+					
+					continue;
+				} else if item == "*" {
+					ignoring2 = true;
 					possible_comment = false;
 					
 					continue;
