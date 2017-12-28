@@ -59,10 +59,11 @@ static void ListAccess2(benchmark::State& state) {
       if(arr[i] == 2) {
         i++;
         s += *((unsigned short*) (arr + i));
+        i++;
       } else {
         i++;
         integer += *((unsigned int*) (arr + i));
-        i += 2;
+        i += 3;
       }
     }
 
