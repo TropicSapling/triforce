@@ -186,7 +186,7 @@ pub fn compile(tokens: Vec<Token>) -> String {
 		match tokens[i].val.as_ref() {
 			":" | "array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token"),
 			"@" => output += "*",
-			"-" if tokens[i + 1].val == ">" && tokens[i + 2].t != "type" => { // NEEDS FIXING FOR WHITESPACE
+			"-" if tokens[i + 1].val == ">" && tokens[i + 1 + nxt(&tokens, i + 1)].t != "type" => {
 				output += "&";
 				i += 1;
 			},
