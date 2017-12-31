@@ -184,7 +184,12 @@ pub fn compile(tokens: Vec<Token>) -> String {
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].val.as_ref() {
-			":" | "@" | "array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token"),
+			":" | "array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token"),
+			"@" => output += "*",
+			"-" if tokens[i + 1].val == ">" && tokens[i + 2].t != "type" => { // NEEDS FIXING FOR WHITESPACE
+				output += "&";
+				i += 1;
+			},
 			_ => {
 				let pos_change = match tokens[i].t {
 					"str1" | "str2" | "number" | "literal" | "variable" => {
