@@ -209,11 +209,12 @@ comment> */
 --------
 
 #### Functions
-* `func <function name>([<parameters>]) [-> <return type>] { <code> }`
-* `<function name>([parameters])`
+* `func <function>([<parameters>]) [-> <return type>] { <code> }`
+* `<function>([parameters])` or `<function> <parameter>` or `<parameter> <function> <parameter>`
 * `return [from <function>] <value>`
 * Functions return the result of the last statement by default; no need to use `return` unless you want to return from somewhere else.
 * P+ allows ad-hoc polymorphism; you can create multiple functions with the same name but with different parameters.
+* Operator overloading is supported; for example, doing `func +(...)` would overload the `+` operator.
 
 --------
 
