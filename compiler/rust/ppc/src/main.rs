@@ -78,7 +78,7 @@ fn main() {
 	
 	let parsed_tokens = parse(tokens);
 	if debugging {
-		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), parsed_tokens);
+//		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), parsed_tokens);
 	}
 	
 	let mut out_contents = compile(parsed_tokens);
@@ -87,6 +87,6 @@ fn main() {
 	out_file.write_all(out_contents); */
 	if debugging {
 		println!("{} OUTPUT FILE: {}", BrightYellow.paint("[DEBUG]"), output);
-		println!("{} Result: {}", BrightYellow.paint("[DEBUG]"), out_contents);
+		println!("{} Result:\n{}", BrightYellow.paint("[DEBUG]"), out_contents);
 	}
 }

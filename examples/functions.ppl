@@ -1,0 +1,5 @@
+func init() -> int {
+	println(4 mod 3);
+	
+	0
+}

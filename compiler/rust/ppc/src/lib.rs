@@ -167,26 +167,67 @@ pub fn parse(tokens: Vec<Token>) -> Vec<Token> {
 	tokens // WIP
 }
 
+fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
+	let mut j: usize = 0;
+	while {
+		j += 1;
+		
+		tokens[i + j].t == "whitespace"
+	} {}
+	
+	j
+}
+
 pub fn compile(tokens: Vec<Token>) -> String {
 	let mut output = String::new();
 	
-	for token in tokens {
-		match token.val.as_ref() {
+	let mut i = 0;
+	while i < tokens.len() {
+		match tokens[i].val.as_ref() {
 			":" | "@" | "array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token"),
-			_ => match token.t {
-				"str1" => {
-					output += "\"";
-					output += &token.val;
-					output += "\""
-				},
-				"str2" => {
-					output += "'";
-					output += &token.val;
-					output += "'"
-				},
-				_ => output += &token.val
+			_ => {
+				let pos_change = match tokens[i].t {
+					"str1" | "str2" | "number" | "literal" | "variable" => {
+						let nxt_tok = nxt(&tokens, i);
+						if tokens[i + nxt_tok].t == "variable" {
+							output += &tokens[i + nxt_tok].val;
+							output += "(";
+							nxt_tok
+						} else {
+							0
+						}
+					},
+					_ => 0
+				};
+				
+				match tokens[i].t {
+					"str1" => {
+						output += "\"";
+						output += &tokens[i].val;
+						output += "\"";
+					},
+					"str2" => {
+						output += "'";
+						output += &tokens[i].val;
+						output += "'";
+					},
+					_ => output += &tokens[i].val
+				}
+				
+				if pos_change > 0 {
+					i += pos_change;
+					
+					let nxt_tok = nxt(&tokens, i);
+					output += ",";
+					output += &tokens[i + nxt_tok].val;
+					output += ")";
+					
+					i += nxt_tok;
+				}
 			}
 		};
+		
+		i += 1;
 	}
 	
 	output
