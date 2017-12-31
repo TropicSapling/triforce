@@ -82,6 +82,9 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 			}
 			
 			if escaping {
+				if item == "0" || item == "n" { // Null and newlines
+					string.val += "\\";
+				}
 				string.val += item;
 				
 				escaping = false;
@@ -158,4 +161,33 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	}
 	
 	res
+}
+
+pub fn parse(tokens: Vec<Token>) -> Vec<Token> {
+	tokens // WIP
+}
+
+pub fn compile(tokens: Vec<Token>) -> String {
+	let mut output = String::new();
+	
+	for token in tokens {
+		match token.val.as_ref() {
+			":" | "@" | "array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token"),
+			_ => match token.t {
+				"str1" => {
+					output += "\"";
+					output += &token.val;
+					output += "\""
+				},
+				"str2" => {
+					output += "'";
+					output += &token.val;
+					output += "'"
+				},
+				_ => output += &token.val
+			}
+		};
+	}
+	
+	output
 }

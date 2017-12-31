@@ -11,7 +11,7 @@ use term_painter::ToStyle;
 use std::fs::File;
 use std::io::prelude::*;
 
-use lib::{lex, lex2};
+use lib::{lex, lex2, parse, compile};
 
 fn get_default_output(input: &str) -> String {
 	let mut file_start = 0;
@@ -59,7 +59,6 @@ fn main() {
 	
 	if debugging {
 		println!("{} INPUT FILE: {}", BrightYellow.paint("[DEBUG]"), input);
-		println!("{} OUTPUT FILE: {}\n", BrightYellow.paint("[DEBUG]"), output);
 	}
 	
 	let mut in_file = File::open(input).expect("file not found");
@@ -75,5 +74,19 @@ fn main() {
 	let tokens = lex2(lexed_contents);
 	if debugging {
 		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
+	}
+	
+	let parsed_tokens = parse(tokens);
+	if debugging {
+		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), parsed_tokens);
+	}
+	
+	let mut out_contents = compile(parsed_tokens);
+/*	let mut out_file = File::create(output)?;
+	
+	out_file.write_all(out_contents); */
+	if debugging {
+		println!("{} OUTPUT FILE: {}", BrightYellow.paint("[DEBUG]"), output);
+		println!("{} Result: {}", BrightYellow.paint("[DEBUG]"), out_contents);
 	}
 }
