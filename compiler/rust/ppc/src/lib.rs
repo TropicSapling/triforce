@@ -207,6 +207,8 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 		"(" => group(&mut tokens, i, "(", ")"),
 		"[" => group(&mut tokens, i, "[", "]"),
 		"{" => group(&mut tokens, i, "{", "}"),
+		"init" => output += "main",
+		"func" => output += "fn",
 		_ => {
 			let pos_change = match tokens[*i].t {
 				"str1" | "str2" | "number" | "literal" | "variable" => {
