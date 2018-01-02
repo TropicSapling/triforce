@@ -95,13 +95,17 @@
 #import 'parser.ppl';
 
 int main(int argc, char pointer argv[]) {
+	unsigned int files_start = 0, opts_start = 0, opts_end = argc;
+	unsigned int opts_start = 0;
 	
-	if(argc < 2 || argc > 4) {
-		puts("Invalid usage. Please specify an input file as the first argument and an output file as the second argument.");
-		return 1;
+	while(argv[files_start][0] == '-' && files_start < argc) files_start++;
+	if(files_start == 0) {
+		opts_start = 2;
+	} else {
+		opts_end = files_start;
 	}
 	
-	if(argv[1][1] == 'h' || argv[1][2 >>> until argv[1][__item] == '\0'] == 'help') {
+	if(argc < 2 || argv[opts_start >>> opts_end][1] == 'h' || argv[opts_start >>> opts_end][2 >>> until argv[opts_start >>> opts_end][__item] == '\0'] == 'help') {
 		puts("----------------------------------------------------------------");
 		puts("Usage: ppc <input> [<output>] [<options>...]");
 		puts("Options:");
@@ -113,14 +117,8 @@ int main(int argc, char pointer argv[]) {
 	}
 	
 	bool debugging = false;
-	if(argc > 2) {
-		if(argv[2][1] == 'd' || argv[2][2 >>> until argv[2][__item] == '\0'] == 'debug') {
-			debugging = true;
-		} else if(argc > 3) {
-			if(argv[3][1] == 'd' || argv[3][2 >>> until argv[2][__item] == '\0'] == 'debug') {
-				debugging = true;
-			}
-		}
+	if(argv[opts_start >>> opts_end][1] == 'd' || argv[opts_start >>> opts_end][2 >>> until argv[opts_start >>> opts_end][__item] == '\0'] == 'debug') {
+		debugging = true;
 	}
 	
 	//////////////// PREPARE FOR PREPROCESSING ////////////////
@@ -178,8 +176,8 @@ int main(int argc, char pointer argv[]) {
 			c--;
 		}
 		
-		memset(->filename[c + 1], 'c', 1);
-		memset(->filename[c + 2], '\0', 1);
+		memset(filename + c + 1, 'c', 1);
+		memset(filename + c + 2, '\0', 1);
 		
 		while(filename[c] != '/' && c > 0) {
 			c--;
@@ -209,8 +207,18 @@ int main(int argc, char pointer argv[]) {
 		}
 		
 		output = fopen(finalname, "w");
+		if(output == NULL) {
+			perror("ERROR");
+			fprintf(stderr, "ID: %d\n", errno);
+			exit(EXIT_FAILURE);
+		}
 	} else {
 		output = fopen(argv[2], "w");
+		if(output == NULL) {
+			perror("ERROR");
+			fprintf(stderr, "ID: %d\n", errno);
+			exit(EXIT_FAILURE);
+		}
 	}
 	
 	/////////////////// PRINT OUTPUT ///////////////////

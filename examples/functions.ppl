@@ -1,0 +1,7 @@
+func init() {
+	println!("{}", (4 plus 3) plus (2 * 3));
+}
+
+func plus(a: int, b: int) -> int {
+	a + b
+}
