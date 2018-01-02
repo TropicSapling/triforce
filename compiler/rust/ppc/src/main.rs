@@ -13,38 +13,11 @@ use std::fs::File;
 use std::io::prelude::*;
 
 use std::process::Command;
+use std::path::PathBuf;
 
 use std::str;
 
-use lib::{lex, lex2, parse, compile};
-
-fn get_dir_from_path(input: &str) -> String {
-	let mut file_start = 0;
-	for (i, item) in input.chars().rev().enumerate() {
-		if item == '/' {
-			file_start = input.len() - i;
-			break;
-		}
-	}
-	
-	(&input[..file_start]).to_owned()
-}
-
-fn get_default_output(input: &str) -> String {
-	let mut file_start = 0;
-	let mut file_end = input.len() - 1;
-	
-	for (i, item) in input.chars().rev().enumerate() {
-		if item == '/' {
-			file_start = input.len() - i;
-			break;
-		} else if item == '.' {
-			file_end = input.len() - i - 1;
-		}
-	}
-	
-	(&input[..file_start]).to_owned() + "rust/" + &input[file_start..file_end] + ".rs"
-}
+use lib::{get_io, lex, lex2, parse, compile};
 
 fn main() {
 	let matches = App::new("ppc")
@@ -77,13 +50,23 @@ fn main() {
 	
 	let debugging = matches.is_present("debug");
 	
-	let input = matches.value_of("input").unwrap();
-	let default_out = get_default_output(input);
-	let (output, output_dir) = (matches.value_of("output").unwrap_or(&default_out), get_dir_from_path(matches.value_of("output").unwrap_or(&default_out))); // Probably can be improved performance-wise
+	let input = PathBuf::from(matches.value_of("input").unwrap());
 	
 	if debugging {
-		println!("{} INPUT FILE: {}", BrightYellow.paint("[DEBUG]"), input);
+		println!("{} INPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), input);
 	}
+	
+	let io = get_io(&input);
+	
+	let (output, output_dir) = (
+		matches.value_of("output").unwrap_or(io.0.to_str().unwrap()),
+		matches.value_of("output").unwrap_or(io.1.to_str().unwrap())
+	);
+	
+	let (final_output, final_output_dir) = (
+		matches.value_of("output").unwrap_or(io.2.to_str().unwrap()),
+		matches.value_of("output").unwrap_or(io.3.to_str().unwrap())
+	);
 	
 	let mut in_file = File::open(input).expect("file not found");
 	let mut in_contents = String::new();
@@ -113,8 +96,8 @@ fn main() {
 	}
 	
 	if debugging {
-		println!("{} OUTPUT DIR: {}", BrightYellow.paint("[DEBUG]"), output_dir);
-		println!("{} OUTPUT FILE: {}", BrightYellow.paint("[DEBUG]"), output);
+		println!("{} OUTPUT DIR: {:?}", BrightYellow.paint("[DEBUG]"), output_dir);
+		println!("{} OUTPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), output);
 	}
 	
 	match fs::create_dir_all(&output_dir) {
@@ -132,17 +115,17 @@ fn main() {
 		_ => ()
 	};
 	
-	let output = Command::new("rustc")
-				.args(&["--out-dir", &output_dir, output]) // CHANGE '&output_dir' to final output directory ('.../bin/')
+	let out = Command::new("rustc")
+				.args(&["--out-dir", &final_output_dir, &output])
 				.output()
 				.expect("failed to execute process");
 	
-	if output.stdout.len() > 0 {
-		println!("{}", str::from_utf8(&output.stdout).unwrap());
+	if out.stdout.len() > 0 {
+		println!("{}", str::from_utf8(&out.stdout).unwrap());
 	}
 	
-	if output.stderr.len() > 0 {
-		println!("{}", str::from_utf8(&output.stderr).unwrap());
+	if out.stderr.len() > 0 {
+		println!("{}", str::from_utf8(&out.stderr).unwrap());
 	}
 	
 	if matches.is_present("run") {
