@@ -198,7 +198,7 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 
 pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].val.as_ref() {
-		":" | "array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token"),
+		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token"),
 		"@" => output += "*",
 		"-" if tokens[*i + 1].val == ">" && tokens[*i + 1 + nxt(tokens, *i + 1)].t != "type" => {
 			output += "&";
@@ -209,6 +209,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 		"{" => group(&mut tokens, i, "{", "}"),
 		"init" => output += "main",
 		"func" => output += "fn",
+		"int" => output += "i32", // TMP; for testing only
 		_ => {
 			let pos_change = match tokens[*i].t {
 				"str1" | "str2" | "number" | "literal" | "variable" => {

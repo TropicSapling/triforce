@@ -12,6 +12,10 @@ use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 
+use std::process::Command;
+
+use std::str;
+
 use lib::{lex, lex2, parse, compile};
 
 fn get_dir_from_path(input: &str) -> String {
@@ -75,7 +79,7 @@ fn main() {
 	
 	let input = matches.value_of("input").unwrap();
 	let default_out = get_default_output(input);
-	let (output, output_dir) = (matches.value_of("output").unwrap_or(&default_out), get_dir_from_path(matches.value_of("output").unwrap_or(&default_out)));
+	let (output, output_dir) = (matches.value_of("output").unwrap_or(&default_out), get_dir_from_path(matches.value_of("output").unwrap_or(&default_out))); // Probably can be improved performance-wise
 	
 	if debugging {
 		println!("{} INPUT FILE: {}", BrightYellow.paint("[DEBUG]"), input);
@@ -113,7 +117,7 @@ fn main() {
 		println!("{} OUTPUT FILE: {}", BrightYellow.paint("[DEBUG]"), output);
 	}
 	
-	match fs::create_dir_all(output_dir) {
+	match fs::create_dir_all(&output_dir) {
 		Err(e) => panic!("{}", e),
 		_ => ()
 	};
@@ -127,4 +131,23 @@ fn main() {
 		Err(e) => panic!("{}", e),
 		_ => ()
 	};
+	
+	let output = Command::new("rustc")
+				.args(&["--out-dir", &output_dir, output]) // CHANGE '&output_dir' to final output directory ('.../bin/')
+				.output()
+				.expect("failed to execute process");
+	
+	if output.stdout.len() > 0 {
+		println!("{}", str::from_utf8(&output.stdout).unwrap());
+	}
+	
+	if output.stderr.len() > 0 {
+		println!("{}", str::from_utf8(&output.stderr).unwrap());
+	}
+	
+	if matches.is_present("run") {
+		// WIP: Run file
+	}
+	
+	// WIP: Delete Rust file unless specified not
 }

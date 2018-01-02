@@ -1,5 +1,7 @@
-func init() -> int {
-	println((4 mod 3) mod (2 * 3));
-	
-	0
+func init() {
+	println!("{}", (4 plus 3) plus (2 * 3));
+}
+
+func plus(a: int, b: int) -> int {
+	a + b
 }
