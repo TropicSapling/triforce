@@ -8,10 +8,23 @@ use clap::{Arg, App};
 use term_painter::Color::*;
 use term_painter::ToStyle;
 
+use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 
 use lib::{lex, lex2, parse, compile};
+
+fn get_dir_from_path(input: &str) -> String {
+	let mut file_start = 0;
+	for (i, item) in input.chars().rev().enumerate() {
+		if item == '/' {
+			file_start = input.len() - i;
+			break;
+		}
+	}
+	
+	(&input[..file_start]).to_owned()
+}
 
 fn get_default_output(input: &str) -> String {
 	let mut file_start = 0;
@@ -49,13 +62,20 @@ fn main() {
 			.short("d")
 			.long("debug")
 			.help("Enables debug mode"))
+		.arg(Arg::with_name("run")
+			.long("run")
+			.help("Runs file after compiling"))
+		.arg(Arg::with_name("rust")
+			.short("r")
+			.long("rust")
+			.help("Compiles into Rust instead of executable"))
 		.get_matches();
 	
 	let debugging = matches.is_present("debug");
 	
 	let input = matches.value_of("input").unwrap();
-	let default_out = &get_default_output(input);
-	let output = matches.value_of("output").unwrap_or(default_out);
+	let default_out = get_default_output(input);
+	let (output, output_dir) = (matches.value_of("output").unwrap_or(&default_out), get_dir_from_path(matches.value_of("output").unwrap_or(&default_out)));
 	
 	if debugging {
 		println!("{} INPUT FILE: {}", BrightYellow.paint("[DEBUG]"), input);
@@ -88,11 +108,23 @@ fn main() {
 		i += 1;
 	}
 	
-/*	let mut out_file = File::create(output)?;
-	
-	out_file.write_all(out_contents); */
 	if debugging {
+		println!("{} OUTPUT DIR: {}", BrightYellow.paint("[DEBUG]"), output_dir);
 		println!("{} OUTPUT FILE: {}", BrightYellow.paint("[DEBUG]"), output);
-		println!("{} Result:\n{}", BrightYellow.paint("[DEBUG]"), out_contents);
 	}
+	
+	match fs::create_dir_all(output_dir) {
+		Err(e) => panic!("{}", e),
+		_ => ()
+	};
+	
+	let mut out_file = match File::create(output) {
+		Err(e) => panic!("{}", e),
+		Ok(t) => t
+	};
+	
+	match out_file.write_all(out_contents.as_bytes()) {
+		Err(e) => panic!("{}", e),
+		_ => ()
+	};
 }
