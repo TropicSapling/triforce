@@ -172,68 +172,82 @@ fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
 	while {
 		j += 1;
 		
-		tokens[i + j].t == "whitespace"
+		i + j < tokens.len() && tokens[i + j].t == "whitespace"
 	} {}
 	
-	j
+	if i + j < tokens.len() {
+		j
+	} else {
+		0
+	}
 }
 
-pub fn compile(tokens: Vec<Token>) -> String {
-	let mut output = String::new();
+fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'static str) {
+	let mut tok_str = String::from(op);
 	
-	let mut i = 0;
-	while i < tokens.len() {
-		match tokens[i].val.as_ref() {
-			":" | "array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token"),
-			"@" => output += "*",
-			"-" if tokens[i + 1].val == ">" && tokens[i + 1 + nxt(&tokens, i + 1)].t != "type" => {
-				output += "&";
-				i += 1;
-			},
-			_ => {
-				let pos_change = match tokens[i].t {
-					"str1" | "str2" | "number" | "literal" | "variable" => {
-						let nxt_tok = nxt(&tokens, i);
-						if tokens[i + nxt_tok].t == "variable" {
-							output += &tokens[i + nxt_tok].val;
-							output += "(";
-							nxt_tok
-						} else {
-							0
-						}
-					},
-					_ => 0
-				};
-				
-				match tokens[i].t {
-					"str1" => {
-						output += "\"";
-						output += &tokens[i].val;
-						output += "\"";
-					},
-					"str2" => {
-						output += "'";
-						output += &tokens[i].val;
-						output += "'";
-					},
-					_ => output += &tokens[i].val
-				}
-				
-				if pos_change > 0 {
-					i += pos_change;
-					
-					let nxt_tok = nxt(&tokens, i);
-					output += ",";
-					output += &tokens[i + nxt_tok].val;
-					output += ")";
-					
-					i += nxt_tok;
-				}
-			}
-		};
-		
-		i += 1;
+	while tokens[*i].val != op_close {
+		*i += 1;
+		tok_str = compile(tokens, i, tok_str);
 	}
+	
+	tokens[*i].val = tok_str;
+	tokens[*i].t = "variable";
+	
+	*i -= 1;
+}
+
+pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {
+	match tokens[*i].val.as_ref() {
+		":" | "array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token"),
+		"@" => output += "*",
+		"-" if tokens[*i + 1].val == ">" && tokens[*i + 1 + nxt(&tokens, *i + 1)].t != "type" => {
+			output += "&";
+			*i += 1;
+		},
+		"(" => group(&mut tokens, i, "(", ")"),
+		"[" => group(&mut tokens, i, "[", "]"),
+		"{" => group(&mut tokens, i, "{", "}"),
+		_ => {
+			let pos_change = match tokens[*i].t {
+				"str1" | "str2" | "number" | "literal" | "variable" => {
+					let nxt_tok = nxt(&tokens, *i);
+					if nxt_tok > 0 && tokens[*i + nxt_tok].t == "variable" {
+						output += &tokens[*i + nxt_tok].val;
+						output += "(";
+						nxt_tok
+					} else {
+						0
+					}
+				},
+				_ => 0
+			};
+			
+			match tokens[*i].t {
+				"str1" => {
+					output += "\"";
+					output += &tokens[*i].val;
+					output += "\"";
+				},
+				"str2" => {
+					output += "'";
+					output += &tokens[*i].val;
+					output += "'";
+				},
+				_ => output += &tokens[*i].val
+			}
+			
+			if pos_change > 0 {
+				*i += pos_change;
+				
+				let nxt_tok = nxt(&tokens, *i);
+				output += ",";
+				output += &tokens[*i + nxt_tok].val;
+				output += ")";
+				
+				*i += nxt_tok;
+			}
+		}
+	};
 	
 	output
 }

@@ -76,12 +76,18 @@ fn main() {
 		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
-	let parsed_tokens = parse(tokens);
+	let mut parsed_tokens = parse(tokens);
 	if debugging {
 //		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), parsed_tokens);
 	}
 	
-	let mut out_contents = compile(parsed_tokens);
+	let mut out_contents = String::new();
+	let mut i = 0;
+	while i < parsed_tokens.len() {
+		out_contents = compile(&mut parsed_tokens, &mut i, out_contents);
+		i += 1;
+	}
+	
 /*	let mut out_file = File::create(output)?;
 	
 	out_file.write_all(out_contents); */
