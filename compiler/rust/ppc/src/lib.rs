@@ -243,18 +243,6 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 						0
 					}
 				},
-				"type" => {
-					let nxt_tok = nxt(tokens, *i);
-					if nxt_tok > 0 && tokens[*i + nxt_tok].t == "variable" {
-						output += &tokens[*i + nxt_tok].val;
-						output += ":";
-						output += &tokens[*i].val;
-						
-						*i += nxt_tok + 1;
-					}
-					
-					0
-				},
 				_ => 0
 			};
 			
@@ -268,6 +256,24 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 					output += "'";
 					output += &tokens[*i].val;
 					output += "'";
+				},
+				"type" => {
+					let nxt_tok = nxt(tokens, *i);
+					if nxt_tok > 0 && tokens[*i + nxt_tok].t == "variable" {
+						output += &tokens[*i + nxt_tok].val;
+						output += ":";
+						output += match tokens[*i].val.as_ref() {
+							"int" => "i64",
+							_ => &tokens[*i].val
+						};
+						
+						*i += nxt_tok;
+					} else {
+						output += match tokens[*i].val.as_ref() {
+							"int" => "i64",
+							_ => &tokens[*i].val
+						};
+					}
 				},
 				_ => output += &tokens[*i].val
 			}
