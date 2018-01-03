@@ -231,7 +231,6 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 		"{" => group(&mut tokens, i, "{", "}"),
 		"init" => output += "main",
 		"func" => output += "fn",
-		"int" => output += "i32", // TMP; for testing only
 		_ => {
 			let pos_change = match tokens[*i].t {
 				"str1" | "str2" | "number" | "literal" | "variable" => {
@@ -243,6 +242,18 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 					} else {
 						0
 					}
+				},
+				"type" => {
+					let nxt_tok = nxt(tokens, *i);
+					if nxt_tok > 0 && tokens[*i + nxt_tok].t == "variable" {
+						output += &tokens[*i + nxt_tok].val;
+						output += ":";
+						output += &tokens[*i].val;
+						
+						*i += nxt_tok + 1;
+					}
+					
+					0
 				},
 				_ => 0
 			};
