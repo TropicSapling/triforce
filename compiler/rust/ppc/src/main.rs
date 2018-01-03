@@ -59,13 +59,13 @@ fn main() {
 	let io = get_io(&input);
 	
 	let (output, output_dir) = (
-		matches.value_of("output").unwrap_or(io.0.to_str().unwrap()),
-		matches.value_of("output").unwrap_or(io.1.to_str().unwrap())
+		matches.value_of("output").unwrap_or(io.0.to_str().unwrap()), // NEEDS FIXING for custom directories
+		matches.value_of("output").unwrap_or(io.1.to_str().unwrap()) // NEEDS FIXING for custom directories
 	);
 	
 	let (final_output, final_output_dir) = (
 		matches.value_of("output").unwrap_or(io.2.to_str().unwrap()),
-		matches.value_of("output").unwrap_or(io.3.to_str().unwrap())
+		matches.value_of("output").unwrap_or(io.3.to_str().unwrap()) // NEEDS FIXING for custom directories
 	);
 	
 	let mut in_file = File::open(input).expect("file not found");
