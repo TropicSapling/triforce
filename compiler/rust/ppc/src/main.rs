@@ -103,7 +103,7 @@ fn main() {
 	match fs::create_dir_all(&output_dir) {
 		Err(e) => panic!("{}", e),
 		_ => ()
-	};
+	}
 	
 	let mut out_file = match File::create(output) {
 		Err(e) => panic!("{}", e),
@@ -113,7 +113,7 @@ fn main() {
 	match out_file.write_all(out_contents.as_bytes()) {
 		Err(e) => panic!("{}", e),
 		_ => ()
-	};
+	}
 	
 	if debugging {
 		println!("{} FINAL OUTPUT DIR: {:?}", BrightYellow.paint("[DEBUG]"), final_output_dir);
@@ -123,7 +123,7 @@ fn main() {
 	match fs::create_dir_all(&final_output_dir) {
 		Err(e) => panic!("{}", e),
 		_ => ()
-	};
+	}
 	
 	let out = Command::new("rustc")
 		.args(&["--out-dir", &final_output_dir, &output])
@@ -158,5 +158,15 @@ fn main() {
 		}
 	}
 	
-	// WIP: Delete Rust file unless specified not
+	if !matches.is_present("rust") {
+		match fs::remove_file(&output) {
+			Err(e) => panic!("{}", e),
+			_ => ()
+		}
+		
+/*		match fs::remove_dir(&output_dir) { // Doesn't work (on Windows) for some reason?
+			Err(e) => panic!("{}", e),
+			_ => ()
+		} */
+	}
 }
