@@ -25,8 +25,6 @@ fn main() {
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
-			.short("i")
-			.long("input")
 			.value_name("file")
 			.help("Specifies an input file")
 			.required(true))
@@ -56,17 +54,15 @@ fn main() {
 		println!("{} INPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), input);
 	}
 	
-	let io = get_io(&input);
+	let io;
 	
-	let (output, output_dir) = (
-		matches.value_of("output").unwrap_or(io.0.to_str().unwrap()), // NEEDS FIXING for custom directories
-		matches.value_of("output").unwrap_or(io.1.to_str().unwrap()) // NEEDS FIXING for custom directories
-	);
-	
-	let (final_output, final_output_dir) = (
-		matches.value_of("output").unwrap_or(io.2.to_str().unwrap()),
-		matches.value_of("output").unwrap_or(io.3.to_str().unwrap()) // NEEDS FIXING for custom directories
-	);
+	let (output, output_dir, final_output, final_output_dir) = if matches.value_of("output").is_some() {
+		io = get_io(&PathBuf::from(matches.value_of("output").unwrap()));
+		(io.0.to_str().unwrap(), io.1.to_str().unwrap(), io.2.to_str().unwrap(), io.3.to_str().unwrap())
+	} else {
+		io = get_io(&input);
+		(io.0.to_str().unwrap(), io.1.to_str().unwrap(), io.2.to_str().unwrap(), io.3.to_str().unwrap())
+	};
 	
 	let mut in_file = File::open(input).expect("file not found");
 	let mut in_contents = String::new();
