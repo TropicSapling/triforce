@@ -75,7 +75,7 @@ fn main() {
 	
 	let lexed_contents = lex(&in_contents);
 	if debugging {
-		println!("{} LEX1: {:#?}\n", BrightYellow.paint("[DEBUG]"), lexed_contents);
+//		println!("{} LEX1: {:#?}\n", BrightYellow.paint("[DEBUG]"), lexed_contents);
 	}
 	
 	let tokens = lex2(lexed_contents);
@@ -115,21 +115,47 @@ fn main() {
 		_ => ()
 	};
 	
+	if debugging {
+		println!("{} FINAL OUTPUT DIR: {:?}", BrightYellow.paint("[DEBUG]"), final_output_dir);
+		println!("{} FINAL OUTPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), final_output);
+	}
+	
+	match fs::create_dir_all(&final_output_dir) {
+		Err(e) => panic!("{}", e),
+		_ => ()
+	};
+	
 	let out = Command::new("rustc")
-				.args(&["--out-dir", &final_output_dir, &output])
-				.output()
-				.expect("failed to execute process");
+		.args(&["--out-dir", &final_output_dir, &output])
+		.output()
+		.expect("failed to execute process");
 	
 	if out.stdout.len() > 0 {
-		println!("{}", str::from_utf8(&out.stdout).unwrap());
+		print!("{}", str::from_utf8(&out.stdout).unwrap());
 	}
 	
 	if out.stderr.len() > 0 {
-		println!("{}", str::from_utf8(&out.stderr).unwrap());
+		print!("{}", str::from_utf8(&out.stderr).unwrap());
 	}
 	
 	if matches.is_present("run") {
-		// WIP: Run file
+		let out = if cfg!(target_os = "windows") {
+			Command::new(&final_output)
+				.output()
+				.expect("failed to execute process")
+		} else {
+			Command::new(String::from("./") + &final_output)
+				.output()
+				.expect("failed to execute process")
+		};
+		
+		if out.stdout.len() > 0 {
+			print!("{}", str::from_utf8(&out.stdout).unwrap());
+		}
+		
+		if out.stderr.len() > 0 {
+			print!("{}", str::from_utf8(&out.stderr).unwrap());
+		}
 	}
 	
 	// WIP: Delete Rust file unless specified not

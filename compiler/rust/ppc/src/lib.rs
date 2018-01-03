@@ -14,7 +14,6 @@ fn is_var(c: char) -> bool {
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
 	let mut default_out = (*input)
 		.parent().unwrap()
-		.parent().unwrap()
 		.to_path_buf();
 	default_out.push("rust");
 	default_out.push(input.file_name().unwrap());
@@ -22,12 +21,10 @@ pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
 	
 	let mut default_out_dir = (*input)
 		.parent().unwrap()
-		.parent().unwrap()
 		.to_path_buf();
 	default_out_dir.push("rust");
 	
 	let mut default_fin_out = (*input)
-		.parent().unwrap()
 		.parent().unwrap()
 		.to_path_buf();
 	default_fin_out.push("bin");
@@ -35,7 +32,6 @@ pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
 	default_fin_out.set_extension("exe"); // TODO: Support for Linux
 	
 	let mut default_fin_out_dir = (*input)
-		.parent().unwrap()
 		.parent().unwrap()
 		.to_path_buf();
 	default_fin_out_dir.push("bin");
