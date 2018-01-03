@@ -169,7 +169,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 						"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" => "operator",
 						"{" | "}" | "[" | "]" | "(" | ")" => "group operator",
 						"array" | "bool" | "chan" | "char" | "const" | "fraction" | "func" | "heap" | "int" | "list" | "number" | "only" | "pointer" | "register" | "signed" | "stack" | "unique" | "unsigned" | "void" | "volatile" => "type",
-						"as" | "async" | "break" | "continue" | "else" | "foreach" | "from" | "goto" | "if" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => "reserved",
+						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => "reserved",
 						"false" | "true" => "literal",
 						"\n" | "\r" | "\t" | " " => "whitespace",
 						_ => "variable"
@@ -220,7 +220,7 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 
 pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].val.as_ref() {
-		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token"),
+		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token '{}'", tokens[*i].val),
 		"@" => output += "*",
 		"-" if tokens[*i + 1].val == ">" && tokens[*i + 1 + nxt(tokens, *i + 1)].t != "type" => {
 			output += "&";
@@ -231,6 +231,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 		"{" => group(&mut tokens, i, "{", "}"),
 		"init" => output += "main",
 		"func" => output += "fn",
+		"import" => output += "use",
 		_ => {
 			let pos_change = match tokens[*i].t {
 				"str1" | "str2" | "number" | "literal" | "variable" => {
