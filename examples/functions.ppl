@@ -2,6 +2,6 @@ func init() {
 	println!("{}", (4 plus 3) plus (2 * 3));
 }
 
-func plus(a: int, b: int) -> int {
+func plus(int a, int b) -> int {
 	a + b
 }
