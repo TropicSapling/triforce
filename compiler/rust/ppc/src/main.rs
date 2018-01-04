@@ -48,7 +48,7 @@ fn main() {
 	
 	let debugging = matches.is_present("debug");
 	
-	let input = PathBuf::from(matches.value_of("input").unwrap());
+	let mut input = PathBuf::from(matches.value_of("input").unwrap());
 	
 	if debugging {
 		println!("{} INPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), input);
@@ -64,7 +64,16 @@ fn main() {
 		(io.0.to_str().unwrap(), io.1.to_str().unwrap(), io.2.to_str().unwrap(), io.3.to_str().unwrap())
 	};
 	
-	let mut in_file = File::open(input).expect("file not found");
+	let mut in_file = match File::open(&input) {
+		Err(e) => if !input.extension().is_some() {
+			input.set_extension("ppl");
+			
+			File::open(input).expect("file not found")
+		} else {
+			panic!("{}", e);
+		},
+		Ok(t) => t
+	};
 	let mut in_contents = String::new();
 	
 	in_file.read_to_string(&mut in_contents).expect("failed to read file");
