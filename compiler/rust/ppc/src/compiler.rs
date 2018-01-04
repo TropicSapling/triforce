@@ -47,6 +47,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 		"init" => output += "main",
 		"func" => output += "fn",
 		"import" => output += "use",
+		"foreach" => output += "for",
 		_ => {
 			let pos_change = match tokens[*i].t {
 				"str1" | "str2" | "number" | "literal" | "variable" => {

@@ -73,6 +73,12 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					continue;
 				} else {
 					possible_comment = false;
+					
+					string.val = String::from("/");
+					string.t = "operator";
+					
+					res.push(string.clone());
+					string.val = String::from("");
 				}
 			}
 			

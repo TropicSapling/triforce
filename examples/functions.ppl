@@ -1,7 +1,13 @@
 func init() {
-	println!("{}", (4 plus 3) plus (2 * 3));
+	println!("{}", (4 pow 3) pow (2 * 3));
 }
 
-func plus(int a, int b) -> int {
-	a + b
+func pow(int base, int exp) -> int {
+	if exp == 0 {
+		1
+	} else if exp % 2 == 0 {
+		base pow (exp / 2) * base pow (exp / 2)
+	} else {
+		base * base pow (exp / 2) * base pow (exp / 2)
+	}
 }
