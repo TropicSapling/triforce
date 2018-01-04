@@ -2,6 +2,8 @@ extern crate clap;
 extern crate term_painter;
 
 mod lib;
+mod lexer;
+mod compiler;
 
 use clap::{Arg, App};
 
@@ -17,7 +19,9 @@ use std::path::PathBuf;
 
 use std::str;
 
-use lib::{get_io, lex, lex2, parse, compile};
+use lib::get_io;
+use lexer::{lex, lex2};
+use compiler::{parse, compile};
 
 fn main() {
 	let matches = App::new("ppc")
@@ -54,6 +58,8 @@ fn main() {
 		println!("{} INPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), input);
 	}
 	
+	//////// GET OUTPUT PATHS ////////
+	
 	let io;
 	
 	let (output, output_dir, final_output, final_output_dir) = if matches.value_of("output").is_some() {
@@ -63,6 +69,8 @@ fn main() {
 		io = get_io(&input);
 		(io.0.to_str().unwrap(), io.1.to_str().unwrap(), io.2.to_str().unwrap(), io.3.to_str().unwrap())
 	};
+	
+	//////// OPEN INPUT FILE ////////
 	
 	let mut in_file = match File::open(&input) {
 		Err(e) => if !input.extension().is_some() {
@@ -77,6 +85,8 @@ fn main() {
 	let mut in_contents = String::new();
 	
 	in_file.read_to_string(&mut in_contents).expect("failed to read file");
+	
+	//////// LEX, PARSE & COMPILE ////////
 	
 	let lexed_contents = lex(&in_contents);
 	if debugging {
@@ -100,6 +110,8 @@ fn main() {
 		i += 1;
 	}
 	
+	//////// CREATE RUST OUTPUT ////////
+	
 	if debugging {
 		println!("{} OUTPUT DIR: {:?}", BrightYellow.paint("[DEBUG]"), output_dir);
 		println!("{} OUTPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), output);
@@ -119,6 +131,8 @@ fn main() {
 		Err(e) => panic!("{}", e),
 		_ => ()
 	}
+	
+	//////// CREATE BINARY OUTPUT ////////
 	
 	if debugging {
 		println!("{} FINAL OUTPUT DIR: {:?}", BrightYellow.paint("[DEBUG]"), final_output_dir);
@@ -143,6 +157,8 @@ fn main() {
 		print!("{}", str::from_utf8(&out.stderr).unwrap());
 	}
 	
+	//////// RUN COMPILED BINARY ////////
+	
 	if matches.is_present("run") {
 		let out = if cfg!(target_os = "windows") {
 			Command::new(&final_output)
@@ -162,6 +178,8 @@ fn main() {
 			print!("{}", str::from_utf8(&out.stderr).unwrap());
 		}
 	}
+	
+	//////// DELETE RUST FILES ////////
 	
 	if !matches.is_present("rust") {
 		match fs::remove_file(&output) {
