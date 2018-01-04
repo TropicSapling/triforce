@@ -18,159 +18,30 @@ P+ is for...
 
 <sub>Everything else is **required.**</sub>
 
-### Current
-
 --------
 
-#### Data types
-##### Basic
+### Data types
+#### Basic
 * `char`
-
-##### Special
-* `void`
-
---------
-
-#### Operators
-##### Arithmetic
-* `+`
-* `-`
-* `*`
-* `/`
-* `%`
-
-##### Bitwise
-* `&`
-* `|`
-* `~`
-* `^`
-* `<<`
-* `>>`
-
-##### Compound Assignment
-* `+=`
-* `-=`
-* `*=`
-* `/=`
-* `%=`
-* `&=`
-* `|=`
-* `^=`
-* `<<=`
-* `>>=`
-
-##### Logical
-* `!`
-* `&&`
-* `||`
-
-##### Relational
-* `==`
-* `!=`
-* `>`
-* `<`
-* `>=`
-* `<=`
-
-##### Misc.
-* `? :` (**NOTE:** Might get replaced by `if` in the future, and the `?` might be used for exception handling instead)
-* `->`
-* `[]`
-* `@`
-* `>>>`
-
---------
-
-#### Lists
-* `str[>>>] == "Test"`
-* `str[start >>> stop]`
-* `str == address`
-* `str[when <condition> >>> until <condition>]`
-
---------
-
-#### Conditionals
-* `if(<condition>) { <code> } [else if(<condition>) { <code> } else if...] [else { <code> }]`
-* `match(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }` (equivalent of C's `switch`)
-
---------
-
-#### Strings
-* `"null terminated string"`
-* `'string size determined by <size> property'`
-* `'null terminated string, but <size> property can still be used to get size\0'`
-* `"null terminated string" == 'null terminated string\0'`
-
---------
-
-#### Loops
-* `while(<condition>) { <code> }`
-* `repeat(<n times>) { <code> }`
-* `break`
-* `continue`
-
---------
-
-#### Defining
-* `#def '<code>' as '<code>'` (will support regex in the future using `#{<regex>}`, as well as `%{(property|properties|var)}`)
-* `#ifdef <const>`
-* `#ifndef <const>`
-* `#endif`
-
---------
-
-#### Special
-* `goto <label>`
-* ``#import (('|")<path>('|")|`<`<std lib path>`>`) [as <name>]``
-* `#export <function1>[, <function2>...]`
-
---------
-
-#### Built-in global variables
-* `__OS`
-* `__path`
-* `__args`
-* `__argc`
-* `__line`
-* `__item`
-
---------
-
-#### Comments
-* `// <One line comment>`
-
-```
-/* <Multi
-line
-comment> */
-```
-
---------
-
-### Planned
-
---------
-
-#### Data types
-##### Basic
 * `number`
 * `bool`
 * `(array|list|pointer)[*<n>]`
 * `func`
 
-##### Extras
+#### Extras
 * `only [register|stack|heap] [volatile] [unique] [func] (array|list|pointer)[*<n>] [chan]`
 * `[register|stack|heap] [const|volatile] [unsigned|signed|fraction] number [func] [(array|list|pointer)[*<n>]] [chan]`
 * `only [register|stack|heap] [volatile] [unsigned|signed|fraction] number [func] (array|list|pointer)[*<n>] [chan]`
 * `[register|stack|heap] [const|volatile] [unsigned|signed] (int|char) [func] [(array|list|pointer)[*<n>]] [chan]`
 * `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) [func] (array|list|pointer)[*<n>] [chan]`
 
-##### Special
+#### Special
+* `void`
 * ``type <custom type> extends <type1>[`|`<type2>`|`<type3>...]``
 * `clang <type> <function name>([<parameters>]) { <C code> }`
 * Not specifying a type for a function parameter allows the parameter to be of any type.
 
-##### Properties
+#### Properties
 * `` var`<type>` ``
 * `` var`<size>` ``
 * `` var`<memsize>` ``
@@ -188,17 +59,64 @@ comment> */
 
 --------
 
-#### Operators
-##### Arithmetic
+### Operators
+#### Arithmetic
+* `+`
+* `-`
+* `*`
+* `/`
+* `%`
 * `**`
 
-##### Misc.
+#### Bitwise
+* `&`
+* `|`
+* `~`
+* `^`
+* `<<`
+* `>>`
+
+#### Compound Assignment
+* `+=`
+* `-=`
+* `*=`
+* `/=`
+* `%=`
+* `&=`
+* `|=`
+* `^=`
+* `<<=`
+* `>>=`
+
+#### Logical
+* `!`
+* `&&`
+* `||`
+
+#### Relational
+* `==`
+* `!=`
+* `>`
+* `<`
+* `>=`
+* `<=`
+
+#### Misc.
+* `? :` (**NOTE:** Might get replaced by `if` in the future, and the `?` might be used for exception handling instead)
+* `->`
+* `[]`
+* `@`
+* `>>>`
 * `<<<`
 * `in` (example: `if(item in arr) ...`)
 
 --------
 
-#### Lists & arrays
+### Lists & arrays
+* `str[>>>] == "Test"`
+* `str[start >>> stop]`
+* `str == address`
+* `str[when <condition> >>> until <condition>]`
 * `pointer sublist -> some_list[start >>> stop]`
 * `pointer sublist2 -> some_list[when <condition> >>> until <condition>]`
 * `pointer new_sublist -> [1, 2, 3]`
@@ -208,7 +126,21 @@ comment> */
 
 --------
 
-#### Functions
+### Conditionals
+* `if(<condition>) { <code> } [else if(<condition>) { <code> } else if...] [else { <code> }]`
+* `match(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }` (equivalent of C's `switch`)
+
+--------
+
+### Strings
+* `"null terminated string"`
+* `'string size determined by <size> property'`
+* `'null terminated string, but <size> property can still be used to get size\0'`
+* `"null terminated string" == 'null terminated string\0'`
+
+--------
+
+### Functions
 * `func <function>([<parameters>]) [-> <return type>] { <code> }`
 * `<function>([parameters])` or `<function> <parameter>` or `<parameter> <function> <parameter>`
 * `return [from <function>] <value>`
@@ -218,12 +150,16 @@ comment> */
 
 --------
 
-#### Loops
+### Loops
+* `while(<condition>) { <code> }`
 * `foreach <item> in <list> { <code> }`
+* `repeat(<n times>) { <code> }`
+* `break`
+* `continue`
 
 --------
 
-#### Concurrency
+### Concurrency
 * `async { <code> }`
 * `select { <cases> }`
 * `send <data> to <channel>`
@@ -231,24 +167,48 @@ comment> */
 
 --------
 
-#### Defining
+### Defining
+* `#def '<code>' as '<code>'` (will support regex in the future using `#{<regex>}`, as well as `%{(property|properties|var)}`)
 * `#if <condition>`
 * `#else`
 * `#elif <condition>`
+* `#ifdef <const>`
+* `#ifndef <const>`
+* `#endif`
 
 --------
 
-#### Special
+### Special
+* `goto <label>`
+* ``#import (('|")<path>('|")|`<`<std lib path>`>`) [as <name>]``
+* `#export <function1>[, <function2>...]`
 * `eval '<code>'`
 
 --------
 
-#### Built-in global variables
+### Built-in global variables
+* `__OS`
+* `__path`
+* `__args`
+* `__argc`
+* `__line`
+* `__item`
 * `__app`
 
 --------
 
-#### Precedence
+### Comments
+* `// <One line comment>`
+
+```
+/* <Multi
+line
+comment> */
+```
+
+--------
+
+### Precedence
 1. `()`, `[]`, `.`, `++`, `--`
 2. `!`, `~`, `(<type>)`, `@`, `->`
 3. `*`, `/`, `%`, `**`
