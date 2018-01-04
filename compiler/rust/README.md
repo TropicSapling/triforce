@@ -82,6 +82,7 @@
 
 ### Loops
 * `while <condition> { <code> }`
+* `foreach <item> in <list> { <code> }`
 * `break`
 * `continue`
 
