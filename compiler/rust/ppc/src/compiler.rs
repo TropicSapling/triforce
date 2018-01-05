@@ -1,5 +1,9 @@
 use lib::Token;
 
+macro_rules! last {
+	($e:expr) => ($e[$e.len() - 1]);
+}
+
 fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
 	let mut j: usize = 0;
 	while {
@@ -75,18 +79,50 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 					output += "'";
 				},
 				"type" => {
-					let nxt_tok = nxt(tokens, *i);
-					if nxt_tok > 0 && tokens[*i + nxt_tok].t == "variable" {
-						output += &tokens[*i + nxt_tok].val;
+					let mut nxt_tokens: Vec<usize> = vec!(nxt(tokens, *i));
+					while last!(nxt_tokens) > 0 && tokens[*i + last!(nxt_tokens)].t == "type" {
+						let last_tok = last!(nxt_tokens);
+						nxt_tokens.push(nxt(tokens, *i + last_tok) + last_tok);
+					}
+					
+					if last!(nxt_tokens) > 0 && tokens[*i + last!(nxt_tokens)].t == "variable" {
+						output += &tokens[*i + last!(nxt_tokens)].val;
 						output += ":";
+						
 						output += match tokens[*i].val.as_ref() {
+							"unsigned" => {
+								*i += nxt_tokens[1];
+								
+								if nxt_tokens[1] > 0 && tokens[*i].t == "type" {
+									match tokens[*i].val.as_ref() {
+										"int" => "u64",
+										_ => panic!("Invalid type '{}' following 'unsigned'", tokens[*i].val)
+									}
+								} else {
+									panic!("Missing data type following 'unsigned'");
+								}
+							},
 							"int" => "i64",
 							_ => &tokens[*i].val
 						};
 						
-						*i += nxt_tok;
+						*i += last!(nxt_tokens);
 					} else {
 						output += match tokens[*i].val.as_ref() {
+							"unsigned" => {
+								let nxt_tok = nxt(tokens, *i);
+								
+								*i += nxt_tok;
+								
+								if nxt_tok > 0 && tokens[*i].t == "type" {
+									match tokens[*i].val.as_ref() {
+										"int" => "u64",
+										_ => panic!("Invalid type '{}' following 'unsigned'", tokens[*i].val)
+									}
+								} else {
+									panic!("Missing data type following 'unsigned'");
+								}
+							},
 							"int" => "i64",
 							_ => &tokens[*i].val
 						};
