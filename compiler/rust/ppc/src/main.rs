@@ -14,6 +14,7 @@ use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
 
+use std::process;
 use std::process::Command;
 use std::path::PathBuf;
 
@@ -73,18 +74,32 @@ fn main() {
 	//////// OPEN INPUT FILE ////////
 	
 	let mut in_file = match File::open(&input) {
-		Err(e) => if !input.extension().is_some() {
+		Err(_e) => if !input.extension().is_some() {
 			input.set_extension("ppl");
 			
-			File::open(input).expect("file not found")
+			match File::open(&input) {
+				Ok(file) => file,
+				Err(_err) => {
+					println!("{} Failed to find given file, make sure the file exists. File: {:?}", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
+					process::exit(1);
+				}
+			}
 		} else {
-			panic!("{}", e);
+			println!("{} Failed to find given file, make sure the file exists. File: {:?}", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
+			process::exit(1);
 		},
 		Ok(t) => t
 	};
 	let mut in_contents = String::new();
 	
-	in_file.read_to_string(&mut in_contents).expect("failed to read file");
+	match in_file.read_to_string(&mut in_contents) {
+		Ok(t) => t,
+		Err(_er) => {
+			println!("{} Failed to open given file, make sure the file is UTF-8. File: {:?}", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
+			process::exit(1);
+		}
+	};
+	
 	
 	//////// LEX, PARSE & COMPILE ////////
 	
