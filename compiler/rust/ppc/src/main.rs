@@ -83,22 +83,23 @@ fn init() -> i32 {
 			match File::open(&input) {
 				Ok(file) => file,
 				Err(err) => {
-					println!("{} Failed to find given file, make sure the file exists. File: {:?}", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
+					println!("{} Failed to open file {:?}.", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
 					return 1;
 				}
 			}
 		} else {
-			println!("{} Failed to find given file, make sure the file exists. File: {:?}", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
+			println!("{} Failed to open file {:?}.", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
 			return 1;
 		},
 		Ok(t) => t
 	};
+	
 	let mut in_contents = String::new();
 	
 	match in_file.read_to_string(&mut in_contents) {
 		Ok(t) => t,
 		Err(e) => {
-			println!("{} Failed to open given file, make sure the file is UTF-8. File: {:?}", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
+			println!("{} Failed to read file {:?}, make sure the file is UTF-8.", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
 			return 1;
 		}
 	};
@@ -210,4 +211,6 @@ fn init() -> i32 {
 			_ => ()
 		} */
 	}
+	
+	0
 }
