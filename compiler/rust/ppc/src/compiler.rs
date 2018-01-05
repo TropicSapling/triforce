@@ -82,7 +82,14 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 					let mut nxt_tokens: Vec<usize> = vec!(nxt(tokens, *i));
 					while last!(nxt_tokens) > 0 && tokens[*i + last!(nxt_tokens)].t == "type" {
 						let last_tok = last!(nxt_tokens);
-						nxt_tokens.push(nxt(tokens, *i + last_tok) + last_tok);
+						nxt_tokens.push({
+							let nxt_tok = nxt(tokens, *i + last_tok) + last_tok;
+							if nxt_tok == last_tok {
+								0
+							} else {
+								nxt_tok
+							}
+						});
 					}
 					
 					if last!(nxt_tokens) > 0 && tokens[*i + last!(nxt_tokens)].t == "variable" {
@@ -91,12 +98,10 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 						
 						output += match tokens[*i].val.as_ref() {
 							"unsigned" => {
-								*i += nxt_tokens[1];
-								
-								if nxt_tokens[1] > 0 && tokens[*i].t == "type" {
-									match tokens[*i].val.as_ref() {
+								if nxt_tokens[0] > 0 && tokens[*i + nxt_tokens[0]].t == "type" {
+									match tokens[*i + nxt_tokens[0]].val.as_ref() {
 										"int" => "u64",
-										_ => panic!("Invalid type '{}' following 'unsigned'", tokens[*i].val)
+										_ => panic!("Invalid type '{}' following 'unsigned'", tokens[*i + nxt_tokens[0]].val)
 									}
 								} else {
 									panic!("Missing data type following 'unsigned'");
