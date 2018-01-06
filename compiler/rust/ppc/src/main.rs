@@ -24,6 +24,10 @@ use lexer::{lex, lex2};
 use compiler::{parse, compile};
 
 fn main() {
+	init();
+}
+
+fn init() -> i32 {
 	let matches = App::new("ppc")
 		.version("0.1.0-alpha")
 		.about("P+ compiler written in Rust.")
@@ -76,15 +80,29 @@ fn main() {
 		Err(e) => if !input.extension().is_some() {
 			input.set_extension("ppl");
 			
-			File::open(input).expect("file not found")
+			match File::open(&input) {
+				Ok(file) => file,
+				Err(err) => {
+					println!("{} Failed to find given file, make sure the file exists. File: {:?}", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
+					return 1;
+				}
+			}
 		} else {
-			panic!("{}", e);
+			println!("{} Failed to find given file, make sure the file exists. File: {:?}", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
+			return 1;
 		},
 		Ok(t) => t
 	};
 	let mut in_contents = String::new();
 	
-	in_file.read_to_string(&mut in_contents).expect("failed to read file");
+	match in_file.read_to_string(&mut in_contents) {
+		Ok(t) => t,
+		Err(e) => {
+			println!("{} Failed to open given file, make sure the file is UTF-8. File: {:?}", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
+			return 1;
+		}
+	};
+	
 	
 	//////// LEX, PARSE & COMPILE ////////
 	
