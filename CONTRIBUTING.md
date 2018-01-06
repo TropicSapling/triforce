@@ -7,4 +7,4 @@ The following is a set of guidelines for contributing to P+. These are mostly gu
 ### Pull Requests
 * Send your pull requests to the `dev` branch
 * Avoid platform-dependent code
-* Use the present tense ("Add feature" not "Added feature") in the pull request title
+* Use the present tense ("Adding feature" not "Added feature") in the pull request title
