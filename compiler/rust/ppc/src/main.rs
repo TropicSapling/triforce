@@ -13,6 +13,7 @@ use term_painter::ToStyle;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
+use std::io::ErrorKind::{NotFound, PermissionDenied};
 
 use std::process::Command;
 use std::path::PathBuf;
@@ -24,7 +25,11 @@ use lexer::{lex, lex2};
 use compiler::{parse, compile};
 
 fn main() {
-	init();
+	let status = init();
+	
+	if status != 0 {
+		println!("\nProcess exited with error code {}.", status);
+	}
 }
 
 fn init() -> i32 {
@@ -82,14 +87,30 @@ fn init() -> i32 {
 			
 			match File::open(&input) {
 				Ok(file) => file,
-				Err(err) => {
-					println!("{} Failed to open file {:?}.", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
-					return 1;
+				Err(err) => match err.kind() {
+					NotFound => {
+						println!("{} File not found: {:?}.", BrightRed.paint("[ERROR]"), input);
+						return 1;
+					},
+					PermissionDenied => {
+						println!("{} Access denied when trying to open file {:?}.", BrightRed.paint("[ERROR]"), input);
+						return 2;
+					},
+					_ => panic!("failed to open file")
 				}
 			}
 		} else {
-			println!("{} Failed to open file {:?}.", BrightRed.paint("[ERROR]"), input.file_name().unwrap());
-			return 1;
+			match e.kind() {
+				NotFound => {
+					println!("{} File not found: {:?}.", BrightRed.paint("[ERROR]"), input);
+					return 1;
+				},
+				PermissionDenied => {
+					println!("{} Access denied when trying to open file {:?}.", BrightRed.paint("[ERROR]"), input);
+					return 2;
+				},
+				_ => panic!("failed to open file")
+			}
 		},
 		Ok(t) => t
 	};
