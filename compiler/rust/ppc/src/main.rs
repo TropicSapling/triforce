@@ -13,6 +13,7 @@ use term_painter::ToStyle;
 use std::fs;
 use std::fs::File;
 use std::io::prelude::*;
+use std::io::ErrorKind::{NotFound, PermissionDenied};
 
 use std::process::Command;
 use std::path::PathBuf;
@@ -24,6 +25,14 @@ use lexer::{lex, lex2};
 use compiler::{parse, compile};
 
 fn main() {
+	let status = init();
+	
+	if status != 0 {
+		println!("\nProcess exited with error code {}.", status);
+	}
+}
+
+fn init() -> i32 {
 	let matches = App::new("ppc")
 		.version("0.1.0-alpha")
 		.about("P+ compiler written in Rust.")
@@ -76,15 +85,46 @@ fn main() {
 		Err(e) => if !input.extension().is_some() {
 			input.set_extension("ppl");
 			
-			File::open(input).expect("file not found")
+			match File::open(&input) {
+				Ok(file) => file,
+				Err(err) => match err.kind() {
+					NotFound => {
+						println!("{} File not found: {:?}.", BrightRed.paint("[ERROR]"), input);
+						return 1;
+					},
+					PermissionDenied => {
+						println!("{} Access denied when trying to open file {:?}.", BrightRed.paint("[ERROR]"), input);
+						return 2;
+					},
+					_ => panic!("failed to open file")
+				}
+			}
 		} else {
-			panic!("{}", e);
+			match e.kind() {
+				NotFound => {
+					println!("{} File not found: {:?}.", BrightRed.paint("[ERROR]"), input);
+					return 1;
+				},
+				PermissionDenied => {
+					println!("{} Access denied when trying to open file {:?}.", BrightRed.paint("[ERROR]"), input);
+					return 2;
+				},
+				_ => panic!("failed to open file")
+			}
 		},
 		Ok(t) => t
 	};
+	
 	let mut in_contents = String::new();
 	
-	in_file.read_to_string(&mut in_contents).expect("failed to read file");
+	match in_file.read_to_string(&mut in_contents) {
+		Ok(t) => t,
+		Err(e) => {
+			println!("{} Failed to read file {:?}; make sure the file contains valid UTF-8 data.", BrightRed.paint("[ERROR]"), input);
+			return 3;
+		}
+	};
+	
 	
 	//////// LEX, PARSE & COMPILE ////////
 	
@@ -192,4 +232,6 @@ fn main() {
 			_ => ()
 		} */
 	}
+	
+	0
 }
