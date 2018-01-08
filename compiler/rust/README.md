@@ -15,8 +15,11 @@
 
 ### Data types
 #### Basic
-* `int` (**NOTE:** corresponds to Rust's i64 for now)
 * `bool`
+* `func`
+
+#### Extras
+* `[unsigned] int` (**NOTE:** corresponds to Rust's i64/u64 for now)
 
 --------
 
@@ -71,7 +74,7 @@
 
 ### Conditionals
 * `if <condition> { <code> } [else if <condition> { <code> } else if...] [else { <code> }]`
-* `match <var> { <val1> => <statement>[, <val2> => <statement>...] }`
+* `match <var> { <val> [as <var>] => <statement>, [<val> [as <var>] => <statement>...] }`
 
 --------
 
