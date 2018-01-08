@@ -119,7 +119,7 @@ fn init() -> i32 {
 	
 	match in_file.read_to_string(&mut in_contents) {
 		Ok(t) => t,
-		Err(e) => {
+		Err(_e) => {
 			println!("{} Failed to read file {:?}; make sure the file contains valid UTF-8 data.", BrightRed.paint("[ERROR]"), input);
 			return 3;
 		}
