@@ -1,4 +1,4 @@
-use lib::Token;
+use lib::{Token, Type};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -28,7 +28,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	let mut res: Vec<Token> = Vec::new();
 	let mut string = Token {
 		val: String::from(""),
-		t: "str1"
+		t: Type::Str1
 	};
 	
 	let mut in_str = false;
@@ -43,7 +43,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	for item in tokens {
 		if ignoring {
 			if item == "\r" || item == "\n" {
-				res.push(Token {val: item.to_string(), t: "whitespace"});
+				res.push(Token {val: item.to_string(), t: Type::Whitespace});
 				
 				ignoring = false;
 			}
@@ -75,7 +75,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					possible_comment = false;
 					
 					string.val = String::from("/");
-					string.t = "operator";
+					string.t = Type::Op;
 					
 					res.push(string.clone());
 					string.val = String::from("");
@@ -110,10 +110,10 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					string.val += item;
 				}
 			} else if item == "\"" {
-				string.t = "str1";
+				string.t = Type::Str1;
 				in_str = true;
 			} else if item == "'" {
-				string.t = "str2";
+				string.t = Type::Str2;
 				in_str2 = true;
 			} else {
 				if num_pos > 0 && (item == "." || num_pos == 2) {
@@ -139,19 +139,19 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					possible_comment = true;
 				} else if item.parse::<u64>().is_ok() {
 					string.val = item.to_string();
-					string.t = "number";
+					string.t = Type::Number;
 					
 					num_pos = 1;
 				} else {
 					string.val = item.to_string();
 					string.t = match item {
-						"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" => "operator",
-						"{" | "}" | "[" | "]" | "(" | ")" => "group operator",
-						"array" | "bool" | "chan" | "char" | "const" | "fraction" | "func" | "heap" | "int" | "list" | "number" | "only" | "pointer" | "register" | "signed" | "stack" | "unique" | "unsigned" | "void" | "volatile" => "type",
-						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => "reserved",
-						"false" | "true" => "literal",
-						"\n" | "\r" | "\t" | " " => "whitespace",
-						_ => "variable"
+						"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" => Type::Op,
+						"{" | "}" | "[" | "]" | "(" | ")" => Type::GroupOp,
+						"array" | "bool" | "chan" | "char" | "const" | "fraction" | "func" | "heap" | "int" | "list" | "number" | "only" | "pointer" | "register" | "signed" | "stack" | "unique" | "unsigned" | "void" | "volatile" => Type::Type,
+						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Type::Reserved,
+						"false" | "true" => Type::Literal,
+						"\n" | "\r" | "\t" | " " => Type::Whitespace,
+						_ => Type::Var
 					};
 					
 					res.push(string.clone());

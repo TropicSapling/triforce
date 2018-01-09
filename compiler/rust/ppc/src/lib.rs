@@ -1,10 +1,26 @@
 use std::path::PathBuf;
 
 #[derive(Clone)]
+#[derive(PartialEq)]
+#[derive(Debug)]
+pub enum Type {
+	GroupOp,
+	Literal,
+	Number,
+	Op,
+	Reserved,
+	Str1,
+	Str2,
+	Type,
+	Var,
+	Whitespace
+}
+
+#[derive(Clone)]
 #[derive(Debug)]
 pub struct Token {
 	pub val: String,
-	pub t: &'static str
+	pub t: Type
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
