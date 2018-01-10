@@ -20,7 +20,8 @@ pub enum Type {
 #[derive(Debug)]
 pub struct Token {
 	pub val: String,
-	pub t: Type
+	pub t: Type,
+	pub line: u32
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {

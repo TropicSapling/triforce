@@ -28,7 +28,8 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	let mut res: Vec<Token> = Vec::new();
 	let mut string = Token {
 		val: String::from(""),
-		t: Type::Str1
+		t: Type::Str1,
+		line: 1
 	};
 	
 	let mut in_str = false;
@@ -39,13 +40,18 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	let mut possible_comment = false;
 	
 	let mut num_pos = 0;
+	let mut line = 1;
 	
 	for item in tokens {
 		if ignoring {
-			if item == "\r" || item == "\n" {
-				res.push(Token {val: item.to_string(), t: Type::Whitespace});
+			if item == "\n" {
+				res.push(Token {val: item.to_string(), t: Type::Whitespace, line: line});
 				
 				ignoring = false;
+			}
+			
+			if item == "\r" {
+				res.push(Token {val: item.to_string(), t: Type::Whitespace, line: line});
 			}
 		} else if ignoring2 {
 			if possible_comment {
@@ -76,6 +82,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					
 					string.val = String::from("/");
 					string.t = Type::Op;
+					string.line = line;
 					
 					res.push(string.clone());
 					string.val = String::from("");
@@ -86,7 +93,9 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				if item == "0" || item == "n" { // Null and newlines
 					string.val += "\\";
 				}
+				
 				string.val += item;
+				string.line = line;
 				
 				escaping = false;
 			} else if in_str {
@@ -111,9 +120,11 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				}
 			} else if item == "\"" {
 				string.t = Type::Str1;
+				string.line = line;
 				in_str = true;
 			} else if item == "'" {
 				string.t = Type::Str2;
+				string.line = line;
 				in_str2 = true;
 			} else {
 				if num_pos > 0 && (item == "." || num_pos == 2) {
@@ -140,6 +151,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				} else if item.parse::<u64>().is_ok() {
 					string.val = item.to_string();
 					string.t = Type::Number;
+					string.line = line;
 					
 					num_pos = 1;
 				} else {
@@ -150,9 +162,14 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 						"array" | "bool" | "chan" | "char" | "const" | "fraction" | "func" | "heap" | "int" | "list" | "number" | "only" | "pointer" | "register" | "signed" | "stack" | "unique" | "unsigned" | "void" | "volatile" => Type::Type,
 						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Type::Reserved,
 						"false" | "true" => Type::Literal,
-						"\n" | "\r" | "\t" | " " => Type::Whitespace,
+						"\n" => {
+							line += 1;
+							Type::Whitespace
+						},
+						"\r" | "\t" | " " => Type::Whitespace,
 						_ => Type::Var
 					};
+					string.line = line;
 					
 					res.push(string.clone());
 					string.val = String::from("");
