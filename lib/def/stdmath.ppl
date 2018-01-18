@@ -1,0 +1,26 @@
+macro func new_assign_op(op, op2) {
+	macro func op(a, b) {
+		a = a op2 b
+	}
+}
+
+export {
+	new_assign_op(+=, +);
+	new_assign_op(-=, -);
+	new_assign_op(*=, *);
+	new_assign_op(/=, /);
+	new_assign_op(%=, %);
+	new_assign_op(>>=, >>);
+	new_assign_op(<<=, <<);
+	new_assign_op(&=, &);
+	new_assign_op(^=, ^);
+	new_assign_op(|=, |);
+
+	macro func ++(a) {
+		a = a + 1
+	}
+
+	macro func --(a) {
+		a = a - 1
+	}
+}
