@@ -39,7 +39,7 @@ pub fn parse(tokens: Vec<Token>) -> Vec<Token> {
 
 pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].val.as_ref() {
-		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token '{}' on line {}", tokens[*i].val, tokens[*i].line),
+		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, tokens[*i].val),
 		"@" => output += "*",
 		"-" if tokens[*i + 1].val == ">" && tokens[*i + 1 + nxt(tokens, *i + 1)].t != Type::Type => {
 			output += "&";
@@ -103,10 +103,10 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 								if nxt_tokens[0] > 0 && tokens[*i + nxt_tokens[0]].t == Type::Type {
 									match tokens[*i + nxt_tokens[0]].val.as_ref() {
 										"int" => "u64",
-										_ => panic!("Invalid type '{}' following 'unsigned' on line {}", tokens[*i + nxt_tokens[0]].val, tokens[*i + nxt_tokens[0]].line)
+										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i + nxt_tokens[0]].pos.line, tokens[*i + nxt_tokens[0]].pos.col, tokens[*i + nxt_tokens[0]].val)
 									}
 								} else {
-									panic!("Missing data type following 'unsigned' on line {}", tokens[*i].line);
+									panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
 								}
 							},
 							"int" => "i64",
@@ -124,10 +124,10 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 								if nxt_tok > 0 && tokens[*i].t == Type::Type {
 									match tokens[*i].val.as_ref() {
 										"int" => "u64",
-										_ => panic!("Invalid type '{}' following 'unsigned' on line {}", tokens[*i].val, tokens[*i].line)
+										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col, tokens[*i].val)
 									}
 								} else {
-									panic!("Missing data type following 'unsigned' on line {}", tokens[*i].line);
+									panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
 								}
 							},
 							"int" => "i64",

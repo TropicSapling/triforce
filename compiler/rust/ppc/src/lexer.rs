@@ -1,4 +1,4 @@
-use lib::{Token, Type};
+use lib::{Token, Type, FilePos};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -29,7 +29,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	let mut string = Token {
 		val: String::from(""),
 		t: Type::Str1,
-		line: 1
+		pos: FilePos {line: 1, col: 1}
 	};
 	
 	let mut in_str = false;
@@ -41,17 +41,18 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	
 	let mut num_pos = 0;
 	let mut line = 1;
+	let mut col = 1;
 	
 	for item in tokens {
 		if ignoring {
 			if item == "\n" {
-				res.push(Token {val: item.to_string(), t: Type::Whitespace, line: line});
+				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}});
 				
 				ignoring = false;
 			}
 			
 			if item == "\r" {
-				res.push(Token {val: item.to_string(), t: Type::Whitespace, line: line});
+				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}});
 			}
 		} else if ignoring2 {
 			if possible_comment {
@@ -82,7 +83,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					
 					string.val = String::from("/");
 					string.t = Type::Op;
-					string.line = line;
+					string.pos = FilePos {line, col};
 					
 					res.push(string.clone());
 					string.val = String::from("");
@@ -95,7 +96,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				}
 				
 				string.val += item;
-				string.line = line;
+				string.pos = FilePos {line, col};
 				
 				escaping = false;
 			} else if in_str {
@@ -120,11 +121,11 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				}
 			} else if item == "\"" {
 				string.t = Type::Str1;
-				string.line = line;
+				string.pos = FilePos {line, col};
 				in_str = true;
 			} else if item == "'" {
 				string.t = Type::Str2;
-				string.line = line;
+				string.pos = FilePos {line, col};
 				in_str2 = true;
 			} else {
 				if num_pos > 0 && (item == "." || num_pos == 2) {
@@ -151,7 +152,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				} else if item.parse::<u64>().is_ok() {
 					string.val = item.to_string();
 					string.t = Type::Number;
-					string.line = line;
+					string.pos = FilePos {line, col};
 					
 					num_pos = 1;
 				} else {
@@ -169,13 +170,15 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 						"\r" | "\t" | " " => Type::Whitespace,
 						_ => Type::Var
 					};
-					string.line = line;
+					string.pos = FilePos {line, col};
 					
 					res.push(string.clone());
 					string.val = String::from("");
 				}
 			}
 		}
+		
+		col += 1;
 	}
 	
 	res
