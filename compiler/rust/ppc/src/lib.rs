@@ -34,10 +34,10 @@ pub struct FilePos {
 }
 
 #[derive(Clone)]
-pub struct TokRef(*const Token);
+pub struct TokRef(pub *const Token);
 
 #[derive(Clone)]
-pub struct TokRefs(*const Vec<TokRef>);
+pub struct TokRefs(pub *const Vec<TokRef>);
 
 fn format<T: fmt::Debug>(f: &mut fmt::Formatter, node: *const T) -> fmt::Result {
     unsafe {

@@ -1,4 +1,5 @@
-use lib::{Token, Type, FilePos};
+use lib::{Token, Type, FilePos, TokRef, TokRefs};
+use std::ptr::null;
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -29,7 +30,9 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	let mut string = Token {
 		val: String::from(""),
 		t: Type::Str1,
-		pos: FilePos {line: 1, col: 1}
+		pos: FilePos {line: 1, col: 1},
+		parent: TokRef(null()),
+		children: TokRefs(null())
 	};
 	
 	let mut in_str = false;
@@ -46,13 +49,13 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	for item in tokens {
 		if ignoring {
 			if item == "\n" {
-				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}});
+				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}, parent: TokRef(null()), children: TokRefs(null())}); // WIP; null() will get replaced
 				
 				ignoring = false;
 			}
 			
 			if item == "\r" {
-				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}});
+				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}, parent: TokRef(null()), children: TokRefs(null())});
 			}
 		} else if ignoring2 {
 			if possible_comment {
@@ -165,6 +168,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 						"false" | "true" => Type::Literal,
 						"\n" => {
 							line += 1;
+							col = 1;
 							Type::Whitespace
 						},
 						"\r" | "\t" | " " => Type::Whitespace,
