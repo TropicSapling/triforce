@@ -154,7 +154,7 @@ P+ is for...
 * `while(<condition>) { <code> }`
 * `foreach <item> in <list> { <code> }`
 * `repeat(<n times>) { <code> }`
-* `break`
+* `break [<value>] [from <function>]`
 * `continue`
 
 --------

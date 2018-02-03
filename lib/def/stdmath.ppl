@@ -1,0 +1,34 @@
+func new_assign_op [op, op2] -> macro {
+	func a op b -> macro {
+		a = a op2 b
+	}
+}
+
+export {
+	new_assign_op [+=, +];
+	new_assign_op [-=, -];
+	new_assign_op [*=, *];
+	new_assign_op [/=, /];
+	new_assign_op [%=, %];
+	new_assign_op [>>=, >>];
+	new_assign_op [<<=, <<];
+	new_assign_op [&=, &];
+	new_assign_op [^=, ^];
+	new_assign_op [|=, |];
+
+	func a++ -> macro {
+		a = a + 1
+	}
+	
+	func ++a -> macro {
+		a++
+	}
+
+	func a-- -> macro {
+		a = a - 1
+	}
+	
+	func --a -> macro {
+		a--
+	}
+}
