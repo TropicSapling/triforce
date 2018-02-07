@@ -29,8 +29,8 @@ pub struct Token {
 #[derive(Clone)]
 #[derive(Debug)]
 pub struct FilePos {
-    pub line: u32,
-    pub col: u32
+    pub line: usize,
+    pub col: usize
 }
 
 #[derive(Clone)]
