@@ -15,6 +15,28 @@ pub enum Type {
     Whitespace
 }
 
+pub enum Type2 {
+	Array,
+	Bool,
+	Chan,
+	Char,
+	Const,
+	Fraction,
+	Func,
+	Heap,
+	Int,
+	List,
+	Number,
+	Only,
+	Pointer,
+	Register,
+	Stack,
+	Unique,
+	Unsigned,
+	Void,
+	Volatile
+}
+
 #[derive(Clone, Debug)]
 pub struct Token {
     pub val: String,
@@ -27,6 +49,17 @@ pub struct Token {
 pub struct FilePos {
     pub line: usize,
     pub col: usize
+}
+
+pub struct Function {
+	pub name: String,
+	pub args: Vec<FunctionArg>,
+	pub output: [Type2; 8]
+}
+
+pub struct FunctionArg {
+	name: String,
+	t: [Type2; 8]
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {

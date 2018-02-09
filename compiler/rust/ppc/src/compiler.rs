@@ -1,4 +1,4 @@
-use lib::{Token, Type};
+use lib::{Token, Type, Function};
 
 macro_rules! last {
 	($e:expr) => ($e[$e.len() - 1]);
@@ -33,8 +33,12 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 	*i -= 1;
 }
 
-pub fn parse(tokens: Vec<Token>) -> Vec<Token> {
-	tokens // WIP
+pub fn parse(tokens: &mut Vec<Token>) {
+	let mut functions: Vec<Function> = Vec::new();
+	
+	for token in tokens {
+		// WIP
+	}
 }
 
 pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {
