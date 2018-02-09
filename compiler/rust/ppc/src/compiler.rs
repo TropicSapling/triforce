@@ -55,6 +55,9 @@ pub fn parse(tokens: &mut Vec<Token>) {
 		} else if func {
 			if token.val == "{" { // Function body
 				functions[last_item].output = par_type.clone();
+				
+				par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
+				type_i = 0;
 				func = false;
 			} else if token.t == Type::Type { // Parameter / return types
 				par_type[type_i] = token.t2.clone();
