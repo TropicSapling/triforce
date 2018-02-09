@@ -37,7 +37,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 	let mut functions: Vec<Function> = Vec::new();
 	let mut func = false;
 	let mut par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
-	let mut par_i = 0;
+	let mut type_i = 0;
 	
 	for token in tokens {
 		if token.t == Type::Whitespace {
@@ -54,19 +54,18 @@ pub fn parse(tokens: &mut Vec<Token>) {
 			func = true;
 		} else if func {
 			if token.val == "{" { // Function body
+				functions[last_item].output = par_type.clone();
 				func = false;
-			} else if token.t == Type::Type { // Parameters
-				par_type[par_i] = token.t2.clone();
-				par_i += 1;
+			} else if token.t == Type::Type { // Parameter / return types
+				par_type[type_i] = token.t2.clone();
+				type_i += 1;
 			} else if par_type[0] != Type2::Void {
 				functions[last_item].args.push(FunctionArg {name: &token.val, t: par_type});
 				
 				par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
-				par_i = 0;
+				type_i = 0;
 			} else if functions[last_item].name == "" && (token.t == Type::Var || token.t == Type::Op) { // Function name
 				functions[last_item].name = &token.val;
-			} else if token.val == ">" { // Return type (technically needs to check for '-' as well, WIP)
-				// WIP
 			}
 		}
 		
