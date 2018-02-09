@@ -51,6 +51,8 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 			if item == "\n" {
 				res.push(Token {val: item.to_string(), t: Type::Whitespace, t2: Type2::Void, pos: FilePos {line, col}, children: RefCell::new(vec![])});
 				
+				line += 1;
+				col = 0;
 				ignoring = false;
 			}
 			
@@ -68,6 +70,11 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 			
 			if item == "*" {
 				possible_comment = true;
+			}
+			
+			if item == "\n" {
+				line += 1;
+				col = 0;
 			}
 		} else {
 			if possible_comment {
@@ -168,7 +175,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 						"false" | "true" => Type::Literal,
 						"\n" => {
 							line += 1;
-							col = 1;
+							col = 0;
 							Type::Whitespace
 						},
 						"\r" | "\t" | " " => Type::Whitespace,

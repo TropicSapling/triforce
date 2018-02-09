@@ -19,6 +19,21 @@ fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
 	}
 }
 
+fn prev(tokens: &Vec<Token>, i: usize) -> usize {
+	let mut j: usize = 0;
+	while {
+		j += 1;
+		
+		i - j > 0 && tokens[i - j].t == Type::Whitespace // MAY NEED CHANGING
+	} {}
+	
+	if i - j > 0 {
+		j
+	} else {
+		0
+	}
+}
+
 fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'static str) {
 	let mut tok_str = String::from(op);
 	
@@ -33,13 +48,23 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 	*i -= 1;
 }
 
+fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a>> {
+	for def in defs {
+		if def.name == call {
+			return Some(&def);
+		}
+	}
+	
+	None
+}
+
 pub fn parse(tokens: &mut Vec<Token>) {
 	let mut functions: Vec<Function> = Vec::new();
 	let mut func = false;
 	let mut par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
 	let mut type_i = 0;
 	
-	for token in tokens {
+	for token in (&tokens).iter() {
 		if token.t == Type::Whitespace {
 			continue; // Ignore whitespace
 		}
@@ -50,7 +75,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 		}
 		
 		if token.val == "func" {
-			functions.push(Function {name: "", args: vec![], output: [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void]});
+			functions.push(Function {name: "", pos: 0, args: vec![], output: [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void]});
 			func = true;
 		} else if func {
 			if token.val == "{" { // Function body
@@ -69,13 +94,44 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				type_i = 0;
 			} else if functions[last_item].name == "" && (token.t == Type::Var || token.t == Type::Op) { // Function name
 				functions[last_item].name = &token.val;
+				functions[last_item].pos = functions[last_item].args.len();
+			}
+		}
+	}
+	
+	let mut i = 0;
+	while i < tokens.len() {
+		let token = &tokens[i];
+		
+		if token.t == Type::Var || token.t == Type::Op {
+			let def = is_defined(&functions, &token.val);
+			
+			if let Some(def) = def {
+				if def.pos > 0 {
+					let mut j = 0;
+					while i - j > 0 && j < def.pos { // NOTE: comparison may need to be changed
+						j = prev(&tokens, i - j);
+						
+						(*token.children.borrow_mut()).push(i - j);
+					}
+				}
+				
+				let mut j = 0;
+				while i + j < tokens.len() && j < def.args.len() - def.pos {
+					j = nxt(&tokens, i + j);
+					
+					(*token.children.borrow_mut()).push(i + j);
+				}
+				
+				if (*token.children.borrow()).len() > 1 {
+					println!("{:#?}", tokens[(*token.children.borrow())[0]]);
+					println!("{:#?}", tokens[(*token.children.borrow())[1]]);
+				}
 			}
 		}
 		
-		// WIP
+		i += 1;
 	}
-	
-	println!("{:#?}", functions);
 }
 
 pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {

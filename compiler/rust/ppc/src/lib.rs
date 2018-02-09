@@ -55,6 +55,7 @@ pub struct FilePos {
 #[derive(Debug)]
 pub struct Function<'a> {
 	pub name: &'a str,
+	pub pos: usize,
 	pub args: Vec<FunctionArg<'a>>,
 	pub output: [Type2; 8]
 }

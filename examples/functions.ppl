@@ -11,3 +11,7 @@ func pow(int base, unsigned int exp) -> int {
 		base * base pow (exp / 2) * base pow (exp / 2)
 	}
 }
+
+func (int base) pow (unsigned int exp) -> int {
+
+}
