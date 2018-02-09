@@ -44,26 +44,29 @@ pub fn parse(tokens: &mut Vec<Token>) {
 			continue; // Ignore whitespace
 		}
 		
+		let mut last_item = functions.len();
+		if last_item != 0 {
+			last_item -= 1;
+		}
+		
 		if token.val == "func" {
 			functions.push(Function {name: "", args: vec![], output: [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void]});
 			func = true;
 		} else if func {
-			if token.val == "-" { // Return type, WIP (needs to check for '>' as well)
-				// WIP
-			} else if token.val == "{" { // Function body
+			if token.val == "{" { // Function body
 				func = false;
 			} else if token.t == Type::Type { // Parameters
 				par_type[par_i] = token.t2.clone();
 				par_i += 1;
 			} else if par_type[0] != Type2::Void {
-				let last_item = functions.len() - 1;
 				functions[last_item].args.push(FunctionArg {name: &token.val, t: par_type});
 				
 				par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
 				par_i = 0;
-			} else if token.t == Type::Var || token.t == Type::Op { // Function name
-				let last_item = functions.len() - 1; // This can be replaced by the 'last!' macro once Rust has implemented non-lexical borrows
+			} else if functions[last_item].name == "" && (token.t == Type::Var || token.t == Type::Op) { // Function name
 				functions[last_item].name = &token.val;
+			} else if token.val == ">" { // Return type (technically needs to check for '-' as well, WIP)
+				// WIP
 			}
 		}
 		
