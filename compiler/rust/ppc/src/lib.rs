@@ -15,6 +15,7 @@ pub enum Type {
     Whitespace
 }
 
+#[derive(Clone, PartialEq, Debug)]
 pub enum Type2 {
 	Array,
 	Bool,
@@ -26,7 +27,6 @@ pub enum Type2 {
 	Heap,
 	Int,
 	List,
-	Number,
 	Only,
 	Pointer,
 	Register,
@@ -41,6 +41,7 @@ pub enum Type2 {
 pub struct Token {
     pub val: String,
     pub t: Type,
+	pub t2: Type2,
     pub pos: FilePos,
     pub children: RefCell<Vec<usize>>
 }
@@ -51,15 +52,17 @@ pub struct FilePos {
     pub col: usize
 }
 
+#[derive(Debug)]
 pub struct Function<'a> {
 	pub name: &'a str,
 	pub args: Vec<FunctionArg<'a>>,
 	pub output: [Type2; 8]
 }
 
+#[derive(Debug)]
 pub struct FunctionArg<'a> {
-	name: &'a str,
-	t: [Type2; 8]
+	pub name: &'a str,
+	pub t: [Type2; 8]
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {

@@ -1,4 +1,4 @@
-use lib::{Token, Type, Type2, Function};
+use lib::{Token, Type, Type2, Function, FunctionArg};
 
 macro_rules! last {
 	($e:expr) => ($e[$e.len() - 1]);
@@ -36,24 +36,41 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 pub fn parse(tokens: &mut Vec<Token>) {
 	let mut functions: Vec<Function> = Vec::new();
 	let mut func = false;
+	let mut par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
+	let mut par_i = 0;
 	
 	for token in tokens {
+		if token.t == Type::Whitespace {
+			continue; // Ignore whitespace
+		}
+		
 		if token.val == "func" {
 			functions.push(Function {name: "", args: vec![], output: [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void]});
 			func = true;
 		} else if func {
-			if token.t == Type::GroupOp { // Parameters
+			if token.val == "-" { // Return type, WIP (needs to check for '>' as well)
 				// WIP
-			} else if token.val == "-" { // Return type, WIP (needs to check for '>' as well)
-				// WIP
-			} else { // Function name
+			} else if token.val == "{" { // Function body
+				func = false;
+			} else if token.t == Type::Type { // Parameters
+				par_type[par_i] = token.t2.clone();
+				par_i += 1;
+			} else if par_type[0] != Type2::Void {
 				let last_item = functions.len() - 1;
+				functions[last_item].args.push(FunctionArg {name: &token.val, t: par_type});
+				
+				par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
+				par_i = 0;
+			} else if token.t == Type::Var || token.t == Type::Op { // Function name
+				let last_item = functions.len() - 1; // This can be replaced by the 'last!' macro once Rust has implemented non-lexical borrows
 				functions[last_item].name = &token.val;
 			}
 		}
 		
 		// WIP
 	}
+	
+	println!("{:#?}", functions);
 }
 
 pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {

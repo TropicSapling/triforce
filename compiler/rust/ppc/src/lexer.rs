@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use lib::{Token, Type, FilePos};
+use lib::{Token, Type, Type2, FilePos};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -30,6 +30,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	let mut string = Token {
 		val: String::from(""),
 		t: Type::Str1,
+		t2: Type2::Void,
 		pos: FilePos {line: 1, col: 1},
 		children: RefCell::new(vec![])
 	};
@@ -48,13 +49,13 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	for item in tokens {
 		if ignoring {
 			if item == "\n" {
-				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}, children: RefCell::new(vec![])});
+				res.push(Token {val: item.to_string(), t: Type::Whitespace, t2: Type2::Void, pos: FilePos {line, col}, children: RefCell::new(vec![])});
 				
 				ignoring = false;
 			}
 			
 			if item == "\r" {
-				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}, children: RefCell::new(vec![])});
+				res.push(Token {val: item.to_string(), t: Type::Whitespace, t2: Type2::Void, pos: FilePos {line, col}, children: RefCell::new(vec![])});
 			}
 		} else if ignoring2 {
 			if possible_comment {
@@ -173,10 +174,33 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 						"\r" | "\t" | " " => Type::Whitespace,
 						_ => Type::Var
 					};
+					if string.t == Type::Type {
+						string.t2 = match item {
+							"array" => Type2::Array,
+							"bool" => Type2::Bool,
+							"chan" => Type2::Chan,
+							"char" => Type2::Char,
+							"const" => Type2::Const,
+							"fraction" => Type2::Fraction,
+							"func" => Type2::Func,
+							"heap" => Type2::Heap,
+							"int" => Type2::Int,
+							"list" => Type2::List,
+							"only" => Type2::Only,
+							"pointer" => Type2::Pointer,
+							"register" => Type2::Register,
+							"stack" => Type2::Stack,
+							"unique" => Type2::Unique,
+							"unsigned" => Type2::Unsigned,
+							"volatile" => Type2::Volatile,
+							_ => Type2::Void,
+						};
+					}
 					string.pos = FilePos {line, col};
 					
 					res.push(string.clone());
 					string.val = String::from("");
+					string.t2 = Type2::Void;
 				}
 			}
 		}
