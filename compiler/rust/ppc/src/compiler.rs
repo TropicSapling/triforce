@@ -1,4 +1,4 @@
-use lib::{Token, Type};
+use lib::{Token, Type, Type2, Function, FunctionArg};
 
 macro_rules! last {
 	($e:expr) => ($e[$e.len() - 1]);
@@ -33,13 +33,54 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 	*i -= 1;
 }
 
-pub fn parse(tokens: Vec<Token>) -> Vec<Token> {
-	tokens // WIP
+pub fn parse(tokens: &mut Vec<Token>) {
+	let mut functions: Vec<Function> = Vec::new();
+	let mut func = false;
+	let mut par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
+	let mut type_i = 0;
+	
+	for token in tokens {
+		if token.t == Type::Whitespace {
+			continue; // Ignore whitespace
+		}
+		
+		let mut last_item = functions.len();
+		if last_item != 0 {
+			last_item -= 1;
+		}
+		
+		if token.val == "func" {
+			functions.push(Function {name: "", args: vec![], output: [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void]});
+			func = true;
+		} else if func {
+			if token.val == "{" { // Function body
+				functions[last_item].output = par_type.clone();
+				
+				par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
+				type_i = 0;
+				func = false;
+			} else if token.t == Type::Type { // Parameter / return types
+				par_type[type_i] = token.t2.clone();
+				type_i += 1;
+			} else if par_type[0] != Type2::Void {
+				functions[last_item].args.push(FunctionArg {name: &token.val, t: par_type});
+				
+				par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
+				type_i = 0;
+			} else if functions[last_item].name == "" && (token.t == Type::Var || token.t == Type::Op) { // Function name
+				functions[last_item].name = &token.val;
+			}
+		}
+		
+		// WIP
+	}
+	
+	println!("{:#?}", functions);
 }
 
 pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].val.as_ref() {
-		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("Unimplemented token '{}' on line {}", tokens[*i].val, tokens[*i].line),
+		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, tokens[*i].val),
 		"@" => output += "*",
 		"-" if tokens[*i + 1].val == ">" && tokens[*i + 1 + nxt(tokens, *i + 1)].t != Type::Type => {
 			output += "&";
@@ -103,10 +144,10 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 								if nxt_tokens[0] > 0 && tokens[*i + nxt_tokens[0]].t == Type::Type {
 									match tokens[*i + nxt_tokens[0]].val.as_ref() {
 										"int" => "u64",
-										_ => panic!("Invalid type '{}' following 'unsigned' on line {}", tokens[*i + nxt_tokens[0]].val, tokens[*i + nxt_tokens[0]].line)
+										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i + nxt_tokens[0]].pos.line, tokens[*i + nxt_tokens[0]].pos.col, tokens[*i + nxt_tokens[0]].val)
 									}
 								} else {
-									panic!("Missing data type following 'unsigned' on line {}", tokens[*i].line);
+									panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
 								}
 							},
 							"int" => "i64",
@@ -124,10 +165,10 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 								if nxt_tok > 0 && tokens[*i].t == Type::Type {
 									match tokens[*i].val.as_ref() {
 										"int" => "u64",
-										_ => panic!("Invalid type '{}' following 'unsigned' on line {}", tokens[*i].val, tokens[*i].line)
+										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col, tokens[*i].val)
 									}
 								} else {
-									panic!("Missing data type following 'unsigned' on line {}", tokens[*i].line);
+									panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
 								}
 							},
 							"int" => "i64",

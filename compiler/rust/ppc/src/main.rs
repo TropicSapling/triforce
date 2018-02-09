@@ -133,20 +133,20 @@ fn init() -> i32 {
 //		println!("{} LEX1: {:#?}\n", BrightYellow.paint("[DEBUG]"), lexed_contents);
 	}
 	
-	let tokens = lex2(lexed_contents);
+	let mut tokens = lex2(lexed_contents);
 	if debugging {
-		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
+//		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
-	let mut parsed_tokens = parse(tokens);
+	parse(&mut tokens);
 	if debugging {
-//		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), parsed_tokens);
+		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
 	let mut out_contents = String::new();
 	let mut i = 0;
-	while i < parsed_tokens.len() {
-		out_contents = compile(&mut parsed_tokens, &mut i, out_contents);
+	while i < tokens.len() {
+		out_contents = compile(&mut tokens, &mut i, out_contents);
 		i += 1;
 	}
 	
