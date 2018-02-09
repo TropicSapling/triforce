@@ -1,4 +1,4 @@
-use lib::{Token, Type, Function};
+use lib::{Token, Type, Type2, Function};
 
 macro_rules! last {
 	($e:expr) => ($e[$e.len() - 1]);
@@ -35,8 +35,23 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 
 pub fn parse(tokens: &mut Vec<Token>) {
 	let mut functions: Vec<Function> = Vec::new();
+	let mut func = false;
 	
 	for token in tokens {
+		if token.val == "func" {
+			functions.push(Function {name: String::from(""), args: vec![], output: [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void]});
+			func = true;
+		} else if func {
+			if token.t == Type::GroupOp { // Parameters
+				// WIP
+			} else if token.val == "-" { // Return type, WIP (needs to check for '>' as well)
+				// WIP
+			} else { // Function name
+				let last_item = functions.len() - 1;
+				functions[last_item].name = token.val.clone();
+			}
+		}
+		
 		// WIP
 	}
 }
