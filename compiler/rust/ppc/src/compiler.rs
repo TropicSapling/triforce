@@ -39,7 +39,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 	
 	for token in tokens {
 		if token.val == "func" {
-			functions.push(Function {name: String::from(""), args: vec![], output: [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void]});
+			functions.push(Function {name: "", args: vec![], output: [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void]});
 			func = true;
 		} else if func {
 			if token.t == Type::GroupOp { // Parameters
@@ -48,7 +48,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				// WIP
 			} else { // Function name
 				let last_item = functions.len() - 1;
-				functions[last_item].name = token.val.clone();
+				functions[last_item].name = &token.val;
 			}
 		}
 		

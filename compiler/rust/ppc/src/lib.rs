@@ -51,14 +51,14 @@ pub struct FilePos {
     pub col: usize
 }
 
-pub struct Function {
-	pub name: String,
-	pub args: Vec<FunctionArg>,
+pub struct Function<'a> {
+	pub name: &'a str,
+	pub args: Vec<FunctionArg<'a>>,
 	pub output: [Type2; 8]
 }
 
-pub struct FunctionArg {
-	name: String,
+pub struct FunctionArg<'a> {
+	name: &'a str,
 	t: [Type2; 8]
 }
 
