@@ -1,9 +1,7 @@
 use std::path::PathBuf;
-use std::fmt;
+use std::cell::RefCell;
 
-#[derive(Clone)]
-#[derive(PartialEq)]
-#[derive(Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum Type {
     GroupOp,
     Literal,
@@ -17,59 +15,18 @@ pub enum Type {
     Whitespace
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Token {
     pub val: String,
     pub t: Type,
     pub pos: FilePos,
-    pub parent: TokRef,
-    pub children: TokRefs
+    pub children: RefCell<Vec<usize>>
 }
 
-#[derive(Clone)]
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct FilePos {
     pub line: usize,
     pub col: usize
-}
-
-#[derive(Clone)]
-pub struct TokRef(pub *const Token);
-
-#[derive(Clone)]
-pub struct TokRefs(pub *const Vec<TokRef>);
-
-fn format<T: fmt::Debug>(f: &mut fmt::Formatter, node: *const T) -> fmt::Result {
-    unsafe {
-        if node.is_null() {
-            write!(f, "NULL")
-        } else {
-            write!(f, "{:#?}", *node)
-        }
-    }
-}
-
-impl fmt::Debug for Token {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("Token")
-            .field("val", &self.val)
-            .field("t", &self.t)
-            .field("pos", &self.pos)
-            .field("children", &self.children)
-            .finish()
-    }
-}
-
-impl fmt::Debug for TokRef {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format(f, {let &TokRef(node) = self; node})
-    }
-}
-
-impl fmt::Debug for TokRefs {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        format(f, {let &TokRefs(node) = self; node})
-    }
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {

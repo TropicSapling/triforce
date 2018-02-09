@@ -1,5 +1,5 @@
-use lib::{Token, Type, FilePos, TokRef, TokRefs};
-use std::ptr::null;
+use std::cell::RefCell;
+use lib::{Token, Type, FilePos};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -31,8 +31,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 		val: String::from(""),
 		t: Type::Str1,
 		pos: FilePos {line: 1, col: 1},
-		parent: TokRef(null()),
-		children: TokRefs(null())
+		children: RefCell::new(vec![])
 	};
 	
 	let mut in_str = false;
@@ -49,13 +48,13 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	for item in tokens {
 		if ignoring {
 			if item == "\n" {
-				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}, parent: TokRef(null()), children: TokRefs(null())}); // WIP; null() will get replaced
+				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}, children: RefCell::new(vec![])});
 				
 				ignoring = false;
 			}
 			
 			if item == "\r" {
-				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}, parent: TokRef(null()), children: TokRefs(null())});
+				res.push(Token {val: item.to_string(), t: Type::Whitespace, pos: FilePos {line, col}, children: RefCell::new(vec![])});
 			}
 		} else if ignoring2 {
 			if possible_comment {
