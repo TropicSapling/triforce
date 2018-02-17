@@ -78,7 +78,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 			functions.push(Function {name: "", pos: 0, args: vec![], output: [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void]});
 			func = true;
 		} else if func {
-			if token.val == "{" { // Function body
+			if token.val == "{" || token.val == ";" { // Function body / end of function declaration
 				functions[last_item].output = par_type.clone();
 				
 				par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
@@ -109,7 +109,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 			if let Some(def) = def {
 				if def.pos > 0 {
 					let mut j = 0;
-					while i - j > 0 && j < def.pos { // NOTE: comparison may need to be changed
+					while i - j > 0 && j < def.pos && tokens[i - j].val != ";" { // NOTE: comparison may need to be changed
 						j = prev(&tokens, i - j);
 						
 						(*token.children.borrow_mut()).push(i - j);
@@ -117,7 +117,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				}
 				
 				let mut j = 0;
-				while i + j < tokens.len() && j < def.args.len() - def.pos {
+				while i + j < tokens.len() && j < def.args.len() - def.pos && tokens[i + j].val != ";" {
 					j = nxt(&tokens, i + j);
 					
 					(*token.children.borrow_mut()).push(i + j);
