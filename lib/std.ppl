@@ -1,3 +1,24 @@
+export {
+	func (macro f)? -> macro { // Error forwarding, example: `(fs.readFile "file")?` returns file contents if read is successful, else returns error
+		let res = f;
+		if res<type> == Error {
+			return Error
+		} else {
+			res
+		}
+	}
+	
+	func (unsigned int n)! -> unsigned int { // Factorial, example: `5!` -> `5*4*3*2` -> `120`
+		if n <= 2 {
+			return n;
+		}
+		
+		n * (n - 1)!
+	}
+}
+
+// OLD SYNTAX BELOW, NEEDS UPDATING
+
 #export;
 pointer*2 split(pointer listp, splitter) {
 	pointer*2 arr -> {listp};
