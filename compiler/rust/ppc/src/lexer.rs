@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use lib::{Token, Type, Type2, FilePos};
+use lib::{Token, Val, Kind, Type, FilePos};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -28,9 +28,7 @@ pub fn lex<'a>(contents: &'a String) -> Vec<&'a str> {
 pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	let mut res: Vec<Token> = Vec::new();
 	let mut string = Token {
-		val: String::from(""),
-		t: Type::Str1,
-		t2: Type2::Void,
+		kind: Kind::Str1(Val::Str(String::from(""))),
 		pos: FilePos {line: 1, col: 1},
 		children: RefCell::new(vec![])
 	};
@@ -49,7 +47,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	for item in tokens {
 		if ignoring {
 			if item == "\n" {
-				res.push(Token {val: item.to_string(), t: Type::Whitespace, t2: Type2::Void, pos: FilePos {line, col}, children: RefCell::new(vec![])});
+				res.push(Token {kind: Kind::Whitespace(Val::Str(item.to_string())), pos: FilePos {line, col}, children: RefCell::new(vec![])});
 				
 				line += 1;
 				col = 0;
@@ -57,7 +55,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 			}
 			
 			if item == "\r" {
-				res.push(Token {val: item.to_string(), t: Type::Whitespace, t2: Type2::Void, pos: FilePos {line, col}, children: RefCell::new(vec![])});
+				res.push(Token {kind: Kind::Whitespace(Val::Str(item.to_string())), pos: FilePos {line, col}, children: RefCell::new(vec![])});
 			}
 		} else if ignoring2 {
 			if possible_comment {
@@ -91,58 +89,60 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				} else {
 					possible_comment = false;
 					
-					string.val = String::from("/");
-					string.t = Type::Op;
+					string.kind = Kind::Op(Val::Str(String::from("/")));
 					string.pos = FilePos {line, col};
 					
 					res.push(string.clone());
-					string.val = String::from("");
 				}
 			}
 			
 			if escaping {
+				let val = match string.kind {
+					Kind::Str1(Val::Str(value)) => value,
+					Kind::Str2(Val::Str(value)) => value,
+				};
 				if item == "0" || item == "n" { // Null and newlines
-					string.val += "\\";
+					val += "\\";
 				}
 				
-				string.val += item;
+				val += item;
 				string.pos = FilePos {line, col};
 				
 				escaping = false;
 			} else if in_str {
 				if item == "\"" {
 					res.push(string.clone());
-					string.val = String::from("");
 					in_str = false;
 				} else if item == "\\" {
 					escaping = true;
 				} else {
-					string.val += item;
+					let Kind::Str1(Val::Str(val)) = string.kind;
+					val += item;
 				}
 			} else if in_str2 {
 				if item == "'" {
 					res.push(string.clone());
-					string.val = String::from("");
 					in_str2 = false;
 				} else if item == "\\" {
 					escaping = true;
 				} else {
-					string.val += item;
+					let Kind::Str2(Val::Str(val)) = string.kind;
+					val += item;
 				}
 			} else if item == "\"" {
-				string.t = Type::Str1;
+				string.kind = Kind::Str1(Val::Str(String::from("")));
 				string.pos = FilePos {line, col};
 				in_str = true;
 			} else if item == "'" {
-				string.t = Type::Str2;
+				string.kind = Kind::Str2(Val::Str(String::from("")));
 				string.pos = FilePos {line, col};
 				in_str2 = true;
 			} else {
 				if num_pos > 0 && (item == "." || num_pos == 2) {
-					string.val += item;
 					if num_pos == 2 {
+						let Kind::Number(_, Val::Int(decimals)) = string.kind;
+						decimals = item.parse::<u64>().unwrap();
 						res.push(string.clone());
-						string.val = String::from("");
 						
 						num_pos = 0;
 					} else {
@@ -152,62 +152,57 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					continue;
 				} else if num_pos == 1 {
 					res.push(string.clone());
-					string.val = String::from("");
 					
 					num_pos = 0;
 				}
 				
+				let int_res = item.parse::<u64>();
+				
 				if item == "/" {
 					possible_comment = true;
-				} else if item.parse::<u64>().is_ok() {
-					string.val = item.to_string();
-					string.t = Type::Number;
+				} else if let Ok(int_val) = int_res {
+					string.kind = Kind::Number(Val::Int(int_val), Val::Int(0));
 					string.pos = FilePos {line, col};
 					
 					num_pos = 1;
 				} else {
-					string.val = item.to_string();
-					string.t = match item {
-						"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" => Type::Op,
-						"{" | "}" | "[" | "]" | "(" | ")" => Type::GroupOp,
-						"array" | "bool" | "chan" | "char" | "const" | "fraction" | "func" | "heap" | "int" | "list" | "number" | "only" | "pointer" | "register" | "signed" | "stack" | "unique" | "unsigned" | "void" | "volatile" => Type::Type,
-						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Type::Reserved,
-						"false" | "true" => Type::Literal,
+					string.kind = match item {
+						"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" => Kind::Op(Val::Str(item.to_string())),
+						"{" | "}" | "[" | "]" | "(" | ")" => Kind::GroupOp(Val::Str(item.to_string())),
+						"array" => Kind::Type(Type::Array),
+						"bool" => Kind::Type(Type::Bool),
+						"chan" => Kind::Type(Type::Chan),
+						"char" => Kind::Type(Type::Char),
+						"const" => Kind::Type(Type::Const),
+						"fraction" => Kind::Type(Type::Fraction),
+						"func" => Kind::Type(Type::Func),
+						"heap" => Kind::Type(Type::Heap),
+						"int" => Kind::Type(Type::Int),
+						"list" => Kind::Type(Type::List),
+						"only" => Kind::Type(Type::Only),
+						"pointer" => Kind::Type(Type::Pointer),
+						"register" => Kind::Type(Type::Register),
+						"stack" => Kind::Type(Type::Stack),
+						"unique" => Kind::Type(Type::Unique),
+						"unsigned" => Kind::Type(Type::Unsigned),
+						"volatile" => Kind::Type(Type::Volatile),
+						"void" => Kind::Type(Type::Void),
+						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Kind::Reserved(Val::Str(item.to_string())),
+						"false" => Kind::Literal(Val::Bool(false)),
+						"true" => Kind::Literal(Val::Bool(true)),
 						"\n" => {
 							line += 1;
 							col = 0;
-							Type::Whitespace
+							Kind::Whitespace(Val::Newline)
 						},
-						"\r" | "\t" | " " => Type::Whitespace,
-						_ => Type::Var
+						"\r" => Kind::Whitespace(Val::CarRet),
+						"\t" => Kind::Whitespace(Val::Tab),
+						" " => Kind::Whitespace(Val::Space),
+						_ => Kind::Var(Val::Str(item.to_string()), Type::Void) // 'Void' type is temporary
 					};
-					if string.t == Type::Type {
-						string.t2 = match item {
-							"array" => Type2::Array,
-							"bool" => Type2::Bool,
-							"chan" => Type2::Chan,
-							"char" => Type2::Char,
-							"const" => Type2::Const,
-							"fraction" => Type2::Fraction,
-							"func" => Type2::Func,
-							"heap" => Type2::Heap,
-							"int" => Type2::Int,
-							"list" => Type2::List,
-							"only" => Type2::Only,
-							"pointer" => Type2::Pointer,
-							"register" => Type2::Register,
-							"stack" => Type2::Stack,
-							"unique" => Type2::Unique,
-							"unsigned" => Type2::Unsigned,
-							"volatile" => Type2::Volatile,
-							_ => Type2::Void,
-						};
-					}
 					string.pos = FilePos {line, col};
 					
 					res.push(string.clone());
-					string.val = String::from("");
-					string.t2 = Type2::Void;
 				}
 			}
 		}

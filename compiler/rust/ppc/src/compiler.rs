@@ -1,7 +1,14 @@
-use lib::{Token, Type, Type2, Function, FunctionArg};
+use lib::{Token, Val, Kind, Type, Function, FunctionArg};
 
 macro_rules! last {
 	($e:expr) => ($e[$e.len() - 1]);
+}
+
+macro_rules! is_kind {
+	($lhs_kind:expr, $rhs_kind:pat) => (match $lhs_kind {
+		$rhs_kind => true,
+		_ => false
+	});
 }
 
 macro_rules! group_expr {
@@ -20,7 +27,7 @@ fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
 	while {
 		j += 1;
 		
-		i + j < tokens.len() && tokens[i + j].t == Type::Whitespace
+		i + j < tokens.len() && is_kind!(tokens[i + j].kind, Kind::Whitespace(_))
 	} {}
 	
 	if i + j < tokens.len() {
@@ -35,7 +42,7 @@ fn prev(tokens: &Vec<Token>, i: usize) -> usize {
 	while {
 		j += 1;
 		
-		i - j > 0 && tokens[i - j].t == Type::Whitespace // MAY NEED CHANGING
+		i - j > 0 && is_kind!(tokens[i - j].kind, Kind::Whitespace(_)) // MAY NEED CHANGING
 	} {}
 	
 	if i - j > 0 {
@@ -53,8 +60,7 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 		tok_str = compile(tokens, i, tok_str);
 	}
 	
-	tokens[*i].val = tok_str;
-	tokens[*i].t = Type::Var;
+	tokens[*i].kind = Kind::Var(Val::Str(tok_str));
 	
 	*i -= 1;
 }
@@ -72,11 +78,11 @@ fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a
 pub fn parse(tokens: &mut Vec<Token>) {
 	let mut functions: Vec<Function> = Vec::new();
 	let mut func = false;
-	let mut par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
+	let mut par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 	let mut type_i = 0;
 	
 	for token in (&tokens).iter() {
-		if token.t == Type::Whitespace {
+		if token.kind == Kind::Whitespace {
 			continue; // Ignore whitespace
 		}
 		
@@ -85,26 +91,26 @@ pub fn parse(tokens: &mut Vec<Token>) {
 			last_item -= 1;
 		}
 		
-		if token.val == "func" {
-			functions.push(Function {name: "", pos: 0, args: vec![], output: [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void]});
+		if token.kind.0 == "func" {
+			functions.push(Function {name: "", pos: 0, args: vec![], output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
 			func = true;
 		} else if func {
-			if token.val == "{" || token.val == ";" { // Function body / end of function declaration
+			if token.kind.0 == "{" || token.kind.0 == ";" { // Function body / end of function declaration
 				functions[last_item].output = par_type.clone();
 				
-				par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
+				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				type_i = 0;
 				func = false;
-			} else if token.t == Type::Type { // Parameter / return types
-				par_type[type_i] = token.t2.clone();
+			} else if token.kind == Kind::Type { // Parameter / return types
+				par_type[type_i] = token.kind.0.clone();
 				type_i += 1;
-			} else if par_type[0] != Type2::Void {
-				functions[last_item].args.push(FunctionArg {name: &token.val, t: par_type});
+			} else if par_type[0] != Type::Void {
+				functions[last_item].args.push(FunctionArg {name: &token.kind.0, t: par_type});
 				
-				par_type = [Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void, Type2::Void];
+				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				type_i = 0;
-			} else if functions[last_item].name == "" && (token.t == Type::Var || token.t == Type::Op) { // Function name
-				functions[last_item].name = &token.val;
+			} else if functions[last_item].name == "" && (token.kind == Kind::Var || token.kind == Kind::Op) { // Function name
+				functions[last_item].name = &token.kind.0;
 				functions[last_item].pos = functions[last_item].args.len();
 			}
 		}
@@ -114,8 +120,8 @@ pub fn parse(tokens: &mut Vec<Token>) {
 	while i < tokens.len() {
 		let token = &tokens[i];
 		
-		if token.t == Type::Var || token.t == Type::Op {
-			let def = is_defined(&functions, &token.val);
+		if token.kind == Kind::Var || token.kind == Kind::Op {
+			let def = is_defined(&functions, &token.kind.0);
 			
 			if let Some(def) = def {
 				if def.pos > 0 {
@@ -139,8 +145,8 @@ pub fn parse(tokens: &mut Vec<Token>) {
 					println!("{:#?}", tokens[(*token.children.borrow())[1]]);
 				}
 			}
-		} else if token.t == Type::GroupOp {
-			match token.val.as_ref() {
+		} else if token.kind == Kind::GroupOp {
+			match token.kind.0.as_ref() {
 				"(" => group_expr!(")", tokens, token, i),
 				"{" => group_expr!("}", tokens, token, i),
 				"[" => group_expr!("]", tokens, token, i),

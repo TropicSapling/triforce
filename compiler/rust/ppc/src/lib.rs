@@ -2,21 +2,32 @@ use std::path::PathBuf;
 use std::cell::RefCell;
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum Type {
-    GroupOp,
-    Literal,
-    Number, // TODO: Remake all of these to something better like Number(Val::Int, Type2), GroupOp(Val::Str), etc.
-    Op,
-    Reserved,
-    Str1,
-    Str2,
-    Type,
-    Var,
-    Whitespace
+pub enum Val {
+	Int(u64),
+	Bool(bool),
+	Str(String),
+	Newline,
+	CarRet,
+	Tab,
+	Space
 }
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum Type2 {
+pub enum Kind {
+    GroupOp(Val),
+    Literal(Val),
+    Number(Val, Val),
+    Op(Val),
+    Reserved(Val),
+    Str1(Val),
+    Str2(Val),
+    Type(Type),
+    Var(Val, Type),
+    Whitespace(Val)
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum Type {
 	Array,
 	Bool,
 	Chan,
@@ -39,9 +50,7 @@ pub enum Type2 {
 
 #[derive(Clone, Debug)]
 pub struct Token {
-    pub val: String,
-    pub t: Type,
-	pub t2: Type2,
+    pub kind: Kind,
     pub pos: FilePos,
     pub children: RefCell<Vec<usize>>
 }
@@ -57,13 +66,13 @@ pub struct Function<'a> {
 	pub name: &'a str,
 	pub pos: usize,
 	pub args: Vec<FunctionArg<'a>>,
-	pub output: [Type2; 8]
+	pub output: [Type; 8]
 }
 
 #[derive(Debug)]
 pub struct FunctionArg<'a> {
 	pub name: &'a str,
-	pub t: [Type2; 8]
+	pub typ: [Type; 8]
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
