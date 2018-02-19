@@ -4,6 +4,17 @@ macro_rules! last {
 	($e:expr) => ($e[$e.len() - 1]);
 }
 
+macro_rules! group_expr {
+	($end:expr, $tokens:expr, $token:expr, $i:expr) => ({
+		let mut j = nxt(&$tokens, $i);
+		while $i + j < $tokens.len() && $tokens[$i + j].val != $end {
+			(*$token.children.borrow_mut()).push($i + j);
+			
+			j += nxt(&$tokens, $i + j);
+		}
+	})
+}
+
 fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
 	let mut j: usize = 0;
 	while {
@@ -110,7 +121,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				if def.pos > 0 {
 					let mut j = 0;
 					while i - j > 0 && j < def.pos && tokens[i - j].val != ";" { // NOTE: comparison may need to be changed
-						j = prev(&tokens, i - j);
+						j += prev(&tokens, i - j);
 						
 						(*token.children.borrow_mut()).push(i - j);
 					}
@@ -118,15 +129,22 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				
 				let mut j = 0;
 				while i + j < tokens.len() && j < def.args.len() - def.pos && tokens[i + j].val != ";" {
-					j = nxt(&tokens, i + j);
+					j += nxt(&tokens, i + j);
 					
 					(*token.children.borrow_mut()).push(i + j);
 				}
 				
-				if (*token.children.borrow()).len() > 1 {
+				if (*token.children.borrow()).len() > 1 { // DEBUG
 					println!("{:#?}", tokens[(*token.children.borrow())[0]]);
 					println!("{:#?}", tokens[(*token.children.borrow())[1]]);
 				}
+			}
+		} else if token.t == Type::GroupOp {
+			match token.val.as_ref() {
+				"(" => group_expr!(")", tokens, token, i),
+				"{" => group_expr!("}", tokens, token, i),
+				"[" => group_expr!("]", tokens, token, i),
+				&_ => (),
 			}
 		}
 		

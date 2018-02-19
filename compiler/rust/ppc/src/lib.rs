@@ -5,7 +5,7 @@ use std::cell::RefCell;
 pub enum Type {
     GroupOp,
     Literal,
-    Number,
+    Number, // TODO: Remake all of these to something better like Number(Val::Int, Type2), GroupOp(Val::Str), etc.
     Op,
     Reserved,
     Str1,
