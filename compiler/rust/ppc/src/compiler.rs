@@ -60,7 +60,7 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 		tok_str = compile(tokens, i, tok_str);
 	}
 	
-	tokens[*i].kind = Kind::Var(Val::Str(tok_str));
+	tokens[*i].kind = Kind::Var(Val::Str(tok_str), Type::Void);
 	
 	*i -= 1;
 }
@@ -82,7 +82,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 	let mut type_i = 0;
 	
 	for token in (&tokens).iter() {
-		if token.kind == Kind::Whitespace {
+		if is_kind!(token.kind, Kind::Whitespace(_)) {
 			continue; // Ignore whitespace
 		}
 		
@@ -101,7 +101,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				type_i = 0;
 				func = false;
-			} else if token.kind == Kind::Type { // Parameter / return types
+			} else if is_kind!(token.kind, Kind::Type(_)) { // Parameter / return types
 				par_type[type_i] = token.kind.0.clone();
 				type_i += 1;
 			} else if par_type[0] != Type::Void {
@@ -109,7 +109,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				
 				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				type_i = 0;
-			} else if functions[last_item].name == "" && (token.kind == Kind::Var || token.kind == Kind::Op) { // Function name
+			} else if functions[last_item].name == "" && (is_kind!(token.kind, Kind::Var(_,_)) || is_kind!(token.kind, Kind::Op(_))) { // Function name
 				functions[last_item].name = &token.kind.0;
 				functions[last_item].pos = functions[last_item].args.len();
 			}
@@ -120,7 +120,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 	while i < tokens.len() {
 		let token = &tokens[i];
 		
-		if token.kind == Kind::Var || token.kind == Kind::Op {
+		if is_kind!(token.kind, Kind::Var(_,_)) || is_kind!(token.kind, Kind::Op(_)) {
 			let def = is_defined(&functions, &token.kind.0);
 			
 			if let Some(def) = def {
@@ -145,7 +145,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 					println!("{:#?}", tokens[(*token.children.borrow())[1]]);
 				}
 			}
-		} else if token.kind == Kind::GroupOp {
+		} else if is_kind!(token.kind, Kind::GroupOp(_)) {
 			match token.kind.0.as_ref() {
 				"(" => group_expr!(")", tokens, token, i),
 				"{" => group_expr!("}", tokens, token, i),
