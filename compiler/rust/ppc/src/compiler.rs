@@ -14,7 +14,7 @@ macro_rules! is_kind {
 macro_rules! group_expr {
 	($end:expr, $tokens:expr, $token:expr, $i:expr) => ({
 		let mut j = nxt(&$tokens, $i);
-		while $i + j < $tokens.len() && $tokens[$i + j].val != $end {
+		while $i + j < $tokens.len() && $tokens[$i + j].kind.0 != $end {
 			(*$token.children.borrow_mut()).push($i + j);
 			
 			j += nxt(&$tokens, $i + j);
@@ -55,7 +55,7 @@ fn prev(tokens: &Vec<Token>, i: usize) -> usize {
 fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'static str) {
 	let mut tok_str = String::from(op);
 	
-	while tokens[*i].val != op_close {
+	while tokens[*i].kind.0 != op_close {
 		*i += 1;
 		tok_str = compile(tokens, i, tok_str);
 	}
@@ -105,7 +105,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				par_type[type_i] = token.kind.0.clone();
 				type_i += 1;
 			} else if par_type[0] != Type::Void {
-				functions[last_item].args.push(FunctionArg {name: &token.kind.0, t: par_type});
+				functions[last_item].args.push(FunctionArg {name: &token.kind.0, typ: par_type});
 				
 				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				type_i = 0;
@@ -126,7 +126,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 			if let Some(def) = def {
 				if def.pos > 0 {
 					let mut j = 0;
-					while i - j > 0 && j < def.pos && tokens[i - j].val != ";" { // NOTE: comparison may need to be changed
+					while i - j > 0 && j < def.pos && tokens[i - j].kind.0 != ";" { // NOTE: comparison may need to be changed
 						j += prev(&tokens, i - j);
 						
 						(*token.children.borrow_mut()).push(i - j);
@@ -134,7 +134,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				}
 				
 				let mut j = 0;
-				while i + j < tokens.len() && j < def.args.len() - def.pos && tokens[i + j].val != ";" {
+				while i + j < tokens.len() && j < def.args.len() - def.pos && tokens[i + j].kind.0 != ";" {
 					j += nxt(&tokens, i + j);
 					
 					(*token.children.borrow_mut()).push(i + j);
@@ -159,10 +159,10 @@ pub fn parse(tokens: &mut Vec<Token>) {
 }
 
 pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {
-	match tokens[*i].val.as_ref() {
-		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, tokens[*i].val),
+	match tokens[*i].kind.0.as_ref() {
+		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, tokens[*i].kind.0),
 		"@" => output += "*",
-		"-" if tokens[*i + 1].val == ">" && tokens[*i + 1 + nxt(tokens, *i + 1)].t != Type::Type => {
+		"-" if tokens[*i + 1].kind.0 == ">" && !is_kind!(tokens[*i + 1 + nxt(tokens, *i + 1)].kind, Kind::Type(_)) => {
 			output += "&";
 			*i += 1;
 		},
@@ -176,11 +176,11 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 		"as" => output += "@",
 		"astype" => output += "as", // TMP; will be replaced with (<type>) <variable>
 		_ => {
-			let pos_change = match tokens[*i].t {
-				Type::Str1 | Type::Str2 | Type::Number | Type::Literal | Type::Var => {
+			let pos_change = match tokens[*i].kind {
+				Kind::Str1(_) | Kind::Str2(_) | Kind::Number(_,_) | Kind::Literal(_) | Kind::Var(_,_) => {
 					let nxt_tok = nxt(tokens, *i);
-					if nxt_tok > 0 && tokens[*i + nxt_tok].t == Type::Var {
-						output += &tokens[*i + nxt_tok].val;
+					if nxt_tok > 0 && is_kind!(tokens[*i + nxt_tok].kind, Kind::Var(_,_)) {
+						output += &tokens[*i + nxt_tok].kind.0;
 						output += "(";
 						nxt_tok
 					} else {
@@ -190,20 +190,20 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 				_ => 0
 			};
 			
-			match tokens[*i].t {
-				Type::Str1 => {
+			match tokens[*i].kind {
+				Kind::Str1(_) => {
 					output += "\"";
-					output += &tokens[*i].val;
+					output += &tokens[*i].kind.0;
 					output += "\"";
 				},
-				Type::Str2 => {
+				Kind::Str2(_) => {
 					output += "'";
-					output += &tokens[*i].val;
+					output += &tokens[*i].kind.0;
 					output += "'";
 				},
-				Type::Type => {
+				Kind::Type(_) => {
 					let mut nxt_tokens: Vec<usize> = vec!(nxt(tokens, *i));
-					while last!(nxt_tokens) > 0 && tokens[*i + last!(nxt_tokens)].t == Type::Type {
+					while last!(nxt_tokens) > 0 && is_kind!(tokens[*i + last!(nxt_tokens)].kind, Kind::Type(_)) {
 						let last_tok = last!(nxt_tokens);
 						nxt_tokens.push({
 							let nxt_tok = nxt(tokens, *i + last_tok) + last_tok;
@@ -215,48 +215,48 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 						});
 					}
 					
-					if last!(nxt_tokens) > 0 && tokens[*i + last!(nxt_tokens)].t == Type::Var {
-						output += &tokens[*i + last!(nxt_tokens)].val;
+					if last!(nxt_tokens) > 0 && is_kind!(tokens[*i + last!(nxt_tokens)].kind, Kind::Var(_,_)) {
+						output += &tokens[*i + last!(nxt_tokens)].kind.0;
 						output += ":";
 						
-						output += match tokens[*i].val.as_ref() {
+						output += match tokens[*i].kind.0.as_ref() {
 							"unsigned" => {
-								if nxt_tokens[0] > 0 && tokens[*i + nxt_tokens[0]].t == Type::Type {
-									match tokens[*i + nxt_tokens[0]].val.as_ref() {
+								if nxt_tokens[0] > 0 && is_kind!(tokens[*i + nxt_tokens[0]].kind, Kind::Type(_)) {
+									match tokens[*i + nxt_tokens[0]].kind.0.as_ref() {
 										"int" => "u64",
-										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i + nxt_tokens[0]].pos.line, tokens[*i + nxt_tokens[0]].pos.col, tokens[*i + nxt_tokens[0]].val)
+										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i + nxt_tokens[0]].pos.line, tokens[*i + nxt_tokens[0]].pos.col, tokens[*i + nxt_tokens[0]].kind.0)
 									}
 								} else {
 									panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
 								}
 							},
 							"int" => "i64",
-							_ => &tokens[*i].val
+							_ => &tokens[*i].kind.0
 						};
 						
 						*i += last!(nxt_tokens);
 					} else {
-						output += match tokens[*i].val.as_ref() {
+						output += match tokens[*i].kind.0.as_ref() {
 							"unsigned" => {
 								let nxt_tok = nxt(tokens, *i);
 								
 								*i += nxt_tok;
 								
-								if nxt_tok > 0 && tokens[*i].t == Type::Type {
-									match tokens[*i].val.as_ref() {
+								if nxt_tok > 0 && is_kind!(tokens[*i].kind, Kind::Type(_)) {
+									match tokens[*i].kind.0.as_ref() {
 										"int" => "u64",
-										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col, tokens[*i].val)
+										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col, tokens[*i].kind.0)
 									}
 								} else {
 									panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
 								}
 							},
 							"int" => "i64",
-							_ => &tokens[*i].val
+							_ => &tokens[*i].kind.0
 						};
 					}
 				},
-				_ => output += &tokens[*i].val
+				_ => output += &tokens[*i].kind.0
 			}
 			
 			if pos_change > 0 {
@@ -266,7 +266,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 				output += ",";
 				output = compile(tokens, i, output);
 				*i += 1;
-				output += &tokens[*i].val;
+				output += &tokens[*i].kind.0;
 				output += ")";
 			}
 		}
