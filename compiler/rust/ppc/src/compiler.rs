@@ -11,10 +11,28 @@ macro_rules! is_kind {
 	});
 }
 
+macro_rules! get_val {
+	($e:expr) => ({
+		use lib::Kind::*;
+		match $e {
+			GroupOp(Val::Str(val)) => val,
+			Literal(Val::Str(val)) => val,
+			Op(Val::Str(val)) => val,
+			Reserved(Val::Str(val)) => val,
+			Str1(Val::Str(val)) => val,
+			Str2(Val::Str(val)) => val,
+			_ => String::new()
+		}
+	});
+}
+
 macro_rules! group_expr {
 	($end:expr, $tokens:expr, $token:expr, $i:expr) => ({
 		let mut j = nxt(&$tokens, $i);
-		while $i + j < $tokens.len() && $tokens[$i + j].kind.0 != $end {
+		while $i + j < $tokens.len() && match $tokens[$i + j].kind {
+			Kind::GroupOp(Val::Str(val)) => val != $end,
+			_ => true
+		} {
 			(*$token.children.borrow_mut()).push($i + j);
 			
 			j += nxt(&$tokens, $i + j);
@@ -55,7 +73,10 @@ fn prev(tokens: &Vec<Token>, i: usize) -> usize {
 fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'static str) {
 	let mut tok_str = String::from(op);
 	
-	while tokens[*i].kind.0 != op_close {
+	while match tokens[*i].kind {
+		Kind::GroupOp(Val::Str(val)) => val != op_close,
+		_ => true
+	} {
 		*i += 1;
 		tok_str = compile(tokens, i, tok_str);
 	}
@@ -91,26 +112,36 @@ pub fn parse(tokens: &mut Vec<Token>) {
 			last_item -= 1;
 		}
 		
-		if token.kind.0 == "func" {
+		if match token.kind {
+			Kind::Reserved(Val::Str(val)) => val == "func",
+			_ => false
+		} {
 			functions.push(Function {name: "", pos: 0, args: vec![], output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
 			func = true;
 		} else if func {
-			if token.kind.0 == "{" || token.kind.0 == ";" { // Function body / end of function declaration
+			if match token.kind {
+				Kind::GroupOp(Val::Str(val)) => val == "{", // Function body
+				Kind::Op(Val::Str(val)) => val == ";", // End of function declaration
+				_ => false
+			} {
 				functions[last_item].output = par_type.clone();
 				
 				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				type_i = 0;
 				func = false;
 			} else if is_kind!(token.kind, Kind::Type(_)) { // Parameter / return types
-				par_type[type_i] = token.kind.0.clone();
+				let Kind::Type(val) = token.kind;
+				par_type[type_i] = val.clone();
 				type_i += 1;
 			} else if par_type[0] != Type::Void {
-				functions[last_item].args.push(FunctionArg {name: &token.kind.0, typ: par_type});
+				let Kind::Var(Val::Str(name), _) = token.kind;
+				functions[last_item].args.push(FunctionArg {name: &name, typ: par_type});
 				
 				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				type_i = 0;
 			} else if functions[last_item].name == "" && (is_kind!(token.kind, Kind::Var(_,_)) || is_kind!(token.kind, Kind::Op(_))) { // Function name
-				functions[last_item].name = &token.kind.0;
+				let Kind::Var(Val::Str(name), _) = token.kind;
+				functions[last_item].name = &name;
 				functions[last_item].pos = functions[last_item].args.len();
 			}
 		}
@@ -121,12 +152,16 @@ pub fn parse(tokens: &mut Vec<Token>) {
 		let token = &tokens[i];
 		
 		if is_kind!(token.kind, Kind::Var(_,_)) || is_kind!(token.kind, Kind::Op(_)) {
-			let def = is_defined(&functions, &token.kind.0);
+			let Kind::Var(Val::Str(val), _) = token.kind; // Probably needs fixing
+			let def = is_defined(&functions, &val);
 			
 			if let Some(def) = def {
 				if def.pos > 0 {
 					let mut j = 0;
-					while i - j > 0 && j < def.pos && tokens[i - j].kind.0 != ";" { // NOTE: comparison may need to be changed
+					while i - j > 0 && j < def.pos && match tokens[i - j].kind {
+						Kind::Op(Val::Str(val)) => val != ";",
+						_ => true
+					} { // NOTE: comparison may need to be changed
 						j += prev(&tokens, i - j);
 						
 						(*token.children.borrow_mut()).push(i - j);
@@ -134,7 +169,10 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				}
 				
 				let mut j = 0;
-				while i + j < tokens.len() && j < def.args.len() - def.pos && tokens[i + j].kind.0 != ";" {
+				while i + j < tokens.len() && j < def.args.len() - def.pos && match tokens[i + j].kind {
+						Kind::Op(Val::Str(val)) => val != ";",
+						_ => true
+					} {
 					j += nxt(&tokens, i + j);
 					
 					(*token.children.borrow_mut()).push(i + j);
@@ -146,7 +184,8 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				}
 			}
 		} else if is_kind!(token.kind, Kind::GroupOp(_)) {
-			match token.kind.0.as_ref() {
+			let Kind::GroupOp(Val::Str(val)) = token.kind;
+			match val.as_ref() {
 				"(" => group_expr!(")", tokens, token, i),
 				"{" => group_expr!("}", tokens, token, i),
 				"[" => group_expr!("]", tokens, token, i),
@@ -159,10 +198,23 @@ pub fn parse(tokens: &mut Vec<Token>) {
 }
 
 pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {
-	match tokens[*i].kind.0.as_ref() {
-		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, tokens[*i].kind.0),
+	let val = {
+		use lib::Kind::*;
+		match tokens[*i].kind {
+			GroupOp(Val::Str(val)) => val,
+			Literal(Val::Str(val)) => val,
+			Op(Val::Str(val)) => val,
+			Reserved(Val::Str(val)) => val,
+			Str1(Val::Str(val)) => val,
+			Str2(Val::Str(val)) => val,
+			_ => String::new()
+		}
+	};
+	
+	match val.as_ref() {
+		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
 		"@" => output += "*",
-		"-" if tokens[*i + 1].kind.0 == ">" && !is_kind!(tokens[*i + 1 + nxt(tokens, *i + 1)].kind, Kind::Type(_)) => {
+		"-" if get_val!(tokens[*i + 1].kind) == ">" && !is_kind!(tokens[*i + 1 + nxt(tokens, *i + 1)].kind, Kind::Type(_)) => {
 			output += "&";
 			*i += 1;
 		},
@@ -180,7 +232,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 				Kind::Str1(_) | Kind::Str2(_) | Kind::Number(_,_) | Kind::Literal(_) | Kind::Var(_,_) => {
 					let nxt_tok = nxt(tokens, *i);
 					if nxt_tok > 0 && is_kind!(tokens[*i + nxt_tok].kind, Kind::Var(_,_)) {
-						output += &tokens[*i + nxt_tok].kind.0;
+						output += &get_val!(tokens[*i + nxt_tok].kind);
 						output += "(";
 						nxt_tok
 					} else {
@@ -193,12 +245,12 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 			match tokens[*i].kind {
 				Kind::Str1(_) => {
 					output += "\"";
-					output += &tokens[*i].kind.0;
+					output += &get_val!(tokens[*i].kind);
 					output += "\"";
 				},
 				Kind::Str2(_) => {
 					output += "'";
-					output += &tokens[*i].kind.0;
+					output += &get_val!(tokens[*i].kind);
 					output += "'";
 				},
 				Kind::Type(_) => {
@@ -216,47 +268,47 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 					}
 					
 					if last!(nxt_tokens) > 0 && is_kind!(tokens[*i + last!(nxt_tokens)].kind, Kind::Var(_,_)) {
-						output += &tokens[*i + last!(nxt_tokens)].kind.0;
+						output += &get_val!(tokens[*i + last!(nxt_tokens)].kind);
 						output += ":";
 						
-						output += match tokens[*i].kind.0.as_ref() {
+						output += match get_val!(tokens[*i].kind).as_ref() {
 							"unsigned" => {
 								if nxt_tokens[0] > 0 && is_kind!(tokens[*i + nxt_tokens[0]].kind, Kind::Type(_)) {
-									match tokens[*i + nxt_tokens[0]].kind.0.as_ref() {
+									match get_val!(tokens[*i + nxt_tokens[0]].kind).as_ref() {
 										"int" => "u64",
-										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i + nxt_tokens[0]].pos.line, tokens[*i + nxt_tokens[0]].pos.col, tokens[*i + nxt_tokens[0]].kind.0)
+										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i + nxt_tokens[0]].pos.line, tokens[*i + nxt_tokens[0]].pos.col, get_val!(tokens[*i + nxt_tokens[0]].kind))
 									}
 								} else {
 									panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
 								}
 							},
 							"int" => "i64",
-							_ => &tokens[*i].kind.0
+							_ => &get_val!(tokens[*i].kind)
 						};
 						
 						*i += last!(nxt_tokens);
 					} else {
-						output += match tokens[*i].kind.0.as_ref() {
+						output += match get_val!(tokens[*i].kind).as_ref() {
 							"unsigned" => {
 								let nxt_tok = nxt(tokens, *i);
 								
 								*i += nxt_tok;
 								
 								if nxt_tok > 0 && is_kind!(tokens[*i].kind, Kind::Type(_)) {
-									match tokens[*i].kind.0.as_ref() {
+									match get_val!(tokens[*i].kind).as_ref() {
 										"int" => "u64",
-										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col, tokens[*i].kind.0)
+										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind))
 									}
 								} else {
 									panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
 								}
 							},
 							"int" => "i64",
-							_ => &tokens[*i].kind.0
+							_ => &get_val!(tokens[*i].kind)
 						};
 					}
 				},
-				_ => output += &tokens[*i].kind.0
+				_ => output += &get_val!(tokens[*i].kind)
 			}
 			
 			if pos_change > 0 {
@@ -266,7 +318,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 				output += ",";
 				output = compile(tokens, i, output);
 				*i += 1;
-				output += &tokens[*i].kind.0;
+				output += &get_val!(tokens[*i].kind);
 				output += ")";
 			}
 		}
