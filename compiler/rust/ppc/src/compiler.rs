@@ -73,7 +73,7 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 	let mut tok_str = String::from(op);
 	
 	while match tokens[*i].kind {
-		Kind::GroupOp(val) => val != op_close,
+		Kind::GroupOp(ref mut val) => *val != op_close,
 		_ => true
 	} {
 		*i += 1;

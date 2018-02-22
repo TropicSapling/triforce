@@ -98,15 +98,15 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 			
 			if escaping {
 				let mut val = match string.kind {
-					Kind::Str1(value) => value,
-					Kind::Str2(value) => value,
+					Kind::Str1(ref mut value) => value,
+					Kind::Str2(ref mut value) => value,
 					_ => panic!("")
 				};
 				if item == "0" || item == "n" { // Null and newlines
-					val += "\\";
+					*val += "\\";
 				}
 				
-				val += item;
+				*val += item;
 				string.pos = FilePos {line, col};
 				
 				escaping = false;
@@ -118,10 +118,10 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					escaping = true;
 				} else {
 					let mut val = match string.kind {
-						Kind::Str1(val) => val,
-						_ => String::new()
+						Kind::Str1(ref mut val) => val,
+						_ => panic!("")
 					};
-					val += item;
+					*val += item;
 				}
 			} else if in_str2 {
 				if item == "'" {
@@ -131,10 +131,10 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					escaping = true;
 				} else {
 					let mut val = match string.kind {
-						Kind::Str2(val) => val,
-						_ => String::new()
+						Kind::Str2(ref mut val) => val,
+						_ => panic!("")
 					};
-					val += item;
+					*val += item;
 				}
 			} else if item == "\"" {
 				string.kind = Kind::Str1(String::from(""));
