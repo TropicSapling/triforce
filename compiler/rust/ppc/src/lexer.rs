@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use lib::{Token, Val, Kind, Type, FilePos};
+use lib::{Token, Whitespace, Kind, Type, FilePos};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -28,7 +28,7 @@ pub fn lex<'a>(contents: &'a String) -> Vec<&'a str> {
 pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	let mut res: Vec<Token> = Vec::new();
 	let mut string = Token {
-		kind: Kind::Str1(Val::Str(String::from(""))),
+		kind: Kind::Str1(String::from("")),
 		pos: FilePos {line: 1, col: 1},
 		children: RefCell::new(vec![])
 	};
@@ -47,7 +47,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	for item in tokens {
 		if ignoring {
 			if item == "\n" {
-				res.push(Token {kind: Kind::Whitespace(Val::Str(item.to_string())), pos: FilePos {line, col}, children: RefCell::new(vec![])});
+				res.push(Token {kind: Kind::Whitespace(Whitespace::Newline), pos: FilePos {line, col}, children: RefCell::new(vec![])});
 				
 				line += 1;
 				col = 0;
@@ -55,7 +55,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 			}
 			
 			if item == "\r" {
-				res.push(Token {kind: Kind::Whitespace(Val::Str(item.to_string())), pos: FilePos {line, col}, children: RefCell::new(vec![])});
+				res.push(Token {kind: Kind::Whitespace(Whitespace::CarRet), pos: FilePos {line, col}, children: RefCell::new(vec![])});
 			}
 		} else if ignoring2 {
 			if possible_comment {
@@ -89,7 +89,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				} else {
 					possible_comment = false;
 					
-					string.kind = Kind::Op(Val::Str(String::from("/")));
+					string.kind = Kind::Op(String::from("/"));
 					string.pos = FilePos {line, col};
 					
 					res.push(string.clone());
@@ -97,9 +97,10 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 			}
 			
 			if escaping {
-				let val = match string.kind {
-					Kind::Str1(Val::Str(value)) => value,
-					Kind::Str2(Val::Str(value)) => value,
+				let mut val = match string.kind {
+					Kind::Str1(value) => value,
+					Kind::Str2(value) => value,
+					_ => panic!("")
 				};
 				if item == "0" || item == "n" { // Null and newlines
 					val += "\\";
@@ -116,7 +117,10 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				} else if item == "\\" {
 					escaping = true;
 				} else {
-					let Kind::Str1(Val::Str(val)) = string.kind;
+					let mut val = match string.kind {
+						Kind::Str1(val) => val,
+						_ => String::new()
+					};
 					val += item;
 				}
 			} else if in_str2 {
@@ -126,22 +130,28 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				} else if item == "\\" {
 					escaping = true;
 				} else {
-					let Kind::Str2(Val::Str(val)) = string.kind;
+					let mut val = match string.kind {
+						Kind::Str2(val) => val,
+						_ => String::new()
+					};
 					val += item;
 				}
 			} else if item == "\"" {
-				string.kind = Kind::Str1(Val::Str(String::from("")));
+				string.kind = Kind::Str1(String::from(""));
 				string.pos = FilePos {line, col};
 				in_str = true;
 			} else if item == "'" {
-				string.kind = Kind::Str2(Val::Str(String::from("")));
+				string.kind = Kind::Str2(String::from(""));
 				string.pos = FilePos {line, col};
 				in_str2 = true;
 			} else {
 				if num_pos > 0 && (item == "." || num_pos == 2) {
 					if num_pos == 2 {
-						let Kind::Number(_, Val::Int(decimals)) = string.kind;
-						decimals = item.parse::<u64>().unwrap();
+						match string.kind {
+							Kind::Number(n, _) => string.kind = Kind::Number(n, item.parse::<u64>().unwrap()),
+							_ => panic!("")
+						}
+						
 						res.push(string.clone());
 						
 						num_pos = 0;
@@ -161,14 +171,14 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				if item == "/" {
 					possible_comment = true;
 				} else if let Ok(int_val) = int_res {
-					string.kind = Kind::Number(Val::Int(int_val), Val::Int(0));
+					string.kind = Kind::Number(int_val, 0);
 					string.pos = FilePos {line, col};
 					
 					num_pos = 1;
 				} else {
 					string.kind = match item {
-						"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" => Kind::Op(Val::Str(item.to_string())),
-						"{" | "}" | "[" | "]" | "(" | ")" => Kind::GroupOp(Val::Str(item.to_string())),
+						"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" => Kind::Op(item.to_string()),
+						"{" | "}" | "[" | "]" | "(" | ")" => Kind::GroupOp(item.to_string()),
 						"array" => Kind::Type(Type::Array),
 						"bool" => Kind::Type(Type::Bool),
 						"chan" => Kind::Type(Type::Chan),
@@ -187,18 +197,18 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 						"unsigned" => Kind::Type(Type::Unsigned),
 						"volatile" => Kind::Type(Type::Volatile),
 						"void" => Kind::Type(Type::Void),
-						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Kind::Reserved(Val::Str(item.to_string())),
-						"false" => Kind::Literal(Val::Bool(false)),
-						"true" => Kind::Literal(Val::Bool(true)),
+						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Kind::Reserved(item.to_string()),
+						"false" => Kind::Literal(false),
+						"true" => Kind::Literal(true),
 						"\n" => {
 							line += 1;
 							col = 0;
-							Kind::Whitespace(Val::Newline)
+							Kind::Whitespace(Whitespace::Newline)
 						},
-						"\r" => Kind::Whitespace(Val::CarRet),
-						"\t" => Kind::Whitespace(Val::Tab),
-						" " => Kind::Whitespace(Val::Space),
-						_ => Kind::Var(Val::Str(item.to_string()), Type::Void) // 'Void' type is temporary
+						"\r" => Kind::Whitespace(Whitespace::CarRet),
+						"\t" => Kind::Whitespace(Whitespace::Tab),
+						" " => Kind::Whitespace(Whitespace::Space),
+						_ => Kind::Var(item.to_string(), Type::Void) // 'Void' type is temporary
 					};
 					string.pos = FilePos {line, col};
 					

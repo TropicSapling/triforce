@@ -2,10 +2,7 @@ use std::path::PathBuf;
 use std::cell::RefCell;
 
 #[derive(Clone, PartialEq, Debug)]
-pub enum Val {
-	Int(u64),
-	Bool(bool),
-	Str(String),
+pub enum Whitespace {
 	Newline,
 	CarRet,
 	Tab,
@@ -14,16 +11,16 @@ pub enum Val {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
-    GroupOp(Val),
-    Literal(Val),
-    Number(Val, Val),
-    Op(Val),
-    Reserved(Val),
-    Str1(Val),
-    Str2(Val),
+    GroupOp(String),
+    Literal(bool),
+    Number(u64, u64),
+    Op(String),
+    Reserved(String),
+    Str1(String),
+    Str2(String),
     Type(Type),
-    Var(Val, Type),
-    Whitespace(Val)
+    Var(String, Type),
+    Whitespace(Whitespace)
 }
 
 #[derive(Clone, PartialEq, Debug)]

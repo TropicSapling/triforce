@@ -1,4 +1,4 @@
-use lib::{Token, Val, Kind, Type, Function, FunctionArg};
+use lib::{Token, Kind, Type, Function, FunctionArg};
 
 macro_rules! last {
 	($e:expr) => ($e[$e.len() - 1]);
@@ -15,12 +15,11 @@ macro_rules! get_val {
 	($e:expr) => ({
 		use lib::Kind::*;
 		match $e {
-			GroupOp(Val::Str(val)) => val,
-			Literal(Val::Str(val)) => val,
-			Op(Val::Str(val)) => val,
-			Reserved(Val::Str(val)) => val,
-			Str1(Val::Str(val)) => val,
-			Str2(Val::Str(val)) => val,
+			GroupOp(val) => val,
+			Op(val) => val,
+			Reserved(val) => val,
+			Str1(val) => val,
+			Str2(val) => val,
 			_ => String::new()
 		}
 	});
@@ -30,7 +29,7 @@ macro_rules! group_expr {
 	($end:expr, $tokens:expr, $token:expr, $i:expr) => ({
 		let mut j = nxt(&$tokens, $i);
 		while $i + j < $tokens.len() && match $tokens[$i + j].kind {
-			Kind::GroupOp(Val::Str(val)) => val != $end,
+			Kind::GroupOp(val) => val != $end,
 			_ => true
 		} {
 			(*$token.children.borrow_mut()).push($i + j);
@@ -74,14 +73,14 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 	let mut tok_str = String::from(op);
 	
 	while match tokens[*i].kind {
-		Kind::GroupOp(Val::Str(val)) => val != op_close,
+		Kind::GroupOp(val) => val != op_close,
 		_ => true
 	} {
 		*i += 1;
 		tok_str = compile(tokens, i, tok_str);
 	}
 	
-	tokens[*i].kind = Kind::Var(Val::Str(tok_str), Type::Void);
+	tokens[*i].kind = Kind::Var(tok_str, Type::Void);
 	
 	*i -= 1;
 }
@@ -113,15 +112,15 @@ pub fn parse(tokens: &mut Vec<Token>) {
 		}
 		
 		if match token.kind {
-			Kind::Reserved(Val::Str(val)) => val == "func",
+			Kind::Reserved(val) => val == "func",
 			_ => false
 		} {
 			functions.push(Function {name: "", pos: 0, args: vec![], output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
 			func = true;
 		} else if func {
 			if match token.kind {
-				Kind::GroupOp(Val::Str(val)) => val == "{", // Function body
-				Kind::Op(Val::Str(val)) => val == ";", // End of function declaration
+				Kind::GroupOp(val) => val == "{", // Function body
+				Kind::Op(val) => val == ";", // End of function declaration
 				_ => false
 			} {
 				functions[last_item].output = par_type.clone();
@@ -130,17 +129,26 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				type_i = 0;
 				func = false;
 			} else if is_kind!(token.kind, Kind::Type(_)) { // Parameter / return types
-				let Kind::Type(val) = token.kind;
+				let val = match token.kind {
+					Kind::Type(val) => val,
+					_ => Type::Void
+				};
 				par_type[type_i] = val.clone();
 				type_i += 1;
 			} else if par_type[0] != Type::Void {
-				let Kind::Var(Val::Str(name), _) = token.kind;
+				let name = match token.kind {
+					Kind::Var(name, _) => name,
+					_ => String::new()
+				};
 				functions[last_item].args.push(FunctionArg {name: &name, typ: par_type});
 				
 				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				type_i = 0;
 			} else if functions[last_item].name == "" && (is_kind!(token.kind, Kind::Var(_,_)) || is_kind!(token.kind, Kind::Op(_))) { // Function name
-				let Kind::Var(Val::Str(name), _) = token.kind;
+				let name = match token.kind {
+					Kind::Var(name, _) => name,
+					_ => String::new()
+				};
 				functions[last_item].name = &name;
 				functions[last_item].pos = functions[last_item].args.len();
 			}
@@ -152,14 +160,17 @@ pub fn parse(tokens: &mut Vec<Token>) {
 		let token = &tokens[i];
 		
 		if is_kind!(token.kind, Kind::Var(_,_)) || is_kind!(token.kind, Kind::Op(_)) {
-			let Kind::Var(Val::Str(val), _) = token.kind; // Probably needs fixing
+			let val = match token.kind {
+				Kind::Var(val, _) => val,
+				_ => String::new()
+			}; // Probably needs fixing
 			let def = is_defined(&functions, &val);
 			
 			if let Some(def) = def {
 				if def.pos > 0 {
 					let mut j = 0;
 					while i - j > 0 && j < def.pos && match tokens[i - j].kind {
-						Kind::Op(Val::Str(val)) => val != ";",
+						Kind::Op(val) => val != ";",
 						_ => true
 					} { // NOTE: comparison may need to be changed
 						j += prev(&tokens, i - j);
@@ -170,7 +181,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				
 				let mut j = 0;
 				while i + j < tokens.len() && j < def.args.len() - def.pos && match tokens[i + j].kind {
-						Kind::Op(Val::Str(val)) => val != ";",
+						Kind::Op(val) => val != ";",
 						_ => true
 					} {
 					j += nxt(&tokens, i + j);
@@ -184,7 +195,10 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				}
 			}
 		} else if is_kind!(token.kind, Kind::GroupOp(_)) {
-			let Kind::GroupOp(Val::Str(val)) = token.kind;
+			let val = match token.kind {
+				Kind::GroupOp(val) => val,
+				_ => String::new()
+			};
 			match val.as_ref() {
 				"(" => group_expr!(")", tokens, token, i),
 				"{" => group_expr!("}", tokens, token, i),
@@ -201,12 +215,11 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 	let val = {
 		use lib::Kind::*;
 		match tokens[*i].kind {
-			GroupOp(Val::Str(val)) => val,
-			Literal(Val::Str(val)) => val,
-			Op(Val::Str(val)) => val,
-			Reserved(Val::Str(val)) => val,
-			Str1(Val::Str(val)) => val,
-			Str2(Val::Str(val)) => val,
+			GroupOp(val) => val,
+			Op(val) => val,
+			Reserved(val) => val,
+			Str1(val) => val,
+			Str2(val) => val,
 			_ => String::new()
 		}
 	};
