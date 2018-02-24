@@ -25,6 +25,15 @@ macro_rules! get_val {
 	});
 }
 
+macro_rules! is_val {
+	($e:expr, $pattern:pat, $var:expr, $val:expr) => ({
+		match $e {
+			$pattern => $var == $val,
+			_ => false
+		}
+	});
+}
+
 macro_rules! group_expr {
 	($end:expr, $tokens:expr, $token:expr, $i:expr) => ({
 		let mut j = nxt(&$tokens, $i);
@@ -72,10 +81,7 @@ fn prev(tokens: &Vec<Token>, i: usize) -> usize {
 fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'static str) {
 	let mut tok_str = String::from(op);
 	
-	while match tokens[*i].kind {
-		Kind::GroupOp(ref mut val) => *val != op_close,
-		_ => true
-	} {
+	while !is_val!(tokens[*i].kind, Kind::GroupOp(ref val), val, op_close) {
 		*i += 1;
 		tok_str = compile(tokens, i, tok_str);
 	}
@@ -111,10 +117,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 			last_item -= 1;
 		}
 		
-		if match token.kind {
-			Kind::Reserved(ref val) => val == "func",
-			_ => false
-		} {
+		if is_val!(token.kind, Kind::Type(ref val), val, &Type::Func) {
 			functions.push(Function {name: "", pos: 0, args: vec![], output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
 			func = true;
 		} else if func {
@@ -276,7 +279,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 			&Void => output += "()"
 		},
 		
-		Var(ref name, _) => output += &name,
+		Var(ref name, _) => output += &name, // TMP
 		
 		Whitespace(ref typ) => match typ {
 			&Newline => output += "\n",
