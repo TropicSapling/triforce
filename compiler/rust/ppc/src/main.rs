@@ -146,7 +146,7 @@ fn init() -> i32 {
 	let mut out_contents = String::new();
 	let mut i = 0;
 	while i < tokens.len() {
-		out_contents = compile(&mut tokens, &mut i, out_contents);
+		out_contents = compile(&tokens, &mut i, out_contents);
 		i += 1;
 	}
 	

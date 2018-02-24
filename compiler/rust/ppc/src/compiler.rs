@@ -35,12 +35,22 @@ macro_rules! is_val {
 }
 
 macro_rules! group_expr {
-	($end:expr, $tokens:expr, $token:expr, $i:expr) => ({
-		let mut j = nxt(&$tokens, $i);
-		while $i + j < $tokens.len() && !is_val!($tokens[$i + j].kind, Kind::GroupOp(ref val), val, $end) {
+	($start:expr, $end:expr, $tokens:expr, $token:expr, $i:expr) => ({
+		let mut j = 1;
+		let mut nests = 0;
+		while $i + j < $tokens.len() && (nests > 0 || !is_val!($tokens[$i + j].kind, Kind::GroupOp(ref val), val, $end)) {
 			(*$token.children.borrow_mut()).push($i + j);
 			
-			j += nxt(&$tokens, $i + j);
+			match $tokens[$i + j].kind {
+				Kind::GroupOp(ref val) => match val.as_ref() {
+					$start => nests += 1,
+					$end => nests -= 1,
+					&_ => ()
+				},
+				_ => ()
+			}
+			
+			j += 1;
 		}
 	})
 }
@@ -75,7 +85,7 @@ fn prev(tokens: &Vec<Token>, i: usize) -> usize {
 	}
 }
 
-fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'static str) {
+/* fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'static str) {
 	let mut tok_str = String::from(op);
 	
 	while !is_val!(tokens[*i].kind, Kind::GroupOp(ref val), val, op_close) {
@@ -86,7 +96,7 @@ fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'s
 	tokens[*i].kind = Kind::Var(tok_str, Type::Void);
 	
 	*i -= 1;
-}
+} */
 
 fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a>> {
 	for def in defs {
@@ -175,6 +185,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 						
 						match tokens[i - j].kind { // NEEDS FIXING; will not correctly parse args with parentheses
 							Kind::GroupOp(ref op) => {
+								let mut nests = 0;
 								let start_op = match op.as_ref() {
 									")" => "(",
 									"}" => "{",
@@ -182,7 +193,16 @@ pub fn parse(tokens: &mut Vec<Token>) {
 									&_ => panic!("")
 								};
 								
-								while i - j > 0 && !is_val!(tokens[i - j].kind, Kind::GroupOp(ref val), val, start_op) {
+								while i - j > 0 && (nests > 0 || !is_val!(tokens[i - j].kind, Kind::GroupOp(ref val), val, start_op)) {
+									match tokens[i - j].kind {
+										Kind::GroupOp(ref val) => match val {
+											op => nests += 1,
+											start_op => nests -= 1,
+											_ => ()
+										},
+										_ => ()
+									}
+									
 									j += prev(&tokens, i - j);
 								}
 								
@@ -201,6 +221,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 					
 					match tokens[i + j].kind { // NEEDS FIXING; will not correctly parse args with parentheses
 						Kind::GroupOp(ref op) => {
+							let mut nests = 0;
 							let end_op = match op.as_ref() {
 								"(" => ")",
 								"{" => "}",
@@ -208,7 +229,16 @@ pub fn parse(tokens: &mut Vec<Token>) {
 								&_ => panic!("")
 							};
 							
-							while i + j < tokens.len() && !is_val!(tokens[i + j].kind, Kind::GroupOp(ref val), val, end_op) {
+							while i + j < tokens.len() && (nests > 0 || !is_val!(tokens[i + j].kind, Kind::GroupOp(ref val), val, end_op)) {
+								match tokens[i + j].kind {
+									Kind::GroupOp(ref val) => match val {
+										op => nests += 1,
+										end_op => nests -= 1,
+										_ => ()
+									},
+									_ => ()
+								}
+								
 								j += nxt(&tokens, i + j);
 							}
 						},
@@ -223,9 +253,9 @@ pub fn parse(tokens: &mut Vec<Token>) {
 			};
 			
 			match val.as_ref() {
-				"(" => group_expr!(")", tokens, token, i),
-				"{" => group_expr!("}", tokens, token, i),
-				"[" => group_expr!("]", tokens, token, i),
+				"(" => group_expr!("(", ")", tokens, token, i),
+				"{" => group_expr!("{", "}", tokens, token, i),
+				"[" => group_expr!("[", "]", tokens, token, i),
 				&_ => (),
 			}
 		}
@@ -234,13 +264,24 @@ pub fn parse(tokens: &mut Vec<Token>) {
 	}
 }
 
-pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {
+pub fn compile(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
 	use lib::Kind::*;
 	use lib::Type::*;
 	use lib::Whitespace::*;
 	
 	match tokens[*i].kind {
-		GroupOp(ref op) => output += op, // Probably temporary
+		GroupOp(ref op) => {
+			output += op;
+			print!("{:?}, ", tokens[*i].kind);
+			
+			let children = tokens[*i].children.borrow();
+			for child in children.iter() {
+				*i = *child;
+				output = compile(tokens, i, output);
+			}
+			
+			println!("{:?}", tokens[*i].kind);
+		},
 		
 		Literal(ref boolean) => if *boolean {
 			output += "true";
@@ -256,7 +297,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 		
 		Op(ref op) => match op.as_ref() {
 			"@" => output += "*",
-			"-" if get_val!(tokens[*i + 1].kind) == ">" && !is_kind!(tokens[*i + 1 + nxt(tokens, *i + 1)].kind, Kind::Type(_)) => {
+			"-" if get_val!(tokens[*i + 1].kind) == ">" && !is_kind!(tokens[*i + 1 + nxt(&tokens, *i + 1)].kind, Kind::Type(_)) => {
 				output += "&";
 				*i += 1;
 			},
@@ -298,7 +339,22 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 			&Void => output += "()"
 		},
 		
-		Var(ref name, _) => output += &name, // TMP
+		Var(ref name, _) => {
+			output += &name;
+			
+			let children = tokens[*i].children.borrow();
+			if children.len() > 0 { // Function call or definition
+				output += "(";
+				
+				for child in children.iter() {
+					let mut c = *child;
+					output = compile(tokens, &mut c, output);
+					output += ",";
+				}
+				
+				output += ")";
+			}
+		}
 		
 		Whitespace(ref typ) => match typ {
 			&Newline => output += "\n",
