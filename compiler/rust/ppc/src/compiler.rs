@@ -218,25 +218,27 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 	use lib::Whitespace::*;
 	
 	match tokens[*i].kind {
-		GroupOp(op) => match op.as_ref() {
-			"(" => group(&mut tokens, i, "(", ")"),
+		GroupOp(ref op) => match op.as_ref() {
+/*			"(" => group(&mut tokens, i, "(", ")"),
 			"[" => group(&mut tokens, i, "[", "]"),
-			"{" => group(&mut tokens, i, "{", "}")
+			"{" => group(&mut tokens, i, "{", "}"), */
+			"(" | "[" | "{" => panic!("FIX OPS"), // TMP
+			&_ => panic!("{}:{} Unexpected token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind))
 		},
 		
-		Literal(boolean) => if boolean {
+		Literal(ref boolean) => if *boolean {
 			output += "true";
 		} else {
 			output += "false";
 		},
 		
-		Number(int, fraction) => {
+		Number(ref int, ref fraction) => {
 			output += &int.to_string();
 			output += ".";
 			output += &fraction.to_string();
 		},
 		
-		Op(op) => match op.as_ref() {
+		Op(ref op) => match op.as_ref() {
 			"@" => output += "*",
 			"-" if get_val!(tokens[*i + 1].kind) == ">" && !is_kind!(tokens[*i + 1 + nxt(tokens, *i + 1)].kind, Kind::Type(_)) => {
 				output += "&";
@@ -245,7 +247,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 			_ => output += &op
 		},
 		
-		Reserved(keyword) => match keyword.as_ref() {
+		Reserved(ref keyword) => match keyword.as_ref() {
 			"async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
 			"import" => output += "use",
 			"foreach" => output += "for",
@@ -254,45 +256,39 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 			_ => output += &keyword
 		},
 		
-		Str1(s) => { // TMP; will be replaced with C-style (null terminated) strings
+		Str1(ref s) => { // TMP; will be replaced with C-style (null terminated) strings
 			output += "\"";
 			output += &s;
 			output += "\"";
 		},
 		
-		Str2(s) => { // TMP; will be replaced with P+ style strings
+		Str2(ref s) => { // TMP; will be replaced with P+ style strings
 			output += "\"";
 			output += &s;
 			output += "\"";
 		},
 		
-		Type(typ) => match typ {
-			Array | Chan | Const | Fraction | Heap | List | Only | Register | Stack | Unique | Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
-			Bool => output += "bool",
-			Char => output += "char",
-			Func => output += "fn",
-			Int => output += "i64", // TMP
-			Pointer => output += "*", // TMP
-			Unsigned => {
-				if nxt_tokens[0] > 0 && is_kind!(tokens[*i + nxt_tokens[0]].kind, Kind::Type(_)) {
-					match get_val!(tokens[*i + nxt_tokens[0]].kind).as_ref() {
-						"int" => "u64",
-						_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i + nxt_tokens[0]].pos.line, tokens[*i + nxt_tokens[0]].pos.col, get_val!(tokens[*i + nxt_tokens[0]].kind))
-					}
-				} else {
-					panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
-				}
+		Type(ref typ) => match typ {
+			&Array | &Chan | &Const | &Fraction | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
+			&Bool => output += "bool",
+			&Char => output += "char",
+			&Func => output += "fn",
+			&Int => match tokens[prev(&tokens, *i)].kind {
+				Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
+				_ => output += "i64" // TMP
 			},
-			Void => output += "()"
+			&Pointer => output += "*", // TMP
+			&Unsigned => (),
+			&Void => output += "()"
 		},
 		
-		Var(name, typ) => output += &name,
+		Var(ref name, _) => output += &name,
 		
-		Whitespace(typ) => match typ {
-			Newline => output += "\n",
-			CarRet => output += "\r",
-			Tab => output += "\t",
-			Space => output += " "
+		Whitespace(ref typ) => match typ {
+			&Newline => output += "\n",
+			&CarRet => output += "\r",
+			&Tab => output += "\t",
+			&Space => output += " "
 		}
 	}
 	
