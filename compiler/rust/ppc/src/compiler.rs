@@ -162,6 +162,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 		if is_kind!(token.kind, Kind::Var(_,_)) || is_kind!(token.kind, Kind::Op(_)) {
 			let val = match token.kind {
 				Kind::Var(ref val, _) => val,
+				Kind::Op(ref val) => val,
 				_ => panic!("")
 			}; // Probably needs fixing
 			let def = is_defined(&functions, &val);
@@ -212,14 +213,102 @@ pub fn parse(tokens: &mut Vec<Token>) {
 }
 
 pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -> String {
-	let val = {
+	use lib::Kind::*;
+	use lib::Type::*;
+	use lib::Whitespace::*;
+	
+	match tokens[*i].kind {
+		GroupOp(op) => match op.as_ref() {
+			"(" => group(&mut tokens, i, "(", ")"),
+			"[" => group(&mut tokens, i, "[", "]"),
+			"{" => group(&mut tokens, i, "{", "}")
+		},
+		
+		Literal(boolean) => if boolean {
+			output += "true";
+		} else {
+			output += "false";
+		},
+		
+		Number(int, fraction) => {
+			output += &int.to_string();
+			output += ".";
+			output += &fraction.to_string();
+		},
+		
+		Op(op) => match op.as_ref() {
+			"@" => output += "*",
+			"-" if get_val!(tokens[*i + 1].kind) == ">" && !is_kind!(tokens[*i + 1 + nxt(tokens, *i + 1)].kind, Kind::Type(_)) => {
+				output += "&";
+				*i += 1;
+			},
+			_ => output += &op
+		},
+		
+		Reserved(keyword) => match keyword.as_ref() {
+			"async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
+			"import" => output += "use",
+			"foreach" => output += "for",
+			"as" => output += "@",
+			"astype" => output += "as", // TMP; will be replaced with (<type>) <variable>
+			_ => output += &keyword
+		},
+		
+		Str1(s) => { // TMP; will be replaced with C-style (null terminated) strings
+			output += "\"";
+			output += &s;
+			output += "\"";
+		},
+		
+		Str2(s) => { // TMP; will be replaced with P+ style strings
+			output += "\"";
+			output += &s;
+			output += "\"";
+		},
+		
+		Type(typ) => match typ {
+			Array | Chan | Const | Fraction | Heap | List | Only | Register | Stack | Unique | Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
+			Bool => output += "bool",
+			Char => output += "char",
+			Func => output += "fn",
+			Int => output += "i64", // TMP
+			Pointer => output += "*", // TMP
+			Unsigned => {
+				if nxt_tokens[0] > 0 && is_kind!(tokens[*i + nxt_tokens[0]].kind, Kind::Type(_)) {
+					match get_val!(tokens[*i + nxt_tokens[0]].kind).as_ref() {
+						"int" => "u64",
+						_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i + nxt_tokens[0]].pos.line, tokens[*i + nxt_tokens[0]].pos.col, get_val!(tokens[*i + nxt_tokens[0]].kind))
+					}
+				} else {
+					panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
+				}
+			},
+			Void => output += "()"
+		},
+		
+		Var(name, typ) => output += &name,
+		
+		Whitespace(typ) => match typ {
+			Newline => output += "\n",
+			CarRet => output += "\r",
+			Tab => output += "\t",
+			Space => output += " "
+		}
+	}
+	
+/*	let val = {
 		use lib::Kind::*;
 		match tokens[*i].kind {
 			GroupOp(ref val) => val.clone(),
+			Literal(ref val) => if *val { String::from("true") } else { String::from("false") }, // TMP
+			Number(ref val, ref val2) => ,
 			Op(ref val) => val.clone(),
 			Reserved(ref val) => val.clone(),
 			Str1(ref val) => val.clone(),
 			Str2(ref val) => val.clone(),
+			Type(ref val) => ,
+			Var(ref val, ref val2) => ,
+			Whitespace(ref val) => ,
 			_ => panic!("")
 		}
 	};
@@ -335,7 +424,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 				output += ")";
 			}
 		}
-	};
+	}; */
 	
 	output
 }
