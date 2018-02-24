@@ -37,10 +37,7 @@ macro_rules! is_val {
 macro_rules! group_expr {
 	($end:expr, $tokens:expr, $token:expr, $i:expr) => ({
 		let mut j = nxt(&$tokens, $i);
-		while $i + j < $tokens.len() && match $tokens[$i + j].kind {
-			Kind::GroupOp(ref val) => val != $end,
-			_ => true
-		} {
+		while $i + j < $tokens.len() && !is_val!($tokens[$i + j].kind, Kind::GroupOp(ref val), val, $end) {
 			(*$token.children.borrow_mut()).push($i + j);
 			
 			j += nxt(&$tokens, $i + j);
@@ -173,29 +170,50 @@ pub fn parse(tokens: &mut Vec<Token>) {
 			if let Some(def) = def {
 				if def.pos > 0 {
 					let mut j = 0;
-					while i - j > 0 && j < def.pos && match tokens[i - j].kind {
-						Kind::Op(ref val) => val != ";",
-						_ => true
-					} { // NOTE: comparison may need to be changed
+					while i - j > 0 && j < def.pos && !is_val!(tokens[i - j].kind, Kind::Op(ref val), val, ";") { // NOTE: comparison may need to be changed
 						j += prev(&tokens, i - j);
 						
-						(*token.children.borrow_mut()).push(i - j);
+						match tokens[i - j].kind { // NEEDS FIXING; will not correctly parse args with parentheses
+							Kind::GroupOp(ref op) => {
+								let start_op = match op.as_ref() {
+									")" => "(",
+									"}" => "{",
+									"]" => "[",
+									&_ => panic!("")
+								};
+								
+								while i - j > 0 && !is_val!(tokens[i - j].kind, Kind::GroupOp(ref val), val, start_op) {
+									j += prev(&tokens, i - j);
+								}
+								
+								(*token.children.borrow_mut()).push(i - j);
+							},
+							_ => (*token.children.borrow_mut()).push(i - j)
+						}
 					}
 				}
 				
 				let mut j = 0;
-				while i + j < tokens.len() && j < def.args.len() - def.pos && match tokens[i + j].kind {
-						Kind::Op(ref val) => val != ";",
-						_ => true
-					} {
+				while i + j < tokens.len() && j < def.args.len() - def.pos && !is_val!(tokens[i + j].kind, Kind::Op(ref val), val, ";") {
 					j += nxt(&tokens, i + j);
 					
 					(*token.children.borrow_mut()).push(i + j);
-				}
-				
-				if (*token.children.borrow()).len() > 1 { // DEBUG
-					println!("{:#?}", tokens[(*token.children.borrow())[0]]);
-					println!("{:#?}", tokens[(*token.children.borrow())[1]]);
+					
+					match tokens[i + j].kind { // NEEDS FIXING; will not correctly parse args with parentheses
+						Kind::GroupOp(ref op) => {
+							let end_op = match op.as_ref() {
+								"(" => ")",
+								"{" => "}",
+								"[" => "]",
+								&_ => panic!("")
+							};
+							
+							while i + j < tokens.len() && !is_val!(tokens[i + j].kind, Kind::GroupOp(ref val), val, end_op) {
+								j += nxt(&tokens, i + j);
+							}
+						},
+						_ => ()
+					}
 				}
 			}
 		} else if is_kind!(token.kind, Kind::GroupOp(_)) {
@@ -203,6 +221,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 				Kind::GroupOp(ref val) => val,
 				_ => panic!("")
 			};
+			
 			match val.as_ref() {
 				"(" => group_expr!(")", tokens, token, i),
 				"{" => group_expr!("}", tokens, token, i),
