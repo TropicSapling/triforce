@@ -180,7 +180,8 @@ pub fn parse(tokens: &mut Vec<Token>) {
 			if let Some(def) = def {
 				if def.pos > 0 {
 					let mut j = 0;
-					while i - j > 0 && j < def.pos && !is_val!(tokens[i - j].kind, Kind::Op(ref val), val, ";") { // NOTE: comparison may need to be changed
+					let mut k = 0;
+					while i - j > 0 && j - k < def.pos && !is_val!(tokens[i - j].kind, Kind::Op(ref val), val, ";") { // NOTE: comparison may need to be changed
 						j += prev(&tokens, i - j);
 						
 						match tokens[i - j].kind { // NEEDS FIXING; will not correctly parse args with parentheses
@@ -193,22 +194,27 @@ pub fn parse(tokens: &mut Vec<Token>) {
 									&_ => panic!("")
 								};
 								
+								let prev_tok = prev(&tokens, i - j);
+								j += prev_tok;
+								k += prev_tok;
 								while i - j > 0 && (nests > 0 || !is_val!(tokens[i - j].kind, Kind::GroupOp(ref val), val, start_op)) {
 									match tokens[i - j].kind {
-										Kind::GroupOp(ref val) => match val {
-											op => nests += 1,
-											start_op => nests -= 1,
-											_ => ()
+										Kind::GroupOp(ref val) => if val == op {
+											nests += 1;
+										} else if val == start_op {
+											nests -= 1;
 										},
 										_ => ()
 									}
 									
-									j += prev(&tokens, i - j);
+									let prev_tok = prev(&tokens, i - j);
+									j += prev_tok;
+									k += prev_tok;
 								}
 								
 								(*token.children.borrow_mut()).push(i - j);
 							},
-							_ => (*token.children.borrow_mut()).push(i - j)
+							_ => (*token.children.borrow_mut()).push(i - j) // Will this cause the vector to be backwards? If so fix later
 						}
 					}
 				}
@@ -229,12 +235,13 @@ pub fn parse(tokens: &mut Vec<Token>) {
 								&_ => panic!("")
 							};
 							
+							j += nxt(&tokens, i + j);
 							while i + j < tokens.len() && (nests > 0 || !is_val!(tokens[i + j].kind, Kind::GroupOp(ref val), val, end_op)) {
 								match tokens[i + j].kind {
-									Kind::GroupOp(ref val) => match val {
-										op => nests += 1,
-										end_op => nests -= 1,
-										_ => ()
+									Kind::GroupOp(ref val) => if val == op {
+										nests += 1;
+									} else if val == end_op {
+										nests -= 1;
 									},
 									_ => ()
 								}
@@ -272,7 +279,6 @@ pub fn compile(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 	match tokens[*i].kind {
 		GroupOp(ref op) => {
 			output += op;
-			print!("{:?}, ", tokens[*i].kind);
 			
 			let children = tokens[*i].children.borrow();
 			for child in children.iter() {
@@ -280,7 +286,10 @@ pub fn compile(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 				output = compile(tokens, i, output);
 			}
 			
-			println!("{:?}", tokens[*i].kind);
+			if children.len() > 0 {
+				*i += 1;
+				output = compile(tokens, i, output);
+			}
 		},
 		
 		Literal(ref boolean) => if *boolean {
@@ -291,8 +300,10 @@ pub fn compile(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 		
 		Number(ref int, ref fraction) => {
 			output += &int.to_string();
-			output += ".";
-			output += &fraction.to_string();
+			if *fraction != 0 {
+				output += ".";
+				output += &fraction.to_string();
+			}
 		},
 		
 		Op(ref op) => match op.as_ref() {
@@ -346,10 +357,12 @@ pub fn compile(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 			if children.len() > 0 { // Function call or definition
 				output += "(";
 				
-				for child in children.iter() {
+				for (i, child) in children.iter().enumerate() {
 					let mut c = *child;
 					output = compile(tokens, &mut c, output);
-					output += ",";
+					if i + 1 < children.len() {
+						output += ",";
+					}
 				}
 				
 				output += ")";
