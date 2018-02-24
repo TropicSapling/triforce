@@ -218,13 +218,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 	use lib::Whitespace::*;
 	
 	match tokens[*i].kind {
-		GroupOp(ref op) => match op.as_ref() {
-/*			"(" => group(&mut tokens, i, "(", ")"),
-			"[" => group(&mut tokens, i, "[", "]"),
-			"{" => group(&mut tokens, i, "{", "}"), */
-			"(" | "[" | "{" => panic!("FIX OPS"), // TMP
-			&_ => panic!("{}:{} Unexpected token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind))
-		},
+		GroupOp(ref op) => output += op, // Probably temporary
 		
 		Literal(ref boolean) => if *boolean {
 			output += "true";
@@ -273,7 +267,7 @@ pub fn compile(mut tokens: &mut Vec<Token>, i: &mut usize, mut output: String) -
 			&Bool => output += "bool",
 			&Char => output += "char",
 			&Func => output += "fn",
-			&Int => match tokens[prev(&tokens, *i)].kind {
+			&Int => match tokens[*i - prev(&tokens, *i)].kind {
 				Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
 				_ => output += "i64" // TMP
 			},
