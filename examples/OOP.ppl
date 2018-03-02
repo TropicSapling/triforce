@@ -1,0 +1,38 @@
+// A basic example of the P+ equivalent of OOP, translated from Java
+
+type Frog extends const list;
+
+func (Frog frog) setName (String name) {
+    frog.name = name;
+}
+
+func (Frog frog) setAge (int age) {
+    frog.name = name;
+}
+
+func (Frog frog) setInfo (String name) (int age) {
+    frog setName name;
+    frog setAge age;
+}
+
+func newFrog -> Frog {
+    [
+        String name,
+        int age,
+        func getName -> String {
+            name
+        },
+        func getAge -> String {
+            age
+        }
+    ]
+}
+
+func init {
+    Frog frog1 = newFrog;
+    
+    frog1 setName "Bertie";
+    frog1 setAge 1;
+    
+    println frog1.getName;
+}
