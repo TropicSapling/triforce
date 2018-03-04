@@ -1,4 +1,4 @@
-// A basic example of the P+ equivalent of OOP, translated from Java
+// A basic example of the P+ equivalent of OOP, translated from Java with a few additions showing the power of P+
 
 type Frog extends const list;
 
@@ -6,8 +6,12 @@ func (Frog frog) setName (String name) {
     frog.name = name;
 }
 
-func (Frog frog) setAge (int age) {
-    frog.name = name;
+func (Frog frog) setAge (int age) -> macro {
+    if age < 50 {
+        frog.age = age
+    } else {
+        println "[ERROR] Frogs cannot live for 50 years or more!";
+    }
 }
 
 func (Frog frog) setInfo (String name) (int age) {
@@ -22,7 +26,7 @@ func newFrog -> Frog {
         func getName -> String {
             name
         },
-        func getAge -> String {
+        func getAge -> int {
             age
         }
     ]
@@ -32,6 +36,7 @@ func init {
     Frog frog1 = newFrog;
     
     frog1 setName "Bertie";
+//  frog1.setAge 52; // this would return an error, because frogs cannot reasonably live for that long
     frog1 setAge 1;
     
     println frog1.getName;
