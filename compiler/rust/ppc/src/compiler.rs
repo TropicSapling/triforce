@@ -56,17 +56,17 @@ macro_rules! group_expr {
 }
 
 macro_rules! def_builtin_funcs {
-	() => (vec![
+	($a:expr, $b:expr) => (vec![
 		Function {
 			name: "+",
 			pos: 0, // Not a real pos, but it will be ignored anyway
 			args: vec![
 				FunctionArg {
-					name: &String::from("a"),
+					name: $a,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				},
 				FunctionArg {
-					name: &String::from("b"),
+					name: $b,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
@@ -79,11 +79,11 @@ macro_rules! def_builtin_funcs {
 			pos: 0, // Not a real pos, but it will be ignored anyway
 			args: vec![
 				FunctionArg {
-					name: &String::from("a"),
+					name: $a,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				},
 				FunctionArg {
-					name: &String::from("b"),
+					name: $b,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
@@ -96,11 +96,11 @@ macro_rules! def_builtin_funcs {
 			pos: 0, // Not a real pos, but it will be ignored anyway
 			args: vec![
 				FunctionArg {
-					name: &String::from("a"),
+					name: $a,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				},
 				FunctionArg {
-					name: &String::from("b"),
+					name: $b,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
@@ -113,11 +113,11 @@ macro_rules! def_builtin_funcs {
 			pos: 0, // Not a real pos, but it will be ignored anyway
 			args: vec![
 				FunctionArg {
-					name: &String::from("a"),
+					name: $b,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				},
 				FunctionArg {
-					name: &String::from("b"),
+					name: $a,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
@@ -130,11 +130,11 @@ macro_rules! def_builtin_funcs {
 			pos: 0, // Not a real pos, but it will be ignored anyway
 			args: vec![
 				FunctionArg {
-					name: &String::from("a"),
+					name: $a,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				},
 				FunctionArg {
-					name: &String::from("b"),
+					name: $b,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
@@ -147,11 +147,11 @@ macro_rules! def_builtin_funcs {
 			pos: 0, // Not a real pos, but it will be ignored anyway
 			args: vec![
 				FunctionArg {
-					name: &String::from("a"),
+					name: $a,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				},
 				FunctionArg {
-					name: &String::from("b"),
+					name: $b,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
@@ -214,13 +214,13 @@ fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a
 	None
 }
 
-pub fn parse(tokens: &mut Vec<Token>) -> Vec<Function> {
-	let mut functions: Vec<Function> = def_builtin_funcs!();
+pub fn parse<'a>(tokens: &'a mut Vec<Token>, func_par_a: &'a str, func_par_b: &'a str) -> Vec<Function<'a>> {
+	let mut functions: Vec<Function> = def_builtin_funcs!(func_par_a, func_par_b);
 	let mut func = false;
 	let mut par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 	let mut type_i = 0;
 	
-	for token in (&tokens).iter() {
+	for token in tokens.iter() {
 		if is_kind!(token.kind, Kind::Whitespace(_)) {
 			continue; // Ignore whitespace
 		}
