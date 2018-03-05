@@ -63,7 +63,8 @@ pub struct Function<'a> {
 	pub name: &'a str,
 	pub pos: usize,
 	pub args: Vec<FunctionArg<'a>>,
-	pub output: [Type; 8]
+	pub output: [Type; 8],
+	pub precedence: u8
 }
 
 #[derive(Debug)]

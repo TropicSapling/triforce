@@ -55,6 +55,112 @@ macro_rules! group_expr {
 	})
 }
 
+macro_rules! def_builtin_funcs {
+	() => (vec![
+		Function {
+			name: "+",
+			pos: 0, // Not a real pos, but it will be ignored anyway
+			args: vec![
+				FunctionArg {
+					name: &String::from("a"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				},
+				FunctionArg {
+					name: &String::from("b"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				}
+			],
+			precedence: 10, // NOTE: 0 is *lowest* precedence, not highest. Lowest precedence is 255.
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+		},
+		
+		Function {
+			name: "-",
+			pos: 0, // Not a real pos, but it will be ignored anyway
+			args: vec![
+				FunctionArg {
+					name: &String::from("a"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				},
+				FunctionArg {
+					name: &String::from("b"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				}
+			],
+			precedence: 10,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+		},
+		
+		Function {
+			name: "*",
+			pos: 0, // Not a real pos, but it will be ignored anyway
+			args: vec![
+				FunctionArg {
+					name: &String::from("a"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				},
+				FunctionArg {
+					name: &String::from("b"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				}
+			],
+			precedence: 11,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+		},
+		
+		Function {
+			name: "/",
+			pos: 0, // Not a real pos, but it will be ignored anyway
+			args: vec![
+				FunctionArg {
+					name: &String::from("a"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				},
+				FunctionArg {
+					name: &String::from("b"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				}
+			],
+			precedence: 11,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+		},
+		
+		Function {
+			name: "%",
+			pos: 0, // Not a real pos, but it will be ignored anyway
+			args: vec![
+				FunctionArg {
+					name: &String::from("a"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				},
+				FunctionArg {
+					name: &String::from("b"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				}
+			],
+			precedence: 11,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+		},
+		
+		Function {
+			name: "**",
+			pos: 0, // Not a real pos, but it will be ignored anyway
+			args: vec![
+				FunctionArg {
+					name: &String::from("a"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				},
+				FunctionArg {
+					name: &String::from("b"),
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				}
+			],
+			precedence: 12,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+		}
+	])
+}
+
 fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
 	let mut j: usize = 0;
 	while {
@@ -108,8 +214,8 @@ fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a
 	None
 }
 
-pub fn parse(tokens: &mut Vec<Token>) {
-	let mut functions: Vec<Function> = Vec::new();
+pub fn parse(tokens: &mut Vec<Token>) -> Vec<Function> {
+	let mut functions: Vec<Function> = def_builtin_funcs!();
 	let mut func = false;
 	let mut par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 	let mut type_i = 0;
@@ -125,7 +231,7 @@ pub fn parse(tokens: &mut Vec<Token>) {
 		}
 		
 		if is_val!(token.kind, Kind::Type(ref val), val, &Type::Func) {
-			functions.push(Function {name: "", pos: 0, args: vec![], output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
+			functions.push(Function {name: "", pos: 0, args: vec![], precedence: 0, output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
 			func = true;
 		} else if func {
 			if match token.kind {
@@ -269,9 +375,11 @@ pub fn parse(tokens: &mut Vec<Token>) {
 		
 		i += 1;
 	}
+	
+	functions
 }
 
-pub fn compile(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
+pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j: &mut usize, mut output: String) -> String {
 	use lib::Kind::*;
 	use lib::Type::*;
 	use lib::Whitespace::*;
@@ -283,12 +391,12 @@ pub fn compile(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 			let children = tokens[*i].children.borrow();
 			for child in children.iter() {
 				*i = *child;
-				output = compile(tokens, i, output);
+				output = compile(tokens, functions, i, j, output);
 			}
 			
 			if children.len() > 0 {
 				*i += 1;
-				output = compile(tokens, i, output);
+				output = compile(tokens, functions, i, j, output);
 			}
 		},
 		
@@ -351,21 +459,28 @@ pub fn compile(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 		},
 		
 		Var(ref name, _) => {
-			output += &name;
-			
-			let children = tokens[*i].children.borrow();
-			if children.len() > 0 { // Function call or definition
-				output += "(";
+			let def = is_defined(&functions, &name);
+			if let Some(def) = def {
 				
-				for (i, child) in children.iter().enumerate() {
-					let mut c = *child;
-					output = compile(tokens, &mut c, output);
-					if i + 1 < children.len() {
-						output += ",";
+				
+				output += &name;
+				
+				let children = tokens[*i].children.borrow();
+				if children.len() > 0 { // Function call or definition
+					output += "(";
+					
+					for (i, child) in children.iter().enumerate() {
+						let mut c = *child;
+						output = compile(tokens, functions, &mut c, j, output);
+						if i + 1 < children.len() {
+							output += ",";
+						}
 					}
+					
+					output += ")";
 				}
-				
-				output += ")";
+			} else {
+				output += &name;
 			}
 		}
 		
