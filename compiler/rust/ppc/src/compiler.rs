@@ -70,7 +70,7 @@ macro_rules! def_builtin_funcs {
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
-			precedence: 10, // NOTE: 0 is *lowest* precedence, not highest. Lowest precedence is 255.
+			precedence: 245, // NOTE: 0 is *lowest* precedence, not highest. Highest precedence is 255.
 			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 		},
 		
@@ -87,7 +87,7 @@ macro_rules! def_builtin_funcs {
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
-			precedence: 10,
+			precedence: 245,
 			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 		},
 		
@@ -104,7 +104,7 @@ macro_rules! def_builtin_funcs {
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
-			precedence: 11,
+			precedence: 246,
 			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 		},
 		
@@ -121,7 +121,7 @@ macro_rules! def_builtin_funcs {
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
-			precedence: 11,
+			precedence: 246,
 			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 		},
 		
@@ -138,7 +138,7 @@ macro_rules! def_builtin_funcs {
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
-			precedence: 11,
+			precedence: 246,
 			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 		},
 		
@@ -155,7 +155,7 @@ macro_rules! def_builtin_funcs {
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
-			precedence: 12,
+			precedence: 247,
 			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 		}
 	])
