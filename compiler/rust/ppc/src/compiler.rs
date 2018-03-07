@@ -214,7 +214,7 @@ fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a
 	None
 }
 
-pub fn parse<'a>(tokens: &'a mut Vec<Token>, func_par_a: &'a str, func_par_b: &'a str) -> Vec<Function<'a>> {
+pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a str) -> Vec<Function<'a>> {
 	let mut functions: Vec<Function> = def_builtin_funcs!(func_par_a, func_par_b);
 	let mut func = false;
 	let mut par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];

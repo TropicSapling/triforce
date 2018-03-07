@@ -133,16 +133,16 @@ fn init() -> i32 {
 //		println!("{} LEX1: {:#?}\n", BrightYellow.paint("[DEBUG]"), lexed_contents);
 	}
 	
-	let mut tokens = lex2(lexed_contents);
+	let tokens = lex2(lexed_contents);
 	if debugging {
 //		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
-	// These strings would not be necessary if Rust had <scope> properties like P+, but oh well...
+	// These strings would not be necessary if Rust had <scope> or <lifetime> properties like P+, but oh well...
 	let func_name_a = String::from("a");
 	let func_name_b = String::from("b");
 	
-	let functions = parse(&mut tokens, &func_name_a, &func_name_b);
+	let functions = parse(&tokens, &func_name_a, &func_name_b);
 	if debugging {
 		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
