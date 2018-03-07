@@ -220,6 +220,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	let mut par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 	let mut type_i = 0;
 	
+	// STAGE 1: DEFINE FUNCTIONS (this is done in a separate loop to allow function definitions to be placed both before and after function calls)
 	for token in tokens.iter() {
 		if is_kind!(token.kind, Kind::Whitespace(_)) {
 			continue; // Ignore whitespace
@@ -271,6 +272,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 		}
 	}
 	
+	// STAGE 2: ORGANISE FUNCTION CALLS
 	let mut i = 0;
 	while i < tokens.len() {
 		let token = &tokens[i];
@@ -376,6 +378,20 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 		i += 1;
 	}
 	
+	// STAGE 3: FURTHER ORGANISATION BASED ON PRECEDENCE
+	let mut i = 0;
+	while i < tokens.len() {
+		match tokens[i].kind {
+			Kind::Literal(b) => (),
+			Kind::Str1(ref s) | Kind::Str2(ref s) => (),
+			Kind::Number(int, fraction) => (),
+			Kind::Var(ref name, _) => (),
+			_ => ()
+		}
+		
+		i += 1;
+	}
+	
 	functions
 }
 
@@ -400,15 +416,15 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j:
 			}
 		},
 		
-		Literal(ref boolean) => if *boolean {
+		Literal(boolean) => if boolean {
 			output += "true";
 		} else {
 			output += "false";
 		},
 		
-		Number(ref int, ref fraction) => {
+		Number(int, fraction) => {
 			output += &int.to_string();
-			if *fraction != 0 {
+			if fraction != 0 {
 				output += ".";
 				output += &fraction.to_string();
 			}
