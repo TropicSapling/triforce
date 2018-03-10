@@ -283,9 +283,8 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				Kind::Op(ref val) => val,
 				_ => panic!("")
 			}; // Probably needs fixing
-			let def = is_defined(&functions, &val);
 			
-			if let Some(def) = def {
+			if let Some(def) = is_defined(&functions, &val) {
 				if def.pos > 0 {
 					let mut j = 0;
 					let mut k = 0;
@@ -382,10 +381,31 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind {
-			Kind::Literal(b) => (),
-			Kind::Str1(ref s) | Kind::Str2(ref s) => (),
-			Kind::Number(int, fraction) => (),
-			Kind::Var(ref name, _) => (),
+			Kind::Var(ref name, _) => if let Some(def) = is_defined(&functions, name) {
+				let mut children = tokens[i].children.borrow_mut();
+				
+				for child in children.iter() {
+					let mut j = 0;
+					while j < tokens.len() {
+						if j != i {
+							match tokens[j].kind {
+								Kind::Var(ref name, _) => if let Some(def) = is_defined(&functions, name) {
+									let mut children = tokens[j].children.borrow_mut();
+									
+									for child2 in children.iter() {
+										if child == child2 {
+											// WIP
+										}
+									}
+								},
+								_ => ()
+							}
+						}
+						
+						j += 1;
+					}
+				}
+			},
 			_ => ()
 		}
 		
