@@ -406,6 +406,9 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 					}
 				}
 			},
+			
+			// Add support for GroupOp?
+			
 			_ => ()
 		}
 		
@@ -415,7 +418,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	functions
 }
 
-pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j: &mut usize, mut output: String) -> String {
+fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j: &mut usize, mut output: String) -> String {
 	use lib::Kind::*;
 	use lib::Type::*;
 	use lib::Whitespace::*;
@@ -427,12 +430,12 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j:
 			let children = tokens[*i].children.borrow();
 			for child in children.iter() {
 				*i = *child;
-				output = compile(tokens, functions, i, j, output);
+				output = compile_token(tokens, functions, i, j, output);
 			}
 			
 			if children.len() > 0 {
 				*i += 1;
-				output = compile(tokens, functions, i, j, output);
+				output = compile_token(tokens, functions, i, j, output);
 			}
 		},
 		
@@ -459,7 +462,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j:
 			_ => output += &op
 		},
 		
-		Reserved(ref keyword) => match keyword.as_ref() {
+		Kind::Reserved(ref keyword) => match keyword.as_ref() {
 			"async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
 			"import" => output += "use",
 			"foreach" => output += "for",
@@ -495,9 +498,8 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j:
 		},
 		
 		Var(ref name, _) => {
-			let def = is_defined(&functions, &name);
-			if let Some(def) = def {
-				
+			if let Some(def) = is_defined(&functions, &name) {
+				// ???
 				
 				output += &name;
 				
@@ -507,7 +509,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j:
 					
 					for (i, child) in children.iter().enumerate() {
 						let mut c = *child;
-						output = compile(tokens, functions, &mut c, j, output);
+						output = compile_token(tokens, functions, &mut c, j, output);
 						if i + 1 < children.len() {
 							output += ",";
 						}
@@ -518,14 +520,96 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j:
 			} else {
 				output += &name;
 			}
-		}
+		},
 		
-		Whitespace(ref typ) => match typ {
+		Kind::Whitespace(ref typ) => match typ {
 			&Newline => output += "\n",
 			&CarRet => output += "\r",
 			&Tab => output += "\t",
 			&Space => output += " "
 		}
+	}
+	
+	output
+}
+
+pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j: &mut usize, mut output: String) -> String {
+	use lib::Whitespace::*;
+	
+	let children = tokens[*i].children.borrow();
+	
+	match tokens[*i].kind {
+		Kind::Var(ref name,_) => {
+			/* match tokens[*child].kind {
+				Kind::Var(_,_) => {
+					let mut i2 = *child;
+					output = compile(tokens, functions, i2, j, output);
+				},
+				
+				Kind::GroupOp(ref op) => {
+					output += op;
+					
+					for child in children.iter() {
+						*i = *child;
+						output = compile(tokens, functions, i, j, output);
+					}
+					
+					if children.len() > 0 {
+						*i += 1;
+						output = compile(tokens, functions, i, j, output);
+					}
+				},
+				
+				_ => output = compile_token(tokens, functions, i, j, output)
+			} */
+			
+			if children.len() > 0 { // Function call or definition
+				output += name;
+				output += "(";
+				
+				for (i, child) in children.iter().enumerate() {
+					let mut c = *child;
+					output = compile_token(tokens, functions, &mut c, j, output);
+					if i + 1 < children.len() {
+						output += ",";
+					}
+				}
+				
+				output += ")";
+			}
+		},
+		
+		Kind::GroupOp(ref op) => {
+			output += op;
+			
+			for child in children.iter() {
+				*i = *child;
+				output = compile(tokens, functions, i, j, output);
+			}
+			
+			if children.len() > 0 {
+				*i += 1;
+				output = compile(tokens, functions, i, j, output);
+			}
+		},
+		
+		Kind::Reserved(ref keyword) => match keyword.as_ref() {
+			"async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
+			"import" => output += "use",
+			"foreach" => output += "for",
+			"as" => output += "@",
+			"astype" => output += "as", // TMP; will be replaced with (<type>) <variable>
+			_ => output += &keyword
+		},
+		
+		Kind::Whitespace(ref typ) => match typ {
+			&Newline => output += "\n",
+			&CarRet => output += "\r",
+			&Tab => output += "\t",
+			&Space => output += " "
+		},
+		
+		_ => ()
 	}
 	
 /*	let val = {

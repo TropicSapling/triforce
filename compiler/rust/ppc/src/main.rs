@@ -149,7 +149,7 @@ fn init() -> i32 {
 	
 	let mut out_contents = String::new();
 	let mut i = 0;
-	let mut j = 0;
+	let mut j = 0; // Is this really necessary?
 	while i < tokens.len() {
 		out_contents = compile(&tokens, &functions, &mut i, &mut j, out_contents);
 		i += 1;
