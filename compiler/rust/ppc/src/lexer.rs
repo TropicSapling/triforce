@@ -1,6 +1,28 @@
 use std::cell::RefCell;
 use lib::{Token, Whitespace, Kind, Type, FilePos};
 
+macro_rules! is_kind {
+	($lhs_kind:expr, $rhs_kind:pat) => (match $lhs_kind {
+		$rhs_kind => true,
+		_ => false
+	});
+}
+
+fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
+	let mut j: usize = 0;
+	while {
+		j += 1;
+		
+		i + j < tokens.len() && is_kind!(tokens[i + j].kind, Kind::Whitespace(_))
+	} {}
+	
+	if i + j < tokens.len() {
+		j
+	} else {
+		0
+	}
+}
+
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
 }
@@ -208,7 +230,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 						"\r" => Kind::Whitespace(Whitespace::CarRet),
 						"\t" => Kind::Whitespace(Whitespace::Tab),
 						" " => Kind::Whitespace(Whitespace::Space),
-						_ => Kind::Var(item.to_string(), Type::Void) // 'Void' type is temporary
+						_ => Kind::Var(item.to_string(), [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void])
 					};
 					string.pos = FilePos {line, col};
 					
@@ -221,4 +243,37 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	}
 	
 	res
+}
+
+pub fn lex3(tokens: &mut Vec<Token>) {
+	let mut i = 0;
+	while i < tokens.len() {
+		match tokens[i].kind.clone() {
+			Kind::Type(ref typ) => {
+				let mut types = [typ.clone(), Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
+				let mut j = 1;
+				
+				i += nxt(&tokens, i);
+				
+				while is_kind!(tokens[i].kind, Kind::Type(_)) {
+					types[j] = match tokens[i].kind {
+						Kind::Type(ref typ) => typ.clone(),
+						_ => panic!("") // Will probably be changed
+					};
+					
+					i += nxt(&tokens, i);
+					j += 1;
+				}
+				
+				match tokens[i].kind {
+					Kind::Var(ref name, ref mut typ) => *typ = types,
+					_ => ()
+				}
+			},
+			
+			_ => ()
+		}
+		
+		i += 1;
+	}
 }

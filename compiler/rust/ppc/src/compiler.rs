@@ -425,7 +425,9 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 	
 	match tokens[*i].kind {
 		GroupOp(ref op) => {
-			output += op;
+			if !*func_def {
+				output += op;
+			}
 			
 			let children = tokens[*i].children.borrow();
 			for child in children.iter() {
@@ -497,11 +499,10 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 			&Void => output += "()"
 		},
 		
-		Var(ref name, _) => {
+		Var(ref name, ref types) => {
+			output += name;
 			if let Some(def) = is_defined(&functions, &name) {
 				// ???
-				
-				output += &name;
 				
 				let children = tokens[*i].children.borrow();
 				if children.len() > 0 { // Function call or definition
@@ -518,7 +519,24 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 					output += ")";
 				}
 			} else {
-				output += &name;
+				output += ":";
+				
+				for typ in types {
+					match typ {
+						&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
+						&Bool => output += "bool",
+						&Char => output += "char",
+						&Int => match tokens[*i - prev(&tokens, *i)].kind {
+							Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
+							_ => output += "i64" // TMP
+						},
+						&Pointer => output += "*", // TMP
+						&Unsigned => (),
+						&Void => (), // May be changed
+					}
+					
+					output += "";
+				}
 			}
 		},
 		
@@ -540,7 +558,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 	let children = tokens[*i].children.borrow();
 	
 	match tokens[*i].kind {
-		Kind::Var(ref name,_) => {
+		Kind::Var(ref name, ref types) => {
 			/* match tokens[*child].kind {
 				Kind::Var(_,_) => {
 					let mut i2 = *child;
@@ -564,8 +582,8 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 				_ => output = compile_token(tokens, functions, i, j, output)
 			} */
 			
+			output += name;
 			if children.len() > 0 { // Function call or definition
-				output += name;
 				output += "(";
 				
 				for (i, child) in children.iter().enumerate() {
@@ -577,6 +595,25 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 				}
 				
 				output += ")";
+			} else {
+				output += ":";
+				
+				for typ in types {
+					match typ {
+						&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
+						&Bool => output += "bool",
+						&Char => output += "char",
+						&Int => match tokens[*i - prev(&tokens, *i)].kind {
+							Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
+							_ => output += "i64" // TMP
+						},
+						&Pointer => output += "*", // TMP
+						&Unsigned => (),
+						&Void => () // May be changed
+					}
+					
+					output += "";
+				}
 			}
 		},
 		
@@ -617,20 +654,21 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 		},
 		
 		Kind::Type(ref typ) => match typ {
-			&Array | &Chan | &Const | &Fraction | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
+/*			&Array | &Chan | &Const | &Fraction | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
 			&Bool => output += "bool",
-			&Char => output += "char",
+			&Char => output += "char", */
 			&Func => {
 				output += "fn";
 				*func_def = true;
 			},
-			&Int => match tokens[*i - prev(&tokens, *i)].kind {
+/*			&Int => match tokens[*i - prev(&tokens, *i)].kind {
 				Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
 				_ => output += "i64" // TMP
 			},
 			&Pointer => output += "*", // TMP
 			&Unsigned => (),
-			&Void => output += "()"
+			&Void => output += "()" */
+			&_ => () // TMP
 		},
 		
 		Kind::Whitespace(ref typ) => match typ {

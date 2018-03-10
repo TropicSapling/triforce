@@ -21,7 +21,7 @@ use std::path::PathBuf;
 use std::str;
 
 use lib::get_io;
-use lexer::{lex, lex2};
+use lexer::{lex, lex2, lex3};
 use compiler::{parse, compile};
 
 fn main() {
@@ -133,9 +133,14 @@ fn init() -> i32 {
 //		println!("{} LEX1: {:#?}\n", BrightYellow.paint("[DEBUG]"), lexed_contents);
 	}
 	
-	let tokens = lex2(lexed_contents);
+	let mut tokens = lex2(lexed_contents);
 	if debugging {
 //		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
+	}
+	
+	lex3(&mut tokens);
+	if debugging {
+//		println!("{} LEX3: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
 	// These strings would not be necessary if Rust had <scope> or <lifetime> properties like P+, but oh well...

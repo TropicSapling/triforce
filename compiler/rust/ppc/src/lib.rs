@@ -19,7 +19,7 @@ pub enum Kind {
     Str1(String),
     Str2(String),
     Type(Type),
-    Var(String, Type),
+    Var(String, [Type; 8]),
     Whitespace(Whitespace)
 }
 
