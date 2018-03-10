@@ -384,17 +384,17 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 			Kind::Var(ref name, _) => if let Some(def) = is_defined(&functions, name) {
 				let mut children = tokens[i].children.borrow_mut();
 				
-				for child in children.iter() {
+				for child in children.iter_mut() {
 					let mut j = 0;
 					while j < tokens.len() {
 						if j != i {
 							match tokens[j].kind {
-								Kind::Var(ref name, _) => if let Some(def) = is_defined(&functions, name) {
-									let mut children = tokens[j].children.borrow_mut();
+								Kind::Var(ref name, _) => if let Some(def2) = is_defined(&functions, name) {
+									let mut children2 = tokens[j].children.borrow_mut();
 									
-									for child2 in children.iter() {
-										if child == child2 {
-											// WIP
+									for child2 in children2.iter() {
+										if *child == *child2 && def.precedence < def2.precedence {
+											*child = j;
 										}
 									}
 								},
