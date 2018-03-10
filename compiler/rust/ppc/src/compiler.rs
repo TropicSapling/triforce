@@ -485,7 +485,7 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 			output += "\"";
 		},
 		
-		Type(ref typ) => match typ {
+/*		Type(ref typ) => match typ {
 			&Array | &Chan | &Const | &Fraction | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
 			&Bool => output += "bool",
 			&Char => output += "char",
@@ -497,7 +497,9 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 			&Pointer => output += "*", // TMP
 			&Unsigned => (),
 			&Void => output += "()"
-		},
+		}, */
+		
+		Type(_) => (), // TMP
 		
 		Var(ref name, ref types) => {
 			output += name;
