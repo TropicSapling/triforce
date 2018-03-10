@@ -418,7 +418,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	functions
 }
 
-fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j: &mut usize, mut output: String) -> String {
+fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String) -> String {
 	use lib::Kind::*;
 	use lib::Type::*;
 	use lib::Whitespace::*;
@@ -430,12 +430,12 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 			let children = tokens[*i].children.borrow();
 			for child in children.iter() {
 				*i = *child;
-				output = compile_token(tokens, functions, i, j, output);
+				output = compile_token(tokens, functions, i, func_def, output);
 			}
 			
 			if children.len() > 0 {
 				*i += 1;
-				output = compile_token(tokens, functions, i, j, output);
+				output = compile_token(tokens, functions, i, func_def, output);
 			}
 		},
 		
@@ -509,7 +509,7 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 					
 					for (i, child) in children.iter().enumerate() {
 						let mut c = *child;
-						output = compile_token(tokens, functions, &mut c, j, output);
+						output = compile_token(tokens, functions, &mut c, func_def, output);
 						if i + 1 < children.len() {
 							output += ",";
 						}
@@ -533,7 +533,8 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 	output
 }
 
-pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j: &mut usize, mut output: String) -> String {
+pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String) -> String {
+	use lib::Type::*;
 	use lib::Whitespace::*;
 	
 	let children = tokens[*i].children.borrow();
@@ -569,7 +570,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j:
 				
 				for (i, child) in children.iter().enumerate() {
 					let mut c = *child;
-					output = compile_token(tokens, functions, &mut c, j, output);
+					output = compile_token(tokens, functions, &mut c, func_def, output);
 					if i + 1 < children.len() {
 						output += ",";
 					}
@@ -580,17 +581,30 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j:
 		},
 		
 		Kind::GroupOp(ref op) => {
-			output += op;
+//			output += op;
 			
 			for child in children.iter() {
 				*i = *child;
-				output = compile(tokens, functions, i, j, output);
+//				output = compile(tokens, functions, i, j, output);
 			}
 			
 			if children.len() > 0 {
 				*i += 1;
-				output = compile(tokens, functions, i, j, output);
+				output = compile(tokens, functions, i, func_def, output);
 			}
+		},
+		
+		Kind::Op(ref op) => match op.as_ref() {
+			"@" => output += "*",
+			"-" if get_val!(tokens[*i + 1].kind) == ">" => if *func_def {
+				output += "->";
+				*func_def = false;
+				*i += 1;
+			} else {
+				output += "&";
+				*i += 1;
+			},
+			_ => output += &op
 		},
 		
 		Kind::Reserved(ref keyword) => match keyword.as_ref() {
@@ -600,6 +614,23 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, j:
 			"as" => output += "@",
 			"astype" => output += "as", // TMP; will be replaced with (<type>) <variable>
 			_ => output += &keyword
+		},
+		
+		Kind::Type(ref typ) => match typ {
+			&Array | &Chan | &Const | &Fraction | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
+			&Bool => output += "bool",
+			&Char => output += "char",
+			&Func => {
+				output += "fn";
+				*func_def = true;
+			},
+			&Int => match tokens[*i - prev(&tokens, *i)].kind {
+				Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
+				_ => output += "i64" // TMP
+			},
+			&Pointer => output += "*", // TMP
+			&Unsigned => (),
+			&Void => output += "()"
 		},
 		
 		Kind::Whitespace(ref typ) => match typ {
