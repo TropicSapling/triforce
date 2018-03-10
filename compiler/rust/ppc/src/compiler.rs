@@ -636,9 +636,27 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 		Kind::Op(ref op) => match op.as_ref() {
 			"@" => output += "*",
 			"-" if get_val!(tokens[*i + 1].kind) == ">" => if *func_def {
-				output += "->";
+				output += "-> ";
+				
 				*func_def = false;
-				*i += 1;
+				*i += 2;
+				*i += nxt(&tokens, *i);
+				
+				match tokens[*i].kind {
+					Kind::Type(ref typ) => match typ {
+						&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
+						&Bool => output += "bool",
+						&Char => output += "char",
+						&Int => match tokens[*i - prev(&tokens, *i)].kind {
+							Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
+							_ => output += "i64" // TMP
+						},
+						&Pointer => output += "*", // TMP
+						&Unsigned => (),
+						&Void => output += "()"
+					},
+					_ => panic!("{}:{} Invalid placement of token.", tokens[*i].pos.line, tokens[*i].pos.col) // WIP; error msg will be improved
+				}
 			} else {
 				output += "&";
 				*i += 1;

@@ -15,4 +15,3 @@
 func (int base) pow (unsigned int exp) -> int {
 
 }
-
