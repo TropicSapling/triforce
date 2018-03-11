@@ -241,6 +241,9 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				_ => false
 			} {
 				functions[last_item].output = par_type.clone();
+				if par_type[0] != Type::Void {
+					functions[last_item].precedence = 1;
+				}
 				
 				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				type_i = 0;
