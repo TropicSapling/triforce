@@ -217,11 +217,11 @@ fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a
 pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a str) -> Vec<Function<'a>> {
 	let mut functions: Vec<Function> = def_builtin_funcs!(func_par_a, func_par_b);
 	let mut func = false;
+	let mut func_pos = 0;
 	let mut par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
-	let mut type_i = 0;
 	
 	// STAGE 1: DEFINE FUNCTIONS (this is done in a separate loop to allow function definitions to be placed both before and after function calls)
-	for token in tokens.iter() {
+	for (i, token) in tokens.iter().enumerate() {
 		if is_kind!(token.kind, Kind::Whitespace(_)) {
 			continue; // Ignore whitespace
 		}
@@ -231,8 +231,70 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 			last_item -= 1;
 		}
 		
-		if is_val!(token.kind, Kind::Type(ref val), val, &Type::Func) {
+		match token.kind {
+			Kind::Whitespace(ref typ) => if func {
+				tokens[func_pos].children.borrow_mut().push(i);
+			},
+			
+			Kind::Type(ref typ) if !func => match typ {
+				&Type::Func => {
+					functions.push(Function {name: "", pos: 0, args: vec![], precedence: 0, output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
+					func_pos = i;
+					func = true;
+				},
+				_ => ()
+			},
+			
+			Kind::Type(ref typ) => match tokens[i + nxt(&tokens, i)].kind {
+				Kind::GroupOp(ref op) if op == "{" => tokens[func_pos].children.borrow_mut().push(i),
+				_ => ()
+			},
+			
+			Kind::Var(ref name, ref typ) => if typ[0] == Type::Void { // Function name
+				functions[last_item].name = name;
+				functions[last_item].pos = functions[last_item].args.len();
+				
+				tokens[func_pos].children.borrow_mut().push(i);
+			} else { // Function args
+				functions[last_item].args.push(FunctionArg {name, typ: typ.clone()});
+				par_type = typ.clone();
+			},
+			
+			Kind::Op(ref op) => if functions[last_item].name == "" {
+				functions[last_item].name = op;
+				functions[last_item].pos = functions[last_item].args.len();
+				
+				tokens[func_pos].children.borrow_mut().push(i);
+			} else if op == ";" { // End of function declaration
+				functions[last_item].output = par_type.clone();
+				if par_type[0] != Type::Void {
+					functions[last_item].precedence = 1;
+				}
+				
+				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
+				func = false;
+			} else {
+				tokens[func_pos].children.borrow_mut().push(i);
+			},
+			
+			Kind::GroupOp(ref op) => if op == "{" { // Function body
+				functions[last_item].output = par_type.clone();
+				if par_type[0] != Type::Void {
+					functions[last_item].precedence = 1;
+				}
+				
+				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
+				func = false;
+				
+				tokens[func_pos].children.borrow_mut().push(i);
+			},
+			
+			_ => ()
+		}
+		
+/*		if is_val!(token.kind, Kind::Type(ref val), val, &Type::Func) {
 			functions.push(Function {name: "", pos: 0, args: vec![], precedence: 0, output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
+			func_pos = i;
 			func = true;
 		} else if func {
 			if match token.kind {
@@ -271,8 +333,12 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				};
 				functions[last_item].name = name;
 				functions[last_item].pos = functions[last_item].args.len();
+				
+				tokens[func_pos].children.borrow_mut().push(i);
+			} else if get_val!(token.kind) == "-" || get_val!(token.kind) == ">" {
+				tokens[func_pos].children.borrow_mut().push(i);
 			}
-		}
+		} */
 	}
 	
 	// STAGE 2: ORGANISE FUNCTION CALLS
