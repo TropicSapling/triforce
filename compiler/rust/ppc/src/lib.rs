@@ -1,5 +1,4 @@
-use std::path::PathBuf;
-use std::cell::RefCell;
+use std::{path::PathBuf, cell::RefCell};
 // use std::fmt;
 
 #[derive(Clone, PartialEq, Debug)]

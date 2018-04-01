@@ -7,18 +7,19 @@ mod compiler;
 
 use clap::{Arg, App};
 
-use term_painter::Color::*;
-use term_painter::ToStyle;
+use term_painter::{ToStyle, Color::*};
 
-use std::fs;
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::ErrorKind::{NotFound, PermissionDenied};
-
-use std::process::Command;
-use std::path::PathBuf;
-
-use std::str;
+use std::{
+	fs,
+	fs::File,
+	io::{
+		prelude::*,
+		ErrorKind::{NotFound, PermissionDenied}
+	},
+	process::Command,
+	path::PathBuf,
+	str
+};
 
 use lib::get_io;
 use lexer::{lex, lex2, lex3};
