@@ -260,7 +260,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				par_type = typ.clone();
 			},
 			
-			Kind::Op(ref op) => if functions[last_item].name == "" {
+			Kind::Op(ref op) => if functions[last_item].name == "" { // Operator (function) name
 				functions[last_item].name = op;
 				functions[last_item].pos = functions[last_item].args.len();
 				
@@ -273,8 +273,6 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				
 				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				func = false;
-			} else {
-				tokens[func_pos].children.borrow_mut().push(i);
 			},
 			
 			Kind::GroupOp(ref op) => if op == "{" { // Function body
