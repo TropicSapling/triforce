@@ -25,7 +25,7 @@ func (int rand) (unsigned int random) (int rand2) testing {
 }
 
 func init {
-//	println 4 pow 5 pow 6 pow 7; // ERROR
+	println 4 pow 5 pow 6 pow 7; // ERROR
 }
 
 /*

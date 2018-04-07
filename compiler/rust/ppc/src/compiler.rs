@@ -503,9 +503,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 									
 									for child2 in children2.iter() {
 										if *child == *child2 {
-											if def.precedence < def2.precedence {
-												*child = j;
-											} else if j < i && def.precedence == def2.precedence {
+											if def.precedence < def2.precedence || (j < i && def.precedence == def2.precedence) {
 												*child = j;
 											}
 										}
