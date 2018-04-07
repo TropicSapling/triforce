@@ -14,7 +14,7 @@ macro_rules! is_kind {
 macro_rules! get_val {
 	($e:expr) => ({
 		use lib::Kind::*;
-		let string = String::new();
+//		let string = String::new();
 		match $e {
 			GroupOp(ref val) => val,
 			Literal(b) => if b {
@@ -435,12 +435,13 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				}
 				
 				let mut j = 0;
-				while i + j < tokens.len() && j < def.args.len() - def.pos && !is_val!(tokens[i + j].kind, Kind::Op(ref val), val, ";") {
+				let mut k = 0;
+				while i + j + k < tokens.len() && j < def.args.len() - def.pos && !is_val!(tokens[i + j + k].kind, Kind::Op(ref val), val, ";") {
 					j += 1;
 					
-					(*token.children.borrow_mut()).push(i + j);
+					(*token.children.borrow_mut()).push(i + j + k);
 					
-					match tokens[i + j].kind { // NEEDS FIXING; will not correctly parse args with parentheses
+					match tokens[i + j + k].kind { // NEEDS FIXING; will not correctly parse args with parentheses
 						Kind::GroupOp(ref op) => {
 							let mut nests = 0;
 							let end_op = match op.as_ref() {
@@ -450,9 +451,9 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 								&_ => panic!("")
 							};
 							
-							j += 1;
-							while i + j < tokens.len() && (nests > 0 || !is_val!(tokens[i + j].kind, Kind::GroupOp(ref val), val, end_op)) {
-								match tokens[i + j].kind {
+							k += 1;
+							while i + j + k < tokens.len() && (nests > 0 || !is_val!(tokens[i + j + k].kind, Kind::GroupOp(ref val), val, end_op)) {
+								match tokens[i + j + k].kind {
 									Kind::GroupOp(ref val) => if val == op {
 										nests += 1;
 									} else if val == end_op {
@@ -461,7 +462,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 									_ => ()
 								}
 								
-								j += 1;
+								k += 1;
 							}
 						},
 						_ => ()
