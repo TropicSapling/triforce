@@ -1,13 +1,13 @@
 use std::{path::PathBuf, cell::RefCell};
 // use std::fmt;
 
-#[derive(Clone, PartialEq, Debug)]
+/* #[derive(Clone, PartialEq, Debug)]
 pub enum Whitespace {
 	Newline,
 	CarRet,
 	Tab,
 	Space
-}
+} */
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
@@ -19,8 +19,8 @@ pub enum Kind {
     Str1(String),
     Str2(String),
     Type(Type),
-    Var(String, [Type; 8]),
-    Whitespace(Whitespace)
+    Var(String, [Type; 8])
+//    Whitespace(Whitespace)
 }
 
 #[derive(Clone, PartialEq, Debug)]

@@ -14,12 +14,43 @@ macro_rules! is_kind {
 macro_rules! get_val {
 	($e:expr) => ({
 		use lib::Kind::*;
+		let string = String::new();
 		match $e {
 			GroupOp(ref val) => val,
+			Literal(b) => if b {
+				"true"
+			} else {
+				"false"
+			},
+/*			Number(int, fraction) => {
+				string = int.to_string() + "." + &fraction.to_string();
+				&string
+			}, */
 			Op(ref val) => val,
 			Reserved(ref val) => val,
 			Str1(ref val) => val,
 			Str2(ref val) => val,
+			Type(ref typ) => match typ {
+				&Array => "array",
+				&Chan => "chan",
+				&Const => "const",
+				&Fraction => "fraction",
+				&Func => "func",
+				&Heap => "heap",
+				&List => "list",
+				&Only => "only",
+				&Register => "register",
+				&Stack => "stack",
+				&Unique => "unique",
+				&Volatile => "volatile",
+				&Bool => "bool",
+				&Char => "char",
+				&Int => "int",
+				&Pointer => "pointer",
+				&Unsigned => "unsigned",
+				&Void => "void",
+			},
+			Var(ref name, _) => name,
 			_ => panic!("")
 		}
 	});
@@ -161,7 +192,7 @@ macro_rules! def_builtin_funcs {
 	])
 }
 
-fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
+/* fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
 	let mut j: usize = 0;
 	while {
 		j += 1;
@@ -189,7 +220,7 @@ fn prev(tokens: &Vec<Token>, i: usize) -> usize {
 	} else {
 		0
 	}
-}
+} */
 
 /* fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'static str) {
 	let mut tok_str = String::from(op);
@@ -222,9 +253,9 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	
 	// STAGE 1: DEFINE FUNCTIONS (this is done in a separate loop to allow function definitions to be placed both before and after function calls)
 	for (i, token) in tokens.iter().enumerate() {
-		if is_kind!(token.kind, Kind::Whitespace(_)) {
+/*		if is_kind!(token.kind, Kind::Whitespace(_)) {
 			continue; // Ignore whitespace
-		}
+		} */
 		
 		let mut last_item = functions.len();
 		if last_item != 0 {
@@ -232,9 +263,9 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 		}
 		
 		match token.kind {
-			Kind::Whitespace(ref typ) => if func {
+/*			Kind::Whitespace(ref typ) => if func {
 				tokens[func_pos].children.borrow_mut().push(i);
-			},
+			}, */
 			
 			Kind::Type(ref typ) if !func => match typ {
 				&Type::Func => {
@@ -245,7 +276,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				_ => ()
 			},
 			
-			Kind::Type(ref typ) => match tokens[i + nxt(&tokens, i)].kind {
+			Kind::Type(ref typ) => match tokens[i + 1].kind {
 				Kind::GroupOp(ref op) if op == "{" => tokens[func_pos].children.borrow_mut().push(i),
 				_ => ()
 			},
@@ -356,7 +387,8 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 					let mut j = 0;
 					let mut k = 0;
 					while i - j > 0 && j - k < def.pos && !is_val!(tokens[i - j].kind, Kind::Op(ref val), val, ";") { // NOTE: comparison may need to be changed
-						j += prev(&tokens, i - j);
+//						j += prev(&tokens, i - j);
+						j += 1;
 						
 						match tokens[i - j].kind { // NEEDS FIXING; will not correctly parse args with parentheses
 							Kind::GroupOp(ref op) => {
@@ -368,9 +400,11 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 									&_ => panic!("")
 								};
 								
-								let prev_tok = prev(&tokens, i - j);
+/*								let prev_tok = prev(&tokens, i - j);
 								j += prev_tok;
-								k += prev_tok;
+								k += prev_tok; */
+								j += 1;
+								k += 1;
 								while i - j > 0 && (nests > 0 || !is_val!(tokens[i - j].kind, Kind::GroupOp(ref val), val, start_op)) {
 									match tokens[i - j].kind {
 										Kind::GroupOp(ref val) => if val == op {
@@ -381,9 +415,11 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 										_ => ()
 									}
 									
-									let prev_tok = prev(&tokens, i - j);
+/*									let prev_tok = prev(&tokens, i - j);
 									j += prev_tok;
-									k += prev_tok;
+									k += prev_tok; */
+									j += 1;
+									k += 1;
 								}
 								
 								(*token.children.borrow_mut()).push(i - j);
@@ -395,7 +431,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				
 				let mut j = 0;
 				while i + j < tokens.len() && j < def.args.len() - def.pos && !is_val!(tokens[i + j].kind, Kind::Op(ref val), val, ";") {
-					j += nxt(&tokens, i + j);
+					j += 1;
 					
 					(*token.children.borrow_mut()).push(i + j);
 					
@@ -409,7 +445,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 								&_ => panic!("")
 							};
 							
-							j += nxt(&tokens, i + j);
+							j += 1;
 							while i + j < tokens.len() && (nests > 0 || !is_val!(tokens[i + j].kind, Kind::GroupOp(ref val), val, end_op)) {
 								match tokens[i + j].kind {
 									Kind::GroupOp(ref val) => if val == op {
@@ -420,7 +456,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 									_ => ()
 								}
 								
-								j += nxt(&tokens, i + j);
+								j += 1;
 							}
 						},
 						_ => ()
@@ -492,7 +528,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String) -> String {
 	use lib::Kind::*;
 	use lib::Type::*;
-	use lib::Whitespace::*;
+//	use lib::Whitespace::*;
 	
 	match tokens[*i].kind {
 		GroupOp(ref op) => {
@@ -528,14 +564,14 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 		
 		Op(ref op) => match op.as_ref() {
 			"@" => output += "*",
-			"-" if get_val!(tokens[*i + 1].kind) == ">" && !is_kind!(tokens[*i + 1 + nxt(&tokens, *i + 1)].kind, Kind::Type(_)) => {
+			"-" if get_val!(tokens[*i + 1].kind) == ">" && !is_kind!(tokens[*i + 2].kind, Kind::Type(_)) => {
 				output += "&";
 				*i += 1;
 			},
 			_ => output += &op
 		},
 		
-		Kind::Reserved(ref keyword) => match keyword.as_ref() {
+		Reserved(ref keyword) => match keyword.as_ref() {
 			"async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
 			"import" => output += "use",
 			"foreach" => output += "for",
@@ -570,7 +606,41 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 			&Void => output += "()"
 		}, */
 		
-		Type(_) => (), // TMP
+		Type(ref typ) => match typ {
+			&Func => {
+				output += "fn ";
+				
+				let children = tokens[*i].children.borrow();
+				
+				// Function name & args
+				*i = children[0];
+				output = compile_token(tokens, functions, i, func_def, output);
+				output += " -> ";
+				
+				// Return type
+				*i = children[1];
+				match tokens[*i].kind {
+					Type(ref typ) => match typ {
+						&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
+						&Bool => output += "bool ",
+						&Char => output += "char ",
+						&Int => match tokens[*i - 1].kind {
+							Kind::Type(ref typ) if typ == &Unsigned => output += "u64 ", // TMP
+							_ => output += "i64 " // TMP
+						},
+						&Pointer => output += "*", // TMP
+						&Unsigned => (),
+						&Void => (), // May be changed
+					},
+					_ => panic!("{}:{} Invalid return type '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind))
+				}
+				
+				// Function body
+				*i = children[2];
+				output = compile_token(tokens, functions, i, func_def, output);
+			},
+			_ => () // TMP
+		},
 		
 		Var(ref name, ref types) => {
 			output += name;
@@ -581,13 +651,15 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 				if children.len() > 0 { // Function call or definition
 					output += "(";
 					
+					*func_def = true;
 					for (i, child) in children.iter().enumerate() {
 						let mut c = *child;
-						output = compile_token(tokens, functions, &mut c, func_def, output);
+						output = compile_token(tokens, functions, &mut c, func_def, output); // rename 'func_def' to 'ignore_parentheses'?
 						if i + 1 < children.len() {
 							output += ",";
 						}
 					}
+					*func_def = false;
 					
 					output += ")";
 				}
@@ -599,7 +671,7 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 						&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
 						&Bool => output += "bool",
 						&Char => output += "char",
-						&Int => match tokens[*i - prev(&tokens, *i)].kind {
+						&Int => match tokens[*i - 1].kind {
 							Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
 							_ => output += "i64" // TMP
 						},
@@ -607,18 +679,16 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 						&Unsigned => (),
 						&Void => (), // May be changed
 					}
-					
-					output += "";
 				}
 			}
-		},
+		}
 		
-		Kind::Whitespace(ref typ) => match typ {
+/*		Kind::Whitespace(ref typ) => match typ {
 			&Newline => output += "\n",
 			&CarRet => output += "\r",
 			&Tab => output += "\t",
 			&Space => output += " "
-		}
+		} */
 	}
 	
 	output
@@ -626,9 +696,14 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 
 pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String) -> String {
 	use lib::Type::*;
-	use lib::Whitespace::*;
+//	use lib::Whitespace::*;
 	
 	let children = tokens[*i].children.borrow();
+	
+	output = compile_token(tokens, functions, i, func_def, output);
+	return output;
+	
+	// OUTDATED CODE BELOW
 	
 	match tokens[*i].kind {
 		Kind::Var(ref name, ref types) => {
@@ -673,10 +748,11 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 				
 				for typ in types {
 					match typ {
+						&Func => (), // TMP
 						&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
 						&Bool => output += "bool",
 						&Char => output += "char",
-						&Int => match tokens[*i - prev(&tokens, *i)].kind {
+						&Int => match tokens[*i - 1].kind {
 							Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
 							_ => output += "i64" // TMP
 						},
@@ -710,15 +786,16 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 				output += "-> ";
 				
 				*func_def = false;
-				*i += 2;
-				*i += nxt(&tokens, *i);
+/*				*i += 2;
+				*i += nxt(&tokens, *i); */
+				*i += 3;
 				
 				match tokens[*i].kind {
 					Kind::Type(ref typ) => match typ {
 						&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
 						&Bool => output += "bool",
 						&Char => output += "char",
-						&Int => match tokens[*i - prev(&tokens, *i)].kind {
+						&Int => match tokens[*i - 1].kind {
 							Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
 							_ => output += "i64" // TMP
 						},
@@ -762,12 +839,12 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			&_ => () // TMP
 		},
 		
-		Kind::Whitespace(ref typ) => match typ {
+/*		Kind::Whitespace(ref typ) => match typ {
 			&Newline => output += "\n",
 			&CarRet => output += "\r",
 			&Tab => output += "\t",
 			&Space => output += " "
-		},
+		}, */
 		
 		_ => ()
 	}

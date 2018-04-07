@@ -1,5 +1,6 @@
 use std::cell::RefCell;
-use lib::{Token, Whitespace, Kind, Type, FilePos};
+// use lib::{Token, Whitespace, Kind, Type, FilePos};
+use lib::{Token, Kind, Type, FilePos};
 
 macro_rules! is_kind {
 	($lhs_kind:expr, $rhs_kind:pat) => (match $lhs_kind {
@@ -8,7 +9,7 @@ macro_rules! is_kind {
 	});
 }
 
-fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
+/* fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
 	let mut j: usize = 0;
 	while {
 		j += 1;
@@ -21,7 +22,7 @@ fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
 	} else {
 		0
 	}
-}
+} */
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -69,16 +70,16 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	for item in tokens {
 		if ignoring {
 			if item == "\n" {
-				res.push(Token {kind: Kind::Whitespace(Whitespace::Newline), pos: FilePos {line, col}, children: RefCell::new(vec![])});
+//				res.push(Token {kind: Kind::Whitespace(Whitespace::Newline), pos: FilePos {line, col}, children: RefCell::new(vec![])});
 				
 				line += 1;
 				col = 0;
 				ignoring = false;
 			}
 			
-			if item == "\r" {
+/*			if item == "\r" {
 				res.push(Token {kind: Kind::Whitespace(Whitespace::CarRet), pos: FilePos {line, col}, children: RefCell::new(vec![])});
-			}
+			} */
 		} else if ignoring2 {
 			if possible_comment {
 				if item == "/" {
@@ -224,12 +225,18 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 						"true" => Kind::Literal(true),
 						"\n" => {
 							line += 1;
-							col = 0;
-							Kind::Whitespace(Whitespace::Newline)
+/*							col = 0;
+							Kind::Whitespace(Whitespace::Newline) */
+							col = 1;
+							continue;
 						},
-						"\r" => Kind::Whitespace(Whitespace::CarRet),
+/*						"\r" => Kind::Whitespace(Whitespace::CarRet),
 						"\t" => Kind::Whitespace(Whitespace::Tab),
-						" " => Kind::Whitespace(Whitespace::Space),
+						" " => Kind::Whitespace(Whitespace::Space), */
+						"\r" | "\t" | " " => {
+							col += 1;
+							continue;
+						},
 						_ => Kind::Var(item.to_string(), [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void])
 					};
 					string.pos = FilePos {line, col};
@@ -253,7 +260,8 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				let mut types = [typ.clone(), Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				let mut j = 1;
 				
-				i += nxt(&tokens, i);
+//				i += nxt(&tokens, i);
+				i += 1;
 				
 				while is_kind!(tokens[i].kind, Kind::Type(_)) {
 					types[j] = match tokens[i].kind {
@@ -261,7 +269,8 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 						_ => panic!("") // Will probably be changed
 					};
 					
-					i += nxt(&tokens, i);
+//					i += nxt(&tokens, i);
+					i += 1;
 					j += 1;
 				}
 				
