@@ -284,7 +284,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				_ => ()
 			},
 			
-			Kind::Var(ref name, ref typ) => if typ[0] == Type::Void || typ[0] == Type::Func { // Function name
+			Kind::Var(ref name, ref typ) if func => if typ[0] == Type::Void || typ[0] == Type::Func { // Function name
 				functions[last_item].name = name;
 				functions[last_item].pos = functions[last_item].args.len();
 				
@@ -294,7 +294,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 //				par_type = typ.clone();
 			},
 			
-			Kind::Op(ref op) => if functions[last_item].name == "" { // Operator (function) name
+			Kind::Op(ref op) if func => if functions[last_item].name == "" { // Operator (function) name
 				functions[last_item].name = op;
 				functions[last_item].pos = functions[last_item].args.len();
 				
@@ -309,7 +309,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				func = false;
 			},
 			
-			Kind::GroupOp(ref op) => if op == "{" { // Function body
+			Kind::GroupOp(ref op) if func => if op == "{" { // Function body
 				functions[last_item].output = par_type.clone();
 				if par_type[0] != Type::Void {
 					functions[last_item].precedence = 1;
