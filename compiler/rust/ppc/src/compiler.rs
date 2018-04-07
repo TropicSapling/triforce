@@ -281,7 +281,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				_ => ()
 			},
 			
-			Kind::Var(ref name, ref typ) => if typ[0] == Type::Void { // Function name
+			Kind::Var(ref name, ref typ) => if typ[0] == Type::Void || typ[0] == Type::Func { // Function name
 				functions[last_item].name = name;
 				functions[last_item].pos = functions[last_item].args.len();
 				
@@ -615,29 +615,36 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 				// Function name & args
 				*i = children[0];
 				output = compile_token(tokens, functions, i, func_def, output);
-				output += " -> ";
 				
-				// Return type
-				*i = children[1];
-				match tokens[*i].kind {
-					Type(ref typ) => match typ {
-						&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
-						&Bool => output += "bool ",
-						&Char => output += "char ",
-						&Int => match tokens[*i - 1].kind {
-							Kind::Type(ref typ) if typ == &Unsigned => output += "u64 ", // TMP
-							_ => output += "i64 " // TMP
+				if children.len() > 2 {
+					// Return type
+					output += "->";
+					*i = children[1];
+					
+					match tokens[*i].kind {
+						Type(ref typ) => match typ {
+							&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
+							&Bool => output += "bool",
+							&Char => output += "char",
+							&Int => match tokens[*i - 1].kind {
+								Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
+								_ => output += "i64" // TMP
+							},
+							&Pointer => output += "*", // TMP
+							&Unsigned => (),
+							&Void => (), // May be changed
 						},
-						&Pointer => output += "*", // TMP
-						&Unsigned => (),
-						&Void => (), // May be changed
-					},
-					_ => panic!("{}:{} Invalid return type '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind))
+						_ => panic!("{}:{} Invalid return type '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind))
+					}
+					
+					// Function body
+					*i = children[2];
+					output = compile_token(tokens, functions, i, func_def, output);
+				} else {
+					// Function body
+					*i = children[1];
+					output = compile_token(tokens, functions, i, func_def, output);
 				}
-				
-				// Function body
-				*i = children[2];
-				output = compile_token(tokens, functions, i, func_def, output);
 			},
 			_ => () // TMP
 		},
