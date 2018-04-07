@@ -427,9 +427,11 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 								
 								(*token.children.borrow_mut()).push(i - j);
 							},
-							_ => (*token.children.borrow_mut()).push(i - j) // Will this cause the vector to be backwards? If so fix later
+							_ => (*token.children.borrow_mut()).push(i - j)
 						}
 					}
+					
+					(*token.children.borrow_mut()).reverse(); // Quick fix to backwards vector, preferably fix this in a better way in the future to improve performance (and possibly also code readability)
 				}
 				
 				let mut j = 0;
