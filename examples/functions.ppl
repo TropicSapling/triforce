@@ -20,7 +20,7 @@ func println (int not_an_actual_int) {
 	
 }
 
-// println 4 pow 5 pow 6 pow 7; <-- STACK OVERFLOW
+// println 4 pow 5 pow 6 pow 7; // ERROR
 
 /*
 [println, 4, pow, 5, pow, 6, pow, 7]

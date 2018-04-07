@@ -277,7 +277,10 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 			},
 			
 			Kind::Type(ref typ) => match tokens[i + 1].kind {
-				Kind::GroupOp(ref op) if op == "{" => tokens[func_pos].children.borrow_mut().push(i),
+				Kind::GroupOp(ref op) if op == "{" => {
+					tokens[func_pos].children.borrow_mut().push(i);
+					par_type[0] = typ.clone(); // TODO: Add support for returning multiple types
+				},
 				_ => ()
 			},
 			
@@ -288,7 +291,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				tokens[func_pos].children.borrow_mut().push(i);
 			} else { // Function args
 				functions[last_item].args.push(FunctionArg {name, typ: typ.clone()});
-				par_type = typ.clone();
+//				par_type = typ.clone();
 			},
 			
 			Kind::Op(ref op) => if functions[last_item].name == "" { // Operator (function) name
