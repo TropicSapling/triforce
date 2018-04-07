@@ -666,14 +666,18 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 			} else {
 				output += ":";
 				
-				for typ in types {
+				for (t, typ) in types.iter().enumerate() {
 					match typ {
 						&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
 						&Bool => output += "bool",
 						&Char => output += "char",
-						&Int => match tokens[*i - 1].kind {
-							Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
-							_ => output += "i64" // TMP
+						&Int => if t > 0 {
+							match &types[t - 1] {
+								&Unsigned => output += "u64", // TMP
+								_ => output += "i64" // TMP
+							}
+						} else {
+							output += "i64";
 						},
 						&Pointer => output += "*", // TMP
 						&Unsigned => (),
