@@ -656,12 +656,17 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 		},
 		
 		Var(ref name, ref types) => {
-			output += name;
-			if let Some(def) = is_defined(&functions, &name) {
+			if name == "init" {
+				output += "main";
+			} else {
+				output += name;
+			}
+			
+			if let Some(def) = is_defined(&functions, &name) { // Function call or definition
 				// ???
 				
 				let children = tokens[*i].children.borrow();
-				if children.len() > 0 { // Function call or definition
+				if children.len() > 0 {
 					output += "(";
 					
 					*func_def = true;
@@ -675,6 +680,8 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 					*func_def = false;
 					
 					output += ")";
+				} else {
+					output += "()";
 				}
 			} else {
 				output += ":";

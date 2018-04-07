@@ -13,7 +13,7 @@
 }*/
 
 func (int base) pow (unsigned int exp) -> int {
-
+	123
 }
 
 func println (int not_an_actual_int) (int another_arg) (unsigned int third) {
@@ -24,7 +24,9 @@ func (int rand) (unsigned int random) (int rand2) testing {
 	
 }
 
-//println 4 pow 5 pow 6 pow 7; // ERROR
+func init {
+//	println 4 pow 5 pow 6 pow 7; // ERROR
+}
 
 /*
 [println, 4, pow, 5, pow, 6, pow, 7]
