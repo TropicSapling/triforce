@@ -487,43 +487,46 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	}
 	
 	// STAGE 3: FURTHER ORGANISATION BASED ON PRECEDENCE
-	let mut i = 0;
-	while i < tokens.len() {
-		match tokens[i].kind {
-			Kind::Var(ref name, _) => if let Some(def) = is_defined(&functions, name) {
-				let mut children = tokens[i].children.borrow_mut();
-				
-				for child in children.iter_mut() {
-					let mut j = 0;
-					while j < tokens.len() {
-						if j != i {
-							match tokens[j].kind {
-								Kind::Var(ref name, _) => if let Some(def2) = is_defined(&functions, name) {
-									let mut children2 = tokens[j].children.borrow_mut();
-									
-									for child2 in children2.iter() {
-										if *child == *child2 {
-											if def.precedence < def2.precedence || (j < i && def.precedence == def2.precedence) {
-												*child = j;
+	
+	for x in 0..15 {
+		let mut i = 0;
+		while i < tokens.len() {
+			match tokens[i].kind {
+				Kind::Var(ref name, _) => if let Some(def) = is_defined(&functions, name) {
+					let mut children = tokens[i].children.borrow_mut();
+					
+					for child in children.iter_mut() {
+						let mut j = 0;
+						while j < tokens.len() {
+							if j != i {
+								match tokens[j].kind {
+									Kind::Var(ref name, _) => if let Some(def2) = is_defined(&functions, name) {
+										let mut children2 = tokens[j].children.borrow_mut();
+										
+										for child2 in children2.iter() {
+											if *child == *child2 {
+												if def.precedence < def2.precedence || (j < i && def.precedence == def2.precedence) {
+													*child = j;
+												}
 											}
 										}
-									}
-								},
-								_ => ()
+									},
+									_ => ()
+								}
 							}
+							
+							j += 1;
 						}
-						
-						j += 1;
 					}
-				}
-			},
+				},
+				
+				// Add support for GroupOp and/or Op?
+				
+				_ => ()
+			}
 			
-			// Add support for GroupOp?
-			
-			_ => ()
+			i += 1;
 		}
-		
-		i += 1;
 	}
 	
 	functions

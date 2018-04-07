@@ -16,7 +16,7 @@ func (int base) pow (unsigned int exp) -> int {
 	123
 }
 
-func println (int not_an_actual_int) (int another_arg) (unsigned int third) {
+func println (int not_an_actual_int) {
 	
 }
 
