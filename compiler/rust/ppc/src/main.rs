@@ -154,10 +154,11 @@ fn init() -> i32 {
 	}
 	
 	let mut out_contents = String::new();
+	let mut taken = Vec::new();
 	let mut i = 0;
 	let mut func_def = false;
 	while i < tokens.len() {
-		out_contents = compile(&tokens, &functions, &mut i, &mut func_def, out_contents);
+		out_contents = compile(&tokens, &functions, &mut i, &mut func_def, out_contents, &mut taken);
 		i += 1;
 	}
 	

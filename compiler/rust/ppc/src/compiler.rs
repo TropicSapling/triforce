@@ -488,7 +488,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	
 	// STAGE 3: FURTHER ORGANISATION BASED ON PRECEDENCE
 	
-	for x in 0..15 {
+	for x in 0..15 { // TMP probably
 		let mut i = 0;
 		while i < tokens.len() {
 			match tokens[i].kind {
@@ -532,10 +532,14 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	functions
 }
 
-fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String) -> String {
+fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String, taken: &mut Vec<usize>) -> String {
 	use lib::Kind::*;
 	use lib::Type::*;
 //	use lib::Whitespace::*;
+	
+	if taken.contains(i) {
+		return output;
+	}
 	
 	match tokens[*i].kind {
 		GroupOp(ref op) => {
@@ -546,12 +550,12 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 			let children = tokens[*i].children.borrow();
 			for child in children.iter() {
 				*i = *child;
-				output = compile_token(tokens, functions, i, func_def, output);
+				output = compile_token(tokens, functions, i, func_def, output, taken);
 			}
 			
 			if children.len() > 0 {
 				*i += 1;
-				output = compile_token(tokens, functions, i, func_def, output);
+				output = compile_token(tokens, functions, i, func_def, output, taken);
 			}
 		},
 		
@@ -573,6 +577,7 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 			"@" => output += "*",
 			"-" if get_val!(tokens[*i + 1].kind) == ">" && !is_kind!(tokens[*i + 2].kind, Kind::Type(_)) => {
 				output += "&";
+				taken.push(*i);
 				*i += 1;
 			},
 			_ => output += &op
@@ -621,7 +626,7 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 				
 				// Function name & args
 				*i = children[0];
-				output = compile_token(tokens, functions, i, func_def, output);
+				output = compile_token(tokens, functions, i, func_def, output, taken);
 				
 				if children.len() > 2 {
 					// Return type
@@ -646,11 +651,11 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 					
 					// Function body
 					*i = children[2];
-					output = compile_token(tokens, functions, i, func_def, output);
+					output = compile_token(tokens, functions, i, func_def, output, taken);
 				} else {
 					// Function body
 					*i = children[1];
-					output = compile_token(tokens, functions, i, func_def, output);
+					output = compile_token(tokens, functions, i, func_def, output, taken);
 				}
 			},
 			_ => () // TMP
@@ -673,7 +678,7 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 					*func_def = true;
 					for (i, child) in children.iter().enumerate() {
 						let mut c = *child;
-						output = compile_token(tokens, functions, &mut c, func_def, output); // rename 'func_def' to 'ignore_parentheses'?
+						output = compile_token(tokens, functions, &mut c, func_def, output, taken); // rename 'func_def' to 'ignore_parentheses'? Or at least 'func' to clarify it's not only definitions but also calls
 						if i + 1 < children.len() {
 							output += ",";
 						}
@@ -716,16 +721,18 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 		} */
 	}
 	
+	taken.push(*i);
+	
 	output
 }
 
-pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String) -> String {
+pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String, taken: &mut Vec<usize>) -> String {
 	use lib::Type::*;
 //	use lib::Whitespace::*;
 	
 	let children = tokens[*i].children.borrow();
 	
-	output = compile_token(tokens, functions, i, func_def, output);
+	output = compile_token(tokens, functions, i, func_def, output, taken);
 	return output;
 	
 	// OUTDATED CODE BELOW
@@ -761,7 +768,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 				
 				for (i, child) in children.iter().enumerate() {
 					let mut c = *child;
-					output = compile_token(tokens, functions, &mut c, func_def, output);
+					output = compile_token(tokens, functions, &mut c, func_def, output, taken);
 					if i + 1 < children.len() {
 						output += ",";
 					}
@@ -801,7 +808,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			
 			if children.len() > 0 {
 				*i += 1;
-				output = compile(tokens, functions, i, func_def, output);
+				output = compile(tokens, functions, i, func_def, output, taken);
 			}
 		},
 		
