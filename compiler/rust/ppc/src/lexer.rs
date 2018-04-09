@@ -275,7 +275,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				}
 				
 				match tokens[i].kind {
-					Kind::Var(ref name, ref mut typ) => *typ = types,
+					Kind::Var(_, ref mut typ) => *typ = types,
 					_ => ()
 				}
 			},

@@ -1,8 +1,8 @@
 use lib::{Token, Kind, Type, Function, FunctionArg};
 
-macro_rules! last {
+/* macro_rules! last {
 	($e:expr) => ($e[$e.len() - 1]);
-}
+} */
 
 macro_rules! is_kind {
 	($lhs_kind:expr, $rhs_kind:pat) => (match $lhs_kind {
@@ -378,14 +378,8 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	while i < tokens.len() {
 		let token = &tokens[i];
 		
-		if is_kind!(token.kind, Kind::Var(_,_)) || is_kind!(token.kind, Kind::Op(_)) {
-			let val = match token.kind {
-				Kind::Var(ref val, _) => val,
-				Kind::Op(ref val) => val,
-				_ => panic!("")
-			}; // Probably needs fixing
-			
-			if let Some(def) = is_defined(&functions, &val) {
+		match token.kind {
+			Kind::Var(ref val, _) | Kind::Op(ref val) => if let Some(def) = is_defined(&functions, &val) {
 				if def.pos > 0 {
 					let mut j = 0;
 					let mut k = 0;
@@ -468,19 +462,16 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 						_ => ()
 					}
 				}
-			}
-		} else if is_kind!(token.kind, Kind::GroupOp(_)) {
-			let val = match token.kind {
-				Kind::GroupOp(ref val) => val,
-				_ => panic!("")
-			};
+			},
 			
-			match val.as_ref() {
+			Kind::GroupOp(ref val) => match val.as_ref() {
 				"(" => group_expr!("(", ")", tokens, token, i),
 				"{" => group_expr!("{", "}", tokens, token, i),
 				"[" => group_expr!("[", "]", tokens, token, i),
 				&_ => (),
-			}
+			},
+			
+			_ => ()
 		}
 		
 		i += 1;
@@ -488,7 +479,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	
 	// STAGE 3: FURTHER ORGANISATION BASED ON PRECEDENCE
 	
-	for x in 0..15 { // TMP probably
+	for _x in 0..15 { // TMP probably
 		let mut i = 0;
 		while i < tokens.len() {
 			match tokens[i].kind {
@@ -668,7 +659,7 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 				output += name;
 			}
 			
-			if let Some(def) = is_defined(&functions, &name) { // Function call or definition
+			if is_defined(&functions, &name).is_some() { // Function call or definition
 				// ???
 				
 				let children = tokens[*i].children.borrow();
@@ -735,7 +726,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 	output = compile_token(tokens, functions, i, func_def, output, taken);
 	return output;
 	
-	// OUTDATED CODE BELOW
+	// OUTDATED CODE BELOW (intentionally unreachable)
 	
 	match tokens[*i].kind {
 		Kind::Var(ref name, ref types) => {
