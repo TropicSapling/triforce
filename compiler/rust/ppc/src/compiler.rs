@@ -51,7 +51,7 @@ macro_rules! get_val {
 				&Void => "void",
 			},
 			Var(ref name, _) => name,
-			_ => panic!("")
+			_ => unreachable!()
 		}
 	});
 }
@@ -394,7 +394,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 									")" => "(",
 									"}" => "{",
 									"]" => "[",
-									&_ => panic!("")
+									&_ => unreachable!()
 								};
 								
 /*								let prev_tok = prev(&tokens, i - j);
@@ -442,7 +442,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 								"(" => ")",
 								"{" => "}",
 								"[" => "]",
-								&_ => panic!("")
+								&_ => panic!("{}:{} Unexpected '{}'", tokens[i + j + k].pos.line, tokens[i + j + k].pos.col, op)
 							};
 							
 							k += 1;

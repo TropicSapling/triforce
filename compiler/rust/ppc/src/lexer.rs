@@ -2,12 +2,12 @@ use std::cell::RefCell;
 // use lib::{Token, Whitespace, Kind, Type, FilePos};
 use lib::{Token, Kind, Type, FilePos};
 
-macro_rules! is_kind {
+/* macro_rules! is_kind {
 	($lhs_kind:expr, $rhs_kind:pat) => (match $lhs_kind {
 		$rhs_kind => true,
 		_ => false
 	});
-}
+} */
 
 /* fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
 	let mut j: usize = 0;
@@ -123,7 +123,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				let mut val = match string.kind {
 					Kind::Str1(ref mut value) => value,
 					Kind::Str2(ref mut value) => value,
-					_ => panic!("")
+					_ => unreachable!()
 				};
 				if item == "0" || item == "n" { // Null and newlines
 					*val += "\\";
@@ -142,7 +142,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				} else {
 					let mut val = match string.kind {
 						Kind::Str1(ref mut val) => val,
-						_ => panic!("")
+						_ => unreachable!()
 					};
 					*val += item;
 				}
@@ -155,7 +155,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				} else {
 					let mut val = match string.kind {
 						Kind::Str2(ref mut val) => val,
-						_ => panic!("")
+						_ => unreachable!()
 					};
 					*val += item;
 				}
@@ -172,7 +172,7 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					if num_pos == 2 {
 						match string.kind {
 							Kind::Number(n, _) => string.kind = Kind::Number(n, item.parse::<u64>().unwrap()),
-							_ => panic!("")
+							_ => unreachable!()
 						}
 						
 						res.push(string.clone());
@@ -263,10 +263,10 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 //				i += nxt(&tokens, i);
 				i += 1;
 				
-				while is_kind!(tokens[i].kind, Kind::Type(_)) {
-					types[j] = match tokens[i].kind {
-						Kind::Type(ref typ) => typ.clone(),
-						_ => panic!("") // Will probably be changed
+				loop {
+					match tokens[i].kind {
+						Kind::Type(ref typ) => types[j] = typ.clone(),
+						_ => break
 					};
 					
 //					i += nxt(&tokens, i);
