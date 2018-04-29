@@ -14,7 +14,6 @@ macro_rules! is_kind {
 macro_rules! get_val {
 	($e:expr) => ({
 		use lib::Kind::*;
-//		let string = String::new();
 		match $e {
 			GroupOp(ref val) => val,
 			Literal(b) => if b {
@@ -22,10 +21,6 @@ macro_rules! get_val {
 			} else {
 				"false"
 			},
-/*			Number(int, fraction) => {
-				string = int.to_string() + "." + &fraction.to_string();
-				&string
-			}, */
 			Op(ref val) => val,
 			Reserved(ref val) => val,
 			Str1(ref val) => val,
@@ -52,6 +47,48 @@ macro_rules! get_val {
 			},
 			Var(ref name, _) => name,
 			_ => unreachable!()
+		}
+	});
+}
+
+macro_rules! get_val2 {
+	($e:expr) => ({
+		use lib::Kind::*;
+		match $e {
+			GroupOp(ref val) => val.to_string(),
+			Literal(b) => if b {
+				String::from("true")
+			} else {
+				String::from("false")
+			},
+			Number(int, fraction) => {
+				int.to_string() + "." + &fraction.to_string()
+			},
+			Op(ref val) => val.to_string(),
+			Reserved(ref val) => val.to_string(),
+			Str1(ref val) => val.to_string(),
+			Str2(ref val) => val.to_string(),
+			Type(ref typ) => match typ {
+				&Array => String::from("array"),
+				&Chan => String::from("chan"),
+				&Const => String::from("const"),
+				&Fraction => String::from("fraction"),
+				&Func => String::from("func"),
+				&Heap => String::from("heap"),
+				&List => String::from("list"),
+				&Only => String::from("only"),
+				&Register => String::from("register"),
+				&Stack => String::from("stack"),
+				&Unique => String::from("unique"),
+				&Volatile => String::from("volatile"),
+				&Bool => String::from("bool"),
+				&Char => String::from("char"),
+				&Int => String::from("int"),
+				&Pointer => String::from("pointer"),
+				&Unsigned => String::from("unsigned"),
+				&Void => String::from("void"),
+			},
+			Var(ref name, _) => name.to_string()
 		}
 	});
 }
@@ -89,8 +126,8 @@ macro_rules! group_expr {
 macro_rules! def_builtin_funcs {
 	($a:expr, $b:expr) => (vec![
 		Function {
-			name: "+",
-			pos: 0, // Not a real pos, but it will be ignored anyway
+			name: String::from("+"),
+			pos: 1,
 			args: vec![
 				FunctionArg {
 					name: $a,
@@ -106,8 +143,8 @@ macro_rules! def_builtin_funcs {
 		},
 		
 		Function {
-			name: "-",
-			pos: 0, // Not a real pos, but it will be ignored anyway
+			name: String::from("-"),
+			pos: 1,
 			args: vec![
 				FunctionArg {
 					name: $a,
@@ -123,8 +160,8 @@ macro_rules! def_builtin_funcs {
 		},
 		
 		Function {
-			name: "*",
-			pos: 0, // Not a real pos, but it will be ignored anyway
+			name: String::from("*"),
+			pos: 1,
 			args: vec![
 				FunctionArg {
 					name: $a,
@@ -140,8 +177,8 @@ macro_rules! def_builtin_funcs {
 		},
 		
 		Function {
-			name: "/",
-			pos: 0, // Not a real pos, but it will be ignored anyway
+			name: String::from("/"),
+			pos: 1,
 			args: vec![
 				FunctionArg {
 					name: $b,
@@ -157,8 +194,8 @@ macro_rules! def_builtin_funcs {
 		},
 		
 		Function {
-			name: "%",
-			pos: 0, // Not a real pos, but it will be ignored anyway
+			name: String::from("%"),
+			pos: 1,
 			args: vec![
 				FunctionArg {
 					name: $a,
@@ -174,8 +211,8 @@ macro_rules! def_builtin_funcs {
 		},
 		
 		Function {
-			name: "**",
-			pos: 0, // Not a real pos, but it will be ignored anyway
+			name: String::from("**"),
+			pos: 1,
 			args: vec![
 				FunctionArg {
 					name: $a,
@@ -187,6 +224,32 @@ macro_rules! def_builtin_funcs {
 				}
 			],
 			precedence: 247,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+		},
+		
+		Function {
+			name: String::from("++"),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				}
+			],
+			precedence: 249,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+		},
+		
+		Function {
+			name: String::from("--"),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				}
+			],
+			precedence: 249,
 			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 		}
 	])
@@ -252,10 +315,13 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	let mut par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 	
 	// STAGE 1: DEFINE FUNCTIONS (this is done in a separate loop to allow function definitions to be placed both before and after function calls)
-	for (i, token) in tokens.iter().enumerate() {
+	let mut i = 0;
+	while i < tokens.len() {
 /*		if is_kind!(token.kind, Kind::Whitespace(_)) {
 			continue; // Ignore whitespace
 		} */
+		
+		let token = &tokens[i];
 		
 		let mut last_item = functions.len();
 		if last_item != 0 {
@@ -269,7 +335,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 			
 			Kind::Type(ref typ) if !func => match typ {
 				&Type::Func => {
-					functions.push(Function {name: "", pos: 0, args: vec![], precedence: 0, output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
+					functions.push(Function {name: String::from(""), pos: 0, args: vec![], precedence: 0, output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
 					func_pos = i;
 					func = true;
 				},
@@ -285,7 +351,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 			},
 			
 			Kind::Var(ref name, ref typ) if func => if typ[0] == Type::Void || typ[0] == Type::Func { // Function name
-				functions[last_item].name = name;
+				functions[last_item].name = name.to_string();
 				functions[last_item].pos = functions[last_item].args.len();
 				
 				tokens[func_pos].children.borrow_mut().push(i);
@@ -294,11 +360,16 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 //				par_type = typ.clone();
 			},
 			
-			Kind::Op(ref op) if func => if functions[last_item].name == "" { // Operator (function) name
-				functions[last_item].name = op;
-				functions[last_item].pos = functions[last_item].args.len();
-				
-				tokens[func_pos].children.borrow_mut().push(i);
+			Kind::Op(ref op) if func => if op == "-" {
+				match tokens[i + 1].kind {
+					Kind::Op(ref op) if op == ">" => i += 1,
+					_ => { // Operator (function) name
+						functions[last_item].name += op;
+						functions[last_item].pos = functions[last_item].args.len();
+						
+						tokens[func_pos].children.borrow_mut().push(i);
+					}
+				}
 			} else if op == ";" { // End of function declaration
 				functions[last_item].output = par_type.clone();
 				if par_type[0] != Type::Void {
@@ -307,6 +378,11 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				
 				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				func = false;
+			} else { // Operator (function) name
+				functions[last_item].name += op;
+				functions[last_item].pos = functions[last_item].args.len();
+				
+				tokens[func_pos].children.borrow_mut().push(i);
 			},
 			
 			Kind::GroupOp(ref op) if func => if op == "{" { // Function body
@@ -323,6 +399,8 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 			
 			_ => ()
 		}
+		
+		i += 1;
 		
 /*		if is_val!(token.kind, Kind::Type(ref val), val, &Type::Func) {
 			functions.push(Function {name: "", pos: 0, args: vec![], precedence: 0, output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
@@ -566,10 +644,13 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 		
 		Op(ref op) => match op.as_ref() {
 			"@" => output += "*",
-			"-" if get_val!(tokens[*i + 1].kind) == ">" && !is_kind!(tokens[*i + 2].kind, Kind::Type(_)) => {
-				output += "&";
-				taken.push(*i);
-				*i += 1;
+			"-" => match tokens[*i + 1].kind {
+				Kind::Op(ref s) if s == ">" && !is_kind!(tokens[*i + 2].kind, Kind::Type(_)) => {
+					output += "&";
+					taken.push(*i);
+					*i += 1;
+				},
+				_ => output += &op
 			},
 			_ => output += &op
 		},
@@ -637,7 +718,10 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 							&Unsigned => (),
 							&Void => (), // May be changed
 						},
-						_ => panic!("{}:{} Invalid return type '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind))
+						_ => {
+							let val = get_val2!(tokens[*i].kind);
+							panic!("{}:{} Invalid return type '{}'", tokens[*i].pos.line, tokens[*i].pos.col, val);
+						}
 					}
 					
 					// Function body
