@@ -451,7 +451,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 		} */
 	}
 	
-	// STAGE 2: ORGANISE FUNCTION CALLS
+/*	// STAGE 2: ORGANISE FUNCTION CALLS
 	let mut i = 0;
 	while i < tokens.len() {
 		let token = &tokens[i];
@@ -596,9 +596,58 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 			
 			i += 1;
 		}
-	}
+	} */
 	
 	functions
+}
+
+pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, terminals: &mut Vec<usize>, i: &mut usize) {
+	match tokens[*i].kind {
+		Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
+			let length = terminals.len();
+			
+			if length < def.args.len() - def.pos {
+				panic!("{}:{} Too few arguments", tokens[*i].pos.line, tokens[*i].pos.col);
+			}
+			
+			for terminal in terminals.drain(length - def.args.len() + def.pos..) {
+				tokens[*i].children.borrow_mut().push(terminal);
+			}
+			
+			*i += 1;
+			
+			parse2(tokens, functions, terminals, i);
+		},
+		
+		Kind::Op(ref op) => {
+			let mut name = op.to_string();
+			loop {
+				*i += 1;
+				match tokens[*i].kind {
+					Kind::Op(ref op) => name += op,
+					_ => break
+				}
+			}
+			
+			if let Some(def) = is_defined(functions, &name) {
+				let length = terminals.len();
+				
+				if length < def.args.len() - def.pos {
+					panic!("{}:{} Too few arguments", tokens[*i].pos.line, tokens[*i].pos.col);
+				}
+				
+				for terminal in terminals.drain(length - def.args.len() + def.pos..) {
+					tokens[*i].children.borrow_mut().push(terminal);
+				}
+				
+				*i += name.len();
+				
+				parse2(tokens, functions, terminals, i);
+			}
+		},
+		
+		_ => terminals.push(*i)
+	};
 }
 
 fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String, taken: &mut Vec<usize>) -> String {

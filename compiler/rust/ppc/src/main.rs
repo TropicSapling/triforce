@@ -23,7 +23,7 @@ use std::{
 
 use lib::get_io;
 use lexer::{lex, lex2, lex3};
-use compiler::{parse, compile};
+use compiler::{parse, parse2, compile};
 
 fn main() {
 	let status = init();
@@ -151,6 +151,14 @@ fn init() -> i32 {
 	let functions = parse(&tokens, &func_name_a, &func_name_b);
 	if debugging {
 		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
+	}
+	
+	let mut i = 0;
+	let mut terminals = Vec::new();
+	while i < tokens.len() {
+		parse2(&tokens, &functions, &mut terminals, &mut i);
+		
+		i += 1;
 	}
 	
 	let mut out_contents = String::new();
