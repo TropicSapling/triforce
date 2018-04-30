@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use lib::{Token, Kind, Type, Function, FunctionArg};
 
 /* macro_rules! last {
@@ -601,8 +602,130 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	functions
 }
 
+fn parse_rec(tokens: &Vec<Token>, functions: &Vec<Function>, lhs: &RefCell<Vec<usize>>, caller: Option<(usize, &Function)>, i: &mut usize) {
+/*	let mut lowest: (usize, Option<&Function>) = (0, None);
+	let mut i = 0;
+	while i < tokens.len() {
+		match tokens[i].kind {
+			Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
+				match lowest.1 {
+					Some(def2) => if def.precedence <= def2.precedence {
+						lowest = (i, Some(def));
+					},
+					None => lowest = (i, Some(def))
+				};
+			},
+			
+			Kind::Op(ref op) => {
+				let mut name = op.to_string();
+				let start = i;
+				while i < tokens.len() {
+					match tokens[i].kind {
+						Kind::Op(ref op) => name += op,
+						_ => break
+					}
+					
+					i += 1;
+				}
+				
+				if let Some(def) = is_defined(functions, &name) {
+					match lowest.1 {
+						Some(def2) => if def.precedence <= def2.precedence {
+							lowest = (start, Some(def));
+						},
+						None => lowest = (start, Some(def))
+					};
+				}
+			},
+			
+			_ => ()
+		};
+		
+		i += 1;
+	}
+	
+	// WIP */
+	
+	let mut iterations = 0;
+	let arg_len = match caller {
+		Some((_, def)) => def.args.len() - def.pos,
+		None => tokens.len()
+	};
+	while *i < tokens.len() && iterations < arg_len { // Ineffective, needs changing
+		match tokens[*i].kind {
+			Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
+				let length = lhs.borrow().len();
+				if def.pos <= length {
+					let mut lhs = lhs.borrow_mut();
+					for token in lhs.drain(length + def.pos - def.args.len()..) {
+						tokens[*i].children.borrow_mut().push(token);
+					}
+				}
+				
+/*				let mut j = 0;
+				while i + j < tokens.len() && j < def.args.len() - def.pos {
+					match tokens[i + j].kind {
+						Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
+							let length = tokens[i].children.borrow().len();
+							if def.pos == length {
+								for token in tokens[i].children.borrow_mut().drain(length - def.args.len() + def.pos..) {
+									tokens[i + j].children.borrow_mut().push(token);
+								}
+							}
+						},
+						
+						_ => ()
+					};
+					
+					tokens[i].children.borrow_mut().push(i + j);
+					
+					j += 1;
+				} */
+				
+				*i += 1;
+				parse_rec(tokens, functions, &tokens[*i].children, Some((*i, def)), i);
+			},
+			
+			Kind::Op(ref op) => {
+				let mut name = op.to_string();
+				let start = *i;
+				while *i < tokens.len() {
+					*i += 1;
+					
+					match tokens[*i].kind {
+						Kind::Op(ref op) => name += op,
+						_ => break
+					}
+				}
+				
+				if let Some(def) = is_defined(functions, &name) {
+					let length = lhs.borrow().len();
+					if def.pos <= length {
+						let mut lhs = lhs.borrow_mut();
+						for token in lhs.drain(length + def.pos - def.args.len()..) {
+							tokens[start].children.borrow_mut().push(token);
+						}
+					}
+					
+					parse_rec(tokens, functions, &tokens[start].children, Some((start, def)), i);
+				}
+			},
+			
+			_ => lhs.borrow_mut().push(*i)
+		};
+		
+		*i += 1;
+		iterations += 1;
+	}
+}
+
 pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, terminals: &mut Vec<usize>, i: &mut usize) {
-	match tokens[*i].kind {
+	if *i == 75 { // DEBUG
+		parse_rec(tokens, functions, &mut RefCell::from(Vec::new()), None, i);
+		println!("{:#?}", &tokens[75..]);
+	}
+	
+/*	match tokens[*i].kind {
 		Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
 			let length = terminals.len();
 			
@@ -621,7 +744,7 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, terminals: &mut Ve
 		
 		Kind::Op(ref op) => {
 			let mut name = op.to_string();
-			loop {
+			while *i < tokens.len() {
 				*i += 1;
 				match tokens[*i].kind {
 					Kind::Op(ref op) => name += op,
@@ -647,7 +770,86 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, terminals: &mut Ve
 		},
 		
 		_ => terminals.push(*i)
-	};
+	}; */
+	
+	// WARNING: TOTAL MESS BELOW
+	
+/*	let mut lowest = *i;
+	let mut lowest_precedence = 255;
+	let mut iterations = 0;
+	let mut j = 0;
+	while *i < 75 {
+		*i += 1;
+	}
+	while *i + j < tokens.len() {
+		if taken.contains(&(*i + j)) {
+			j += 1;
+			continue;
+		}
+		
+		match tokens[*i + j].kind {
+			Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
+				if def.precedence <= lowest_precedence {
+					lowest = *i + j;
+				}
+			} else {
+				j += 1;
+				continue;
+			},
+			
+			Kind::Op(ref op) if op == ";" => {
+				taken.push(lowest);
+				
+				let mut j = 1;
+				while lowest - j > 0 {
+					match tokens[lowest - j].kind {
+						Kind::Op(ref op) if op != ";" => taken.push(lowest - j),
+						_ => break
+					}
+					
+					j += 1;
+				}
+				
+				println!("{:#?}", tokens[lowest]); // DEBUG
+				
+				if iterations > 0 {
+					parse2(tokens, functions, terminals, i, taken);
+				}
+				
+				break;
+			},
+			
+			Kind::Op(ref op) => {
+				let mut name = op.to_string();
+				let mut k = 1;
+				while *i + j + k < tokens.len() {
+					match tokens[*i + j + k].kind {
+						Kind::Op(ref op) => name += op,
+						_ => break
+					}
+					
+					k += 1;
+				}
+				
+				if let Some(def) = is_defined(functions, &name) {
+					if def.precedence <= lowest_precedence {
+						lowest = *i + j;
+					}
+				} else {
+					j += 1;
+					continue;
+				}
+			},
+			
+			_ => {
+				j += 1;
+				continue;
+			}
+		}
+		
+		j += 1;
+		iterations += 1;
+	} */
 }
 
 fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String, taken: &mut Vec<usize>) -> String {

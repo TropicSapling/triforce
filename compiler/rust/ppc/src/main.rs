@@ -155,6 +155,7 @@ fn init() -> i32 {
 	
 	let mut i = 0;
 	let mut terminals = Vec::new();
+//	let mut taken = Vec::new();
 	while i < tokens.len() {
 		parse2(&tokens, &functions, &mut terminals, &mut i);
 		
