@@ -1024,20 +1024,21 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 			offset += 1;
 			continue;
 		} else {
-			tokens[i].children.borrow_mut().push(i - j);
+			tokens[i].children.borrow_mut().insert(0, i - j);
 		}
 		
 		j += 1;
 	}
 	
 	let mut func_name_len = 1;
+	let start = i;
 	while i < tokens.len() {
+		i += 1;
+		
 		match tokens[i].kind {
 			Kind::Op(ref op) => func_name_len += 1,
 			_ => break
 		}
-		
-		i += 1;
 	}
 	
 	j = def.pos + 1;
@@ -1058,7 +1059,7 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 			offset += 1;
 			continue;
 		} else {
-			tokens[i].children.borrow_mut().push(i + j);
+			tokens[start].children.borrow_mut().push(i + j);
 		}
 		
 		j += 1;
@@ -1090,6 +1091,8 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 						Kind::Op(ref op) => {
 							let mut name = op.to_string();
 							let start = *i;
+							
+							*i += 1;
 							while *i < tokens.len() {
 								match tokens[*i].kind {
 									Kind::Op(ref op) => name += op,
@@ -1098,6 +1101,7 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 								
 								*i += 1;
 							}
+							*i -= 1;
 							
 							if let Some(def) = is_defined(functions, &name) {
 								match highest.1 {
@@ -1111,10 +1115,23 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 						
 						_ => ()
 					};
+				} else if let Kind::Op(ref op) = tokens[*i].kind {
+					*i += 1;
+					while *i < tokens.len() {
+						match tokens[*i].kind {
+							Kind::Op(ref op) => (),
+							_ => break
+						}
+						
+						*i += 1;
+					}
+					*i -= 1;
 				}
 				
 				*i += 1;
 			}
+			
+			println!("{:#?}", tokens[highest.0]);
 			
 			match highest.1 {
 				Some(def) => parse_func(tokens, (highest.0, def)),
