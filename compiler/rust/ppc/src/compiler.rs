@@ -1006,10 +1006,29 @@ fn parse_rec(tokens: &Vec<Token>, functions: &Vec<Function>, lhs: &RefCell<Vec<u
 
 fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 	let (mut i, def) = func;
+	let start = i;
 	let mut j = 0;
 	let mut offset = 0;
 	
+	i -= 1;
 	while i - j > 0 && j - offset < def.pos {
+		match tokens[i - j].kind {
+			Kind::Op(ref op) => {
+				j += 1;
+				while i - j > 0 {
+					match tokens[i - j].kind {
+						Kind::Op(ref op) => {
+							j += 1;
+							offset += 1;
+						},
+						_ => break
+					}
+				}
+				j -= 1;
+			},
+			_ => ()
+		};
+		
 		let mut k = 0;
 		while k < tokens.len() {
 			if tokens[k].children.borrow().contains(&(i - j)) {
@@ -1024,27 +1043,24 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 			offset += 1;
 			continue;
 		} else {
-			tokens[i].children.borrow_mut().insert(0, i - j);
+			tokens[start].children.borrow_mut().insert(0, i - j);
 		}
 		
 		j += 1;
 	}
 	
-	let mut func_name_len = 1;
-	let start = i;
+	i += 2;
 	while i < tokens.len() {
-		i += 1;
-		
 		match tokens[i].kind {
-			Kind::Op(ref op) => func_name_len += 1,
+			Kind::Op(ref op) => i += 1,
 			_ => break
 		}
 	}
 	
-	j = def.pos + 1;
+	j = 0;
 	offset = 0;
 	
-	while i + j < tokens.len() && j - offset < def.args.len() + func_name_len {
+	while i + j < tokens.len() && j - offset < def.args.len() - def.pos {
 		let mut k = 0;
 		while k < tokens.len() {
 			if tokens[k].children.borrow().contains(&(i + j)) {
@@ -1061,6 +1077,23 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 		} else {
 			tokens[start].children.borrow_mut().push(i + j);
 		}
+		
+		match tokens[i + j].kind {
+			Kind::Op(ref op) => {
+				j += 1;
+				while i + j < tokens.len() {
+					match tokens[i + j].kind {
+						Kind::Op(ref op) => {
+							j += 1;
+							offset += 1;
+						},
+						_ => break
+					}
+				}
+				j -= 1;
+			},
+			_ => ()
+		};
 		
 		j += 1;
 	}
@@ -1130,8 +1163,6 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 				
 				*i += 1;
 			}
-			
-			println!("{:#?}", tokens[highest.0]);
 			
 			match highest.1 {
 				Some(def) => parse_func(tokens, (highest.0, def)),
