@@ -1007,8 +1007,26 @@ fn parse_rec(tokens: &Vec<Token>, functions: &Vec<Function>, lhs: &RefCell<Vec<u
 fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 	let (mut i, def) = func;
 	let mut j = 0;
+	let mut offset = 0;
 	
-	while i - j > 0 && j < def.pos {
+	while i - j > 0 && j - offset < def.pos {
+		let mut k = 0;
+		while k < tokens.len() {
+			if tokens[k].children.borrow().contains(&(i - j)) {
+				break;
+			}
+			
+			k += 1;
+		}
+		
+		if k < tokens.len() {
+			j += 1;
+			offset += 1;
+			continue;
+		} else {
+			tokens[i].children.borrow_mut().push(i - j);
+		}
+		
 		j += 1;
 	}
 	
@@ -1023,8 +1041,26 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 	}
 	
 	j = def.pos + 1;
+	offset = 0;
 	
-	while i + j < tokens.len() && j < def.args.len() + func_name_len {
+	while i + j < tokens.len() && j - offset < def.args.len() + func_name_len {
+		let mut k = 0;
+		while k < tokens.len() {
+			if tokens[k].children.borrow().contains(&(i + j)) {
+				break;
+			}
+			
+			k += 1;
+		}
+		
+		if k < tokens.len() {
+			j += 1;
+			offset += 1;
+			continue;
+		} else {
+			tokens[i].children.borrow_mut().push(i + j);
+		}
+		
 		j += 1;
 	}
 }
