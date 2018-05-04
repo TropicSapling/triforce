@@ -1444,7 +1444,7 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 			}
 		},
 		
-		Kind::Var(ref name, _) => {
+		Kind::Var(ref name, ref typ) if typ[..] == [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] => {
 			output += name;
 			output += "(";
 			
@@ -1459,6 +1459,33 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 			}
 			
 			output += ")"
+		},
+		
+		Kind::Var(ref name, ref typ) => {
+			use lib::Type::*;
+			
+			output += name;
+			output += ":";
+			output += match typ[0] { // WIP
+				Array => "array",
+				Bool => "bool",
+				Chan => "chan",
+				Char => "char",
+				Const => "const",
+				Fraction => "fraction",
+				Func => "fn",
+				Heap => "heap",
+				Int => "i64",
+				List => "list",
+				Only => "only",
+				Pointer => "&",
+				Register => "register",
+				Stack => "stack",
+				Unique => "unique",
+				Unsigned => "unsigned",
+				Void => "()",
+				Volatile => "volatile"
+			};
 		},
 		
 		Kind::Op(ref op) => {
