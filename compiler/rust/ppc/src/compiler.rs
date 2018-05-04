@@ -1018,7 +1018,7 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 }
 
 fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
-	let mut start = *i;
+	let start = *i;
 	let mut lowest = None;
 	while *i < tokens.len() {
 		let mut highest: Option<(usize, &Function)> = None;
@@ -1434,6 +1434,10 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 	output
 }
 
+fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
+	output // WIP
+}
+
 pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String, taken: &mut Vec<usize>) -> String {
 	use lib::Type::*;
 //	use lib::Whitespace::*;
@@ -1475,6 +1479,13 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			
 			output += &func_name;
 			output += " {";
+			
+			for child in tokens[children[1]].children.borrow().iter() {
+				*i = *child;
+				output = compile_func(tokens, i, output);
+			}
+			
+			output += "};"
 		},
 		
 		_ => ()
