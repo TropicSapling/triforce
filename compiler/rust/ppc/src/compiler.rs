@@ -1435,7 +1435,59 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 }
 
 fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
-	output // WIP
+	match tokens[*i].kind {
+		Kind::Var(ref name, _) => {
+			output += name;
+			output += "(";
+			
+			let args = tokens[*i].children.borrow();
+			for (a, arg) in args.iter().enumerate() {
+				*i = *arg;
+				output = compile_func(tokens, i, output);
+				
+				if a < args.len() - 1 {
+					output += ","
+				}
+			}
+			
+			output += ")"
+		},
+		
+		Kind::Op(ref op) => {
+			let mut name = op.to_string();
+			let start = *i;
+					
+			*i += 1;
+			while *i < tokens.len() {
+				match tokens[*i].kind {
+					Kind::Op(ref op) => name += op,
+					_ => break
+				}
+				
+				*i += 1;
+			}
+			*i -= 1;
+			
+			output += &name;
+			output += "(";
+			
+			let args = tokens[start].children.borrow();
+			for (a, arg) in args.iter().enumerate() {
+				*i = *arg;
+				output = compile_func(tokens, i, output);
+				
+				if a < args.len() - 1 {
+					output += ","
+				}
+			}
+			
+			output += ")"
+		},
+		
+		_ => () // WIP
+	};
+	
+	output
 }
 
 pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String, taken: &mut Vec<usize>) -> String {
@@ -1485,7 +1537,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 				output = compile_func(tokens, i, output);
 			}
 			
-			output += "};"
+			output += "}"
 		},
 		
 		_ => ()
