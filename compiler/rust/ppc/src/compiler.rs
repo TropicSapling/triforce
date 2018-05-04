@@ -1553,16 +1553,63 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			
 			*i = children[0];
 			match tokens[*i].kind {
-				Kind::Var(ref name, _) => func_name += name,
+				Kind::Var(ref name, _) => if name == "init" {
+					func_name += "main";
+				} else {
+					func_name += name;
+				},
+				
 				Kind::Op(ref op) => {
 					// TODO: Convert operators to valid function names, like '+++' -> 'plusplusplus'
 					
-					func_name += op;
+					func_name += match op.as_ref() {
+						"+" => "plus",
+						"-" => "minus",
+						"*" => "times",
+						"/" => "div",
+						"%" => "mod",
+						"=" => "eq",
+						"&" => "and",
+						"|" => "or",
+						"^" => "mod",
+						"<" => "larrow",
+						">" => "rarrow",
+						"!" => "not",
+						"~" => "binnot",
+						"?" => "quest",
+						":" => "colon",
+						"." => "dot",
+						"," => "comma",
+						"@" => "at",
+						";" => "semic",
+						&_ => unreachable!()
+					};
 					
 					*i += 1;
 					while *i < tokens.len() {
 						match tokens[*i].kind {
-							Kind::Op(ref op) => func_name += op,
+							Kind::Op(ref op) => func_name += match op.as_ref() {
+								"+" => "plus",
+								"-" => "minus",
+								"*" => "times",
+								"/" => "div",
+								"%" => "mod",
+								"=" => "eq",
+								"&" => "and",
+								"|" => "or",
+								"^" => "mod",
+								"<" => "larrow",
+								">" => "rarrow",
+								"!" => "not",
+								"~" => "binnot",
+								"?" => "quest",
+								":" => "colon",
+								"." => "dot",
+								"," => "comma",
+								"@" => "at",
+								";" => "semic",
+								&_ => unreachable!()
+							},
 							_ => break
 						}
 						
@@ -1570,6 +1617,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 					}
 					*i -= 1;
 				},
+				
 				_ => unreachable!()
 			};
 			
