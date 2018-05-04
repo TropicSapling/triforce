@@ -918,92 +918,6 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	functions
 }
 
-fn parse_rec(tokens: &Vec<Token>, functions: &Vec<Function>, lhs: &RefCell<Vec<usize>>, caller: Option<(usize, &Function)>, i: &mut usize) {
-	// WIP
-	
-	let mut iterations = 0;
-	let arg_len = match caller {
-		Some((_, def)) => def.args.len() - def.pos,
-		None => tokens.len()
-	};
-	while *i < tokens.len() && iterations < arg_len { // Ineffective, needs changing
-		match tokens[*i].kind {
-			Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
-				let length = lhs.borrow().len();
-				if def.pos <= length {
-					let mut lhs = lhs.borrow_mut();
-					for token in lhs.drain(length + def.pos - def.args.len()..) {
-						tokens[*i].children.borrow_mut().push(token);
-					}
-					
-					lhs.push(*i);
-				}
-				
-/*				let mut j = 0;
-				while i + j < tokens.len() && j < def.args.len() - def.pos {
-					match tokens[i + j].kind {
-						Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
-							let length = tokens[i].children.borrow().len();
-							if def.pos == length {
-								for token in tokens[i].children.borrow_mut().drain(length - def.args.len() + def.pos..) {
-									tokens[i + j].children.borrow_mut().push(token);
-								}
-							}
-						},
-						
-						_ => ()
-					};
-					
-					tokens[i].children.borrow_mut().push(i + j);
-					
-					j += 1;
-				} */
-				
-				*i += 1;
-				if def.pos != def.args.len() {
-					parse_rec(tokens, functions, &tokens[*i].children, Some((*i, def)), i);
-					*i -= 1;
-				}
-			},
-			
-			Kind::Op(ref op) => {
-				let mut name = op.to_string();
-				let start = *i;
-				while *i < tokens.len() {
-					*i += 1;
-					
-					match tokens[*i].kind {
-						Kind::Op(ref op) => name += op,
-						_ => break
-					}
-				}
-				
-				if let Some(def) = is_defined(functions, &name) {
-					let length = lhs.borrow().len();
-					if def.pos <= length {
-						let mut lhs = lhs.borrow_mut();
-						for token in lhs.drain(length + def.pos - def.args.len()..) {
-							tokens[start].children.borrow_mut().push(token);
-						}
-						
-						lhs.push(start);
-					}
-					
-					if def.pos != def.args.len() {
-						parse_rec(tokens, functions, &tokens[start].children, Some((start, def)), i);
-						*i -= 1;
-					}
-				}
-			},
-			
-			_ => lhs.borrow_mut().push(*i)
-		};
-		
-		*i += 1;
-		iterations += 1;
-	}
-}
-
 fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 	let (mut i, def) = func;
 	let start = i;
@@ -1031,8 +945,10 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 		
 		let mut k = 0;
 		while k < tokens.len() {
-			if tokens[k].children.borrow().contains(&(i - j)) {
-				break;
+			if let Ok(children) = tokens[k].children.try_borrow() {
+				if children.contains(&(i - j)) {
+					break;
+				}
 			}
 			
 			k += 1;
@@ -1063,8 +979,10 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 	while i + j < tokens.len() && j - offset < def.args.len() - def.pos {
 		let mut k = 0;
 		while k < tokens.len() {
-			if tokens[k].children.borrow().contains(&(i + j)) {
-				break;
+			if let Ok(children) = tokens[k].children.try_borrow() {
+				if children.contains(&(i + j)) {
+					break;
+				}
 			}
 			
 			k += 1;
@@ -1099,78 +1017,94 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 	}
 }
 
-pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
-	if *i == 75 { // DEBUG
-//		parse_rec(tokens, functions, &mut RefCell::from(Vec::new()), None, i);
-		
-		let mut start = *i;
+fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
+	let mut start = *i;
+	let mut lowest = None;
+	while *i < tokens.len() {
+		let mut highest: Option<(usize, &Function)> = None;
+		*i = start;
 		while *i < tokens.len() {
-			let mut highest: (usize, Option<&Function>) = (0, None);
-			*i = start;
-			while *i < tokens.len() {
-				if tokens[*i].children.borrow().len() < 1 {
-					match tokens[*i].kind {
-						Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
-							match highest.1 {
-								Some(def2) => if def.precedence > def2.precedence {
-									highest = (*i, Some(def));
-								},
-								None => highest = (*i, Some(def))
-							};
-						},
-						
-						Kind::Op(ref op) if op == ";" => break,
-						
-						Kind::Op(ref op) => {
-							let mut name = op.to_string();
-							let start = *i;
-							
-							*i += 1;
-							while *i < tokens.len() {
-								match tokens[*i].kind {
-									Kind::Op(ref op) => name += op,
-									_ => break
-								}
-								
-								*i += 1;
-							}
-							*i -= 1;
-							
-							if let Some(def) = is_defined(functions, &name) {
-								match highest.1 {
-									Some(def2) => if def.precedence > def2.precedence {
-										highest = (start, Some(def));
-									},
-									None => highest = (start, Some(def))
-								};
-							}
-						},
-						
-						_ => ()
-					};
-				} else if let Kind::Op(ref op) = tokens[*i].kind {
-					*i += 1;
-					while *i < tokens.len() {
-						match tokens[*i].kind {
-							Kind::Op(ref op) => (),
-							_ => break
-						}
+			if tokens[*i].children.borrow().len() < 1 {
+				match tokens[*i].kind {
+					Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
+						match highest {
+							Some(func) => if def.precedence > func.1.precedence {
+								highest = Some((*i, def));
+							},
+							None => highest = Some((*i, def))
+						};
+					},
+					
+					Kind::Op(ref op) if op == ";" => break,
+					Kind::GroupOp(ref op) if op == "}" => break,
+					
+					Kind::Op(ref op) => {
+						let mut name = op.to_string();
+						let start = *i;
 						
 						*i += 1;
-					}
-					*i -= 1;
-				}
-				
+						while *i < tokens.len() {
+							match tokens[*i].kind {
+								Kind::Op(ref op) => name += op,
+								_ => break
+							}
+							
+							*i += 1;
+						}
+						*i -= 1;
+						
+						if let Some(def) = is_defined(functions, &name) {
+							match highest {
+								Some(func) => if def.precedence > func.1.precedence {
+									highest = Some((start, def));
+								},
+								None => highest = Some((start, def))
+							};
+						}
+					},
+					
+					_ => ()
+				};
+			} else if let Kind::Op(ref op) = tokens[*i].kind {
 				*i += 1;
+				while *i < tokens.len() {
+					match tokens[*i].kind {
+						Kind::Op(ref op) => (),
+						_ => break
+					}
+					
+					*i += 1;
+				}
+				*i -= 1;
 			}
 			
-			match highest.1 {
-				Some(def) => parse_func(tokens, (highest.0, def)),
-				None => break
-			};
+			*i += 1;
 		}
 		
-		println!("{:#?}", &tokens[75..]);
+		match highest {
+			Some(func) => {
+				lowest = Some(func.0);
+				parse_func(tokens, func);
+			},
+			None => break
+		};
+	}
+	
+	lowest
+}
+
+pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
+	match tokens[*i].kind {
+		Kind::GroupOp(ref op) if op == "{" => {
+			let mut body = tokens[*i].children.borrow_mut();
+			*i += 1;
+			
+			if let Some(token) = parse_statement(tokens, functions, i) {
+				body.push(token);
+			}
+		},
+		
+		_ => ()
 	}
 	
 /*	match tokens[*i].kind {

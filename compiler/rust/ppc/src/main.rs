@@ -149,9 +149,6 @@ fn init() -> i32 {
 	let func_name_b = String::from("b");
 	
 	let functions = parse(&tokens, &func_name_a, &func_name_b);
-	if debugging {
-		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
-	}
 	
 	let mut i = 0;
 //	let mut terminals = Vec::new();
@@ -160,6 +157,10 @@ fn init() -> i32 {
 		parse2(&tokens, &functions, &mut i);
 		
 		i += 1;
+	}
+	
+	if debugging {
+		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
 	let mut out_contents = String::new();
