@@ -1436,6 +1436,14 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 
 fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
+		Kind::Number(int, fraction) => {
+			output += &int.to_string();
+			if fraction != 0 {
+				output += ".";
+				output += &fraction.to_string();
+			}
+		},
+		
 		Kind::Var(ref name, _) => {
 			output += name;
 			output += "(";
@@ -1535,6 +1543,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			for child in tokens[children[1]].children.borrow().iter() {
 				*i = *child;
 				output = compile_func(tokens, i, output);
+				output += ";"
 			}
 			
 			output += "}"
