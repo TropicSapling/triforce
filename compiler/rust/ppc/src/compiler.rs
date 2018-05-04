@@ -1540,7 +1540,11 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			output += &func_name;
 			output += "(";
 			
-			// WIP
+			for child in tokens[children[0]].children.borrow().iter() {
+				*i = *child;
+				output = compile_func(tokens, i, output);
+				output += ","
+			}
 			
 			output += "){";
 			
