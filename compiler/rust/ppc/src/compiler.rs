@@ -1440,7 +1440,46 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 	
 	let children = tokens[*i].children.borrow();
 	
-	output = compile_token(tokens, functions, i, func_def, output, taken);
+//	output = compile_token(tokens, functions, i, func_def, output, taken);
+	
+	use lib::Kind::*;
+	
+	match tokens[*i].kind {
+		Type(ref typ) if typ == &Func => {
+			output += "fn ";
+			
+			let children = tokens[*i].children.borrow();
+			let mut func_name = String::new();
+			
+			*i = children[0];
+			match tokens[*i].kind {
+				Kind::Var(ref name, _) => func_name += name,
+				Kind::Op(ref op) => {
+					// TODO: Convert operators to valid function names, like '+++' -> 'plusplusplus'
+					
+					func_name += op;
+					
+					*i += 1;
+					while *i < tokens.len() {
+						match tokens[*i].kind {
+							Kind::Op(ref op) => func_name += op,
+							_ => break
+						}
+						
+						*i += 1;
+					}
+					*i -= 1;
+				},
+				_ => unreachable!()
+			};
+			
+			output += &func_name;
+			output += " {";
+		},
+		
+		_ => ()
+	}
+	
 	return output;
 	
 	// OUTDATED CODE BELOW (intentionally unreachable)
