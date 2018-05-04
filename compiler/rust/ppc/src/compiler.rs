@@ -1538,7 +1538,11 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			};
 			
 			output += &func_name;
-			output += " {";
+			output += "(";
+			
+			// WIP
+			
+			output += "){";
 			
 			for child in tokens[children[1]].children.borrow().iter() {
 				*i = *child;
