@@ -1498,13 +1498,55 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 		},
 		
 		Kind::Op(ref op) => {
-			let mut name = op.to_string();
+			let mut name = match op.as_ref() {
+				"+" => "plus",
+				"-" => "minus",
+				"*" => "times",
+				"/" => "div",
+				"%" => "mod",
+				"=" => "eq",
+				"&" => "and",
+				"|" => "or",
+				"^" => "mod",
+				"<" => "larrow",
+				">" => "rarrow",
+				"!" => "not",
+				"~" => "binnot",
+				"?" => "quest",
+				":" => "colon",
+				"." => "dot",
+				"," => "comma",
+				"@" => "at",
+				";" => "semic",
+				&_ => unreachable!()
+			}.to_string();
 			let start = *i;
 					
 			*i += 1;
 			while *i < tokens.len() {
 				match tokens[*i].kind {
-					Kind::Op(ref op) => name += op,
+					Kind::Op(ref op) => name += match op.as_ref() {
+						"+" => "plus",
+						"-" => "minus",
+						"*" => "times",
+						"/" => "div",
+						"%" => "mod",
+						"=" => "eq",
+						"&" => "and",
+						"|" => "or",
+						"^" => "mod",
+						"<" => "larrow",
+						">" => "rarrow",
+						"!" => "not",
+						"~" => "binnot",
+						"?" => "quest",
+						":" => "colon",
+						"." => "dot",
+						"," => "comma",
+						"@" => "at",
+						";" => "semic",
+						&_ => unreachable!()
+					},
 					_ => break
 				}
 				
