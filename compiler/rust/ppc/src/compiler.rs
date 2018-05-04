@@ -1466,26 +1466,35 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 			
 			output += name;
 			output += ":";
-			output += match typ[0] { // WIP
-				Array => "array",
-				Bool => "bool",
-				Chan => "chan",
-				Char => "char",
-				Const => "const",
-				Fraction => "fraction",
-				Func => "fn",
-				Heap => "heap",
-				Int => "i64",
-				List => "list",
-				Only => "only",
-				Pointer => "&",
-				Register => "register",
-				Stack => "stack",
-				Unique => "unique",
-				Unsigned => "unsigned",
-				Void => "()",
-				Volatile => "volatile"
-			};
+			
+			let mut unsigned = false;
+			
+			for t in typ {
+				match *t {
+					Array => (), // WIP
+					Bool => output += "bool",
+					Chan => (), // WIP
+					Char => output += "char",
+					Const => output += "const",
+					Fraction => (), // WIP
+					Func => output += "fn",
+					Heap => (), // WIP
+					Int => if unsigned {
+						output += "usize";
+					} else {
+						output += "isize";
+					},
+					List => (), // WIP
+					Only => (), // WIP
+					Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
+					Register => (), // WIP
+					Stack => (), // WIP
+					Unique => (), // WIP
+					Unsigned => unsigned = true,
+					Void => output += "()",
+					Volatile => (), // WIP
+				}
+			}
 		},
 		
 		Kind::Op(ref op) => {
