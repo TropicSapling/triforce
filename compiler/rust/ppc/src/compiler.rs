@@ -940,6 +940,13 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 				}
 				j -= 1;
 			},
+			
+			Kind::GroupOp(_) => {
+				j += 1;
+				offset += 1;
+				continue;
+			}
+			
 			_ => ()
 		};
 		
@@ -1021,17 +1028,18 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	let start = *i;
 	let mut lowest = None;
 	while *i < tokens.len() {
-		let mut highest: Option<(usize, &Function)> = None;
+		let mut highest: Option<(usize, &Function, u8)> = None;
+		let mut depth = 0;
 		*i = start;
 		while *i < tokens.len() {
 			if tokens[*i].children.borrow().len() < 1 {
 				match tokens[*i].kind {
 					Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
 						match highest {
-							Some(func) => if def.precedence > func.1.precedence {
-								highest = Some((*i, def));
+							Some(func) => if (def.precedence > func.1.precedence && depth == func.2) || depth > func.2 {
+								highest = Some((*i, def, depth));
 							},
-							None => highest = Some((*i, def))
+							None => highest = Some((*i, def, depth))
 						};
 					},
 					
@@ -1055,13 +1063,16 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						
 						if let Some(def) = is_defined(functions, &name) {
 							match highest {
-								Some(func) => if def.precedence > func.1.precedence {
-									highest = Some((start, def));
+								Some(func) => if (def.precedence > func.1.precedence && depth == func.2) || depth > func.2 {
+									highest = Some((start, def, depth));
 								},
-								None => highest = Some((start, def))
+								None => highest = Some((start, def, depth))
 							};
 						}
 					},
+					
+					Kind::GroupOp(ref op) if op == "(" => depth += 1,
+					Kind::GroupOp(ref op) if op == ")" => depth -= 1,
 					
 					_ => ()
 				};
@@ -1084,7 +1095,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 		match highest {
 			Some(func) => {
 				lowest = Some(func.0);
-				parse_func(tokens, func);
+				parse_func(tokens, (func.0, func.1));
 			},
 			None => break
 		};

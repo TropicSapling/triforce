@@ -45,7 +45,7 @@ func (int a) (int b) --- (int c) (int d) -> int {
 }
 
 func init {
-	1 2 +++ 3 * 4 5++ 6 --- 7 8 println;
+	(1 2 +++ 3 * 4 5)++ 6 --- 7 8 println;
 }
 
 /*
