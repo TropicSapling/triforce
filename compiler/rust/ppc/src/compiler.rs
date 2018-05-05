@@ -372,6 +372,33 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				func = false;
 				
 				tokens[func_pos].children.borrow_mut().push(i);
+				i += 1;
+				
+				let mut nests = 0;
+				while i < tokens.len() {
+					match tokens[i].kind {
+						Kind::Var(ref name, ref mut typ) => {
+							for arg in &functions[last_item].args {
+								if arg.name == name {
+									*typ = arg.typ.clone();
+									break;
+								}
+							}
+						},
+						
+						Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
+							nests -= 1;
+						} else {
+							break;
+						},
+						
+						Kind::GroupOp(ref op) if op == "{" => nests += 1,
+						
+						_ => ()
+					}
+					
+					i += 1;
+				}
 			},
 			
 			_ => ()
