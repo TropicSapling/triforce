@@ -116,7 +116,19 @@ fn init() -> i32 {
 		Ok(t) => t
 	};
 	
-	let mut in_contents = String::new();
+	let mut in_contents = String::from("
+/*		func (int a) + (int b) -> int;
+		func (int a) - (int b) -> int;
+		func (int a) * (int b) -> int;
+		func (int a) / (int b) -> int;
+		func (int a) % (int b) -> int; */
+		func (int a) ++ -> int {
+			a + 1 // TMP
+		}
+		func (int a) -- -> int {
+			a - 1 // TMP
+		}
+	");
 	
 	match in_file.read_to_string(&mut in_contents) {
 		Ok(t) => t,

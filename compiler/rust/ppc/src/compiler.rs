@@ -310,7 +310,8 @@ fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a
 }
 
 pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a str) -> Vec<Function<'a>> {
-	let mut functions: Vec<Function> = def_builtin_funcs!(func_par_a, func_par_b);
+//	let mut functions: Vec<Function> = def_builtin_funcs!(func_par_a, func_par_b);
+	let mut functions: Vec<Function> = Vec::new();
 	let mut func = false;
 	let mut func_pos = 0;
 	let mut func_args = Vec::new();
@@ -1601,14 +1602,17 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 				match tokens[*i].kind {
 					Kind::Op(ref op) => name += match op.as_ref() {
 						"+" => "plus",
-						"-" => "minus",
+						"-" => match tokens[*i + 1].kind {
+							Kind::Op(ref op) if op == ">" => break,
+							_ => "minus"
+						},
 						"*" => "times",
 						"/" => "div",
 						"%" => "mod",
 						"=" => "eq",
 						"&" => "and",
 						"|" => "or",
-						"^" => "mod",
+						"^" => "xor",
 						"<" => "larrow",
 						">" => "rarrow",
 						"!" => "not",
@@ -1628,20 +1632,45 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 			}
 			*i -= 1;
 			
-			output += &name;
-			output += "(";
-			
 			let args = tokens[start].children.borrow();
-			for (a, arg) in args.iter().enumerate() {
-				*i = *arg;
+			
+			if name == "plus" || name == "minus" || name == "times" || name == "div" || name == "mod" || name == "eq" || name == "eqeq" || name == "andand" || name == "or" || name == "oror" || name == "larrow" || name == "rarrow" {
+				*i = args[0];
 				output = compile_func(tokens, i, output);
 				
-				if a < args.len() - 1 {
-					output += ","
+				output += match name.as_ref() {
+					"plus" => "+",
+					"minus" => "-",
+					"times" => "*",
+					"div" => "/",
+					"mod" => "%",
+					"eq" => "=",
+					"eqeq" => "==",
+					"andand" => "&&",
+					"or" => "|",
+					"oror" => "||",
+					"larrow" => "<",
+					"rarrow" => ">",
+					&_ => unreachable!()
+				};
+				
+				*i = args[1];
+				output = compile_func(tokens, i, output);
+			} else {
+				output += &name;
+				output += "(";
+				
+				for (a, arg) in args.iter().enumerate() {
+					*i = *arg;
+					output = compile_func(tokens, i, output);
+					
+					if a < args.len() - 1 {
+						output += ","
+					}
 				}
+				
+				output += ")";
 			}
-			
-			output += ")"
 		},
 		
 		_ => () // WIP
