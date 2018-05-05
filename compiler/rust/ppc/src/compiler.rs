@@ -1046,6 +1046,11 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 }
 
 fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
+	match tokens[*i + 1].kind {
+		Kind::GroupOp(ref op) if op == "}" => return Some(*i),
+		_ => ()
+	};
+	
 	let start = *i;
 	let mut lowest = None;
 	while *i < tokens.len() {
@@ -1712,15 +1717,20 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			
 			*i = children[0];
 			output = compile_func(tokens, i, output);
-			output += "{";
 			
-			for child in tokens[children[1]].children.borrow().iter() {
-				*i = *child;
-				output = compile_func(tokens, i, output);
-				output += ";"
+			if children.len() > 1 {
+				output += "{";
+				
+				for statement in tokens[children[1]].children.borrow().iter() {
+					*i = *statement;
+					output = compile_func(tokens, i, output);
+					output += ";"
+				}
+				
+				output += "}";
+			} else {
+				output += ";";
 			}
-			
-			output += "}"
 		},
 		
 		_ => ()

@@ -32,16 +32,20 @@ func init {
 [println: [pow3], pow: [4, 5], pow2: [pow, 6], pow3: [pow2, 7]]
 */
 
+func (int i) print; // Just to test that functions without a body also work
+
 func (int i) println {
 	
 }
 
 func (int a) (int b) +++ (int c) (int d) -> int {
-	a + b + c + d
+//	a + b + c + d
+	123
 }
 
 func (int a) (int b) --- (int c) (int d) -> int {
-	a + b - c - d
+//	a + b - c - d
+	456
 }
 
 func init {
