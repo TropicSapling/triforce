@@ -1,9 +1,4 @@
-use std::cell::RefCell;
 use lib::{Token, Kind, Type, Function, FunctionArg};
-
-/* macro_rules! last {
-	($e:expr) => ($e[$e.len() - 1]);
-} */
 
 macro_rules! is_kind {
 	($lhs_kind:expr, $rhs_kind:pat) => (match $lhs_kind {
@@ -92,36 +87,6 @@ macro_rules! get_val2 {
 			Var(ref name, _) => name.to_string()
 		}
 	});
-}
-
-macro_rules! is_val {
-	($e:expr, $pattern:pat, $var:expr, $val:expr) => ({
-		match $e {
-			$pattern => $var == $val,
-			_ => false
-		}
-	});
-}
-
-macro_rules! group_expr {
-	($start:expr, $end:expr, $tokens:expr, $token:expr, $i:expr) => ({
-		let mut j = 1;
-		let mut nests = 0;
-		while $i + j < $tokens.len() && (nests > 0 || !is_val!($tokens[$i + j].kind, Kind::GroupOp(ref val), val, $end)) {
-			(*$token.children.borrow_mut()).push($i + j);
-			
-			match $tokens[$i + j].kind {
-				Kind::GroupOp(ref val) => match val.as_ref() {
-					$start => nests += 1,
-					$end => nests -= 1,
-					&_ => ()
-				},
-				_ => ()
-			}
-			
-			j += 1;
-		}
-	})
 }
 
 macro_rules! def_builtin_funcs {
@@ -230,49 +195,6 @@ macro_rules! def_builtin_funcs {
 	])
 }
 
-/* fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
-	let mut j: usize = 0;
-	while {
-		j += 1;
-		
-		i + j < tokens.len() && is_kind!(tokens[i + j].kind, Kind::Whitespace(_))
-	} {}
-	
-	if i + j < tokens.len() {
-		j
-	} else {
-		0
-	}
-}
-
-fn prev(tokens: &Vec<Token>, i: usize) -> usize {
-	let mut j: usize = 0;
-	while {
-		j += 1;
-		
-		i - j > 0 && is_kind!(tokens[i - j].kind, Kind::Whitespace(_)) // MAY NEED CHANGING
-	} {}
-	
-	if i - j > 0 {
-		j
-	} else {
-		0
-	}
-} */
-
-/* fn group(tokens: &mut Vec<Token>, i: &mut usize, op: &'static str, op_close: &'static str) {
-	let mut tok_str = String::from(op);
-	
-	while !is_val!(tokens[*i].kind, Kind::GroupOp(ref val), val, op_close) {
-		*i += 1;
-		tok_str = compile(tokens, i, tok_str);
-	}
-	
-	tokens[*i].kind = Kind::Var(tok_str, Type::Void);
-	
-	*i -= 1;
-} */
-
 fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a>> {
 	for def in defs {
 		if def.name == call {
@@ -285,7 +207,6 @@ fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a
 
 pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a str) -> Vec<Function<'a>> {
 	let mut functions: Vec<Function> = def_builtin_funcs!(func_par_a, func_par_b);
-//	let mut functions: Vec<Function> = Vec::new();
 	let mut func = false;
 	let mut func_pos = 0;
 	let mut func_args = Vec::new();
@@ -294,10 +215,6 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	// STAGE 1: DEFINE FUNCTIONS (this is done in a separate loop to allow function definitions to be placed both before and after function calls)
 	let mut i = 0;
 	while i < tokens.len() {
-/*		if is_kind!(token.kind, Kind::Whitespace(_)) {
-			continue; // Ignore whitespace
-		} */
-		
 		let token = &tokens[i];
 		
 		let mut last_item = functions.len();
@@ -306,10 +223,6 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 		}
 		
 		match token.kind {
-/*			Kind::Whitespace(ref typ) => if func {
-				tokens[func_pos].children.borrow_mut().push(i);
-			}, */
-			
 			Kind::Type(ref typ) if !func => match typ {
 				&Type::Func => {
 					functions.push(Function {name: String::from(""), pos: 0, args: vec![], precedence: 0, output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
@@ -335,7 +248,6 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 			} else { // Function args
 				functions[last_item].args.push(FunctionArg {name, typ: typ.clone()});
 				func_args.push(i);
-//				par_type = typ.clone();
 			},
 			
 			Kind::Op(ref op) if func => if op == "-" {
@@ -425,518 +337,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 		}
 		
 		i += 1;
-		
-/*		if is_val!(token.kind, Kind::Type(ref val), val, &Type::Func) {
-			functions.push(Function {name: "", pos: 0, args: vec![], precedence: 0, output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
-			func_pos = i;
-			func = true;
-		} else if func {
-			if match token.kind {
-				Kind::GroupOp(ref val) => val == "{", // Function body
-				Kind::Op(ref val) => val == ";", // End of function declaration
-				_ => false
-			} {
-				functions[last_item].output = par_type.clone();
-				if par_type[0] != Type::Void {
-					functions[last_item].precedence = 1;
-				}
-				
-				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
-				type_i = 0;
-				func = false;
-			} else if is_kind!(token.kind, Kind::Type(_)) { // Parameter / return types
-				let val = match token.kind {
-					Kind::Type(ref val) => val,
-					_ => &Type::Void
-				};
-				par_type[type_i] = val.clone();
-				type_i += 1;
-			} else if par_type[0] != Type::Void {
-				let name = match token.kind {
-					Kind::Var(ref name, _) => name,
-					_ => panic!("")
-				};
-				functions[last_item].args.push(FunctionArg {name: name, typ: par_type});
-				
-				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
-				type_i = 0;
-			} else if functions[last_item].name == "" && (is_kind!(token.kind, Kind::Var(_,_)) || is_kind!(token.kind, Kind::Op(_))) { // Function name
-				let name = match token.kind {
-					Kind::Var(ref name, _) => name,
-					_ => panic!("")
-				};
-				functions[last_item].name = name;
-				functions[last_item].pos = functions[last_item].args.len();
-				
-				tokens[func_pos].children.borrow_mut().push(i);
-			} else if get_val!(token.kind) == "-" || get_val!(token.kind) == ">" {
-				tokens[func_pos].children.borrow_mut().push(i);
-			}
-		} */
 	}
-	
-/*	// STAGE 2: ORGANISE FUNCTION CALLS
-	let mut i = 0;
-	while i < tokens.len() {
-		let token = &tokens[i];
-		
-		match token.kind {
-			Kind::Var(ref val, _) => if let Some(def) = is_defined(&functions, &val) {
-				if def.pos > 0 {
-					let mut j = 0;
-					let mut k = 0;
-					while i - j > 0 && j - k < def.pos && !is_val!(tokens[i - j].kind, Kind::Op(ref val), val, ";") { // NOTE: comparison may need to be changed
-//						j += prev(&tokens, i - j);
-						j += 1;
-						
-						match tokens[i - j].kind { // NEEDS FIXING; will not correctly parse args with parentheses
-							Kind::GroupOp(ref op) => {
-								let mut nests = 0;
-								let start_op = match op.as_ref() {
-									")" => "(",
-									"}" => "{",
-									"]" => "[",
-									&_ => unreachable!()
-								};
-								
-/*								let prev_tok = prev(&tokens, i - j);
-								j += prev_tok;
-								k += prev_tok; */
-								j += 1;
-								k += 1;
-								while i - j > 0 && (nests > 0 || !is_val!(tokens[i - j].kind, Kind::GroupOp(ref val), val, start_op)) {
-									match tokens[i - j].kind {
-										Kind::GroupOp(ref val) => if val == op {
-											nests += 1;
-										} else if val == start_op {
-											nests -= 1;
-										},
-										_ => ()
-									}
-									
-/*									let prev_tok = prev(&tokens, i - j);
-									j += prev_tok;
-									k += prev_tok; */
-									j += 1;
-									k += 1;
-								}
-								
-								(*token.children.borrow_mut()).push(i - j);
-							},
-							
-							_ => while i - j > 0 {
-								match tokens[i - j].kind {
-									Kind::Var(ref val, _) => if let Some(def) = is_defined(&functions, &val) {
-										j += def.pos + 1;
-										k += def.pos + 1;
-									},
-									
-									Kind::Op(ref val) => {
-										let mut name = val.to_string();
-										while i - j > 0 {
-											j += 1;
-											k += 1;
-											
-											match tokens[i].kind {
-												Kind::Op(ref op) => name += op,
-												_ => break
-											}
-										}
-										
-										if let Some(def) = is_defined(&functions, &name) {
-											j += def.pos + 1;
-											k += def.pos + 1;
-										}
-									},
-									
-									_ => {
-										(*token.children.borrow_mut()).push(i - j);
-										break;
-									}
-								};
-							}
-						}
-					}
-					
-					(*token.children.borrow_mut()).reverse(); // Quick fix to backwards vector, preferably fix this in a better way in the future to improve performance (and possibly also code readability)
-				}
-				
-				let mut j = 0;
-				let mut k = 0;
-				while i + j + k < tokens.len() && j < def.args.len() - def.pos && !is_val!(tokens[i + j + k].kind, Kind::Op(ref val), val, ";") {
-					j += 1;
-					
-					while i + j + k < tokens.len() {
-						match tokens[i + j + k].kind {
-							Kind::Var(ref val, _) => if let Some(def) = is_defined(&functions, &val) {
-								j += def.pos + 1;
-							},
-							
-							Kind::Op(ref val) => {
-								let mut name = val.to_string();
-								while i + j + k < tokens.len() {
-									j += 1;
-									
-									match tokens[i].kind {
-										Kind::Op(ref op) => name += op,
-										_ => break
-									}
-								}
-								
-								if let Some(def) = is_defined(&functions, &name) {
-									j += def.pos + 1;
-								}
-							},
-							
-							_ => {
-								(*token.children.borrow_mut()).push(i + j + k);
-								break;
-							}
-						};
-					}
-					
-					match tokens[i + j + k].kind { // NEEDS FIXING; will not correctly parse args with parentheses
-						Kind::GroupOp(ref op) => {
-							let mut nests = 0;
-							let end_op = match op.as_ref() {
-								"(" => ")",
-								"{" => "}",
-								"[" => "]",
-								&_ => panic!("{}:{} Unexpected '{}'", tokens[i + j + k].pos.line, tokens[i + j + k].pos.col, op)
-							};
-							
-							k += 1;
-							while i + j + k < tokens.len() && (nests > 0 || !is_val!(tokens[i + j + k].kind, Kind::GroupOp(ref val), val, end_op)) {
-								match tokens[i + j + k].kind {
-									Kind::GroupOp(ref val) => if val == op {
-										nests += 1;
-									} else if val == end_op {
-										nests -= 1;
-									},
-									_ => ()
-								}
-								
-								k += 1;
-							}
-						},
-						_ => ()
-					}
-				}
-			},
-			
-			Kind::Op(ref val) => {
-				let mut name = val.to_string();
-				let start = i;
-				while i < tokens.len() {
-					i += 1;
-					
-					match tokens[i].kind {
-						Kind::Op(ref op) => name += op,
-						_ => break
-					}
-				}
-				
-				if let Some(def) = is_defined(&functions, &name) {
-					if def.pos > 0 {
-						let mut j = 0;
-						let mut k = 0;
-						while start - j > 0 && j - k < def.pos && !is_val!(tokens[start - j].kind, Kind::Op(ref val), val, ";") { // NOTE: comparison may need to be changed
-	//						j += prev(&tokens, i - j);
-							j += 1;
-							
-							match tokens[start - j].kind { // NEEDS FIXING; will not correctly parse args with parentheses
-								Kind::GroupOp(ref op) => {
-									let mut nests = 0;
-									let start_op = match op.as_ref() {
-										")" => "(",
-										"}" => "{",
-										"]" => "[",
-										&_ => unreachable!()
-									};
-									
-	/*								let prev_tok = prev(&tokens, i - j);
-									j += prev_tok;
-									k += prev_tok; */
-									j += 1;
-									k += 1;
-									while start - j > 0 && (nests > 0 || !is_val!(tokens[start - j].kind, Kind::GroupOp(ref val), val, start_op)) {
-										match tokens[start - j].kind {
-											Kind::GroupOp(ref val) => if val == op {
-												nests += 1;
-											} else if val == start_op {
-												nests -= 1;
-											},
-											_ => ()
-										}
-										
-	/*									let prev_tok = prev(&tokens, i - j);
-										j += prev_tok;
-										k += prev_tok; */
-										j += 1;
-										k += 1;
-									}
-									
-									(*token.children.borrow_mut()).push(start - j);
-								},
-								
-								_ => while start - j > 0 {
-									match tokens[start - j].kind {
-										Kind::Var(ref val, _) => if let Some(def) = is_defined(&functions, &val) {
-											j += def.pos + 1;
-											k += def.pos + 1;
-										} else {
-											(*token.children.borrow_mut()).push(start - j);
-											break;
-										},
-										
-										Kind::Op(ref val) => {
-											let mut name = val.to_string();
-											while start - j > 0 {
-												j += 1;
-												k += 1;
-												
-												match tokens[start].kind {
-													Kind::Op(ref op) => name += op,
-													_ => break
-												}
-											}
-											
-											if let Some(def) = is_defined(&functions, &name) {
-												j += def.pos + 1;
-												k += def.pos + 1;
-											}
-										},
-										
-										_ => {
-											(*token.children.borrow_mut()).push(start - j);
-											break;
-										}
-									};
-								}
-							}
-						}
-						
-						(*token.children.borrow_mut()).reverse(); // Quick fix to backwards vector, preferably fix this in a better way in the future to improve performance (and possibly also code readability)
-					}
-					
-					let mut j = 0;
-					let mut k = 0;
-					i -= 1;
-					while i + j + k < tokens.len() && j < def.args.len() - def.pos && !is_val!(tokens[i + j + k].kind, Kind::Op(ref val), val, ";") {
-						j += 1;
-						
-						while i + j + k < tokens.len() {
-							match tokens[i + j + k].kind {
-								Kind::Var(ref val, _) => if let Some(def) = is_defined(&functions, &val) {
-									j += def.pos;
-								} else {
-									(*token.children.borrow_mut()).push(i + j + k);
-									break;
-								},
-								
-								Kind::Op(ref val) => {
-									let mut name = val.to_string();
-									while i + j + k < tokens.len() {
-										j += 1;
-										
-										match tokens[i].kind {
-											Kind::Op(ref op) => name += op,
-											_ => break
-										}
-									}
-									
-									if let Some(def) = is_defined(&functions, &name) {
-										j += def.pos - 1;
-									}
-								},
-								
-								_ => {
-									(*token.children.borrow_mut()).push(i + j + k);
-									break;
-								}
-							};
-						}
-						
-						if i + j + k >= tokens.len() {
-							break;
-						}
-						
-						match tokens[i + j + k].kind { // NEEDS FIXING; will not correctly parse args with parentheses
-							Kind::GroupOp(ref op) => {
-								let mut nests = 0;
-								let end_op = match op.as_ref() {
-									"(" => ")",
-									"{" => "}",
-									"[" => "]",
-									&_ => panic!("{}:{} Unexpected '{}'", tokens[i + j + k].pos.line, tokens[i + j + k].pos.col, op)
-								};
-								
-								k += 1;
-								while i + j + k < tokens.len() && (nests > 0 || !is_val!(tokens[i + j + k].kind, Kind::GroupOp(ref val), val, end_op)) {
-									match tokens[i + j + k].kind {
-										Kind::GroupOp(ref val) => if val == op {
-											nests += 1;
-										} else if val == end_op {
-											nests -= 1;
-										},
-										_ => ()
-									}
-									
-									k += 1;
-								}
-							},
-							_ => ()
-						}
-					}
-				}
-			}
-			
-			Kind::GroupOp(ref val) => match val.as_ref() {
-				"(" => group_expr!("(", ")", tokens, token, i),
-				"{" => group_expr!("{", "}", tokens, token, i),
-				"[" => group_expr!("[", "]", tokens, token, i),
-				&_ => (),
-			},
-			
-			_ => ()
-		}
-		
-		i += 1;
-	}
-	
-	// STAGE 3: FURTHER ORGANISATION BASED ON PRECEDENCE
-	
-	for _ in 0..15 { // TMP probably
-		let mut i = 0;
-		while i < tokens.len() {
-			match tokens[i].kind {
-				Kind::Var(ref name, _) => if let Some(def) = is_defined(&functions, name) {
-					let mut children = tokens[i].children.borrow_mut();
-					
-					for child in children.iter_mut() {
-						let mut j = 0;
-						while j < tokens.len() {
-							if j != i {
-								match tokens[j].kind {
-									Kind::Var(ref name, _) => if let Some(def2) = is_defined(&functions, name) {
-										let mut children2 = tokens[j].children.borrow_mut();
-										
-										for child2 in children2.iter() {
-											if *child == *child2 {
-												if def.precedence < def2.precedence || (j < i && def.precedence == def2.precedence) {
-													*child = j;
-												}
-											}
-										}
-									},
-									
-									Kind::Op(ref op) => {
-										let mut name = op.to_string();
-										let start = j;
-										while j < tokens.len() {
-											j += 1;
-											
-											match tokens[j].kind {
-												Kind::Op(ref op) => name += op,
-												_ => break
-											}
-										}
-										
-										if let Some(def2) = is_defined(&functions, &name) {
-											let mut children2 = tokens[start].children.borrow_mut();
-											
-											for child2 in children2.iter() {
-												if *child == *child2 {
-													if def.precedence < def2.precedence || (start < i && def.precedence == def2.precedence) {
-														*child = start;
-													}
-												}
-											}
-										}
-									},
-									
-									_ => ()
-								}
-							}
-							
-							j += 1;
-						}
-					}
-				},
-				
-				Kind::Op(ref op) => {
-					let mut name = op.to_string();
-					let start = i;
-					while i < tokens.len() {
-						i += 1;
-						
-						match tokens[i].kind {
-							Kind::Op(ref op) => name += op,
-							_ => break
-						}
-					}
-					
-					if let Some(def) = is_defined(&functions, &name) {
-						let mut children = tokens[start].children.borrow_mut();
-						
-						for child in children.iter_mut() {
-							let mut j = 0;
-							while j < tokens.len() {
-								if j < start || j > i {
-									match tokens[j].kind {
-										Kind::Var(ref name, _) => if let Some(def2) = is_defined(&functions, name) {
-											let mut children2 = tokens[j].children.borrow_mut();
-											
-											for child2 in children2.iter() {
-												if *child == *child2 {
-													if def.precedence < def2.precedence || (j < start && def.precedence == def2.precedence) {
-														*child = j;
-													}
-												}
-											}
-										},
-										
-										Kind::Op(ref op) => {
-											let mut name = op.to_string();
-											let start2 = j;
-											while j < tokens.len() {
-												j += 1;
-												
-												match tokens[j].kind {
-													Kind::Op(ref op) => name += op,
-													_ => break
-												}
-											}
-											
-											if let Some(def2) = is_defined(&functions, &name) {
-												let mut children2 = tokens[start2].children.borrow_mut();
-												
-												for child2 in children2.iter() {
-													if *child == *child2 {
-														if def.precedence < def2.precedence || (start2 < start && def.precedence == def2.precedence) {
-															*child = start2;
-														}
-													}
-												}
-											}
-										},
-										
-										_ => ()
-									}
-								}
-								
-								j += 1;
-							}
-						}
-					}
-				},
-				
-				_ => ()
-			}
-			
-			i += 1;
-		}
-	} */
 	
 	functions
 }
@@ -950,11 +351,11 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 	i -= 1;
 	while i - j > 0 && j - offset < def.pos {
 		match tokens[i - j].kind {
-			Kind::Op(ref op) => {
+			Kind::Op(_) => {
 				j += 1;
 				while i - j > 0 {
 					match tokens[i - j].kind {
-						Kind::Op(ref op) => {
+						Kind::Op(_) => {
 							j += 1;
 							offset += 1;
 						},
@@ -998,7 +399,7 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 	i += 2;
 	while i < tokens.len() {
 		match tokens[i].kind {
-			Kind::Op(ref op) => i += 1,
+			Kind::Op(_) => i += 1,
 			_ => break
 		}
 	}
@@ -1027,11 +428,11 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 		}
 		
 		match tokens[i + j].kind {
-			Kind::Op(ref op) => {
+			Kind::Op(_) => {
 				j += 1;
 				while i + j < tokens.len() {
 					match tokens[i + j].kind {
-						Kind::Op(ref op) => {
+						Kind::Op(_) => {
 							j += 1;
 							offset += 1;
 						},
@@ -1113,11 +514,11 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 					
 					_ => ()
 				};
-			} else if let Kind::Op(ref op) = tokens[*i].kind {
+			} else if let Kind::Op(_) = tokens[*i].kind {
 				*i += 1;
 				while *i < tokens.len() {
 					match tokens[*i].kind {
-						Kind::Op(ref op) => (),
+						Kind::Op(_) => (),
 						_ => break
 					}
 					
@@ -1154,138 +555,12 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 		
 		_ => ()
 	}
-	
-/*	match tokens[*i].kind {
-		Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
-			let length = terminals.len();
-			
-			if length < def.args.len() - def.pos {
-				panic!("{}:{} Too few arguments", tokens[*i].pos.line, tokens[*i].pos.col);
-			}
-			
-			for terminal in terminals.drain(length - def.args.len() + def.pos..) {
-				tokens[*i].children.borrow_mut().push(terminal);
-			}
-			
-			*i += 1;
-			
-			parse2(tokens, functions, terminals, i);
-		},
-		
-		Kind::Op(ref op) => {
-			let mut name = op.to_string();
-			while *i < tokens.len() {
-				*i += 1;
-				match tokens[*i].kind {
-					Kind::Op(ref op) => name += op,
-					_ => break
-				}
-			}
-			
-			if let Some(def) = is_defined(functions, &name) {
-				let length = terminals.len();
-				
-				if length < def.args.len() - def.pos {
-					panic!("{}:{} Too few arguments", tokens[*i].pos.line, tokens[*i].pos.col);
-				}
-				
-				for terminal in terminals.drain(length - def.args.len() + def.pos..) {
-					tokens[*i].children.borrow_mut().push(terminal);
-				}
-				
-				*i += name.len();
-				
-				parse2(tokens, functions, terminals, i);
-			}
-		},
-		
-		_ => terminals.push(*i)
-	}; */
-	
-	// WARNING: TOTAL MESS BELOW
-	
-/*	let mut lowest = *i;
-	let mut lowest_precedence = 255;
-	let mut iterations = 0;
-	let mut j = 0;
-	while *i < 75 {
-		*i += 1;
-	}
-	while *i + j < tokens.len() {
-		if taken.contains(&(*i + j)) {
-			j += 1;
-			continue;
-		}
-		
-		match tokens[*i + j].kind {
-			Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
-				if def.precedence <= lowest_precedence {
-					lowest = *i + j;
-				}
-			} else {
-				j += 1;
-				continue;
-			},
-			
-			Kind::Op(ref op) if op == ";" => {
-				taken.push(lowest);
-				
-				let mut j = 1;
-				while lowest - j > 0 {
-					match tokens[lowest - j].kind {
-						Kind::Op(ref op) if op != ";" => taken.push(lowest - j),
-						_ => break
-					}
-					
-					j += 1;
-				}
-				
-				println!("{:#?}", tokens[lowest]); // DEBUG
-				
-				if iterations > 0 {
-					parse2(tokens, functions, terminals, i, taken);
-				}
-				
-				break;
-			},
-			
-			Kind::Op(ref op) => {
-				let mut name = op.to_string();
-				let mut k = 1;
-				while *i + j + k < tokens.len() {
-					match tokens[*i + j + k].kind {
-						Kind::Op(ref op) => name += op,
-						_ => break
-					}
-					
-					k += 1;
-				}
-				
-				if let Some(def) = is_defined(functions, &name) {
-					if def.precedence <= lowest_precedence {
-						lowest = *i + j;
-					}
-				} else {
-					j += 1;
-					continue;
-				}
-			},
-			
-			_ => {
-				j += 1;
-				continue;
-			}
-		}
-		
-		j += 1;
-		iterations += 1;
-	} */
 }
 
+// OUTDATED FUNCTION
 fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String, taken: &mut Vec<usize>) -> String {
 	use lib::Kind::*;
 	use lib::Type::*;
-//	use lib::Whitespace::*;
 	
 	if taken.contains(i) {
 		return output;
@@ -1697,99 +972,13 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 
 pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String, taken: &mut Vec<usize>) -> String {
 	use lib::Type::*;
-//	use lib::Whitespace::*;
+	use lib::Kind::*;
 	
 	let children = tokens[*i].children.borrow();
-	
-//	output = compile_token(tokens, functions, i, func_def, output, taken);
-	
-	use lib::Kind::*;
 	
 	match tokens[*i].kind {
 		Type(ref typ) if typ == &Func => {
 			output += "fn ";
-			
-			let children = tokens[*i].children.borrow();
-/*			let mut func_name = String::new();
-			
-			*i = children[0];
-			match tokens[*i].kind {
-				Kind::Var(ref name, _) => if name == "init" {
-					func_name += "main";
-				} else {
-					func_name += name;
-				},
-				
-				Kind::Op(ref op) => {
-					func_name += match op.as_ref() {
-						"+" => "plus",
-						"-" => "minus",
-						"*" => "times",
-						"/" => "div",
-						"%" => "mod",
-						"=" => "eq",
-						"&" => "and",
-						"|" => "or",
-						"^" => "mod",
-						"<" => "larrow",
-						">" => "rarrow",
-						"!" => "not",
-						"~" => "binnot",
-						"?" => "quest",
-						":" => "colon",
-						"." => "dot",
-						"," => "comma",
-						"@" => "at",
-						";" => "semic",
-						&_ => unreachable!()
-					};
-					
-					*i += 1;
-					while *i < tokens.len() {
-						match tokens[*i].kind {
-							Kind::Op(ref op) => func_name += match op.as_ref() {
-								"+" => "plus",
-								"-" => "minus",
-								"*" => "times",
-								"/" => "div",
-								"%" => "mod",
-								"=" => "eq",
-								"&" => "and",
-								"|" => "or",
-								"^" => "mod",
-								"<" => "larrow",
-								">" => "rarrow",
-								"!" => "not",
-								"~" => "binnot",
-								"?" => "quest",
-								":" => "colon",
-								"." => "dot",
-								"," => "comma",
-								"@" => "at",
-								";" => "semic",
-								&_ => unreachable!()
-							},
-							_ => break
-						}
-						
-						*i += 1;
-					}
-					*i -= 1;
-				},
-				
-				_ => unreachable!()
-			};
-			
-			output += &func_name;
-			output += "(";
-			
-			for arg in tokens[children[0]].children.borrow().iter() {
-				*i = *arg;
-				output = compile_func(tokens, i, output);
-				output += ","
-			}
-			
-			output += "){"; */
 			
 			*i = children[0];
 			output = compile_func(tokens, functions, i, output);

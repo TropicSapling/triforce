@@ -1,28 +1,5 @@
 use std::cell::RefCell;
-// use lib::{Token, Whitespace, Kind, Type, FilePos};
 use lib::{Token, Kind, Type, FilePos};
-
-/* macro_rules! is_kind {
-	($lhs_kind:expr, $rhs_kind:pat) => (match $lhs_kind {
-		$rhs_kind => true,
-		_ => false
-	});
-} */
-
-/* fn nxt(tokens: &Vec<Token>, i: usize) -> usize {
-	let mut j: usize = 0;
-	while {
-		j += 1;
-		
-		i + j < tokens.len() && is_kind!(tokens[i + j].kind, Kind::Whitespace(_))
-	} {}
-	
-	if i + j < tokens.len() {
-		j
-	} else {
-		0
-	}
-} */
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -70,16 +47,10 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 	for item in tokens {
 		if ignoring {
 			if item == "\n" {
-//				res.push(Token {kind: Kind::Whitespace(Whitespace::Newline), pos: FilePos {line, col}, children: RefCell::new(vec![])});
-				
 				line += 1;
 				col = 0;
 				ignoring = false;
 			}
-			
-/*			if item == "\r" {
-				res.push(Token {kind: Kind::Whitespace(Whitespace::CarRet), pos: FilePos {line, col}, children: RefCell::new(vec![])});
-			} */
 		} else if ignoring2 {
 			if possible_comment {
 				if item == "/" {
@@ -225,14 +196,9 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 						"true" => Kind::Literal(true),
 						"\n" => {
 							line += 1;
-/*							col = 0;
-							Kind::Whitespace(Whitespace::Newline) */
 							col = 1;
 							continue;
 						},
-/*						"\r" => Kind::Whitespace(Whitespace::CarRet),
-						"\t" => Kind::Whitespace(Whitespace::Tab),
-						" " => Kind::Whitespace(Whitespace::Space), */
 						"\r" | "\t" | " " => {
 							col += 1;
 							continue;
@@ -260,7 +226,6 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				let mut types = [typ.clone(), Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 				let mut j = 1;
 				
-//				i += nxt(&tokens, i);
 				i += 1;
 				
 				loop {
@@ -269,7 +234,6 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 						_ => break
 					};
 					
-//					i += nxt(&tokens, i);
 					i += 1;
 					j += 1;
 				}

@@ -1,13 +1,4 @@
 use std::{path::PathBuf, cell::RefCell};
-// use std::fmt;
-
-/* #[derive(Clone, PartialEq, Debug)]
-pub enum Whitespace {
-	Newline,
-	CarRet,
-	Tab,
-	Space
-} */
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
@@ -20,7 +11,6 @@ pub enum Kind {
     Str2(String),
     Type(Type),
     Var(String, [Type; 8])
-//    Whitespace(Whitespace)
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -51,32 +41,6 @@ pub struct Token {
     pub pos: FilePos,
     pub children: RefCell<Vec<usize>>
 }
-
-/* impl fmt::Debug for Token {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		f.debug_struct("Token")
-			.field("kind", &self.kind)
-			.field("pos", &self.pos)
-			.field("children", {
-				let res = Vec::new();
-				for child in self.children.borrow().iter() {
-					res.push(match tokens[*child].kind { // How to access tokens???
-						Kind::GroupOp(ref op) => *op,
-						Kind::Literal(b) => b.to_string(),
-						Kind::Number(int, fraction) => int.to_string() + "." + &fraction.to_string(),
-						Kind::Op(ref op) => *op,
-						Kind::Reserved(ref keyword) => *keyword,
-						Kind::Str1(ref s) | Kind::Str2(ref s) => *s,
-						Kind::Var(ref name, _) => *name,
-						_ => (*child).to_string()
-					});
-				}
-				
-				&res
-			})
-			.finish()
-	}
-} */
 
 #[derive(Clone, Debug)]
 pub struct FilePos {
