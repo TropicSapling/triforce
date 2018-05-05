@@ -391,7 +391,9 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				functions[last_item].name += op;
 				functions[last_item].pos = functions[last_item].args.len();
 				
-				tokens[func_pos].children.borrow_mut().push(i);
+				if tokens[func_pos].children.borrow().len() < 1 {
+					tokens[func_pos].children.borrow_mut().push(i);
+				}
 			},
 			
 			Kind::GroupOp(ref op) if func => if op == "{" { // Function body
@@ -1483,6 +1485,33 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 			}
 		},
 		
+		Kind::Type(ref typ) => {
+			use lib::Type::*;
+			
+			// TODO: Support unsigned int and other multiple-types
+			
+			match *typ {
+				Array => (), // WIP
+				Bool => output += "bool",
+				Chan => (), // WIP
+				Char => output += "char",
+				Const => output += "const",
+				Fraction => (), // WIP
+				Func => output += "fn",
+				Heap => (), // WIP
+				Int => output += "isize",
+				List => (), // WIP
+				Only => (), // WIP
+				Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
+				Register => (), // WIP
+				Stack => (), // WIP
+				Unique => (), // WIP
+				Unsigned => (), // WIP
+				Void => (), // NOTE: Needs changing to 'output += "()"' once Void is not used for none-existing parameters (use None instead)
+				Volatile => (), // WIP
+			}
+		}
+		
 		Kind::Var(ref name, ref typ) if typ[..] == [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] || typ[..] == [Type::Func, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] => {
 			output += if name == "init" {
 				"main"
@@ -1719,12 +1748,25 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			output = compile_func(tokens, i, output);
 			
 			if children.len() > 1 {
+				let body = if children.len() > 2 {
+					*i = children[1];
+					output += "->";
+					output = compile_func(tokens, i, output);
+					2
+				} else {
+					1
+				};
+				
 				output += "{";
 				
-				for statement in tokens[children[1]].children.borrow().iter() {
+				let statements = tokens[children[body]].children.borrow();
+				let statements_len = statements.len();
+				for statement in statements.iter() {
 					*i = *statement;
 					output = compile_func(tokens, i, output);
-					output += ";"
+					if statements_len > 1 {
+						output += ";"
+					}
 				}
 				
 				output += "}";
