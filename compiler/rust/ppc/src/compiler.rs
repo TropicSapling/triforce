@@ -209,6 +209,23 @@ macro_rules! def_builtin_funcs {
 			],
 			precedence: 246,
 			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+		},
+		
+		Function {
+			name: String::from("println"),
+			pos: 0,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; No support for strings yet
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+				}
+			],
+			precedence: 0,
+			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
 		}
 	])
 }
@@ -1475,6 +1492,12 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			}
 		},
 		
+		Kind::Str1(ref s) => {
+			output += "\"";
+			output += s;
+			output += "\"";
+		},
+		
 		Kind::Type(ref typ) => {
 			use lib::Type::*;
 			
@@ -1506,6 +1529,8 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			if let Some(_) = is_defined(functions, name) { // TMP until I've worked out passing functions as arguments
 				output += if name == "init" {
 					"main"
+				} else if name == "println" {
+					"println!"
 				} else {
 					name
 				};
