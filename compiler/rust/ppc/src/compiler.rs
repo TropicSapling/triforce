@@ -548,9 +548,15 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 			let mut body = tokens[*i].children.borrow_mut();
 			*i += 1;
 			
-			if let Some(token) = parse_statement(tokens, functions, i) {
-				body.push(token);
-			}
+			match tokens[*i].kind {
+				Kind::GroupOp(ref op) if op == "}" => (),
+				
+				_ => if let Some(token) = parse_statement(tokens, functions, i) {
+					body.push(token);
+				} else {
+					body.push(*i);
+				}
+			};
 		},
 		
 		_ => ()
@@ -1010,6 +1016,22 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 				output += ";";
 			}
 		},
+		
+		Kind::Var(ref name, _) if name == "#" => {
+			while *i < tokens.len() {
+				match tokens[*i].kind {
+					Kind::GroupOp(ref op) if op == "]" => {
+						output += "]";
+						break;
+					},
+					
+					_ => {
+						output += get_val!(tokens[*i].kind); // Will probably be changed
+						*i += 1;
+					}
+				}
+			}
+		}
 		
 		_ => ()
 	}

@@ -117,10 +117,12 @@ fn init() -> i32 {
 	};
 	
 	let mut in_contents = String::from("
+		#[allow(unused)]
 		func (int a) ++ -> int {
 			a + 1 // TMP
 		}
 		
+		#[allow(unused)]
 		func (int a) -- -> int {
 			a - 1 // TMP
 		}
