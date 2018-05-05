@@ -117,14 +117,10 @@ fn init() -> i32 {
 	};
 	
 	let mut in_contents = String::from("
-/*		func (int a) + (int b) -> int;
-		func (int a) - (int b) -> int;
-		func (int a) * (int b) -> int;
-		func (int a) / (int b) -> int;
-		func (int a) % (int b) -> int; */
 		func (int a) ++ -> int {
 			a + 1 // TMP
 		}
+		
 		func (int a) -- -> int {
 			a - 1 // TMP
 		}

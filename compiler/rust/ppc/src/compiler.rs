@@ -209,49 +209,6 @@ macro_rules! def_builtin_funcs {
 			],
 			precedence: 246,
 			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-		},
-		
-		Function {
-			name: String::from("**"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				}
-			],
-			precedence: 247,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-		},
-		
-		Function {
-			name: String::from("++"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				}
-			],
-			precedence: 249,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-		},
-		
-		Function {
-			name: String::from("--"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				}
-			],
-			precedence: 249,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 		}
 	])
 }
@@ -310,8 +267,8 @@ fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a
 }
 
 pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a str) -> Vec<Function<'a>> {
-//	let mut functions: Vec<Function> = def_builtin_funcs!(func_par_a, func_par_b);
-	let mut functions: Vec<Function> = Vec::new();
+	let mut functions: Vec<Function> = def_builtin_funcs!(func_par_a, func_par_b);
+//	let mut functions: Vec<Function> = Vec::new();
 	let mut func = false;
 	let mut func_pos = 0;
 	let mut func_args = Vec::new();
