@@ -32,7 +32,7 @@ func init {
 [println: [pow3], pow: [4, 5], pow2: [pow, 6], pow3: [pow2, 7]]
 */
 
-func (int i) print; // Just to test that functions without a body also work
+// func (int i) print; // Uncommented for now because apparently Rust doesn't support this
 
 func (int i) println {
 	

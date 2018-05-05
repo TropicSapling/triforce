@@ -370,7 +370,9 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 						functions[last_item].name += op;
 						functions[last_item].pos = functions[last_item].args.len();
 						
-						tokens[func_pos].children.borrow_mut().push(i);
+						if tokens[func_pos].children.borrow().len() < 1 {
+							tokens[func_pos].children.borrow_mut().push(i);
+						}
 					}
 				}
 			} else if op == ";" { // End of function declaration
@@ -1764,7 +1766,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 				for statement in statements.iter() {
 					*i = *statement;
 					output = compile_func(tokens, i, output);
-					if statements_len > 1 {
+					if statements_len > 1 || body == 1 {
 						output += ";"
 					}
 				}
