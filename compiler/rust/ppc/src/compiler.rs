@@ -313,6 +313,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	let mut functions: Vec<Function> = def_builtin_funcs!(func_par_a, func_par_b);
 	let mut func = false;
 	let mut func_pos = 0;
+	let mut func_args = Vec::new();
 	let mut par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
 	
 	// STAGE 1: DEFINE FUNCTIONS (this is done in a separate loop to allow function definitions to be placed both before and after function calls)
@@ -358,6 +359,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				tokens[func_pos].children.borrow_mut().push(i);
 			} else { // Function args
 				functions[last_item].args.push(FunctionArg {name, typ: typ.clone()});
+				func_args.push(i);
 //				par_type = typ.clone();
 			},
 			
@@ -377,7 +379,13 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 					functions[last_item].precedence = 1;
 				}
 				
+				let func_name_pos = tokens[func_pos].children.borrow()[0];
+				for arg in func_args {
+					tokens[func_name_pos].children.borrow_mut().push(arg);
+				}
+				
 				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
+				func_args = Vec::new();
 				func = false;
 			} else { // Operator (function) name
 				functions[last_item].name += op;
@@ -392,7 +400,13 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 					functions[last_item].precedence = 1;
 				}
 				
+				let func_name_pos = tokens[func_pos].children.borrow()[0];
+				for arg in func_args {
+					tokens[func_name_pos].children.borrow_mut().push(arg);
+				}
+				
 				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
+				func_args = Vec::new();
 				func = false;
 				
 				tokens[func_pos].children.borrow_mut().push(i);
@@ -941,11 +955,11 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 				j -= 1;
 			},
 			
-			Kind::GroupOp(_) => {
+			Kind::GroupOp(_) | Kind::Type(_) => {
 				j += 1;
 				offset += 1;
 				continue;
-			}
+			},
 			
 			_ => ()
 		};
@@ -1017,6 +1031,13 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 				}
 				j -= 1;
 			},
+			
+			Kind::GroupOp(_) | Kind::Type(_) => {
+				j += 1;
+				offset += 1;
+				continue;
+			},
+			
 			_ => ()
 		};
 		
@@ -1068,6 +1089,8 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 								},
 								None => highest = Some((start, def, depth))
 							};
+						} else if name == "->" {
+							break;
 						}
 					},
 					
@@ -1455,8 +1478,12 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 			}
 		},
 		
-		Kind::Var(ref name, ref typ) if typ[..] == [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] => {
-			output += name;
+		Kind::Var(ref name, ref typ) if typ[..] == [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] || typ[..] == [Type::Func, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] => {
+			output += if name == "init" {
+				"main"
+			} else {
+				name
+			};
 			output += "(";
 			
 			let args = tokens[*i].children.borrow();
@@ -1502,7 +1529,7 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 					Stack => (), // WIP
 					Unique => (), // WIP
 					Unsigned => unsigned = true,
-					Void => output += "()",
+					Void => (), // NOTE: Needs changing to 'output += "()"' once Void is not used for none-existing parameters (use None instead)
 					Volatile => (), // WIP
 				}
 			}
@@ -1602,7 +1629,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			output += "fn ";
 			
 			let children = tokens[*i].children.borrow();
-			let mut func_name = String::new();
+/*			let mut func_name = String::new();
 			
 			*i = children[0];
 			match tokens[*i].kind {
@@ -1613,8 +1640,6 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 				},
 				
 				Kind::Op(ref op) => {
-					// TODO: Convert operators to valid function names, like '+++' -> 'plusplusplus'
-					
 					func_name += match op.as_ref() {
 						"+" => "plus",
 						"-" => "minus",
@@ -1677,13 +1702,17 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			output += &func_name;
 			output += "(";
 			
-			for child in tokens[children[0]].children.borrow().iter() {
-				*i = *child;
+			for arg in tokens[children[0]].children.borrow().iter() {
+				*i = *arg;
 				output = compile_func(tokens, i, output);
 				output += ","
 			}
 			
-			output += "){";
+			output += "){"; */
+			
+			*i = children[0];
+			output = compile_func(tokens, i, output);
+			output += "{";
 			
 			for child in tokens[children[1]].children.borrow().iter() {
 				*i = *child;
