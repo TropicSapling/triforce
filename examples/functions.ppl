@@ -39,13 +39,11 @@ func (int i) println {
 }
 
 func (int a) (int b) +++ (int c) (int d) -> int {
-//	a + b + c + d
-	123
+	a + b + c + d
 }
 
 func (int a) (int b) --- (int c) (int d) -> int {
-//	a + b - c - d
-	456
+	a + b - c - d
 }
 
 func init {

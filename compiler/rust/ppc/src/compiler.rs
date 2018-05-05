@@ -372,7 +372,10 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				func = false;
 				
 				tokens[func_pos].children.borrow_mut().push(i);
-				i += 1;
+				
+				// Until the code below has been fixed, the compiler won't allow passing functions as arguments
+				
+/*				i += 1;
 				
 				let mut nests = 0;
 				while i < tokens.len() {
@@ -380,7 +383,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 						Kind::Var(ref name, ref mut typ) => {
 							for arg in &functions[last_item].args {
 								if arg.name == name {
-									*typ = arg.typ.clone();
+									*typ = arg.typ.clone(); // Fix this by converting typ from Array to Vec?
 									break;
 								}
 							}
@@ -398,7 +401,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 					}
 					
 					i += 1;
-				}
+				} */
 			},
 			
 			_ => ()
@@ -1462,7 +1465,7 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 	output
 }
 
-fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
+fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
 		Kind::Number(int, fraction) => {
 			output += &int.to_string();
@@ -1500,24 +1503,28 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 		}
 		
 		Kind::Var(ref name, ref typ) if typ[..] == [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] || typ[..] == [Type::Func, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] => {
-			output += if name == "init" {
-				"main"
-			} else {
-				name
-			};
-			output += "(";
-			
-			let args = tokens[*i].children.borrow();
-			for (a, arg) in args.iter().enumerate() {
-				*i = *arg;
-				output = compile_func(tokens, i, output);
+			if let Some(_) = is_defined(functions, name) { // TMP until I've worked out passing functions as arguments
+				output += if name == "init" {
+					"main"
+				} else {
+					name
+				};
+				output += "(";
 				
-				if a < args.len() - 1 {
-					output += ","
+				let args = tokens[*i].children.borrow();
+				for (a, arg) in args.iter().enumerate() {
+					*i = *arg;
+					output = compile_func(tokens, functions, i, output);
+					
+					if a < args.len() - 1 {
+						output += ","
+					}
 				}
+				
+				output += ")";
+			} else {
+				output += name;
 			}
-			
-			output += ")"
 		},
 		
 		Kind::Var(ref name, ref typ) => {
@@ -1620,7 +1627,7 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 			
 			if name == "plus" || name == "minus" || name == "times" || name == "div" || name == "mod" || name == "eq" || name == "eqeq" || name == "andand" || name == "or" || name == "oror" || name == "larrow" || name == "rarrow" {
 				*i = args[0];
-				output = compile_func(tokens, i, output);
+				output = compile_func(tokens, functions, i, output);
 				
 				output += match name.as_ref() {
 					"plus" => "+",
@@ -1639,14 +1646,14 @@ fn compile_func(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 				};
 				
 				*i = args[1];
-				output = compile_func(tokens, i, output);
+				output = compile_func(tokens, functions, i, output);
 			} else {
 				output += &name;
 				output += "(";
 				
 				for (a, arg) in args.iter().enumerate() {
 					*i = *arg;
-					output = compile_func(tokens, i, output);
+					output = compile_func(tokens, functions, i, output);
 					
 					if a < args.len() - 1 {
 						output += ","
@@ -1760,13 +1767,13 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			output += "){"; */
 			
 			*i = children[0];
-			output = compile_func(tokens, i, output);
+			output = compile_func(tokens, functions, i, output);
 			
 			if children.len() > 1 {
 				let body = if children.len() > 2 {
 					*i = children[1];
 					output += "->";
-					output = compile_func(tokens, i, output);
+					output = compile_func(tokens, functions, i, output);
 					2
 				} else {
 					1
@@ -1778,7 +1785,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 				let statements_len = statements.len();
 				for statement in statements.iter() {
 					*i = *statement;
-					output = compile_func(tokens, i, output);
+					output = compile_func(tokens, functions, i, output);
 					if statements_len > 1 || body == 1 {
 						output += ";"
 					}
