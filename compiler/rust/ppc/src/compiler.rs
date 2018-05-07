@@ -461,6 +461,27 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 		_ => ()
 	};
 	
+	match tokens[*i].kind {
+		Kind::Reserved(ref keyword) if keyword == "if" => {
+			let start = *i;
+			let mut body = tokens[*i].children.borrow_mut();
+			*i += 1;
+			
+			let next = *i;
+			if let Some(token) = parse_statement(tokens, functions, i) {
+				body.push(token);
+			} else {
+				body.push(next);
+			}
+			
+			body.push(*i);
+			*i -= 1;
+			
+			return Some(start);
+		},
+		_ => ()
+	}
+	
 	let start = *i;
 	let mut lowest = None;
 	while *i < tokens.len() {
@@ -481,6 +502,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 					
 					Kind::Op(ref op) if op == ";" => break,
 					Kind::GroupOp(ref op) if op == "}" => break,
+					Kind::GroupOp(ref op) if op == "{" => break,
 					
 					Kind::Op(ref op) => {
 						let mut name = op.to_string();
@@ -548,13 +570,14 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 			let mut body = tokens[*i].children.borrow_mut();
 			*i += 1;
 			
+			let next = *i;
 			match tokens[*i].kind {
 				Kind::GroupOp(ref op) if op == "}" => (),
 				
 				_ => if let Some(token) = parse_statement(tokens, functions, i) {
 					body.push(token);
 				} else {
-					body.push(*i);
+					body.push(next);
 				}
 			};
 		},
@@ -765,6 +788,12 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 
 fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
+		Kind::Literal(b) => if b {
+			output += "true";
+		} else {
+			output += "false";
+		},
+		
 		Kind::Number(int, fraction) => {
 			output += &int.to_string();
 			if fraction != 0 {
@@ -968,6 +997,24 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				
 				output += ")";
 			}
+		},
+		
+		Kind::Reserved(ref keyword) if keyword == "if" => {
+			output += "if ";
+			
+			let children = tokens[*i].children.borrow();
+			
+			*i = children[0];
+			output = compile_func(tokens, functions, i, output);
+			output += " {";
+			
+			let statements = tokens[children[1]].children.borrow();
+			for statement in statements.iter() {
+				*i = *statement;
+				output = compile_func(tokens, functions, i, output);
+			}
+			
+			output += "}";
 		},
 		
 		_ => () // WIP

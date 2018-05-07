@@ -25,6 +25,10 @@ use lib::get_io;
 use lexer::{lex, lex2, lex3};
 use compiler::{parse, parse2, compile};
 
+fn count_newlines(s: &str) -> usize {
+	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
+}
+
 fn main() {
 	let status = init();
 	
@@ -128,6 +132,8 @@ fn init() -> i32 {
 		}
 	");
 	
+	let line_offset = count_newlines(&in_contents);
+	
 	match in_file.read_to_string(&mut in_contents) {
 		Ok(t) => t,
 		Err(_e) => {
@@ -144,7 +150,7 @@ fn init() -> i32 {
 //		println!("{} LEX1: {:#?}\n", BrightYellow.paint("[DEBUG]"), lexed_contents);
 	}
 	
-	let mut tokens = lex2(lexed_contents);
+	let mut tokens = lex2(lexed_contents, line_offset);
 	if debugging {
 //		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}

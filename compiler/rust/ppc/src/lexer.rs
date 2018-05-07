@@ -25,7 +25,7 @@ pub fn lex<'a>(contents: &'a String) -> Vec<&'a str> {
 	result
 }
 
-pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
+pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 	let mut res: Vec<Token> = Vec::new();
 	let mut string = Token {
 		kind: Kind::Str1(String::from("")),
@@ -84,7 +84,11 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					possible_comment = false;
 					
 					string.kind = Kind::Op(String::from("/"));
-					string.pos = FilePos {line, col};
+					string.pos = if line > line_offset {
+						FilePos {line: line - line_offset, col}
+					} else {
+						FilePos {line, col}
+					};
 					
 					res.push(string.clone());
 				}
@@ -101,7 +105,11 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				}
 				
 				*val += item;
-				string.pos = FilePos {line, col};
+				string.pos = if line > line_offset {
+					FilePos {line: line - line_offset, col}
+				} else {
+					FilePos {line, col}
+				};
 				
 				escaping = false;
 			} else if in_str {
@@ -132,11 +140,19 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 				}
 			} else if item == "\"" {
 				string.kind = Kind::Str1(String::from(""));
-				string.pos = FilePos {line, col};
+				string.pos = if line > line_offset {
+					FilePos {line: line - line_offset, col}
+				} else {
+					FilePos {line, col}
+				};
 				in_str = true;
 			} else if item == "'" {
 				string.kind = Kind::Str2(String::from(""));
-				string.pos = FilePos {line, col};
+				string.pos = if line > line_offset {
+					FilePos {line: line - line_offset, col}
+				} else {
+					FilePos {line, col}
+				};
 				in_str2 = true;
 			} else {
 				if num_pos > 0 && (item == "." || num_pos == 2) {
@@ -166,7 +182,11 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 					possible_comment = true;
 				} else if let Ok(int_val) = int_res {
 					string.kind = Kind::Number(int_val, 0);
-					string.pos = FilePos {line, col};
+					string.pos = if line > line_offset {
+						FilePos {line: line - line_offset, col}
+					} else {
+						FilePos {line, col}
+					};
 					
 					num_pos = 1;
 				} else {
@@ -205,7 +225,12 @@ pub fn lex2(tokens: Vec<&str>) -> Vec<Token> {
 						},
 						_ => Kind::Var(item.to_string(), [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void])
 					};
-					string.pos = FilePos {line, col};
+					
+					string.pos = if line > line_offset {
+						FilePos {line: line - line_offset, col}
+					} else {
+						FilePos {line, col}
+					};
 					
 					res.push(string.clone());
 				}

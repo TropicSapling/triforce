@@ -35,7 +35,9 @@ func init {
 // func (int i) print; // Uncommented for now because apparently Rust doesn't support this
 
 func (int i) backwards_println {
-	println "{}" i;
+	if true { // To test if statements
+		println "{}" i;
+	}
 }
 
 func (int a) (int b) +++ (int c) (int d) -> int {
