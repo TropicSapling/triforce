@@ -580,6 +580,33 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	lowest
 }
 
+fn parse_if(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
+	let mut body = tokens[*i].children.borrow_mut();
+	*i += 1;
+	
+	let next = *i;
+	if let Some(token) = parse_statement(tokens, functions, i) {
+		body.push(token);
+	} else {
+		body.push(next);
+	}
+	
+	body.push(*i);
+	
+	parse2(tokens, functions, i);
+	*i += 1;
+	
+	match tokens[*i].kind {
+		Kind::Reserved(ref keyword) if keyword == "else" => {
+			*i += 1;
+			body.push(*i);
+			parse_if(tokens, functions, i);
+		},
+		
+		_ => ()
+	}
+}
+
 pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	match tokens[*i].kind {
 		Kind::GroupOp(ref op) if op == "{" => {
@@ -598,72 +625,10 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 						break;
 					},
 					
-					/* _ => if let Some(token) = parse_statement(tokens, functions, i) {
-						body.push(token);
-					} else {
-						*i = start;
-						body.push(*i);
-						
-						match tokens[*i].kind {
-							Kind::Reserved(ref keyword) if keyword == "if" => {
-								let mut body = tokens[*i].children.borrow_mut();
-								*i += 1;
-								
-								let next = *i;
-								if let Some(token) = parse_statement(tokens, functions, i) {
-									body.push(token);
-								} else {
-									body.push(next);
-								}
-								
-								body.push(*i);
-								
-								parse2(tokens, functions, i);
-								*i += 1;
-								
-								match tokens[*i].kind {
-									Kind::Reserved(ref keyword) if keyword == "else" => {
-										*i += 1;
-										body.push(*i);
-										parse2(tokens, functions, i);
-									},
-									
-									_ => ()
-								}
-							},
-							
-							_ => *i += 1
-						}
-					} */
-					
 					_ => match tokens[*i].kind {
 						Kind::Reserved(ref keyword) if keyword == "if" => {
 							body.push(*i);
-							
-							let mut body = tokens[*i].children.borrow_mut();
-							*i += 1;
-							
-							let next = *i;
-							if let Some(token) = parse_statement(tokens, functions, i) {
-								body.push(token);
-							} else {
-								body.push(next);
-							}
-							
-							body.push(*i);
-							
-							parse2(tokens, functions, i);
-							*i += 1;
-							
-							match tokens[*i].kind {
-								Kind::Reserved(ref keyword) if keyword == "else" => {
-									*i += 1;
-									body.push(*i);
-									parse2(tokens, functions, i);
-								},
-								
-								_ => ()
-							}
+							parse_if(tokens, functions, i);
 						},
 						
 						_ => if let Some(token) = parse_statement(tokens, functions, i) {
