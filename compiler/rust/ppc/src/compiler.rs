@@ -194,6 +194,23 @@ macro_rules! def_builtin_funcs {
 		},
 		
 		Function {
+			name: String::from("!="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				}
+			],
+			precedence: 242,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+		},
+		
+		Function {
 			name: String::from("println"),
 			pos: 0,
 			args: vec![
@@ -1051,7 +1068,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			
 			let args = tokens[start].children.borrow();
 			
-			if name == "plus" || name == "minus" || name == "times" || name == "div" || name == "mod" || name == "eq" || name == "eqeq" || name == "andand" || name == "or" || name == "oror" || name == "larrow" || name == "rarrow" {
+			if name == "plus" || name == "minus" || name == "times" || name == "div" || name == "mod" || name == "eq" || name == "eqeq" || name == "noteq" || name == "andand" || name == "or" || name == "oror" || name == "larrow" || name == "rarrow" {
 				*i = args[0];
 				output = compile_func(tokens, functions, i, output);
 				
@@ -1063,6 +1080,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					"mod" => "%",
 					"eq" => "=",
 					"eqeq" => "==",
+					"noteq" => "!=",
 					"andand" => "&&",
 					"or" => "|",
 					"oror" => "||",
