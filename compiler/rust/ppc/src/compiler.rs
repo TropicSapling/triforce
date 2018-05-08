@@ -177,6 +177,23 @@ macro_rules! def_builtin_funcs {
 		},
 		
 		Function {
+			name: String::from("=="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				}
+			],
+			precedence: 242,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+		},
+		
+		Function {
 			name: String::from("println"),
 			pos: 0,
 			args: vec![
@@ -564,7 +581,7 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 						break;
 					},
 					
-					_ => if let Some(token) = parse_statement(tokens, functions, i) {
+					/* _ => if let Some(token) = parse_statement(tokens, functions, i) {
 						body.push(token);
 					} else {
 						*i = start;
@@ -586,9 +603,57 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 								
 								parse2(tokens, functions, i);
 								*i += 1;
+								
+								match tokens[*i].kind {
+									Kind::Reserved(ref keyword) if keyword == "else" => {
+										*i += 1;
+										body.push(*i);
+										parse2(tokens, functions, i);
+									},
+									
+									_ => ()
+								}
 							},
 							
 							_ => *i += 1
+						}
+					} */
+					
+					_ => match tokens[*i].kind {
+						Kind::Reserved(ref keyword) if keyword == "if" => {
+							body.push(*i);
+							
+							let mut body = tokens[*i].children.borrow_mut();
+							*i += 1;
+							
+							let next = *i;
+							if let Some(token) = parse_statement(tokens, functions, i) {
+								body.push(token);
+							} else {
+								body.push(next);
+							}
+							
+							body.push(*i);
+							
+							parse2(tokens, functions, i);
+							*i += 1;
+							
+							match tokens[*i].kind {
+								Kind::Reserved(ref keyword) if keyword == "else" => {
+									*i += 1;
+									body.push(*i);
+									parse2(tokens, functions, i);
+								},
+								
+								_ => ()
+							}
+						},
+						
+						_ => if let Some(token) = parse_statement(tokens, functions, i) {
+							body.push(token);
+						} else {
+							body.push(start);
+							*i += 1;
 						}
 					}
 				};
@@ -801,6 +866,19 @@ fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 
 fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
+		Kind::GroupOp(ref op) if op == "{" => {
+			let statements = tokens[*i].children.borrow();
+			
+			output += "{";
+			
+			for statement in statements.iter() {
+				*i = *statement;
+				output = compile_func(tokens, functions, i, output);
+			}
+			
+			output += "}";
+		},
+		
 		Kind::Literal(b) => if b {
 			output += "true";
 		} else {
@@ -1028,6 +1106,12 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			}
 			
 			output += "}";
+			
+			if children.len() > 2 {
+				output += "else ";
+				*i = children[2];
+				output = compile_func(tokens, functions, i, output);
+			}
 		},
 		
 		_ => () // WIP

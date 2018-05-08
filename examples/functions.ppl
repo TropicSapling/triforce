@@ -39,7 +39,11 @@ func (int i) backwards_println {
 		println "{}" i;
 	}
 	
-	if false {
+	if 9 + 10 == 21 {
+		println "{}" false;
+	} else if false {
+		println "{}" false;
+	} else {
 		println "{}" true;
 	}
 }
