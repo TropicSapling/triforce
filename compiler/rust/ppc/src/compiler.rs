@@ -461,27 +461,6 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 		_ => ()
 	};
 	
-	match tokens[*i].kind {
-		Kind::Reserved(ref keyword) if keyword == "if" => {
-			let start = *i;
-			let mut body = tokens[*i].children.borrow_mut();
-			*i += 1;
-			
-			let next = *i;
-			if let Some(token) = parse_statement(tokens, functions, i) {
-				body.push(token);
-			} else {
-				body.push(next);
-			}
-			
-			body.push(*i);
-			*i -= 1;
-			
-			return Some(start);
-		},
-		_ => ()
-	}
-	
 	let start = *i;
 	let mut lowest = None;
 	while *i < tokens.len() {
@@ -500,7 +479,10 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						};
 					},
 					
-					Kind::Op(ref op) if op == ";" => break,
+					Kind::Op(ref op) if op == ";" => {
+						*i += 1;
+						break;
+					},
 					Kind::GroupOp(ref op) if op == "}" => break,
 					Kind::GroupOp(ref op) if op == "{" => break,
 					
@@ -568,18 +550,49 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	match tokens[*i].kind {
 		Kind::GroupOp(ref op) if op == "{" => {
 			let mut body = tokens[*i].children.borrow_mut();
+			let mut nests = 0;
 			*i += 1;
 			
-			let next = *i;
-			match tokens[*i].kind {
-				Kind::GroupOp(ref op) if op == "}" => (),
-				
-				_ => if let Some(token) = parse_statement(tokens, functions, i) {
-					body.push(token);
-				} else {
-					body.push(next);
-				}
-			};
+			while *i < tokens.len() {
+				let start = *i;
+				match tokens[*i].kind {
+					Kind::GroupOp(ref op) if op == "{" => nests += 1,
+					
+					Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
+						nests -= 1;
+					} else {
+						break;
+					},
+					
+					_ => if let Some(token) = parse_statement(tokens, functions, i) {
+						body.push(token);
+					} else {
+						*i = start;
+						body.push(*i);
+						
+						match tokens[*i].kind {
+							Kind::Reserved(ref keyword) if keyword == "if" => {
+								let mut body = tokens[*i].children.borrow_mut();
+								*i += 1;
+								
+								let next = *i;
+								if let Some(token) = parse_statement(tokens, functions, i) {
+									body.push(token);
+								} else {
+									body.push(next);
+								}
+								
+								body.push(*i);
+								
+								parse2(tokens, functions, i);
+								*i += 1;
+							},
+							
+							_ => *i += 1
+						}
+					}
+				};
+			}
 		},
 		
 		_ => ()

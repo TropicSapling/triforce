@@ -38,6 +38,10 @@ func (int i) backwards_println {
 	if true { // To test if statements
 		println "{}" i;
 	}
+	
+	if false {
+		println "{}" true;
+	}
 }
 
 func (int a) (int b) +++ (int c) (int d) -> int {
