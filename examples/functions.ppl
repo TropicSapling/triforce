@@ -1,13 +1,28 @@
-func init() {
-	println!("{}", (4 pow 3) pow (2 * 3));
+// func (int i) print; // Uncommented for now because apparently Rust doesn't support this
+
+func (int i) backwards_println {
+	if true { // To test if statements
+		println i;
+	}
+	
+	if 9 + 10 == 21 {
+		println false;
+	} else if 9 + 10 != 21 {
+		println true;
+	} else {
+		println false;
+	}
 }
 
-func pow(int base, unsigned int exp) -> int {
-	if exp == 0 {
-		1
-	} else if exp % 2 == 0 {
-		base pow (exp / 2) * base pow (exp / 2)
-	} else {
-		base * base pow (exp / 2) * base pow (exp / 2)
-	}
+func (int a) (int b) +++ (int c) (int d) -> int {
+	a + b + c + d
+}
+
+func (int a) (int b) --- (int c) (int d) -> int {
+	a + b - c - d
+}
+
+func init {
+	(1 2 +++ 3 * 4 5)++ 6 --- 7 8 backwards_println;
+	println 1 * 2 + 3 ** 4 * 5 + 6;
 }

@@ -83,6 +83,13 @@
 
 --------
 
+### Functions
+* `func <function>([<parameters>]) [-> <return type>] { <code> }`
+* `<function>([parameters])` or `<function> <parameter>` or `<parameter> <function> <parameter>`
+* Functions return the result of the last statement by default; no need to use `return` unless you want to return from somewhere else.
+
+--------
+
 ### Loops
 * `while <condition> { <code> }`
 * `foreach <item> in <list> { <code> }`

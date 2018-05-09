@@ -7,22 +7,27 @@ mod compiler;
 
 use clap::{Arg, App};
 
-use term_painter::Color::*;
-use term_painter::ToStyle;
+use term_painter::{ToStyle, Color::*};
 
-use std::fs;
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::ErrorKind::{NotFound, PermissionDenied};
-
-use std::process::Command;
-use std::path::PathBuf;
-
-use std::str;
+use std::{
+	fs,
+	fs::File,
+	io::{
+		prelude::*,
+		ErrorKind::{NotFound, PermissionDenied}
+	},
+	process::Command,
+	path::PathBuf,
+	str
+};
 
 use lib::get_io;
-use lexer::{lex, lex2};
-use compiler::{parse, compile};
+use lexer::{lex, lex2, lex3};
+use compiler::{parse, parse2, compile};
+
+fn count_newlines(s: &str) -> usize {
+	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
+}
 
 fn main() {
 	let status = init();
@@ -115,7 +120,30 @@ fn init() -> i32 {
 		Ok(t) => t
 	};
 	
-	let mut in_contents = String::new();
+	let mut in_contents = String::from("
+		#[allow(unused)]
+		func (int a) ++ -> int {
+			a + 1 // TMP
+		}
+		
+		#[allow(unused)]
+		func (int a) -- -> int {
+			a - 1 // TMP
+		}
+		
+		#[allow(unused)]
+		func (int base) ** (unsigned int exp) -> int {
+			if exp == 0 {
+				1
+			} else if exp % 2 == 0 {
+				base ** (exp / 2) * base ** (exp / 2)
+			} else {
+				base * base ** (exp / 2) * base ** (exp / 2)
+			}
+		}
+	");
+	
+	let line_offset = count_newlines(&in_contents);
 	
 	match in_file.read_to_string(&mut in_contents) {
 		Ok(t) => t,
@@ -133,12 +161,29 @@ fn init() -> i32 {
 //		println!("{} LEX1: {:#?}\n", BrightYellow.paint("[DEBUG]"), lexed_contents);
 	}
 	
-	let mut tokens = lex2(lexed_contents);
+	let mut tokens = lex2(lexed_contents, line_offset);
 	if debugging {
 //		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
-	parse(&mut tokens);
+	lex3(&mut tokens);
+	if debugging {
+//		println!("{} LEX3: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
+	}
+	
+	// These strings would not be necessary if Rust had <scope> or <lifetime> properties like P+, but oh well...
+	let func_name_a = String::from("a");
+	let func_name_b = String::from("b");
+	
+	let functions = parse(&tokens, &func_name_a, &func_name_b);
+	
+	let mut i = 0;
+	while i < tokens.len() {
+		parse2(&tokens, &functions, &mut i);
+		
+		i += 1;
+	}
+	
 	if debugging {
 		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
@@ -146,7 +191,7 @@ fn init() -> i32 {
 	let mut out_contents = String::new();
 	let mut i = 0;
 	while i < tokens.len() {
-		out_contents = compile(&mut tokens, &mut i, out_contents);
+		out_contents = compile(&tokens, &functions, &mut i, out_contents);
 		i += 1;
 	}
 	
