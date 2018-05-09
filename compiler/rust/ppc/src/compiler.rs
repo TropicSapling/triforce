@@ -183,7 +183,7 @@ macro_rules! def_builtin_funcs {
 				}
 			],
 			precedence: 242,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
 		},
 		
 		Function {
@@ -200,7 +200,109 @@ macro_rules! def_builtin_funcs {
 				}
 			],
 			precedence: 242,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
+			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from("<"),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				}
+			],
+			precedence: 243,
+			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from("<="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				}
+			],
+			precedence: 243,
+			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from(">"),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				}
+			],
+			precedence: 243,
+			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from(">="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
+				}
+			],
+			precedence: 243,
+			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from("&&"),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				}
+			],
+			precedence: 238,
+			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from("||"),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				}
+			],
+			precedence: 237,
+			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
 		},
 		
 		Function {
