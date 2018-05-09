@@ -217,10 +217,6 @@ macro_rules! def_builtin_funcs {
 				FunctionArg {
 					name: $a,
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; No support for strings yet
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
 				}
 			],
 			precedence: 0,
@@ -934,6 +930,10 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					name
 				};
 				output += "(";
+				
+				if name == "println" {
+					output += "\"{}\",";
+				}
 				
 				let args = tokens[*i].children.borrow();
 				for (a, arg) in args.iter().enumerate() {

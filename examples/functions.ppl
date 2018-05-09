@@ -2,15 +2,15 @@
 
 func (int i) backwards_println {
 	if true { // To test if statements
-		println "{}" i;
+		println i;
 	}
 	
 	if 9 + 10 == 21 {
-		println "{}" false;
+		println false;
 	} else if 9 + 10 != 21 {
-		println "{}" true;
+		println true;
 	} else {
-		println "{}" false;
+		println false;
 	}
 }
 
@@ -24,5 +24,5 @@ func (int a) (int b) --- (int c) (int d) -> int {
 
 func init {
 	(1 2 +++ 3 * 4 5)++ 6 --- 7 8 backwards_println;
-	println "{}" 1 * 2 + 3 ** 4 * 5 + 6;
+	println 1 * 2 + 3 ** 4 * 5 + 6;
 }
