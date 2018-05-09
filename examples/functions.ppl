@@ -15,7 +15,7 @@ func (int i) backwards_println {
 }
 
 func (int a) (int b) +++ (int c) (int d) -> int {
-	a + b + c + d
+	return a + b + c + d; // To test return keyword
 }
 
 func (int a) (int b) --- (int c) (int d) -> int {
