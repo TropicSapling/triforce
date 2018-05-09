@@ -5,9 +5,9 @@ func (int i) backwards_println {
 		println i;
 	}
 	
-	if 9 + 10 == 21 {
+	if 9 + 10 == 21 || 10 + 9 == 21 {
 		println false;
-	} else if 9 + 10 != 21 {
+	} else if 9 + 10 != 21 && 10 + 9 != 21 {
 		println true;
 	} else {
 		println false;
