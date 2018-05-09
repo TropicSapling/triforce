@@ -1,12 +1,5 @@
 use lib::{Token, Kind, Type, Function, FunctionArg};
 
-macro_rules! is_kind {
-	($lhs_kind:expr, $rhs_kind:pat) => (match $lhs_kind {
-		$rhs_kind => true,
-		_ => false
-	});
-}
-
 macro_rules! get_val {
 	($e:expr) => ({
 		use lib::Kind::*;
@@ -658,206 +651,6 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	}
 }
 
-// OUTDATED FUNCTION
-fn compile_token(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String, taken: &mut Vec<usize>) -> String {
-	use lib::Kind::*;
-	use lib::Type::*;
-	
-	if taken.contains(i) {
-		return output;
-	}
-	
-	match tokens[*i].kind {
-		GroupOp(ref op) => {
-			if !*func_def {
-				output += op;
-			}
-			
-			let children = tokens[*i].children.borrow();
-			for child in children.iter() {
-				*i = *child;
-				output = compile_token(tokens, functions, i, func_def, output, taken);
-			}
-			
-			if children.len() > 0 {
-				*i += 1;
-				output = compile_token(tokens, functions, i, func_def, output, taken);
-			}
-		},
-		
-		Literal(boolean) => if boolean {
-			output += "true";
-		} else {
-			output += "false";
-		},
-		
-		Number(int, fraction) => {
-			output += &int.to_string();
-			if fraction != 0 {
-				output += ".";
-				output += &fraction.to_string();
-			}
-		},
-		
-		Op(ref op) => match op.as_ref() {
-			"@" => output += "*",
-			"-" => match tokens[*i + 1].kind {
-				Kind::Op(ref s) if s == ">" && !is_kind!(tokens[*i + 2].kind, Kind::Type(_)) => {
-					output += "&";
-					taken.push(*i);
-					*i += 1;
-				},
-				_ => output += &op
-			},
-			_ => output += &op
-		},
-		
-		Reserved(ref keyword) => match keyword.as_ref() {
-			"async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
-			"import" => output += "use",
-			"foreach" => output += "for",
-			"as" => output += "@",
-			"astype" => output += "as", // TMP; will be replaced with (<type>) <variable>
-			_ => output += &keyword
-		},
-		
-		Str1(ref s) => { // TMP; will be replaced with C-style (null terminated) strings
-			output += "\"";
-			output += &s;
-			output += "\"";
-		},
-		
-		Str2(ref s) => { // TMP; will be replaced with P+ style strings
-			output += "\"";
-			output += &s;
-			output += "\"";
-		},
-		
-/*		Type(ref typ) => match typ {
-			&Array | &Chan | &Const | &Fraction | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
-			&Bool => output += "bool",
-			&Char => output += "char",
-			&Func => output += "fn",
-			&Int => match tokens[*i - prev(&tokens, *i)].kind {
-				Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
-				_ => output += "i64" // TMP
-			},
-			&Pointer => output += "*", // TMP
-			&Unsigned => (),
-			&Void => output += "()"
-		}, */
-		
-		Type(ref typ) => match typ {
-			&Func => {
-				output += "fn ";
-				
-				let children = tokens[*i].children.borrow();
-				
-				// Function name & args
-				*i = children[0];
-				output = compile_token(tokens, functions, i, func_def, output, taken);
-				
-				if children.len() > 2 {
-					// Return type
-					output += "->";
-					*i = children[1];
-					
-					match tokens[*i].kind {
-						Type(ref typ) => match typ {
-							&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
-							&Bool => output += "bool",
-							&Char => output += "char",
-							&Int => match tokens[*i - 1].kind {
-								Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
-								_ => output += "i64" // TMP
-							},
-							&Pointer => output += "*", // TMP
-							&Unsigned => (),
-							&Void => (), // May be changed
-						},
-						_ => {
-							let val = get_val2!(tokens[*i].kind);
-							panic!("{}:{} Invalid return type '{}'", tokens[*i].pos.line, tokens[*i].pos.col, val);
-						}
-					}
-					
-					// Function body
-					*i = children[2];
-					output = compile_token(tokens, functions, i, func_def, output, taken);
-				} else {
-					// Function body
-					*i = children[1];
-					output = compile_token(tokens, functions, i, func_def, output, taken);
-				}
-			},
-			_ => () // TMP
-		},
-		
-		Var(ref name, ref types) => {
-			if name == "init" {
-				output += "main";
-			} else {
-				output += name;
-			}
-			
-			if is_defined(&functions, &name).is_some() { // Function call or definition
-				// ???
-				
-				let children = tokens[*i].children.borrow();
-				if children.len() > 0 {
-					output += "(";
-					
-					*func_def = true;
-					for (i, child) in children.iter().enumerate() {
-						let mut c = *child;
-						output = compile_token(tokens, functions, &mut c, func_def, output, taken); // rename 'func_def' to 'ignore_parentheses'? Or at least 'func' to clarify it's not only definitions but also calls
-						if i + 1 < children.len() {
-							output += ",";
-						}
-					}
-					*func_def = false;
-					
-					output += ")";
-				} else {
-					output += "()";
-				}
-			} else {
-				output += ":";
-				
-				for (t, typ) in types.iter().enumerate() {
-					match typ {
-						&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
-						&Bool => output += "bool",
-						&Char => output += "char",
-						&Int => if t > 0 {
-							match &types[t - 1] {
-								&Unsigned => output += "u64", // TMP
-								_ => output += "i64" // TMP
-							}
-						} else {
-							output += "i64";
-						},
-						&Pointer => output += "*", // TMP
-						&Unsigned => (),
-						&Void => (), // May be changed
-					}
-				}
-			}
-		}
-		
-/*		Kind::Whitespace(ref typ) => match typ {
-			&Newline => output += "\n",
-			&CarRet => output += "\r",
-			&Tab => output += "\t",
-			&Space => output += " "
-		} */
-	}
-	
-	taken.push(*i);
-	
-	output
-}
-
 fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
 		Kind::GroupOp(ref op) if op == "{" => {
@@ -884,106 +677,6 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			if fraction != 0 {
 				output += ".";
 				output += &fraction.to_string();
-			}
-		},
-		
-		Kind::Str1(ref s) => {
-			output += "\"";
-			output += s;
-			output += "\"";
-		},
-		
-		Kind::Type(ref typ) => {
-			use lib::Type::*;
-			
-			// TODO: Support unsigned int and other multiple-types
-			
-			match *typ {
-				Array => (), // WIP
-				Bool => output += "bool",
-				Chan => (), // WIP
-				Char => output += "char",
-				Const => output += "const",
-				Fraction => (), // WIP
-				Func => output += "fn",
-				Heap => (), // WIP
-				Int => output += "isize",
-				List => (), // WIP
-				Only => (), // WIP
-				Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
-				Register => (), // WIP
-				Stack => (), // WIP
-				Unique => (), // WIP
-				Unsigned => (), // WIP
-				Void => (), // NOTE: Needs changing to 'output += "()"' once Void is not used for none-existing parameters (use None instead)
-				Volatile => (), // WIP
-			}
-		}
-		
-		Kind::Var(ref name, ref typ) if typ[..] == [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] || typ[..] == [Type::Func, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] => {
-			if let Some(_) = is_defined(functions, name) { // TMP until I've worked out passing functions as arguments
-				output += if name == "init" {
-					"main"
-				} else if name == "println" {
-					"println!"
-				} else {
-					name
-				};
-				output += "(";
-				
-				if name == "println" {
-					output += "\"{}\",";
-				}
-				
-				let args = tokens[*i].children.borrow();
-				for (a, arg) in args.iter().enumerate() {
-					*i = *arg;
-					output = compile_func(tokens, functions, i, output);
-					
-					if a < args.len() - 1 {
-						output += ","
-					}
-				}
-				
-				output += ")";
-			} else {
-				output += name;
-			}
-		},
-		
-		Kind::Var(ref name, ref typ) => {
-			use lib::Type::*;
-			
-			output += name;
-			output += ":";
-			
-			let mut unsigned = false;
-			
-			for t in typ {
-				match *t {
-					Array => (), // WIP
-					Bool => output += "bool",
-					Chan => (), // WIP
-					Char => output += "char",
-					Const => output += "const",
-					Fraction => (), // WIP
-					Func => output += "fn",
-					Heap => (), // WIP
-					Int => if unsigned {
-						output += "usize";
-					} else {
-						output += "isize";
-					},
-					List => (), // WIP
-					Only => (), // WIP
-					Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
-					Register => (), // WIP
-					Stack => (), // WIP
-					Unique => (), // WIP
-					Unsigned => unsigned = true,
-					Void => (), // NOTE: Needs changing to 'output += "()"' once Void is not used for none-existing parameters (use None instead)
-					Volatile => (), // WIP
-				}
 			}
 		},
 		
@@ -1113,13 +806,117 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			}
 		},
 		
+		Kind::Str1(ref s) => {
+			output += "\"";
+			output += s;
+			output += "\"";
+		},
+		
+		Kind::Str2(_) => {
+			panic!("P+ style strings are not supported yet");
+		},
+		
+		Kind::Type(ref typ) => {
+			use lib::Type::*;
+			
+			// TODO: Support unsigned int and other multiple-types
+			
+			match *typ {
+				Array => (), // WIP
+				Bool => output += "bool",
+				Chan => (), // WIP
+				Char => output += "char",
+				Const => output += "const",
+				Fraction => (), // WIP
+				Func => output += "fn",
+				Heap => (), // WIP
+				Int => output += "isize",
+				List => (), // WIP
+				Only => (), // WIP
+				Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
+				Register => (), // WIP
+				Stack => (), // WIP
+				Unique => (), // WIP
+				Unsigned => (), // WIP
+				Void => (), // NOTE: Needs changing to 'output += "()"' once Void is not used for none-existing parameters (use None instead)
+				Volatile => (), // WIP
+			}
+		}
+		
+		Kind::Var(ref name, ref typ) if typ[..] == [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] || typ[..] == [Type::Func, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] => {
+			if let Some(_) = is_defined(functions, name) { // TMP until I've worked out passing functions as arguments
+				output += if name == "init" {
+					"main"
+				} else if name == "println" {
+					"println!"
+				} else {
+					name
+				};
+				output += "(";
+				
+				if name == "println" {
+					output += "\"{}\",";
+				}
+				
+				let args = tokens[*i].children.borrow();
+				for (a, arg) in args.iter().enumerate() {
+					*i = *arg;
+					output = compile_func(tokens, functions, i, output);
+					
+					if a < args.len() - 1 {
+						output += ","
+					}
+				}
+				
+				output += ")";
+			} else {
+				output += name;
+			}
+		},
+		
+		Kind::Var(ref name, ref typ) => {
+			use lib::Type::*;
+			
+			output += name;
+			output += ":";
+			
+			let mut unsigned = false;
+			
+			for t in typ {
+				match *t {
+					Array => (), // WIP
+					Bool => output += "bool",
+					Chan => (), // WIP
+					Char => output += "char",
+					Const => output += "const",
+					Fraction => (), // WIP
+					Func => output += "fn",
+					Heap => (), // WIP
+					Int => if unsigned {
+						output += "usize";
+					} else {
+						output += "isize";
+					},
+					List => (), // WIP
+					Only => (), // WIP
+					Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
+					Register => (), // WIP
+					Stack => (), // WIP
+					Unique => (), // WIP
+					Unsigned => unsigned = true,
+					Void => (), // NOTE: Needs changing to 'output += "()"' once Void is not used for none-existing parameters (use None instead)
+					Volatile => (), // WIP
+				}
+			}
+		},
+		
 		_ => () // WIP
 	};
 	
 	output
 }
 
-pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, func_def: &mut bool, mut output: String, taken: &mut Vec<usize>) -> String {
+pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
 	use lib::Type::*;
 	use lib::Kind::*;
 	
@@ -1179,93 +976,19 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 		_ => ()
 	}
 	
-	return output;
+	output
 	
-	// OUTDATED CODE BELOW (intentionally unreachable)
+	// OUTDATED CODE BELOW
 	
-	match tokens[*i].kind {
-		Kind::Var(ref name, ref types) => {
-			/* match tokens[*child].kind {
-				Kind::Var(_,_) => {
-					let mut i2 = *child;
-					output = compile(tokens, functions, i2, j, output);
-				},
-				
-				Kind::GroupOp(ref op) => {
-					output += op;
-					
-					for child in children.iter() {
-						*i = *child;
-						output = compile(tokens, functions, i, j, output);
-					}
-					
-					if children.len() > 0 {
-						*i += 1;
-						output = compile(tokens, functions, i, j, output);
-					}
-				},
-				
-				_ => output = compile_token(tokens, functions, i, j, output)
-			} */
-			
-			output += name;
-			if children.len() > 0 { // Function call or definition
-				output += "(";
-				
-				for (i, child) in children.iter().enumerate() {
-					let mut c = *child;
-					output = compile_token(tokens, functions, &mut c, func_def, output, taken);
-					if i + 1 < children.len() {
-						output += ",";
-					}
-				}
-				
-				output += ")";
-			} else {
-				output += ":";
-				
-				for typ in types {
-					match typ {
-						&Func => (), // TMP
-						&Array | &Chan | &Const | &Fraction | &Func | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
-						&Bool => output += "bool",
-						&Char => output += "char",
-						&Int => match tokens[*i - 1].kind {
-							Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
-							_ => output += "i64" // TMP
-						},
-						&Pointer => output += "*", // TMP
-						&Unsigned => (),
-						&Void => () // May be changed
-					}
-					
-					output += "";
-				}
-			}
-		},
-		
-		Kind::GroupOp(ref op) => {
-//			output += op;
-			
-			for child in children.iter() {
-				*i = *child;
-//				output = compile(tokens, functions, i, j, output);
-			}
-			
-			if children.len() > 0 {
-				*i += 1;
-				output = compile(tokens, functions, i, func_def, output, taken);
-			}
-		},
-		
+/*	match tokens[*i].kind {
 		Kind::Op(ref op) => match op.as_ref() {
 			"@" => output += "*",
 			"-" if get_val!(tokens[*i + 1].kind) == ">" => if *func_def {
 				output += "-> ";
 				
 				*func_def = false;
-/*				*i += 2;
-				*i += nxt(&tokens, *i); */
+//				*i += 2;
+//				*i += nxt(&tokens, *i);
 				*i += 3;
 				
 				match tokens[*i].kind {
@@ -1297,52 +1020,8 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 			"as" => output += "@",
 			"astype" => output += "as", // TMP; will be replaced with (<type>) <variable>
 			_ => output += &keyword
-		},
-		
-		Kind::Type(ref typ) => match typ {
-/*			&Array | &Chan | &Const | &Fraction | &Heap | &List | &Only | &Register | &Stack | &Unique | &Volatile => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
-			&Bool => output += "bool",
-			&Char => output += "char", */
-			&Func => {
-				output += "fn";
-				*func_def = true;
-			},
-/*			&Int => match tokens[*i - prev(&tokens, *i)].kind {
-				Kind::Type(ref typ) if typ == &Unsigned => output += "u64", // TMP
-				_ => output += "i64" // TMP
-			},
-			&Pointer => output += "*", // TMP
-			&Unsigned => (),
-			&Void => output += "()" */
-			&_ => () // TMP
-		},
-		
-/*		Kind::Whitespace(ref typ) => match typ {
-			&Newline => output += "\n",
-			&CarRet => output += "\r",
-			&Tab => output += "\t",
-			&Space => output += " "
-		}, */
-		
-		_ => ()
-	}
-	
-/*	let val = {
-		use lib::Kind::*;
-		match tokens[*i].kind {
-			GroupOp(ref val) => val.clone(),
-			Literal(ref val) => if *val { String::from("true") } else { String::from("false") }, // TMP
-			Number(ref val, ref val2) => ,
-			Op(ref val) => val.clone(),
-			Reserved(ref val) => val.clone(),
-			Str1(ref val) => val.clone(),
-			Str2(ref val) => val.clone(),
-			Type(ref val) => ,
-			Var(ref val, ref val2) => ,
-			Whitespace(ref val) => ,
-			_ => panic!("")
 		}
-	};
+	}
 	
 	match val.as_ref() {
 		"array" | "chan" | "fraction" | "heap" | "list" | "number" | "register" | "stack" | "async" | "from" | "receive" | "select" | "send" | "to" => panic!("{}:{} Unimplemented token '{}'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind)),
@@ -1360,102 +1039,5 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, fu
 		"foreach" => output += "for",
 		"as" => output += "@",
 		"astype" => output += "as", // TMP; will be replaced with (<type>) <variable>
-		_ => {
-			let pos_change = match tokens[*i].kind {
-				Kind::Str1(_) | Kind::Str2(_) | Kind::Number(_,_) | Kind::Literal(_) | Kind::Var(_,_) => {
-					let nxt_tok = nxt(tokens, *i);
-					if nxt_tok > 0 && is_kind!(tokens[*i + nxt_tok].kind, Kind::Var(_,_)) {
-						output += &get_val!(tokens[*i + nxt_tok].kind);
-						output += "(";
-						nxt_tok
-					} else {
-						0
-					}
-				},
-				_ => 0
-			};
-			
-			match tokens[*i].kind {
-				Kind::Str1(_) => {
-					output += "\"";
-					output += &get_val!(tokens[*i].kind);
-					output += "\"";
-				},
-				Kind::Str2(_) => {
-					output += "'";
-					output += &get_val!(tokens[*i].kind);
-					output += "'";
-				},
-				Kind::Type(_) => {
-					let mut nxt_tokens: Vec<usize> = vec!(nxt(tokens, *i));
-					while last!(nxt_tokens) > 0 && is_kind!(tokens[*i + last!(nxt_tokens)].kind, Kind::Type(_)) {
-						let last_tok = last!(nxt_tokens);
-						nxt_tokens.push({
-							let nxt_tok = nxt(tokens, *i + last_tok) + last_tok;
-							if nxt_tok == last_tok {
-								0
-							} else {
-								nxt_tok
-							}
-						});
-					}
-					
-					if last!(nxt_tokens) > 0 && is_kind!(tokens[*i + last!(nxt_tokens)].kind, Kind::Var(_,_)) {
-						output += &get_val!(tokens[*i + last!(nxt_tokens)].kind);
-						output += ":";
-						
-						output += match get_val!(tokens[*i].kind).as_ref() {
-							"unsigned" => {
-								if nxt_tokens[0] > 0 && is_kind!(tokens[*i + nxt_tokens[0]].kind, Kind::Type(_)) {
-									match get_val!(tokens[*i + nxt_tokens[0]].kind).as_ref() {
-										"int" => "u64",
-										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i + nxt_tokens[0]].pos.line, tokens[*i + nxt_tokens[0]].pos.col, get_val!(tokens[*i + nxt_tokens[0]].kind))
-									}
-								} else {
-									panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
-								}
-							},
-							"int" => "i64",
-							_ => &get_val!(tokens[*i].kind)
-						};
-						
-						*i += last!(nxt_tokens);
-					} else {
-						output += match get_val!(tokens[*i].kind).as_ref() {
-							"unsigned" => {
-								let nxt_tok = nxt(tokens, *i);
-								
-								*i += nxt_tok;
-								
-								if nxt_tok > 0 && is_kind!(tokens[*i].kind, Kind::Type(_)) {
-									match get_val!(tokens[*i].kind).as_ref() {
-										"int" => "u64",
-										_ => panic!("{}:{} Invalid type '{}' following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col, get_val!(tokens[*i].kind))
-									}
-								} else {
-									panic!("{}:{} Missing data type following 'unsigned'", tokens[*i].pos.line, tokens[*i].pos.col);
-								}
-							},
-							"int" => "i64",
-							_ => &get_val!(tokens[*i].kind)
-						};
-					}
-				},
-				_ => output += &get_val!(tokens[*i].kind)
-			}
-			
-			if pos_change > 0 {
-				*i += pos_change;
-				*i += nxt(tokens, *i);
-				
-				output += ",";
-				output = compile(tokens, i, output);
-				*i += 1;
-				output += &get_val!(tokens[*i].kind);
-				output += ")";
-			}
-		}
 	}; */
-	
-	output
 }
