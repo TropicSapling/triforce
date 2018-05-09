@@ -298,7 +298,9 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				}
 			} else if op == ";" { // End of function declaration
 				functions[last_item].output = par_type.clone();
-				if par_type[0] != Type::Void {
+				if functions[last_item].name == "**" {
+					functions[last_item].precedence = 247;
+				} else if par_type[0] != Type::Void {
 					functions[last_item].precedence = 1;
 				}
 				
@@ -321,7 +323,9 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 			
 			Kind::GroupOp(ref op) if func => if op == "{" { // Function body
 				functions[last_item].output = par_type.clone();
-				if par_type[0] != Type::Void {
+				if functions[last_item].name == "**" {
+					functions[last_item].precedence = 247;
+				} else if par_type[0] != Type::Void {
 					functions[last_item].precedence = 1;
 				}
 				
@@ -453,28 +457,10 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 			k += 1;
 		}
 		
-		if k < tokens.len() {
-			j += 1;
-			offset += 1;
-			continue;
-		} else {
-			tokens[start].children.borrow_mut().push(i + j);
-		}
+		let mut skip = false;
 		
 		match tokens[i + j].kind {
-			Kind::Op(_) => {
-				j += 1;
-				while i + j < tokens.len() {
-					match tokens[i + j].kind {
-						Kind::Op(_) => {
-							j += 1;
-							offset += 1;
-						},
-						_ => break
-					}
-				}
-				j -= 1;
-			},
+			Kind::Op(_) => skip = true,
 			
 			Kind::GroupOp(_) | Kind::Type(_) => {
 				j += 1;
@@ -485,13 +471,43 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 			_ => ()
 		};
 		
+		if k < tokens.len() {
+			match tokens[i + j + 1].kind {
+				Kind::Op(_) if skip => offset += 1,
+				_ => {
+					j += 1;
+					offset += 1;
+					continue;
+				}
+			}
+		} else {
+			tokens[start].children.borrow_mut().push(i + j);
+		}
+		
+		if skip {
+			j += 1;
+			while i + j < tokens.len() {
+				match tokens[i + j].kind {
+					Kind::Op(_) => {
+						j += 1;
+						offset += 1;
+					},
+					_ => break
+				}
+			}
+			j -= 1;
+		}
+		
 		j += 1;
 	}
 }
 
 fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
 	match tokens[*i + 1].kind {
-		Kind::GroupOp(ref op) if op == "}" => return Some(*i),
+		Kind::GroupOp(ref op) if op == "}" => {
+			*i += 1;
+			return Some(*i - 1);
+		},
 		_ => ()
 	};
 	

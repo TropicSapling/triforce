@@ -130,6 +130,17 @@ fn init() -> i32 {
 		func (int a) -- -> int {
 			a - 1 // TMP
 		}
+		
+		#[allow(unused)]
+		func (int base) ** (unsigned int exp) -> int {
+			if exp == 0 {
+				1
+			} else if exp % 2 == 0 {
+				base ** (exp / 2) * base ** (exp / 2)
+			} else {
+				base * base ** (exp / 2) * base ** (exp / 2)
+			}
+		}
 	");
 	
 	let line_offset = count_newlines(&in_contents);
