@@ -306,6 +306,57 @@ macro_rules! def_builtin_funcs {
 		},
 		
 		Function {
+			name: String::from("<<"),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				}
+			],
+			precedence: 244,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from(">>"),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				}
+			],
+			precedence: 244,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from("^"),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				}
+			],
+			precedence: 240,
+			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
 			name: String::from("println"),
 			pos: 0,
 			args: vec![
@@ -821,7 +872,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				"=" => "eq",
 				"&" => "and",
 				"|" => "or",
-				"^" => "mod",
+				"^" => "xor",
 				"<" => "larrow",
 				">" => "rarrow",
 				"!" => "not",
@@ -873,7 +924,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			
 			let args = tokens[start].children.borrow();
 			
-			if name == "plus" || name == "minus" || name == "times" || name == "div" || name == "mod" || name == "eq" || name == "eqeq" || name == "noteq" || name == "andand" || name == "or" || name == "oror" || name == "larrow" || name == "rarrow" {
+			if name == "plus" || name == "minus" || name == "times" || name == "div" || name == "mod" || name == "eq" || name == "eqeq" || name == "noteq" || name == "andand" || name == "or" || name == "oror" || name == "xor" || name == "larrow" || name == "rarrow" || name == "larrowlarrow" || name == "rarrowrarrow" {
 				*i = args[0];
 				output = compile_func(tokens, functions, i, output);
 				
@@ -889,8 +940,11 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					"andand" => "&&",
 					"or" => "|",
 					"oror" => "||",
+					"xor" => "^",
 					"larrow" => "<",
 					"rarrow" => ">",
+					"larrowlarrow" => "<<",
+					"rarrowrarrow" => ">>",
 					&_ => unreachable!()
 				};
 				
