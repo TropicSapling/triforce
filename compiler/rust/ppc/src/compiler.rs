@@ -357,10 +357,22 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				_ => ()
 			},
 			
-			Kind::Type(ref typ) => match tokens[i + 1].kind {
+			Kind::Type(_) => match tokens[i + 1].kind {
 				Kind::GroupOp(ref op) if op == "{" => {
+					let end = i;
+					while i > 0 {
+						match tokens[i].kind {
+							Kind::Type(ref typ) => par_type[7 - (end - i)] = typ.clone(),
+							_ => break
+						}
+						
+						i -= 1;
+					}
+					
+					i += 1;
 					tokens[func_pos].children.borrow_mut().push(i);
-					par_type[0] = typ.clone(); // TODO: Add support for returning multiple types
+					
+					i = end;
 				},
 				_ => ()
 			},
@@ -945,29 +957,46 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 		Kind::Type(ref typ) => {
 			use lib::Type::*;
 			
-			// TODO: Support unsigned int and other multiple-types
-			
-			match *typ {
-				Array => (), // WIP
-				Bool => output += "bool",
-				Chan => (), // WIP
-				Char => output += "char",
-				Const => output += "const",
-				Fraction => (), // WIP
-				Func => output += "fn",
-				Heap => (), // WIP
-				Int => output += "isize",
-				List => (), // WIP
-				Only => (), // WIP
-				Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
-				Register => (), // WIP
-				Stack => (), // WIP
-				Unique => (), // WIP
-				Unsigned => (), // WIP
-				Void => (), // NOTE: Needs changing to 'output += "()"' once Void is not used for none-existing parameters (use None instead)
-				Volatile => (), // WIP
+			let mut types = vec![typ];
+			*i += 1;
+			while *i < tokens.len() {
+				match tokens[*i].kind {
+					Kind::Type(ref typ) => types.push(typ),
+					_ => break
+				}
+				
+				*i += 1;
 			}
-		}
+			*i -= 1;
+			
+			let mut unsigned = false;
+			for typ in types {
+				match *typ {
+					Array => (), // WIP
+					Bool => output += "bool",
+					Chan => (), // WIP
+					Char => output += "char",
+					Const => output += "const",
+					Fraction => (), // WIP
+					Func => output += "fn",
+					Heap => (), // WIP
+					Int => if unsigned {
+						output += "usize";
+					} else {
+						output += "isize";
+					},
+					List => (), // WIP
+					Only => (), // WIP
+					Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
+					Register => (), // WIP
+					Stack => (), // WIP
+					Unique => (), // WIP
+					Unsigned => unsigned = true,
+					Void => (), // NOTE: Needs changing to 'output += "()"' once Void is not used for none-existing parameters (use None instead)
+					Volatile => (), // WIP
+				}
+			}
+		},
 		
 		Kind::Var(ref name, ref typ) if typ[..] == [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] || typ[..] == [Type::Func, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] => {
 			if let Some(_) = is_defined(functions, name) { // TMP until I've worked out passing functions as arguments
