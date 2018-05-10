@@ -992,7 +992,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					Stack => (), // WIP
 					Unique => (), // WIP
 					Unsigned => unsigned = true,
-					Void => (), // NOTE: Needs changing to 'output += "()"' once Void is not used for none-existing parameters (use None instead)
+					Void => output += "()",
 					Volatile => (), // WIP
 				}
 			}
