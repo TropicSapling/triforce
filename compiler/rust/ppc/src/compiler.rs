@@ -710,7 +710,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	functions
 }
 
-fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
+fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Function>) {
 	let (mut i, def) = func;
 	let start = i;
 	let mut j = 0;
@@ -719,13 +719,21 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function)) {
 	i -= 1;
 	while i - j > 0 && j - offset < def.pos {
 		match tokens[i - j].kind {
-			Kind::Op(_) => {
+			Kind::Op(ref op) => {
+				let mut name = op.to_string();
+				
 				j += 1;
 				while i - j > 0 {
 					match tokens[i - j].kind {
-						Kind::Op(_) => {
-							j += 1;
-							offset += 1;
+						Kind::Op(ref op) => {
+							name.insert(0, op.chars().next().unwrap());
+							
+							if let Some(_) = is_defined(functions, &name) {
+								j += 1;
+								offset += 1;
+							} else {
+								break;
+							}
 						},
 						_ => break
 					}
@@ -944,7 +952,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 		match highest {
 			Some(func) => {
 				lowest = Some(func.0);
-				parse_func(tokens, (func.0, func.1));
+				parse_func(tokens, (func.0, func.1), functions);
 			},
 			None => break
 		};
