@@ -374,6 +374,142 @@ macro_rules! def_builtin_funcs {
 		},
 		
 		Function {
+			name: String::from("+="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				}
+			],
+			precedence: 0,
+			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from("-="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				}
+			],
+			precedence: 0,
+			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from("*="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				}
+			],
+			precedence: 0,
+			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from("/="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				}
+			],
+			precedence: 0,
+			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from("%="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				}
+			],
+			precedence: 0,
+			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from(">>="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				}
+			],
+			precedence: 0,
+			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from("<<="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				}
+			],
+			precedence: 0,
+			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
+			name: String::from("^="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				}
+			],
+			precedence: 0,
+			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
 			name: String::from("println"),
 			pos: 0,
 			args: vec![
@@ -813,7 +949,7 @@ fn parse_let(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	let start = *i;
 	while *i < tokens.len() {
 		match tokens[*i].kind {
-			Kind::Op(ref op) if op == "=" => break,
+			Kind::Op(_) => break,
 			_ => *i += 1
 		}
 	}
@@ -964,16 +1100,23 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			
 			let args = tokens[start].children.borrow();
 			
-			if name == "plus" || name == "minus" || name == "times" || name == "div" || name == "mod" || name == "eq" || name == "eqeq" || name == "noteq" || name == "andand" || name == "or" || name == "oror" || name == "xor" || name == "larrow" || name == "rarrow" || name == "larrowlarrow" || name == "rarrowrarrow" {
+			if name == "plus" || name == "pluseq" || name == "minus" || name == "minuseq" || name == "times" || name == "timeseq" || name == "div" || name == "diveq" ||
+			   name == "mod" || name == "modeq" || name == "eq" || name == "eqeq" || name == "noteq" || name == "andand" || name == "or" || name == "oror" || name == "xor" ||
+			   name == "xoreq" || name == "larrow" || name == "rarrow" || name == "larrowlarrow" || name == "larrowlarroweq" || name == "rarrowrarrow" || name == "rarrowrarroweq" {
 				*i = args[0];
 				output = compile_func(tokens, functions, i, output);
 				
 				output += match name.as_ref() {
 					"plus" => "+",
+					"pluseq" => "+=",
 					"minus" => "-",
+					"minuseq" => "-=",
 					"times" => "*",
+					"timeseq" => "*=",
 					"div" => "/",
+					"diveq" => "/=",
 					"mod" => "%",
+					"modeq" => "%=",
 					"eq" => "=",
 					"eqeq" => "==",
 					"noteq" => "!=",
@@ -981,10 +1124,13 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					"or" => "|",
 					"oror" => "||",
 					"xor" => "^",
+					"xoreq" => "^=",
 					"larrow" => "<",
 					"rarrow" => ">",
 					"larrowlarrow" => "<<",
+					"larrowlarroweq" => "<<=",
 					"rarrowrarrow" => ">>",
+					"rarrowrarroweq" => ">>=",
 					&_ => unreachable!()
 				};
 				
