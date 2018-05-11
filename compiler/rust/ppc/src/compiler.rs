@@ -795,10 +795,10 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 			k += 1;
 		}
 		
-		let mut skip = false;
+		let mut skip = (false, "");
 		
 		match tokens[i + j].kind {
-			Kind::Op(_) => skip = true,
+			Kind::Op(ref op) => skip = (true, op),
 			
 			Kind::GroupOp(_) | Kind::Type(_) => {
 				j += 1;
@@ -811,7 +811,7 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 		
 		if k < tokens.len() {
 			match tokens[i + j + 1].kind {
-				Kind::Op(_) if skip => offset += 1,
+				Kind::Op(_) if skip.0 => offset += 1,
 				_ => {
 					j += 1;
 					offset += 1;
@@ -822,13 +822,21 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 			tokens[start].children.borrow_mut().push(i + j);
 		}
 		
-		if skip {
+		if skip.0 {
+			let mut name = skip.1.to_string();
+			
 			j += 1;
 			while i + j < tokens.len() {
 				match tokens[i + j].kind {
-					Kind::Op(_) => {
-						j += 1;
-						offset += 1;
+					Kind::Op(ref op) => {
+						name += op;
+						
+						if let Some(_) = is_defined(functions, &name) {
+							j += 1;
+							offset += 1;
+						} else {
+							break;
+						}
 					},
 					_ => break
 				}
