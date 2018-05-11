@@ -12,10 +12,7 @@ use term_painter::{ToStyle, Color::*};
 use std::{
 	fs,
 	fs::File,
-	io::{
-		prelude::*,
-		ErrorKind::{NotFound, PermissionDenied}
-	},
+	io::prelude::*,
 	process::Command,
 	path::PathBuf,
 	str
@@ -29,15 +26,7 @@ fn count_newlines(s: &str) -> usize {
 	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
 }
 
-fn main() {
-	let status = init();
-	
-	if status != 0 {
-		println!("\nProcess exited with error code {}.", status);
-	}
-}
-
-fn init() -> i32 {
+fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
 		.version("0.1.0-alpha")
 		.about("P+ compiler written in Rust.")
@@ -90,33 +79,11 @@ fn init() -> i32 {
 		Err(e) => if !input.extension().is_some() {
 			input.set_extension("ppl");
 			
-			match File::open(&input) {
-				Ok(file) => file,
-				Err(err) => match err.kind() {
-					NotFound => {
-						println!("{} File not found: {:?}.", BrightRed.paint("[ERROR]"), input);
-						return 1;
-					},
-					PermissionDenied => {
-						println!("{} Access denied when trying to open file {:?}.", BrightRed.paint("[ERROR]"), input);
-						return 2;
-					},
-					_ => panic!("failed to open file")
-				}
-			}
+			File::open(&input)?
 		} else {
-			match e.kind() {
-				NotFound => {
-					println!("{} File not found: {:?}.", BrightRed.paint("[ERROR]"), input);
-					return 1;
-				},
-				PermissionDenied => {
-					println!("{} Access denied when trying to open file {:?}.", BrightRed.paint("[ERROR]"), input);
-					return 2;
-				},
-				_ => panic!("failed to open file")
-			}
+			return Err(e);
 		},
+		
 		Ok(t) => t
 	};
 	
@@ -145,14 +112,7 @@ fn init() -> i32 {
 	
 	let line_offset = count_newlines(&in_contents);
 	
-	match in_file.read_to_string(&mut in_contents) {
-		Ok(t) => t,
-		Err(_e) => {
-			println!("{} Failed to read file {:?}; make sure the file contains valid UTF-8 data.", BrightRed.paint("[ERROR]"), input);
-			return 3;
-		}
-	};
-	
+	in_file.read_to_string(&mut in_contents)?;
 	
 	//////// LEX, PARSE & COMPILE ////////
 	
@@ -202,20 +162,10 @@ fn init() -> i32 {
 		println!("{} OUTPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), output);
 	}
 	
-	match fs::create_dir_all(&output_dir) {
-		Err(e) => panic!("{}", e),
-		_ => ()
-	}
+	fs::create_dir_all(&output_dir)?;
 	
-	let mut out_file = match File::create(output) {
-		Err(e) => panic!("{}", e),
-		Ok(t) => t
-	};
-	
-	match out_file.write_all(out_contents.as_bytes()) {
-		Err(e) => panic!("{}", e),
-		_ => ()
-	}
+	let mut out_file = File::create(output)?;
+	out_file.write_all(out_contents.as_bytes())?;
 	
 	//////// CREATE BINARY OUTPUT ////////
 	
@@ -224,10 +174,7 @@ fn init() -> i32 {
 		println!("{} FINAL OUTPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), final_output);
 	}
 	
-	match fs::create_dir_all(&final_output_dir) {
-		Err(e) => panic!("{}", e),
-		_ => ()
-	}
+	fs::create_dir_all(&final_output_dir)?;
 	
 	let out = Command::new("rustc")
 		.args(&["--out-dir", &final_output_dir, &output])
@@ -267,16 +214,9 @@ fn init() -> i32 {
 	//////// DELETE RUST FILES ////////
 	
 	if !matches.is_present("rust") {
-		match fs::remove_file(&output) {
-			Err(e) => panic!("{}", e),
-			_ => ()
-		}
-		
-/*		match fs::remove_dir(&output_dir) { // Doesn't work (on Windows) for some reason?
-			Err(e) => panic!("{}", e),
-			_ => ()
-		} */
+		fs::remove_file(&output)?;
+//		fs::remove_dir(&output_dir)?; // Doesn't work (on Windows) for some reason?
 	}
 	
-	0
+	Ok(())
 }
