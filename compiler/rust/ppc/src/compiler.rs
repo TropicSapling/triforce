@@ -357,6 +357,23 @@ macro_rules! def_builtin_funcs {
 		},
 		
 		Function {
+			name: String::from("="),
+			pos: 1,
+			args: vec![
+				FunctionArg {
+					name: $a,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				},
+				FunctionArg {
+					name: $b,
+					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
+				}
+			],
+			precedence: 0,
+			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		},
+		
+		Function {
 			name: String::from("println"),
 			pos: 0,
 			args: vec![
@@ -365,7 +382,7 @@ macro_rules! def_builtin_funcs {
 					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; No support for strings yet
 				}
 			],
-			precedence: 0,
+			precedence: 1,
 			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
 		}
 	])
@@ -401,7 +418,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 		match token.kind {
 			Kind::Type(ref typ) if !func => match typ {
 				&Type::Func => {
-					functions.push(Function {name: String::from(""), pos: 0, args: vec![], precedence: 0, output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
+					functions.push(Function {name: String::from(""), pos: 0, args: vec![], precedence: 1, output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
 					func_pos = i;
 					func = true;
 				},
@@ -455,7 +472,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				if functions[last_item].name == "**" {
 					functions[last_item].precedence = 247;
 				} else if par_type[0] != Type::Void {
-					functions[last_item].precedence = 1;
+					functions[last_item].precedence = 2;
 				}
 				
 				let func_name_pos = tokens[func_pos].children.borrow()[0];
@@ -480,7 +497,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				if functions[last_item].name == "**" {
 					functions[last_item].precedence = 247;
 				} else if par_type[0] != Type::Void {
-					functions[last_item].precedence = 1;
+					functions[last_item].precedence = 2;
 				}
 				
 				let func_name_pos = tokens[func_pos].children.borrow()[0];
@@ -789,6 +806,24 @@ fn parse_ret(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	}
 }
 
+fn parse_let(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
+	let mut body = tokens[*i].children.borrow_mut();
+	*i += 1;
+	
+	let start = *i;
+	while *i < tokens.len() {
+		match tokens[*i].kind {
+			Kind::Op(ref op) if op == "=" => break,
+			_ => *i += 1
+		}
+	}
+	
+	body.push(*i);
+	
+	*i = start;
+	parse_statement(tokens, functions, i);
+}
+
 pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	match tokens[*i].kind {
 		Kind::GroupOp(ref op) if op == "{" => {
@@ -818,10 +853,15 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 							parse_ret(tokens, functions, i);
 						},
 						
+						Kind::Reserved(ref keyword) if keyword == "let" => {
+							body.push(*i);
+							parse_let(tokens, functions, i);
+						},
+						
 						_ => if let Some(token) = parse_statement(tokens, functions, i) {
 							body.push(token);
 						} else {
-							body.push(start);
+							body.push(start); // Should this really be pushing start instead of *i?
 							*i += 1;
 						}
 					}
@@ -993,6 +1033,13 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 		
 		Kind::Reserved(ref keyword) if keyword == "return" => {
 			output += "return ";
+			
+			*i = tokens[*i].children.borrow()[0];
+			output = compile_func(tokens, functions, i, output);
+		},
+		
+		Kind::Reserved(ref keyword) if keyword == "let" => {
+			output += "let mut "; // Mutable by default, constants coming soon
 			
 			*i = tokens[*i].children.borrow()[0];
 			output = compile_func(tokens, functions, i, output);

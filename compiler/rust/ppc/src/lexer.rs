@@ -211,7 +211,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 						"unsigned" => Kind::Type(Type::Unsigned),
 						"volatile" => Kind::Type(Type::Volatile),
 						"void" => Kind::Type(Type::Void),
-						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Kind::Reserved(item.to_string()),
+						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "let" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Kind::Reserved(item.to_string()),
 						"false" => Kind::Literal(false),
 						"true" => Kind::Literal(true),
 						"\n" => {
