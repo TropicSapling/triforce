@@ -25,4 +25,12 @@ func (int a) (int b) --- (int c) (int d) -> int {
 func init {
 	(1 2 +++ 3 * 4 5)++ 6 --- 7 8 backwards_println;
 	println 1 * 2 + 3 ** 4 * 5 + 6;
+	
+/*	let res = 1 * 2 + 3 ** 4 * 5 + 6; // 'let' is necessary to allow variable shadowing, decrease bugs and make code clearer for both the compiler and the reader
+	res = res + 123;
+	println res;
+	
+	int n = 123; // 'let' is however not necessary when specifying a type since it's obvious that it's a declaration anyway
+	n = n + 456;
+	println n; */
 }
