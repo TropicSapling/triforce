@@ -566,11 +566,26 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 					let end = i;
 					while i > 0 {
 						match tokens[i].kind {
-							Kind::Type(ref typ) => par_type[7 - (end - i)] = typ.clone(),
+							Kind::Type(ref typ) => par_type[end - i] = typ.clone(),
 							_ => break
 						}
 						
 						i -= 1;
+					}
+					
+					let mut j = 0;
+					while j + 1 < 8 && par_type[j + 1] != Type::Void {
+						j += 1;
+					}
+					
+					let mut k = 0;
+					while j != k && j + 1 != k {
+						let tmp = par_type[j].clone();
+						par_type[j] = par_type[k].clone();
+						par_type[k] = tmp;
+						
+						j -= 1;
+						k += 1;
 					}
 					
 					i += 1;
@@ -608,7 +623,11 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				if functions[last_item].name == "**" {
 					functions[last_item].precedence = 247;
 				} else if par_type[0] != Type::Void {
-					functions[last_item].precedence = 2;
+					if func_args.len() == 1 {
+						functions[last_item].precedence = 255;
+					} else {
+						functions[last_item].precedence = 2;
+					}
 				}
 				
 				let func_name_pos = tokens[func_pos].children.borrow()[0];
@@ -633,7 +652,11 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				if functions[last_item].name == "**" {
 					functions[last_item].precedence = 247;
 				} else if par_type[0] != Type::Void {
-					functions[last_item].precedence = 2;
+					if func_args.len() == 1 {
+						functions[last_item].precedence = 255;
+					} else {
+						functions[last_item].precedence = 2;
+					}
 				}
 				
 				let func_name_pos = tokens[func_pos].children.borrow()[0];
