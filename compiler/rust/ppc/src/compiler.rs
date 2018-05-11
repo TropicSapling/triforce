@@ -890,6 +890,26 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 							};
 						} else if name == "->" {
 							break;
+						} else {
+							let mut j = 1;
+							while j < name.len() {
+								if let Some(def) = is_defined(functions, &name[..name.len() - j]) {
+									match highest {
+										Some(func) => if (def.precedence > func.1.precedence && depth == func.2) || depth > func.2 {
+											highest = Some((start, def, depth));
+										},
+										None => highest = Some((start, def, depth))
+									};
+									
+									break;
+								}
+								
+								j += 1;
+							}
+							
+							if j >= name.len() {
+								panic!("{}:{} Undefined operator '{}'", tokens[*i].pos.line, tokens[*i].pos.col, &name);
+							}
 						}
 					},
 					
@@ -898,15 +918,22 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 					
 					_ => ()
 				};
-			} else if let Kind::Op(_) = tokens[*i].kind {
+			} else if let Kind::Op(ref op) = tokens[*i].kind {
+				let mut name = op.to_string();
+				
 				*i += 1;
 				while *i < tokens.len() {
 					match tokens[*i].kind {
-						Kind::Op(_) => (),
+						Kind::Op(ref op) => {
+							name += op;
+							if let Some(_) = is_defined(functions, &name) {
+								*i += 1;
+							} else {
+								break;
+							}
+						},
 						_ => break
 					}
-					
-					*i += 1;
 				}
 				*i -= 1;
 			}
@@ -1062,7 +1089,73 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 		},
 		
 		Kind::Op(ref op) => {
-			let mut name = match op.as_ref() {
+			let mut name = op.to_string();
+			let start = *i;
+			
+			if name == "-" {
+				match tokens[*i + 1].kind {
+					Kind::Op(ref op) if op == ">" => {
+						*i += 1;
+						return output;
+					},
+					_ => ()
+				}
+			}
+			
+			*i += 1;
+			while *i < tokens.len() {
+				match tokens[*i].kind {
+					Kind::Op(ref op) => {
+						name += op;
+						if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS
+							*i += 1;
+						} else {
+							if name.ends_with("->") {
+								if let Kind::Type(_) = tokens[*i + 1].kind {
+									name.pop();
+									*i -= 1;
+								}
+							}
+							
+							name.pop();
+							break;
+						}
+					},
+					
+					_ => break
+				}
+			}
+			*i -= 1;
+			
+			let mut new_name = String::new();
+			for op in name.chars() {
+				new_name += match op {
+					'+' => "plus",
+					'-' => "minus",
+					'*' => "times",
+					'/' => "div",
+					'%' => "mod",
+					'=' => "eq",
+					'&' => "and",
+					'|' => "or",
+					'^' => "xor",
+					'<' => "larrow",
+					'>' => "rarrow",
+					'!' => "not",
+					'~' => "binnot",
+					'?' => "quest",
+					':' => "colon",
+					'.' => "dot",
+					',' => "comma",
+					'@' => "at",
+					';' => "semic",
+					_ => unreachable!()
+				};
+			}
+			
+			let name = new_name;
+			
+/*			let mut name = match op.as_ref() {
 				"+" => "plus",
 				"-" => "minus",
 				"*" => "times",
@@ -1119,7 +1212,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				
 				*i += 1;
 			}
-			*i -= 1;
+			*i -= 1; */
 			
 			let args = tokens[start].children.borrow();
 			
