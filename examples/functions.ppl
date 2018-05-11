@@ -23,7 +23,7 @@ func (int a) (int b) --- (int c) (int d) -> int {
 }
 
 func init {
-	(1 2 +++ 3 * 4 5)++ 6 --- 7 8 backwards_println;
+	(1 2 +++ 3-- * 4 5++ 6++ --- 7 8)-- backwards_println; // Like the most complex expression I can think of, took ages to make this get parsed successfully ;-;
 	
 	let res = 1 * 2 + 3 ** 4 * 5 + 6; // 'let' is necessary to allow variable shadowing, decrease bugs and make code clearer for both the compiler and the reader
 	res += 123;
