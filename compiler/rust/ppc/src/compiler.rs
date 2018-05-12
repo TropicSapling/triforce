@@ -1170,66 +1170,6 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			}
 			
 			let name = new_name;
-			
-/*			let mut name = match op.as_ref() {
-				"+" => "plus",
-				"-" => "minus",
-				"*" => "times",
-				"/" => "div",
-				"%" => "mod",
-				"=" => "eq",
-				"&" => "and",
-				"|" => "or",
-				"^" => "xor",
-				"<" => "larrow",
-				">" => "rarrow",
-				"!" => "not",
-				"~" => "binnot",
-				"?" => "quest",
-				":" => "colon",
-				"." => "dot",
-				"," => "comma",
-				"@" => "at",
-				";" => "semic",
-				&_ => unreachable!()
-			}.to_string();
-			let start = *i;
-					
-			*i += 1;
-			while *i < tokens.len() {
-				match tokens[*i].kind {
-					Kind::Op(ref op) => name += match op.as_ref() {
-						"+" => "plus",
-						"-" => match tokens[*i + 1].kind {
-							Kind::Op(ref op) if op == ">" => break,
-							_ => "minus"
-						},
-						"*" => "times",
-						"/" => "div",
-						"%" => "mod",
-						"=" => "eq",
-						"&" => "and",
-						"|" => "or",
-						"^" => "xor",
-						"<" => "larrow",
-						">" => "rarrow",
-						"!" => "not",
-						"~" => "binnot",
-						"?" => "quest",
-						":" => "colon",
-						"." => "dot",
-						"," => "comma",
-						"@" => "at",
-						";" => "semic",
-						&_ => unreachable!()
-					},
-					_ => break
-				}
-				
-				*i += 1;
-			}
-			*i -= 1; */
-			
 			let args = tokens[start].children.borrow();
 			
 			if name == "plus" || name == "pluseq" || name == "minus" || name == "minuseq" || name == "times" || name == "timeseq" || name == "div" || name == "diveq" ||
@@ -1329,8 +1269,14 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			output += "\"";
 		},
 		
-		Kind::Str2(_) => {
-			panic!("P+ style strings are not supported yet");
+		Kind::Str2(ref s) => {
+			if s.len() == 1 || (s.len() == 2 && s.chars().next().unwrap() == '\\') { // Just a character, not an actual string
+				output += "'";
+				output += s;
+				output += "'";
+			} else {
+				panic!("{}:{} P+ style strings are not supported yet", tokens[*i].pos.line, tokens[*i].pos.col);
+			}
 		},
 		
 		Kind::Type(ref typ) => {
