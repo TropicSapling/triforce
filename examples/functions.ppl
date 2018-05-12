@@ -1,4 +1,4 @@
-// func (int i) print; // Uncommented for now because apparently Rust doesn't support this
+// func (int i) print; // Commented for now because apparently Rust doesn't support this
 
 func (int i) backwards_println {
 	if true { // To test if statements
@@ -32,4 +32,7 @@ func init {
 	let unsigned int n = 456; // 'let' is however not necessary when specifying a type since it's obvious that it's a declaration anyway (WIP, use 'let' for now anyway)
 	n *= 789;
 	println n;
+	
+	let const constant = "This is a constant string.";
+	println constant;
 }

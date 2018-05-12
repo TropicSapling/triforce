@@ -100,9 +100,9 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 					Kind::Str2(ref mut value) => value,
 					_ => unreachable!()
 				};
-				if item == "0" || item == "n" { // Null and newlines
+//				if item == "0" || item == "n" { // Null and newlines (commented for now because this check doesn't seem to be necessary?)
 					*val += "\\";
-				}
+//				}
 				
 				*val += item;
 				string.pos = if line > line_offset {
