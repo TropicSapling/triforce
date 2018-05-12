@@ -1257,7 +1257,11 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 		},
 		
 		Kind::Reserved(ref keyword) if keyword == "let" => {
-			output += "let mut "; // Mutable by default, constants coming soon
+			output += "let ";
+			match tokens[*i + 1].kind {
+				Kind::Type(ref typ) if typ == &Type::Const => (),
+				_ => output += "mut "
+			};
 			
 			*i = tokens[*i].children.borrow()[0];
 			output = compile_func(tokens, functions, i, output);
@@ -1301,7 +1305,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					Bool => output += "bool",
 					Chan => (), // WIP
 					Char => output += "char",
-					Const => output += "const",
+					Const => (), // Should this be ignored?
 					Fraction => (), // WIP
 					Func => output += "fn",
 					Heap => (), // WIP
@@ -1323,7 +1327,9 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			}
 		},
 		
-		Kind::Var(ref name, ref typ) if typ[..] == [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] || typ[..] == [Type::Func, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] => {
+		Kind::Var(ref name, ref typ) if typ[..] == [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] ||
+										typ[..] == [Type::Func, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] ||
+										typ[..] == [Type::Const, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] => {
 			if let Some(_) = is_defined(functions, name) { // TMP until I've worked out passing functions as arguments
 				output += if name == "init" {
 					"main"
@@ -1368,7 +1374,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					Bool => output += "bool",
 					Chan => (), // WIP
 					Char => output += "char",
-					Const => output += "const",
+					Const => (),
 					Fraction => (), // WIP
 					Func => output += "fn",
 					Heap => (), // WIP
