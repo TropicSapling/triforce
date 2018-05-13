@@ -1409,6 +1409,26 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 	let children = tokens[*i].children.borrow();
 	
 	match tokens[*i].kind {
+		Kind::Reserved(ref keyword) if keyword == "import" => {
+			// Using Rust-style importing for now
+			output += "use ";
+			*i += 1;
+			
+			while *i < tokens.len() {
+				match tokens[*i].kind {
+					Kind::Op(ref op) if op == ";" => {
+						output += ";";
+						break;
+					},
+					
+					_ => {
+						output += get_val!(tokens[*i].kind); // Will probably be changed
+						*i += 1;
+					}
+				}
+			}
+		},
+		
 		Type(ref typ) if typ == &Func => {
 			output += "fn ";
 			
@@ -1457,7 +1477,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 					}
 				}
 			}
-		}
+		},
 		
 		_ => ()
 	}
