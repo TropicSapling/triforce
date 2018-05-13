@@ -1,3 +1,6 @@
+#[allow(unused)]
+import std::fs::File; // To test importing
+
 // func (int i) print; // Commented for now because apparently Rust doesn't support this
 
 func (int i) backwards_println {
