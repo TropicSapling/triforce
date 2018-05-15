@@ -1,8 +1,8 @@
 export {
 	func (macro f)? -> macro { // Error forwarding, example: `(fs.readFile "file")?` returns file contents if read is successful, else returns error
 		let res = f;
-		if res<type> == Error {
-			return Error
+		if res.Type == Type.Error {
+			return res;
 		} else {
 			res
 		}
