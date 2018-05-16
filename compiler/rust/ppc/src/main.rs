@@ -140,7 +140,6 @@ fn main() -> Result<(), std::io::Error> {
 	let mut i = 0;
 	while i < tokens.len() {
 		parse2(&tokens, &functions, &mut i);
-		
 		i += 1;
 	}
 	
