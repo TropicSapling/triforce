@@ -1085,6 +1085,26 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			for statement in statements.iter() {
 				*i = *statement;
 				output = compile_func(tokens, functions, i, output);
+				
+				let mut nests = 0;
+				while *i + 1 < tokens.len() {
+					match tokens[*i + 1].kind {
+						Kind::Op(ref op) if op == ";" => {
+							output += ";";
+							break;
+						},
+						
+						Kind::GroupOp(ref op) if op == "{" => nests += 1,
+						
+						Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
+							nests -= 1;
+						} else {
+							break;
+						},
+						
+						_ => *i += 1
+					};
+				}
 			}
 			
 			output += "}";
@@ -1238,6 +1258,26 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			for statement in statements.iter() {
 				*i = *statement;
 				output = compile_func(tokens, functions, i, output);
+				
+				let mut nests = 0;
+				while *i + 1 < tokens.len() {
+					match tokens[*i + 1].kind {
+						Kind::Op(ref op) if op == ";" => {
+							output += ";";
+							break;
+						},
+						
+						Kind::GroupOp(ref op) if op == "{" => nests += 1,
+						
+						Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
+							nests -= 1;
+						} else {
+							break;
+						},
+						
+						_ => *i += 1
+					};
+				}
 			}
 			
 			output += "}";
