@@ -11,7 +11,10 @@ func (int i) backwards_println {
 	if 9 + 10 == 21 || 10 + 9 == 21 {
 		println false;
 	} else if 9 + 10 != 21 && 10 + 9 != 21 {
-		println true;
+		if true { // To test nested if statements
+			println true;
+			println true;
+		}
 	} else {
 		println false;
 	}
