@@ -1448,12 +1448,28 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 				output += "{";
 				
 				let statements = tokens[children[body]].children.borrow();
-				let statements_len = statements.len();
 				for statement in statements.iter() {
 					*i = *statement;
 					output = compile_func(tokens, functions, i, output);
-					if statements_len > 1 || body == 1 {
-						output += ";"
+					
+					let mut nests = 0;
+					while *i + 1 < tokens.len() {
+						match tokens[*i + 1].kind {
+							Kind::Op(ref op) if op == ";" => {
+								output += ";";
+								break;
+							},
+							
+							Kind::GroupOp(ref op) if op == "{" => nests += 1,
+							
+							Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
+								nests -= 1;
+							} else {
+								break;
+							},
+							
+							_ => *i += 1
+						};
 					}
 				}
 				
