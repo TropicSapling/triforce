@@ -1212,7 +1212,16 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			   name == "mod" || name == "modeq" || name == "eq" || name == "eqeq" || name == "noteq" || name == "andand" || name == "or" || name == "oror" || name == "xor" ||
 			   name == "xoreq" || name == "larrow" || name == "rarrow" || name == "larrowlarrow" || name == "larrowlarroweq" || name == "rarrowrarrow" || name == "rarrowrarroweq" {
 				*i = args[0];
+
+				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
+					output += "(";
+				}
+				
 				output = compile_func(tokens, functions, i, output);
+				
+				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
+					output += ")";
+				}
 				
 				output += match name.as_ref() {
 					"plus" => "+",
@@ -1243,7 +1252,16 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				};
 				
 				*i = args[1];
+				
+				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
+					output += "(";
+				}
+				
 				output = compile_func(tokens, functions, i, output);
+				
+				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
+					output += ")";
+				}
 			} else {
 				output += &name;
 				output += "(";
