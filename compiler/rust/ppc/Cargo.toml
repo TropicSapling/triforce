@@ -1,6 +1,6 @@
 [package]
 name = "ppc"
-version = "0.3.0"
+version = "0.3.2"
 authors = ["TropicSapling <tropical.productions.scratch@gmail.com>"]
 
 [dependencies]

@@ -253,7 +253,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				
 				i += 1;
 				
-				loop {
+				while i < tokens.len() {
 					match tokens[i].kind {
 						Kind::Type(ref typ) => types[j] = typ.clone(),
 						_ => break
@@ -261,6 +261,10 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 					
 					i += 1;
 					j += 1;
+				}
+				
+				if i >= tokens.len() {
+					panic!("Unexpected EOF");
 				}
 				
 				match tokens[i].kind {

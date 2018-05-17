@@ -780,6 +780,10 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 		}
 	}
 	
+	if i >= tokens.len() {
+		panic!("Unexpected EOF");
+	}
+	
 	j = 0;
 	offset = 0;
 	
@@ -846,6 +850,10 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 		
 		j += 1;
 	}
+	
+	if i + j >= tokens.len() {
+		panic!("Unexpected EOF");
+	}
 }
 
 fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
@@ -896,6 +904,10 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 							*i += 1;
 						}
 						*i -= 1;
+						
+						if *i + 1 >= tokens.len() {
+							panic!("Unexpected EOF");
+						}
 						
 						if let Some(def) = is_defined(functions, &name) {
 							match highest {
@@ -1018,6 +1030,10 @@ fn parse_let(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 			Kind::Op(_) => break,
 			_ => *i += 1
 		}
+	}
+	
+	if *i >= tokens.len() {
+		panic!("Unexpected EOF");
 	}
 	
 	body.push(*i);
@@ -1143,7 +1159,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				match tokens[*i].kind {
 					Kind::Op(ref op) => {
 						name += op;
-						if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS
+						if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
 							*i += 1;
 						} else {
 							if name.ends_with("->") {
@@ -1196,7 +1212,16 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			   name == "mod" || name == "modeq" || name == "eq" || name == "eqeq" || name == "noteq" || name == "andand" || name == "or" || name == "oror" || name == "xor" ||
 			   name == "xoreq" || name == "larrow" || name == "rarrow" || name == "larrowlarrow" || name == "larrowlarroweq" || name == "rarrowrarrow" || name == "rarrowrarroweq" {
 				*i = args[0];
+
+				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
+					output += "(";
+				}
+				
 				output = compile_func(tokens, functions, i, output);
+				
+				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
+					output += ")";
+				}
 				
 				output += match name.as_ref() {
 					"plus" => "+",
@@ -1227,7 +1252,16 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				};
 				
 				*i = args[1];
+				
+				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
+					output += "(";
+				}
+				
 				output = compile_func(tokens, functions, i, output);
+				
+				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
+					output += ")";
+				}
 			} else {
 				output += &name;
 				output += "(";
@@ -1337,6 +1371,10 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				*i += 1;
 			}
 			*i -= 1;
+			
+			if *i + 1 >= tokens.len() {
+				panic!("Unexpected EOF");
+			}
 			
 			let mut unsigned = false;
 			for typ in types {
@@ -1454,10 +1492,12 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 			output += "use ";
 			*i += 1;
 			
+			let mut success = false;
 			while *i < tokens.len() {
 				match tokens[*i].kind {
 					Kind::Op(ref op) if op == ";" => {
 						output += ";";
+						success = true;
 						break;
 					},
 					
@@ -1466,6 +1506,10 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 						*i += 1;
 					}
 				}
+			}
+			
+			if !success {
+				panic!("Unexpected EOF");
 			}
 		},
 		
