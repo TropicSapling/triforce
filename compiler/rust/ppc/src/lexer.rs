@@ -95,23 +95,22 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 			}
 			
 			if escaping {
-				let mut val = match string.kind {
-					Kind::Str1(ref mut value) => value,
-					Kind::Str2(ref mut value) => value,
+				match string.kind {
+					Kind::Str1(ref mut s) | Kind::Str2(ref mut s) => {
+						*s += "\\";
+						
+						*s += item;
+						string.pos = if line > line_offset {
+							FilePos {line: line - line_offset, col}
+						} else {
+							FilePos {line, col}
+						};
+						
+						escaping = false;
+					},
+					
 					_ => unreachable!()
-				};
-//				if item == "0" || item == "n" { // Null and newlines (commented for now because this check doesn't seem to be necessary?)
-					*val += "\\";
-//				}
-				
-				*val += item;
-				string.pos = if line > line_offset {
-					FilePos {line: line - line_offset, col}
-				} else {
-					FilePos {line, col}
-				};
-				
-				escaping = false;
+				}
 			} else if in_str {
 				if item == "\"" {
 					res.push(string.clone());
@@ -119,11 +118,10 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 				} else if item == "\\" {
 					escaping = true;
 				} else {
-					let mut val = match string.kind {
-						Kind::Str1(ref mut val) => val,
+					match string.kind {
+						Kind::Str1(ref mut s) => *s += item,
 						_ => unreachable!()
 					};
-					*val += item;
 				}
 			} else if in_str2 {
 				if item == "'" {
@@ -132,11 +130,10 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 				} else if item == "\\" {
 					escaping = true;
 				} else {
-					let mut val = match string.kind {
-						Kind::Str2(ref mut val) => val,
+					match string.kind {
+						Kind::Str2(ref mut s) => *s += item,
 						_ => unreachable!()
-					};
-					*val += item;
+					}
 				}
 			} else if item == "\"" {
 				string.kind = Kind::Str1(String::from(""));

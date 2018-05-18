@@ -39,6 +39,6 @@ func init {
 	n *= 789;
 	println n;
 	
-	let const constant = "This is a constant string.";
+	let const constant = "\nThis is a constant string.";
 	println constant;
 }

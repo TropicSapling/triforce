@@ -748,7 +748,7 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 			},
 			
 			_ => ()
-		};
+		}
 		
 		let mut k = 0;
 		while k < tokens.len() {
@@ -811,7 +811,7 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 			},
 			
 			_ => ()
-		};
+		}
 		
 		if k < tokens.len() {
 			match tokens[i + j + 1].kind {
@@ -863,7 +863,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 			return Some(*i - 1);
 		},
 		_ => ()
-	};
+	}
 	
 	let start = *i;
 	let mut lowest = None;
@@ -880,7 +880,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 								highest = Some((*i, def, depth));
 							},
 							None => highest = Some((*i, def, depth))
-						};
+						}
 					},
 					
 					Kind::Op(ref op) if op == ";" => {
@@ -915,7 +915,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 									highest = Some((start, def, depth));
 								},
 								None => highest = Some((start, def, depth))
-							};
+							}
 						} else if name == "->" {
 							break;
 						} else {
@@ -927,7 +927,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 											highest = Some((start, def, depth));
 										},
 										None => highest = Some((start, def, depth))
-									};
+									}
 									
 									break;
 								}
@@ -945,7 +945,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 					Kind::GroupOp(ref op) if op == ")" => depth -= 1,
 					
 					_ => ()
-				};
+				}
 			} else if let Kind::Op(ref op) = tokens[*i].kind {
 				let mut name = op.to_string();
 				
@@ -975,7 +975,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 				parse_func(tokens, (func.0, func.1), functions);
 			},
 			None => break
-		};
+		}
 	}
 	
 	lowest
@@ -1001,7 +1001,11 @@ fn parse_if(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 		Kind::Reserved(ref keyword) if keyword == "else" => {
 			*i += 1;
 			body.push(*i);
-			parse_if(tokens, functions, i);
+			
+			match tokens[*i].kind {
+				Kind::Reserved(ref keyword) if keyword == "if" => parse_if(tokens, functions, i),
+				_ => parse2(tokens, functions, i)
+			}
 		},
 		
 		_ => ()
@@ -1083,7 +1087,7 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 							*i += 1;
 						}
 					}
-				};
+				}
 			}
 		},
 		
@@ -1119,7 +1123,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 						},
 						
 						_ => *i += 1
-					};
+					}
 				}
 			}
 			
@@ -1310,7 +1314,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 						},
 						
 						_ => *i += 1
-					};
+					}
 				}
 			}
 			
@@ -1335,7 +1339,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			match tokens[*i + 1].kind {
 				Kind::Type(ref typ) if typ == &Type::Const => (),
 				_ => output += "mut "
-			};
+			}
 			
 			*i = tokens[*i].children.borrow()[0];
 			output = compile_func(tokens, functions, i, output);
@@ -1475,7 +1479,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 		},
 		
 		_ => () // WIP
-	};
+	}
 	
 	output
 }
@@ -1553,7 +1557,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 							},
 							
 							_ => *i += 1
-						};
+						}
 					}
 				}
 				
