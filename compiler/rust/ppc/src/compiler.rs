@@ -1001,7 +1001,11 @@ fn parse_if(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 		Kind::Reserved(ref keyword) if keyword == "else" => {
 			*i += 1;
 			body.push(*i);
-			parse_if(tokens, functions, i);
+			
+			match tokens[*i].kind {
+				Kind::Reserved(ref keyword) if keyword == "if" => parse_if(tokens, functions, i),
+				_ => parse2(tokens, functions, i)
+			}
 		},
 		
 		_ => ()
