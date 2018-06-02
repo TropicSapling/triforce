@@ -474,8 +474,8 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						*i += 1;
 						break;
 					},
-					Kind::GroupOp(ref op) if op == "}" => break,
-					Kind::GroupOp(ref op) if op == "{" => break,
+					Kind::GroupOp(ref op) if op == "}" => break, // NEEDS FIXING
+					Kind::GroupOp(ref op) if op == "{" => break, // NEEDS FIXING
 					
 					Kind::Op(ref op) => {
 						let mut name = op.to_string();
@@ -529,7 +529,11 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 					},
 					
 					Kind::GroupOp(ref op) if op == "(" => depth += 1,
-					Kind::GroupOp(ref op) if op == ")" => depth -= 1,
+					Kind::GroupOp(ref op) if op == ")" => if depth > 0 {
+						depth -= 1;
+					} else {
+						panic!("{}:{} Excess ending parenthesis", tokens[*i].pos.line, tokens[*i].pos.col);
+					},
 					
 					_ => ()
 				}
