@@ -770,103 +770,74 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			}
 			*i -= 1;
 			
-			let mut new_name = String::new();
-			for op in name.chars() {
-				new_name += match op {
-					'+' => "plus",
-					'-' => "minus",
-					'*' => "times",
-					'/' => "div",
-					'%' => "mod",
-					'=' => "eq",
-					'&' => "and",
-					'|' => "or",
-					'^' => "xor",
-					'<' => "larrow",
-					'>' => "rarrow",
-					'!' => "not",
-					'~' => "binnot",
-					'?' => "quest",
-					':' => "colon",
-					'.' => "dot",
-					',' => "comma",
-					'@' => "at",
-					';' => "semic",
-					_ => unreachable!()
-				};
-			}
-			
-			let name = new_name;
 			let args = tokens[start].children.borrow();
 			
-			if name == "plus" || name == "pluseq" || name == "minus" || name == "minuseq" || name == "times" || name == "timeseq" || name == "div" || name == "diveq" ||
-			   name == "mod" || name == "modeq" || name == "eq" || name == "eqeq" || name == "noteq" || name == "andand" || name == "or" || name == "oror" || name == "xor" ||
-			   name == "xoreq" || name == "larrow" || name == "rarrow" || name == "larrowlarrow" || name == "larrowlarroweq" || name == "rarrowrarrow" || name == "rarrowrarroweq" {
-				*i = args[0];
-
-				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
-					output += "(";
-				}
-				
-				output = compile_func(tokens, functions, i, output);
-				
-				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
-					output += ")";
-				}
-				
-				output += match name.as_ref() {
-					"plus" => "+",
-					"pluseq" => "+=",
-					"minus" => "-",
-					"minuseq" => "-=",
-					"times" => "*",
-					"timeseq" => "*=",
-					"div" => "/",
-					"diveq" => "/=",
-					"mod" => "%",
-					"modeq" => "%=",
-					"eq" => "=",
-					"eqeq" => "==",
-					"noteq" => "!=",
-					"andand" => "&&",
-					"or" => "|",
-					"oror" => "||",
-					"xor" => "^",
-					"xoreq" => "^=",
-					"larrow" => "<",
-					"rarrow" => ">",
-					"larrowlarrow" => "<<",
-					"larrowlarroweq" => "<<=",
-					"rarrowrarrow" => ">>",
-					"rarrowrarroweq" => ">>=",
-					&_ => unreachable!()
-				};
-				
-				*i = args[1];
-				
-				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
-					output += "(";
-				}
-				
-				output = compile_func(tokens, functions, i, output);
-				
-				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
-					output += ")";
-				}
-			} else {
-				output += &name;
-				output += "(";
-				
-				for (a, arg) in args.iter().enumerate() {
-					*i = *arg;
+			match name.as_ref() {
+				"=" | "+=" | "-=" | "*=" | "%=" | "^=" | "<<=" | ">>=" => {
+					*i = args[0];
 					output = compile_func(tokens, functions, i, output);
 					
-					if a < args.len() - 1 {
-						output += ","
-					}
-				}
+					output += &name;
+					
+					*i = args[1];
+					output = compile_func(tokens, functions, i, output);
+				},
 				
-				output += ")";
+				"+" | "-" | "*" | "/" | "%" | "==" | "!=" | "&&" | "|" | "||" | "^" | "<" | ">" | "<<" | ">>" => {
+					*i = args[0];
+					output += "(";
+					output = compile_func(tokens, functions, i, output);
+					output += ")";
+					
+					output += &name;
+					
+					*i = args[1];
+					output += "(";
+					output = compile_func(tokens, functions, i, output);
+					output += ")";
+				},
+				
+				_ => {
+					let mut new_name = String::new();
+					for op in name.chars() {
+						new_name += match op {
+							'+' => "plus",
+							'-' => "minus",
+							'*' => "times",
+							'/' => "div",
+							'%' => "mod",
+							'=' => "eq",
+							'&' => "and",
+							'|' => "or",
+							'^' => "xor",
+							'<' => "larrow",
+							'>' => "rarrow",
+							'!' => "not",
+							'~' => "binnot",
+							'?' => "quest",
+							':' => "colon",
+							'.' => "dot",
+							',' => "comma",
+							'@' => "at",
+							';' => "semic", // Should this really be allowed? Overriding the functionality of the semicolon may cause major issues
+							_ => unreachable!()
+						};
+					}
+					
+					output += &new_name;
+					output += "(";
+					
+					for (a, arg) in args.iter().enumerate() {
+						*i = *arg;
+						output = compile_func(tokens, functions, i, output);
+						
+						if a < args.len() - 1 {
+							output += ","
+						}
+					}
+					
+					output += ")";
+				}
 			}
 		},
 		
