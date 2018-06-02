@@ -4,46 +4,6 @@ macro_rules! get_val {
 	($e:expr) => ({
 		use lib::Kind::*;
 		match $e {
-			GroupOp(ref val) => val,
-			Literal(b) => if b {
-				"true"
-			} else {
-				"false"
-			},
-			Op(ref val) => val,
-			Reserved(ref val) => val,
-			Str1(ref val) => val,
-			Str2(ref val) => val,
-			Type(ref typ) => match typ {
-				&Array => "array",
-				&Chan => "chan",
-				&Const => "const",
-				&Fraction => "fraction",
-				&Func => "func",
-				&Heap => "heap",
-				&List => "list",
-				&Only => "only",
-				&Register => "register",
-				&Stack => "stack",
-				&Unique => "unique",
-				&Volatile => "volatile",
-				&Bool => "bool",
-				&Char => "char",
-				&Int => "int",
-				&Pointer => "pointer",
-				&Unsigned => "unsigned",
-				&Void => "void",
-			},
-			Var(ref name, _) => name,
-			_ => unreachable!()
-		}
-	});
-}
-
-macro_rules! get_val2 {
-	($e:expr) => ({
-		use lib::Kind::*;
-		match $e {
 			GroupOp(ref val) => val.to_string(),
 			Literal(b) => if b {
 				String::from("true")
@@ -82,432 +42,59 @@ macro_rules! get_val2 {
 	});
 }
 
+macro_rules! def_builtin_op {
+	($a:expr, $b:expr, $name:expr, $typ1:expr, $typ2:expr, $output:expr, $precedence:expr) => (Function {
+		name: String::from($name),
+		pos: 1,
+		args: vec![
+			FunctionArg {
+				name: $a,
+				typ: [$typ1, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+			},
+			FunctionArg {
+				name: $b,
+				typ: [$typ2, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+			}
+		],
+		precedence: $precedence, // NOTE: 0 is *lowest* precedence, not highest. Highest precedence is 255.
+		output: [$output, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+	})
+}
+
 macro_rules! def_builtin_funcs {
 	($a:expr, $b:expr) => (vec![
-		Function {
-			name: String::from("+"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				}
-			],
-			precedence: 245, // NOTE: 0 is *lowest* precedence, not highest. Highest precedence is 255.
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-		},
+		// WIP; 'typ' structure needs support for multiple types ('int|fraction' for these operators)
+		def_builtin_op!($a, $b, "+", Type::Int, Type::Int, Type::Int, 245),
+		def_builtin_op!($a, $b, "-", Type::Int, Type::Int, Type::Int, 245),
+		def_builtin_op!($a, $b, "*", Type::Int, Type::Int, Type::Int, 246),
+		def_builtin_op!($a, $b, "/", Type::Int, Type::Int, Type::Int, 246),
+		def_builtin_op!($a, $b, "%", Type::Int, Type::Int, Type::Int, 246),
 		
-		Function {
-			name: String::from("-"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				}
-			],
-			precedence: 245,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-		},
+		// WIP; 'typ' structure needs support for multiple types (all types for these operators)
+		def_builtin_op!($a, $b, "==", Type::Int, Type::Int, Type::Bool, 242),
+		def_builtin_op!($a, $b, "!=", Type::Int, Type::Int, Type::Bool, 242),
+		def_builtin_op!($a, $b, "<", Type::Int, Type::Int, Type::Bool, 243),
+		def_builtin_op!($a, $b, "<=", Type::Int, Type::Int, Type::Bool, 243),
+		def_builtin_op!($a, $b, ">", Type::Int, Type::Int, Type::Bool, 243),
+		def_builtin_op!($a, $b, ">=", Type::Int, Type::Int, Type::Bool, 243),
 		
-		Function {
-			name: String::from("*"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				}
-			],
-			precedence: 246,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-		},
+		def_builtin_op!($a, $b, "&&", Type::Bool, Type::Bool, Type::Bool, 238),
+		def_builtin_op!($a, $b, "||", Type::Bool, Type::Bool, Type::Bool, 237),
 		
-		Function {
-			name: String::from("/"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				},
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				}
-			],
-			precedence: 246,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-		},
+		def_builtin_op!($a, $b, "<<", Type::Int, Type::Int, Type::Int, 244),
+		def_builtin_op!($a, $b, ">>", Type::Int, Type::Int, Type::Int, 244),
+		def_builtin_op!($a, $b, "^", Type::Int, Type::Int, Type::Int, 240),
 		
-		Function {
-			name: String::from("%"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-				}
-			],
-			precedence: 246,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types ('int|fraction' in this case)
-		},
-		
-		Function {
-			name: String::from("=="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				}
-			],
-			precedence: 242,
-			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("!="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				}
-			],
-			precedence: 242,
-			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("<"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				}
-			],
-			precedence: 243,
-			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("<="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				}
-			],
-			precedence: 243,
-			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from(">"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				}
-			],
-			precedence: 243,
-			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from(">="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'typ' structure needs support for multiple types (all types in this case)
-				}
-			],
-			precedence: 243,
-			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("&&"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-				}
-			],
-			precedence: 238,
-			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("||"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-				}
-			],
-			precedence: 237,
-			output: [Type::Bool, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("<<"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-				}
-			],
-			precedence: 244,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from(">>"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-				}
-			],
-			precedence: 244,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("^"),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-				}
-			],
-			precedence: 240,
-			output: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				}
-			],
-			precedence: 0,
-			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("+="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				}
-			],
-			precedence: 0,
-			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("-="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				}
-			],
-			precedence: 0,
-			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("*="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				}
-			],
-			precedence: 0,
-			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("/="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				}
-			],
-			precedence: 0,
-			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("%="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				}
-			],
-			precedence: 0,
-			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from(">>="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				}
-			],
-			precedence: 0,
-			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("<<="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				}
-			],
-			precedence: 0,
-			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
-		
-		Function {
-			name: String::from("^="),
-			pos: 1,
-			args: vec![
-				FunctionArg {
-					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				},
-				FunctionArg {
-					name: $b,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; 'macro' types are not yet implemented
-				}
-			],
-			precedence: 0,
-			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
-		},
+		// WIP; 'macro' types are not yet implemented
+		def_builtin_op!($a, $b, "=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!($a, $b, "+=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!($a, $b, "-=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!($a, $b, "*=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!($a, $b, "/=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!($a, $b, "%=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!($a, $b, ">>=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!($a, $b, "<<=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!($a, $b, "^=", Type::Int, Type::Int, Type::Void, 0),
 		
 		Function {
 			name: String::from("println"),
@@ -887,8 +474,8 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						*i += 1;
 						break;
 					},
-					Kind::GroupOp(ref op) if op == "}" => break,
-					Kind::GroupOp(ref op) if op == "{" => break,
+					Kind::GroupOp(ref op) if op == "}" => break, // NEEDS FIXING
+					Kind::GroupOp(ref op) if op == "{" => break, // NEEDS FIXING
 					
 					Kind::Op(ref op) => {
 						let mut name = op.to_string();
@@ -942,7 +529,11 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 					},
 					
 					Kind::GroupOp(ref op) if op == "(" => depth += 1,
-					Kind::GroupOp(ref op) if op == ")" => depth -= 1,
+					Kind::GroupOp(ref op) if op == ")" => if depth > 0 {
+						depth -= 1;
+					} else {
+						panic!("{}:{} Excess ending parenthesis", tokens[*i].pos.line, tokens[*i].pos.col);
+					},
 					
 					_ => ()
 				}
@@ -1183,103 +774,74 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			}
 			*i -= 1;
 			
-			let mut new_name = String::new();
-			for op in name.chars() {
-				new_name += match op {
-					'+' => "plus",
-					'-' => "minus",
-					'*' => "times",
-					'/' => "div",
-					'%' => "mod",
-					'=' => "eq",
-					'&' => "and",
-					'|' => "or",
-					'^' => "xor",
-					'<' => "larrow",
-					'>' => "rarrow",
-					'!' => "not",
-					'~' => "binnot",
-					'?' => "quest",
-					':' => "colon",
-					'.' => "dot",
-					',' => "comma",
-					'@' => "at",
-					';' => "semic",
-					_ => unreachable!()
-				};
-			}
-			
-			let name = new_name;
 			let args = tokens[start].children.borrow();
 			
-			if name == "plus" || name == "pluseq" || name == "minus" || name == "minuseq" || name == "times" || name == "timeseq" || name == "div" || name == "diveq" ||
-			   name == "mod" || name == "modeq" || name == "eq" || name == "eqeq" || name == "noteq" || name == "andand" || name == "or" || name == "oror" || name == "xor" ||
-			   name == "xoreq" || name == "larrow" || name == "rarrow" || name == "larrowlarrow" || name == "larrowlarroweq" || name == "rarrowrarrow" || name == "rarrowrarroweq" {
-				*i = args[0];
-
-				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
-					output += "(";
-				}
-				
-				output = compile_func(tokens, functions, i, output);
-				
-				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
-					output += ")";
-				}
-				
-				output += match name.as_ref() {
-					"plus" => "+",
-					"pluseq" => "+=",
-					"minus" => "-",
-					"minuseq" => "-=",
-					"times" => "*",
-					"timeseq" => "*=",
-					"div" => "/",
-					"diveq" => "/=",
-					"mod" => "%",
-					"modeq" => "%=",
-					"eq" => "=",
-					"eqeq" => "==",
-					"noteq" => "!=",
-					"andand" => "&&",
-					"or" => "|",
-					"oror" => "||",
-					"xor" => "^",
-					"xoreq" => "^=",
-					"larrow" => "<",
-					"rarrow" => ">",
-					"larrowlarrow" => "<<",
-					"larrowlarroweq" => "<<=",
-					"rarrowrarrow" => ">>",
-					"rarrowrarroweq" => ">>=",
-					&_ => unreachable!()
-				};
-				
-				*i = args[1];
-				
-				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
-					output += "(";
-				}
-				
-				output = compile_func(tokens, functions, i, output);
-				
-				if name != "eq" && name != "pluseq" && name != "minuseq" && name != "timeseq" && name != "modeq" {
-					output += ")";
-				}
-			} else {
-				output += &name;
-				output += "(";
-				
-				for (a, arg) in args.iter().enumerate() {
-					*i = *arg;
+			match name.as_ref() {
+				"=" | "+=" | "-=" | "*=" | "%=" | "^=" | "<<=" | ">>=" => {
+					*i = args[0];
 					output = compile_func(tokens, functions, i, output);
 					
-					if a < args.len() - 1 {
-						output += ","
-					}
-				}
+					output += &name;
+					
+					*i = args[1];
+					output = compile_func(tokens, functions, i, output);
+				},
 				
-				output += ")";
+				"+" | "-" | "*" | "/" | "%" | "==" | "!=" | "&&" | "|" | "||" | "^" | "<" | ">" | "<<" | ">>" => {
+					*i = args[0];
+					output += "(";
+					output = compile_func(tokens, functions, i, output);
+					output += ")";
+					
+					output += &name;
+					
+					*i = args[1];
+					output += "(";
+					output = compile_func(tokens, functions, i, output);
+					output += ")";
+				},
+				
+				_ => {
+					let mut new_name = String::new();
+					for op in name.chars() {
+						new_name += match op {
+							'+' => "plus",
+							'-' => "minus",
+							'*' => "times",
+							'/' => "div",
+							'%' => "mod",
+							'=' => "eq",
+							'&' => "and",
+							'|' => "or",
+							'^' => "xor",
+							'<' => "larrow",
+							'>' => "rarrow",
+							'!' => "not",
+							'~' => "binnot",
+							'?' => "quest",
+							':' => "colon",
+							'.' => "dot",
+							',' => "comma",
+							'@' => "at",
+							';' => "semic", // Should this really be allowed? Overriding the functionality of the semicolon may cause major issues
+							_ => unreachable!()
+						};
+					}
+					
+					output += &new_name;
+					output += "(";
+					
+					for (a, arg) in args.iter().enumerate() {
+						*i = *arg;
+						output = compile_func(tokens, functions, i, output);
+						
+						if a < args.len() - 1 {
+							output += ","
+						}
+					}
+					
+					output += ")";
+				}
 			}
 		},
 		
@@ -1506,7 +1068,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 					},
 					
 					_ => {
-						output += get_val!(tokens[*i].kind); // Will probably be changed
+						output += &get_val!(tokens[*i].kind); // Will probably be changed
 						*i += 1;
 					}
 				}
@@ -1576,7 +1138,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 					},
 					
 					_ => {
-						output += get_val!(tokens[*i].kind); // Will probably be changed
+						output += &get_val!(tokens[*i].kind); // Will probably be changed
 						*i += 1;
 					}
 				}
