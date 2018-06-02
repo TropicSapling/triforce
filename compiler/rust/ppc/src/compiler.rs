@@ -4,46 +4,6 @@ macro_rules! get_val {
 	($e:expr) => ({
 		use lib::Kind::*;
 		match $e {
-			GroupOp(ref val) => val,
-			Literal(b) => if b {
-				"true"
-			} else {
-				"false"
-			},
-			Op(ref val) => val,
-			Reserved(ref val) => val,
-			Str1(ref val) => val,
-			Str2(ref val) => val,
-			Type(ref typ) => match typ {
-				&Array => "array",
-				&Chan => "chan",
-				&Const => "const",
-				&Fraction => "fraction",
-				&Func => "func",
-				&Heap => "heap",
-				&List => "list",
-				&Only => "only",
-				&Register => "register",
-				&Stack => "stack",
-				&Unique => "unique",
-				&Volatile => "volatile",
-				&Bool => "bool",
-				&Char => "char",
-				&Int => "int",
-				&Pointer => "pointer",
-				&Unsigned => "unsigned",
-				&Void => "void",
-			},
-			Var(ref name, _) => name,
-			_ => unreachable!()
-		}
-	});
-}
-
-macro_rules! get_val2 {
-	($e:expr) => ({
-		use lib::Kind::*;
-		match $e {
 			GroupOp(ref val) => val.to_string(),
 			Literal(b) => if b {
 				String::from("true")
@@ -1506,7 +1466,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 					},
 					
 					_ => {
-						output += get_val!(tokens[*i].kind); // Will probably be changed
+						output += &get_val!(tokens[*i].kind); // Will probably be changed
 						*i += 1;
 					}
 				}
@@ -1576,7 +1536,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 					},
 					
 					_ => {
-						output += get_val!(tokens[*i].kind); // Will probably be changed
+						output += &get_val!(tokens[*i].kind); // Will probably be changed
 						*i += 1;
 					}
 				}
