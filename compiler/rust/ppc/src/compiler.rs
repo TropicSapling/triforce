@@ -1,3 +1,4 @@
+use std::usize;
 use lib::{Token, Kind, Type, Function, FunctionArg};
 
 macro_rules! get_val {
@@ -441,6 +442,10 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 	if i + j >= tokens.len() {
 		panic!("Unexpected EOF");
 	}
+	
+	if tokens[start].children.borrow().len() < 1 {
+		tokens[start].children.borrow_mut().push(usize::MAX);
+	}
 }
 
 fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
@@ -831,12 +836,14 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					output += &new_name;
 					output += "(";
 					
-					for (a, arg) in args.iter().enumerate() {
-						*i = *arg;
-						output = compile_func(tokens, functions, i, output);
-						
-						if a < args.len() - 1 {
-							output += ","
+					if args.len() >= 1 && args[0] != usize::MAX {
+						for (a, arg) in args.iter().enumerate() {
+							*i = *arg;
+							output = compile_func(tokens, functions, i, output);
+							
+							if a < args.len() - 1 {
+								output += ","
+							}
 						}
 					}
 					
@@ -989,12 +996,14 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				}
 				
 				let args = tokens[*i].children.borrow();
-				for (a, arg) in args.iter().enumerate() {
-					*i = *arg;
-					output = compile_func(tokens, functions, i, output);
-					
-					if a < args.len() - 1 {
-						output += ","
+				if args.len() >= 1 && args[0] != usize::MAX {
+					for (a, arg) in args.iter().enumerate() {
+						*i = *arg;
+						output = compile_func(tokens, functions, i, output);
+						
+						if a < args.len() - 1 {
+							output += ","
+						}
 					}
 				}
 				
