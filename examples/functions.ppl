@@ -28,6 +28,10 @@ func (int a) (int b) --- (int c) (int d) -> int {
 	a + b - c - d
 }
 
+func no_args {
+	println "Function without args successfully called.";
+}
+
 func init {
 	(1 2 +++ 3-- * 4 5++ 6++ --- 7 8)-- backwards_println; // Like the most complex expression I can think of, took ages to make this get parsed successfully ;-;
 	
@@ -41,4 +45,6 @@ func init {
 	
 	let const constant = "\nThis is a constant string.";
 	println constant;
+	
+	no_args;
 }
