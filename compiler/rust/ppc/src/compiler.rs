@@ -1,4 +1,5 @@
 use std::usize;
+use std::cell::RefMut;
 use lib::{Token, Kind, Type, Function, FunctionArg};
 
 macro_rules! get_val {
@@ -642,6 +643,36 @@ fn parse_let(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	parse_statement(tokens, functions, i);
 }
 
+fn parse_type_decl<'a>(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut upper_body: RefMut<'a, Vec<usize>>) -> RefMut<'a, Vec<usize>> {
+	let mut body = tokens[*i].children.borrow_mut();
+	*i += 1;
+	
+	let start = *i;
+	while *i < tokens.len() {
+		match tokens[*i].kind {
+			Kind::Op(ref op) => if op == "=" {
+				upper_body.push(start - 1);
+				break;
+			} else {
+				*i = start - 1;
+				return upper_body;
+			},
+			_ => *i += 1
+		}
+	}
+	
+	if *i >= tokens.len() {
+		panic!("Unexpected EOF");
+	}
+	
+	body.push(*i);
+	
+	*i = start;
+	parse_statement(tokens, functions, i);
+	
+	upper_body
+}
+
 pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	match tokens[*i].kind {
 		Kind::GroupOp(ref op) if op == "{" => {
@@ -675,6 +706,8 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 							body.push(*i);
 							parse_let(tokens, functions, i);
 						},
+						
+						Kind::Type(_) => body = parse_type_decl(tokens, functions, i, body),
 						
 						_ => if let Some(token) = parse_statement(tokens, functions, i) {
 							body.push(token);
@@ -932,6 +965,17 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 		
 		Kind::Type(ref typ) => {
 			use lib::Type::*;
+			
+			if tokens[*i].children.borrow().len() > 0 {
+				output += "let ";
+				if typ != &Type::Const {
+					output += "mut ";
+				}
+				
+				*i = tokens[*i].children.borrow()[0];
+				output = compile_func(tokens, functions, i, output);
+				return output;
+			}
 			
 			let mut types = vec![typ];
 			*i += 1;
