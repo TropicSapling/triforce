@@ -143,7 +143,7 @@ P+ is for...
 ### Functions
 * `func <function>([<parameters>]) [-> <return type>] { <code> }`
 * `<function>([parameters])` or `<function> <parameter>` or `<parameter> <function> <parameter>`
-* `return [from <function>] <value>`
+* `return [from <function>] <value>` (**NOTE:** You can't return from just any function, it needs to call the function you're currently in either directly or indirectly)
 * Functions return the result of the last statement by default; no need to use `return` unless you want to return from somewhere else.
 * P+ allows ad-hoc polymorphism; you can create multiple functions with the same name but with different parameters.
 * Operator overloading is supported; for example, doing `func +(...)` would overload the `+` operator.
