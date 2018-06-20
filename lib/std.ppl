@@ -1,3 +1,6 @@
+type LoopBreak extends unsigned int;
+LoopBreak macro LOOP_BREAK = 0;
+
 export {
 	func (macro f)? -> macro { // Error forwarding, example: `(fs.readFile "file")?` returns file contents if read is successful, else returns error
 		let res = f;
@@ -14,6 +17,40 @@ export {
 		}
 		
 		n * (n - 1)!
+	}
+	
+	func $while (func pointer cond) (func pointer body) -> * { // '*' means any type
+		if @cond {
+			let res = @body;
+			if res.Type == Type.LoopBreak {
+				return;
+			} else if res != void {
+				return res;
+			}
+			
+			$while cond body
+		}
+	}
+
+	func while (macro cond) (macro body) -> macro {
+		$while func { cond } func { body }
+	}
+	
+	macro func for [init, check, change] (body) {
+		init;
+		while check {
+			body;
+			change;
+		}
+	}
+	
+	macro func break (val = LOOP_BREAK) {
+		return val
+	}
+	
+	// Should this function be removed? It's completely unnecessary in reality, but it makes code easier to read imo
+	macro func continue {
+		return
 	}
 }
 
