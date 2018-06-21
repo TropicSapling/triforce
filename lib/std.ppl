@@ -1,5 +1,5 @@
 type LoopBreak extends unsigned int;
-LoopBreak macro LOOP_BREAK = 0;
+LoopBreak macro LOOP_BREAK;
 
 export {
 	func (macro f)? -> macro { // Error forwarding, example: `(fs.readFile "file")?` returns file contents if read is successful, else returns error
