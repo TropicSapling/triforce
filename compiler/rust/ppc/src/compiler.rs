@@ -27,6 +27,7 @@ macro_rules! get_val {
 				&Func => String::from("func"),
 				&Heap => String::from("heap"),
 				&List => String::from("list"),
+				&Macro => String::from("macro"),
 				&Only => String::from("only"),
 				&Register => String::from("register"),
 				&Stack => String::from("stack"),
@@ -1010,6 +1011,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 						output += "isize";
 					},
 					List => (), // WIP
+					Macro => (), // WIP
 					Only => (), // WIP
 					Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
 					Register => (), // WIP
@@ -1081,6 +1083,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 						output += "isize";
 					},
 					List => (), // WIP
+					Macro => (), // WIP
 					Only => (), // WIP
 					Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
 					Register => (), // WIP

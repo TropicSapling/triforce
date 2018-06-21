@@ -200,6 +200,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 						"heap" => Kind::Type(Type::Heap),
 						"int" => Kind::Type(Type::Int),
 						"list" => Kind::Type(Type::List),
+						"macro" => Kind::Type(Type::Macro),
 						"only" => Kind::Type(Type::Only),
 						"pointer" => Kind::Type(Type::Pointer),
 						"register" => Kind::Type(Type::Register),
