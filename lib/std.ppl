@@ -32,7 +32,7 @@ export {
 		}
 	}
 
-	func while (macro cond) (macro body) -> macro {
+	macro func while (cond) (body) {
 		$while func { cond } func { body }
 	}
 	
