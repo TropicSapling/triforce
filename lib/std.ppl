@@ -1,5 +1,4 @@
-type LoopBreak extends unsigned int;
-LoopBreak macro LOOP_BREAK;
+type LoopBreak, LoopContinue extends *;
 
 export {
 	func (macro f)? -> macro { // Error forwarding, example: `(fs.readFile "file")?` returns file contents if read is successful, else returns error
@@ -22,10 +21,10 @@ export {
 	func $while (func pointer cond) (func pointer body) -> * { // '*' means any type
 		if @cond {
 			let res = @body;
-			if res.Type == Type.LoopBreak {
-				return;
-			} else if res != void {
+			if res.Type == LoopBreak {
 				return res;
+			} else if res.Type != LoopContinue {
+				return res from ..;
 			}
 			
 			$while cond body
@@ -44,12 +43,11 @@ export {
 		}
 	}
 	
-	macro func break (val = LOOP_BREAK) {
-		return val
+	macro func break (val) {
+		return (LoopBreak) val
 	}
 	
-	// Should this macro be removed? It's completely unnecessary in reality, but it makes code easier to read imo
-	macro continue = return;
+	macro continue = return (LoopContinue) void;
 }
 
 // OLD SYNTAX BELOW, NEEDS UPDATING
