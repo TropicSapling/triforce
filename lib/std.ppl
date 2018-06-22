@@ -48,10 +48,8 @@ export {
 		return val
 	}
 	
-	// Should this function be removed? It's completely unnecessary in reality, but it makes code easier to read imo
-	macro func continue {
-		return
-	}
+	// Should this macro be removed? It's completely unnecessary in reality, but it makes code easier to read imo
+	macro continue = return;
 }
 
 // OLD SYNTAX BELOW, NEEDS UPDATING
