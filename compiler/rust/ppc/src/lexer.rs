@@ -221,7 +221,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 							col += 1;
 							continue;
 						},
-						_ => Kind::Var(item.to_string(), [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void])
+						_ => Kind::Var(item.to_string(), vec![Vec::new()])
 					};
 					
 					string.pos = if line > line_offset {
@@ -246,19 +246,17 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 	while i < tokens.len() {
 		match tokens[i].kind.clone() {
 			Kind::Type(ref typ) => {
-				let mut types = [typ.clone(), Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
-				let mut j = 1;
+				let mut types = vec![vec![typ.clone()]];
 				
 				i += 1;
 				
 				while i < tokens.len() {
 					match tokens[i].kind {
-						Kind::Type(ref typ) => types[j] = typ.clone(),
+						Kind::Type(ref typ) => types[0].push(typ.clone()),
 						_ => break
 					};
 					
 					i += 1;
-					j += 1;
 				}
 				
 				if i >= tokens.len() {

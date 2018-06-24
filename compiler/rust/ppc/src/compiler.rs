@@ -52,15 +52,19 @@ macro_rules! def_builtin_op {
 		args: vec![
 			FunctionArg {
 				name: $a,
-				typ: [$typ1, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				typ: vec![vec![$typ1]]
 			},
 			FunctionArg {
 				name: $b,
-				typ: [$typ2, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+				typ: vec![vec![$typ2]]
 			}
 		],
 		precedence: $precedence, // NOTE: 0 is *lowest* precedence, not highest. Highest precedence is 255.
-		output: [$output, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+		output: if $output == Type::Void {
+			vec![vec![]]
+		} else {
+			vec![vec![$output]]
+		}
 	})
 }
 
@@ -105,11 +109,11 @@ macro_rules! def_builtin_funcs {
 			args: vec![
 				FunctionArg {
 					name: $a,
-					typ: [Type::Int, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] // WIP; No support for strings yet
+					typ: vec![vec![Type::Int]] // WIP; No support for strings yet
 				}
 			],
 			precedence: 1,
-			output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]
+			output: vec![]
 		}
 	])
 }
@@ -129,7 +133,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	let mut func = false;
 	let mut func_pos = 0;
 	let mut func_args = Vec::new();
-	let mut par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
+	let mut par_type = vec![vec![]];
 	
 	// STAGE 1: DEFINE FUNCTIONS (this is done in a separate loop to allow function definitions to be placed both before and after function calls)
 	let mut i = 0;
@@ -144,7 +148,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 		match token.kind {
 			Kind::Type(ref typ) if !func => match typ {
 				&Type::Func => {
-					functions.push(Function {name: String::from(""), pos: 0, args: vec![], precedence: 1, output: [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void]});
+					functions.push(Function {name: String::from(""), pos: 0, args: vec![], precedence: 1, output: vec![]});
 					func_pos = i;
 					func = true;
 				},
@@ -156,7 +160,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 					let end = i;
 					while i > 0 {
 						match tokens[i].kind {
-							Kind::Type(ref typ) => par_type[end - i] = typ.clone(),
+							Kind::Type(ref typ) => par_type[0].push(typ.clone()),
 							_ => break
 						}
 						
@@ -164,15 +168,15 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 					}
 					
 					let mut j = 0;
-					while j + 1 < 8 && par_type[j + 1] != Type::Void {
+					while j + 1 < par_type[0].len() {
 						j += 1;
 					}
 					
 					let mut k = 0;
 					while j != k && j + 1 != k {
-						let tmp = par_type[j].clone();
-						par_type[j] = par_type[k].clone();
-						par_type[k] = tmp;
+						let tmp = par_type[0][j].clone();
+						par_type[0][j] = par_type[0][k].clone();
+						par_type[0][k] = tmp;
 						
 						j -= 1;
 						k += 1;
@@ -186,7 +190,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				_ => ()
 			},
 			
-			Kind::Var(ref name, ref typ) if func => if typ[0] == Type::Void || typ[0] == Type::Func { // Function name
+			Kind::Var(ref name, ref typ) if func => if typ[0].len() == 0 || typ[0][0] == Type::Func { // Function name
 				functions[last_item].name = name.to_string();
 				functions[last_item].pos = functions[last_item].args.len();
 				
@@ -212,7 +216,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				functions[last_item].output = par_type.clone();
 				if functions[last_item].name == "**" {
 					functions[last_item].precedence = 247;
-				} else if par_type[0] != Type::Void {
+				} else if par_type[0].len() > 0 {
 					if func_args.len() == 1 {
 						functions[last_item].precedence = 255;
 					} else {
@@ -225,7 +229,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 					tokens[func_name_pos].children.borrow_mut().push(arg);
 				}
 				
-				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
+				par_type = vec![vec![]];
 				func_args = Vec::new();
 				func = false;
 			} else { // Operator (function) name
@@ -241,7 +245,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				functions[last_item].output = par_type.clone();
 				if functions[last_item].name == "**" {
 					functions[last_item].precedence = 247;
-				} else if par_type[0] != Type::Void {
+				} else if par_type[0].len() > 0 {
 					if func_args.len() == 1 {
 						functions[last_item].precedence = 255;
 					} else {
@@ -254,7 +258,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 					tokens[func_name_pos].children.borrow_mut().push(arg);
 				}
 				
-				par_type = [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void];
+				par_type = vec![vec![]];
 				func_args = Vec::new();
 				func = false;
 				
@@ -1024,9 +1028,9 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			}
 		},
 		
-		Kind::Var(ref name, ref typ) if typ[..] == [Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] ||
-										typ[..] == [Type::Func, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] ||
-										typ[..] == [Type::Const, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void, Type::Void] => {
+		Kind::Var(ref name, ref typ) if typ[0].len() == 0 ||
+										typ[0][0] == Type::Func ||
+										typ[0][0] == Type::Const => {
 			if let Some(_) = is_defined(functions, name) { // TMP until I've worked out passing functions as arguments
 				output += if name == "init" {
 					"main"
@@ -1067,8 +1071,8 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			
 			let mut unsigned = false;
 			
-			for t in typ {
-				match *t {
+			for t in &typ[0] {
+				match t {
 					Array => (), // WIP
 					Bool => output += "bool",
 					Chan => (), // WIP
