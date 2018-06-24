@@ -869,7 +869,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					output += &new_name;
 					output += "(";
 					
-					if args.len() >= 1 && args[0] != usize::MAX {
+					if args.len() >= 1 && args[0] != usize::MAX { // In reality it would probably be better to use Option instead of usize::MAX for this but I was too lazy xD
 						for (a, arg) in args.iter().enumerate() {
 							*i = *arg;
 							output = compile_func(tokens, functions, i, output);
@@ -977,11 +977,16 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				return output;
 			}
 			
-			let mut types = vec![typ];
+			let mut types = vec![vec![typ]];
+			let mut t = 0;
 			*i += 1;
 			while *i < tokens.len() {
 				match tokens[*i].kind {
-					Kind::Type(ref typ) => types.push(typ),
+					Kind::Type(ref typ) => types[t].push(typ),
+					Kind::Op(ref op) if op == "|" => {
+						types.push(Vec::new());
+						t += 1;
+					},
 					_ => break
 				}
 				
@@ -994,31 +999,33 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			}
 			
 			let mut unsigned = false;
-			for typ in types {
-				match *typ {
-					Array => (), // WIP
-					Bool => output += "bool",
-					Chan => (), // WIP
-					Char => output += "char",
-					Const => (), // Should this be ignored?
-					Fraction => (), // WIP
-					Func => output += "fn",
-					Heap => (), // WIP
-					Int => if unsigned {
-						output += "usize";
-					} else {
-						output += "isize";
-					},
-					List => (), // WIP
-					Macro => (), // WIP
-					Only => (), // WIP
-					Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
-					Register => (), // WIP
-					Stack => (), // WIP
-					Unique => (), // WIP
-					Unsigned => unsigned = true,
-					Void => output += "()",
-					Volatile => (), // WIP
+			for section in types { // WIP; TODO: handle this correctly with enums, unions or something
+				for typ in section {
+					match *typ {
+						Array => (), // WIP
+						Bool => output += "bool",
+						Chan => (), // WIP
+						Char => output += "char",
+						Const => (), // Should this be ignored?
+						Fraction => (), // WIP
+						Func => output += "fn",
+						Heap => (), // WIP
+						Int => if unsigned {
+							output += "usize";
+						} else {
+							output += "isize";
+						},
+						List => (), // WIP
+						Macro => (), // WIP
+						Only => (), // WIP
+						Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
+						Register => (), // WIP
+						Stack => (), // WIP
+						Unique => (), // WIP
+						Unsigned => unsigned = true,
+						Void => output += "()",
+						Volatile => (), // WIP
+					}
 				}
 			}
 		},
