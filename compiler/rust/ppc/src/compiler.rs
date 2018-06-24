@@ -158,28 +158,23 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 			Kind::Type(_) => match tokens[i + 1].kind {
 				Kind::GroupOp(ref op) if op == "{" => {
 					let end = i;
+					let mut t = 0;
 					while i > 0 {
 						match tokens[i].kind {
-							Kind::Type(ref typ) => par_type[0].push(typ.clone()),
+							Kind::Type(ref typ) => par_type[t].push(typ.clone()),
+							Kind::Op(ref op) if op == "|" => {
+								par_type.push(Vec::new());
+								t += 1;
+							},
 							_ => break
 						}
 						
 						i -= 1;
 					}
 					
-					let mut j = 0;
-					while j + 1 < par_type[0].len() {
-						j += 1;
-					}
-					
-					let mut k = 0;
-					while j != k && j + 1 != k {
-						let tmp = par_type[0][j].clone();
-						par_type[0][j] = par_type[0][k].clone();
-						par_type[0][k] = tmp;
-						
-						j -= 1;
-						k += 1;
+					par_type.reverse();
+					for section in par_type.iter_mut() {
+						section.reverse();
 					}
 					
 					i += 1;

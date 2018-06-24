@@ -250,9 +250,14 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				
 				i += 1;
 				
+				let mut t = 0;
 				while i < tokens.len() {
 					match tokens[i].kind {
-						Kind::Type(ref typ) => types[0].push(typ.clone()),
+						Kind::Type(ref typ) => types[t].push(typ.clone()),
+						Kind::Op(ref op) if op == "|" => {
+							types.push(Vec::new());
+							t += 1;
+						},
 						_ => break
 					};
 					
@@ -264,7 +269,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				}
 				
 				match tokens[i].kind {
-					Kind::Var(_, ref mut typ) => *typ = types,
+					Kind::Var(_, ref mut typ) => *typ = types, // This should probably be changed because it's not really good for performance to copy a vector like this...
 					_ => ()
 				}
 			},
