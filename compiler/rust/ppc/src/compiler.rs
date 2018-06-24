@@ -1073,7 +1073,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			
 			let mut unsigned = false;
 			
-			for t in &typ[0] {
+			for t in &typ[0] { // TMP until I've worked out how to handle multiple types
 				match t {
 					Array => (), // WIP
 					Bool => output += "bool",
