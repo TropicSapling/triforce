@@ -1,5 +1,5 @@
 #[allow(unused)]
-import std::fs::File; // To test importing
+import std::fs::File as FileHandler; // To test importing
 
 // func (int i) print; // Commented for now because apparently Rust doesn't support this
 

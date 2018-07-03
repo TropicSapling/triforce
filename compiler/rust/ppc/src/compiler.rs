@@ -1123,6 +1123,11 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 			let mut success = false;
 			while *i < tokens.len() {
 				match tokens[*i].kind {
+					Kind::Reserved(ref keyword) if keyword == "as" => {
+						output += " as ";
+						*i += 1;
+					},
+					
 					Kind::Op(ref op) if op == ";" => {
 						output += ";";
 						success = true;
