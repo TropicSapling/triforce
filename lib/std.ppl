@@ -1,7 +1,7 @@
 type LoopBreak, LoopContinue extends *;
 
 export {
-	func (macro f)? -> macro { // Error forwarding, example: `(fs.readFile "file")?` returns file contents if read is successful, else returns error
+	macro func (f)? { // Error forwarding, example: `(fs.readFile "file")?` returns file contents if read is successful, else returns error
 		let res = f;
 		if res.Type == Type.Error {
 			return res;
