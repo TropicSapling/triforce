@@ -462,7 +462,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	let start = *i;
 	let mut limit = tokens.len();
 	let mut lowest = None;
-	while *i < limit {
+	loop {
 		let mut highest: Option<(usize, &Function, u8)> = None;
 		let mut depth = 0;
 		let mut depth2 = 0;
@@ -507,7 +507,13 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						
 						limit = *i;
 						highest = None;
-						*i = start;
+						
+						while *i > start {
+							tokens[*i].children.borrow_mut().clear();
+							*i -= 1;
+						}
+						
+//						*i = start;
 						continue;
 //						break;
 					},
