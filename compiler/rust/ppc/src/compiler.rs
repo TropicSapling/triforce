@@ -449,7 +449,6 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 	}
 }
 
-// NEEDS FIXING
 fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
 	match tokens[*i + 1].kind {
 		Kind::GroupOp(ref op) if op == "}" => {
@@ -775,6 +774,8 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 						},
 						
 						Kind::Type(_) => body = parse_type_decl(tokens, functions, i, body),
+						
+						Kind::Op(ref op) if op == ";" => *i += 1,
 						
 						_ => if let Some(token) = parse_statement(tokens, functions, i) {
 							body.push(token);
