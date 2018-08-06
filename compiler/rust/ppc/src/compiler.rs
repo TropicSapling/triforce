@@ -449,6 +449,7 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 	}
 }
 
+// NEEDS FIXING
 fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
 	match tokens[*i + 1].kind {
 		Kind::GroupOp(ref op) if op == "}" => {
@@ -505,7 +506,10 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						}
 						
 						limit = *i;
-						break;
+						highest = None;
+						*i = start;
+						continue;
+//						break;
 					},
 					
 					Kind::GroupOp(ref op) if op == "{" => {
