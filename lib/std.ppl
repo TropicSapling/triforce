@@ -1,5 +1,7 @@
+type LoopBreak, LoopContinue extends *;
+
 export {
-	func (macro f)? -> macro { // Error forwarding, example: `(fs.readFile "file")?` returns file contents if read is successful, else returns error
+	macro func (f)? { // Error forwarding, example: `(fs.readFile "file")?` returns file contents if read is successful, else returns error
 		let res = f;
 		if res.Type == Type.Error {
 			return res;
@@ -15,6 +17,37 @@ export {
 		
 		n * (n - 1)!
 	}
+	
+	func $while (func pointer cond) (func pointer body) -> * { // '*' means any type
+		if @cond {
+			let res = @body;
+			if res.Type == LoopBreak {
+				return res;
+			} else if res.Type != LoopContinue {
+				return res from ..;
+			}
+			
+			$while cond body
+		}
+	}
+
+	macro func while (cond) (body) {
+		$while func { cond } func { body }
+	}
+	
+	macro func for [init, check, change] (body) {
+		init;
+		while check {
+			body;
+			change;
+		}
+	}
+	
+	macro func break (val) {
+		return (LoopBreak) val
+	}
+	
+	macro continue = return (LoopContinue) void;
 }
 
 // OLD SYNTAX BELOW, NEEDS UPDATING

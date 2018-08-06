@@ -10,7 +10,7 @@ pub enum Kind {
     Str1(String),
     Str2(String),
     Type(Type),
-    Var(String, [Type; 8])
+    Var(String, Vec<Vec<Type>>)
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -25,6 +25,7 @@ pub enum Type {
 	Heap,
 	Int,
 	List,
+	Macro,
 	Only,
 	Pointer,
 	Register,
@@ -53,14 +54,14 @@ pub struct Function<'a> {
 	pub name: String,
 	pub pos: usize,
 	pub args: Vec<FunctionArg<'a>>,
-	pub output: [Type; 8],
+	pub output: Vec<Vec<Type>>,
 	pub precedence: u8
 }
 
 #[derive(Debug)]
 pub struct FunctionArg<'a> {
 	pub name: &'a str,
-	pub typ: [Type; 8]
+	pub typ: Vec<Vec<Type>>
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
