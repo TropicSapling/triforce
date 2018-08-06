@@ -542,6 +542,16 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 								
 								*i -= 1;
 							}
+							
+							limit = *i;
+							highest = None;
+							
+							while *i > start {
+								tokens[*i].children.borrow_mut().clear();
+								*i -= 1;
+							}
+							
+							continue;
 						}
 						
 						limit = *i;
