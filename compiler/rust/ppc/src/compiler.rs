@@ -459,29 +459,85 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	}
 	
 	let start = *i;
+	let mut limit = tokens.len();
 	let mut lowest = None;
-	while *i < tokens.len() {
+	while *i < limit {
 		let mut highest: Option<(usize, &Function, u8)> = None;
 		let mut depth = 0;
+		let mut depth2 = 0;
+		let mut dived = false;
 		*i = start;
-		while *i < tokens.len() {
+		while *i < limit {
 			if tokens[*i].children.borrow().len() < 1 {
 				match tokens[*i].kind {
 					Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
 						match highest {
-							Some(func) => if (def.precedence > func.1.precedence && depth == func.2) || depth > func.2 {
-								highest = Some((*i, def, depth));
+							Some(func) => if (def.precedence > func.1.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
+								highest = Some((*i, def, depth + depth2));
 							},
-							None => highest = Some((*i, def, depth))
+							None => highest = Some((*i, def, depth + depth2))
 						}
 					},
 					
-					Kind::Op(ref op) if op == ";" => {
+					Kind::Op(ref op) if op == ";" => if depth2 == 0 {
+						limit = *i;
 						*i += 1;
 						break;
 					},
-					Kind::GroupOp(ref op) if op == "}" => break, // NEEDS FIXING
-					Kind::GroupOp(ref op) if op == "{" => break, // NEEDS FIXING
+					
+					Kind::Reserved(_) if depth2 == 0 => {
+						*i -= 1;
+						
+						let mut depth = 0;
+						while *i > 0 {
+							match tokens[*i].kind {
+								Kind::GroupOp(ref op) if op == "}" => depth += 1,
+								Kind::GroupOp(ref op) if op == "{" => if depth > 1 {
+									depth -= 1;
+								} else {
+									break;
+								},
+								
+								_ => tokens[*i].children.borrow_mut().clear() // TMP until better performant solution found
+							}
+							
+							*i -= 1;
+						}
+						
+						limit = *i;
+						break;
+					},
+					
+					Kind::GroupOp(ref op) if op == "{" => {
+						depth2 += 1;
+						dived = true;
+					}, // MAY NEED FIXING
+					Kind::GroupOp(ref op) if op == "}" => if depth2 > 0 {
+						depth2 -= 1;
+					} else {
+						if dived {
+							*i -= 1;
+							
+							let mut depth = 0;
+							while *i > 0 {
+								match tokens[*i].kind {
+									Kind::GroupOp(ref op) if op == "}" => depth += 1,
+									Kind::GroupOp(ref op) if op == "{" => if depth > 1 {
+										depth -= 1;
+									} else {
+										break;
+									},
+									
+									_ => tokens[*i].children.borrow_mut().clear() // TMP until better performant solution found
+								}
+								
+								*i -= 1;
+							}
+						}
+						
+						limit = *i;
+						break;
+					}, // MAY NEED FIXING
 					
 					Kind::Op(ref op) => {
 						let mut name = op.to_string();
@@ -504,22 +560,23 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						
 						if let Some(def) = is_defined(functions, &name) {
 							match highest {
-								Some(func) => if (def.precedence > func.1.precedence && depth == func.2) || depth > func.2 {
-									highest = Some((start, def, depth));
+								Some(func) => if (def.precedence > func.1.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
+									highest = Some((start, def, depth + depth2));
 								},
-								None => highest = Some((start, def, depth))
+								None => highest = Some((start, def, depth + depth2))
 							}
 						} else if name == "->" {
+							limit = *i;
 							break;
 						} else {
 							let mut j = 1;
 							while j < name.len() {
 								if let Some(def) = is_defined(functions, &name[..name.len() - j]) {
 									match highest {
-										Some(func) => if (def.precedence > func.1.precedence && depth == func.2) || depth > func.2 {
-											highest = Some((start, def, depth));
+										Some(func) => if (def.precedence > func.1.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
+											highest = Some((start, def, depth + depth2));
 										},
-										None => highest = Some((start, def, depth))
+										None => highest = Some((start, def, depth + depth2))
 									}
 									
 									break;
@@ -713,7 +770,7 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 							body.push(token);
 						} else {
 							body.push(start); // Should this really be pushing start instead of *i?
-							*i += 1;
+//							*i += 1;
 						}
 					}
 				}
