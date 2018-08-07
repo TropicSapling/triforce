@@ -330,6 +330,8 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 				j -= 1;
 			},
 			
+			Kind::GroupOp(ref op) if op == "{" => (),
+			
 			Kind::GroupOp(_) | Kind::Type(_) => {
 				j += 1;
 				offset += 1;
@@ -392,6 +394,8 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 		
 		match tokens[i + j].kind {
 			Kind::Op(ref op) => skip = (true, op),
+			
+			Kind::GroupOp(ref op) if op == "{" => (),
 			
 			Kind::GroupOp(_) | Kind::Type(_) => {
 				j += 1;
@@ -525,7 +529,7 @@ fn parse_group(tokens: &Vec<Token>, i: usize, functions: &Vec<Function>) {
 	}
 	
 	if tokens[i].children.borrow().len() < 1 {
-		tokens[i].children.borrow_mut().push(usize::MAX);
+//		tokens[i].children.borrow_mut().push(usize::MAX);
 	}
 }
 
