@@ -28,7 +28,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.4.1-alpha")
+		.version("0.4.2-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -51,6 +51,9 @@ fn main() -> Result<(), std::io::Error> {
 			.short("r")
 			.long("rust")
 			.help("Compiles into Rust instead of executable"))
+		.arg(Arg::with_name("optimise")
+			.short("O")
+			.help("Optimises executable"))
 		.get_matches();
 	
 	let debugging = matches.is_present("debug");
@@ -168,24 +171,33 @@ fn main() -> Result<(), std::io::Error> {
 	
 	//////// CREATE BINARY OUTPUT ////////
 	
-	if debugging {
-		println!("{} FINAL OUTPUT DIR: {:?}", BrightYellow.paint("[DEBUG]"), final_output_dir);
-		println!("{} FINAL OUTPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), final_output);
-	}
-	
-	fs::create_dir_all(&final_output_dir)?;
-	
-	let out = Command::new("rustc")
-		.args(&["--out-dir", &final_output_dir, &output])
-		.output()
-		.expect("failed to execute process");
-	
-	if out.stdout.len() > 0 {
-		print!("{}", str::from_utf8(&out.stdout).unwrap());
-	}
-	
-	if out.stderr.len() > 0 {
-		print!("{}", str::from_utf8(&out.stderr).unwrap());
+	if !matches.is_present("rust") || matches.is_present("run") {
+		if debugging {
+			println!("{} FINAL OUTPUT DIR: {:?}", BrightYellow.paint("[DEBUG]"), final_output_dir);
+			println!("{} FINAL OUTPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), final_output);
+		}
+		
+		fs::create_dir_all(&final_output_dir)?;
+		
+		let out = if matches.is_present("optimise") {
+			Command::new("rustc")
+				.args(&["-O", "--out-dir", &final_output_dir, &output])
+				.output()
+				.expect("failed to execute process")
+		} else {
+			Command::new("rustc")
+				.args(&["-g", "--out-dir", &final_output_dir, &output])
+				.output()
+				.expect("failed to execute process")
+		};
+		
+		if out.stdout.len() > 0 {
+			print!("{}", str::from_utf8(&out.stdout).unwrap());
+		}
+		
+		if out.stderr.len() > 0 {
+			print!("{}", str::from_utf8(&out.stderr).unwrap());
+		}
 	}
 	
 	//////// RUN COMPILED BINARY ////////
