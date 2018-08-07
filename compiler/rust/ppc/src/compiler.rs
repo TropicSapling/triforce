@@ -308,6 +308,12 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 	i -= 1;
 	while i - j > 0 && j - offset < def.pos {
 		match tokens[i - j].kind {
+			Kind::Op(ref op) if op == ";" => {
+				j += 1;
+				offset += 1;
+				continue;
+			},
+			
 			Kind::Op(ref op) => {
 				let mut name = op.to_string();
 				
@@ -329,6 +335,8 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 				}
 				j -= 1;
 			},
+			
+			Kind::GroupOp(ref op) if op == "{" => (),
 			
 			Kind::GroupOp(_) | Kind::Type(_) => {
 				j += 1;
@@ -391,7 +399,14 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 		let mut skip = (false, "");
 		
 		match tokens[i + j].kind {
+			Kind::Op(ref op) if op == ";" => {
+				j += 1;
+				offset += 1;
+				continue;
+			},
 			Kind::Op(ref op) => skip = (true, op),
+			
+			Kind::GroupOp(ref op) if op == "{" => (),
 			
 			Kind::GroupOp(_) | Kind::Type(_) => {
 				j += 1;
@@ -449,6 +464,86 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 	}
 }
 
+fn parse_group(tokens: &Vec<Token>, i: usize, functions: &Vec<Function>) {
+	let mut j = 1;
+	let mut depth = 0;
+	while i + j < tokens.len() {
+		let mut k = 0;
+		while k < tokens.len() {
+			if let Ok(children) = tokens[k].children.try_borrow() {
+				if children.contains(&(i + j)) {
+					break;
+				}
+			}
+			
+			k += 1;
+		}
+		
+		let mut skip = (false, "");
+		
+		match tokens[i + j].kind {
+			Kind::Op(ref op) if op == ";" => {
+				j += 1;
+				continue;
+			},
+			Kind::Op(ref op) => skip = (true, op),
+			
+			Kind::GroupOp(ref op) if op == "{" => depth += 1,
+			Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
+				depth -= 1;
+			} else {
+				break;
+			},
+			
+			Kind::GroupOp(_) | Kind::Type(_) => {
+				j += 1;
+				continue;
+			},
+			
+			_ => ()
+		}
+		
+		if k < tokens.len() {
+			match tokens[i + j + 1].kind {
+				Kind::Op(_) if skip.0 => (),
+				_ => {
+					j += 1;
+					continue;
+				}
+			}
+		} else {
+			tokens[i].children.borrow_mut().push(i + j);
+		}
+		
+		if skip.0 {
+			let mut name = skip.1.to_string();
+			
+			j += 1;
+			while i + j < tokens.len() {
+				match tokens[i + j].kind {
+					Kind::Op(ref op) => {
+						name += op;
+						
+						if let Some(_) = is_defined(functions, &name) {
+							j += 1;
+						} else {
+							break;
+						}
+					},
+					_ => break
+				}
+			}
+			j -= 1;
+		}
+		
+		j += 1;
+	}
+	
+	if i + j >= tokens.len() {
+		panic!("Unexpected EOF");
+	}
+}
+
 fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
 	match tokens[*i + 1].kind {
 		Kind::GroupOp(ref op) if op == "}" => {
@@ -459,29 +554,117 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	}
 	
 	let start = *i;
+	let mut limit = tokens.len();
 	let mut lowest = None;
-	while *i < tokens.len() {
-		let mut highest: Option<(usize, &Function, u8)> = None;
+	loop {
+		let mut highest: Option<(usize, Option<&Function>, u8)> = None;
 		let mut depth = 0;
+		let mut depth2 = 0;
+		let mut dived = false;
 		*i = start;
-		while *i < tokens.len() {
+		while *i < limit {
 			if tokens[*i].children.borrow().len() < 1 {
 				match tokens[*i].kind {
 					Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
 						match highest {
-							Some(func) => if (def.precedence > func.1.precedence && depth == func.2) || depth > func.2 {
-								highest = Some((*i, def, depth));
+							Some(func) => match func.1 {
+								Some(def2) => if (def.precedence > def2.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
+									highest = Some((*i, Some(def), depth + depth2));
+								},
+								None => if depth + depth2 > func.2 {
+									highest = Some((*i, Some(def), depth + depth2));
+								}
 							},
-							None => highest = Some((*i, def, depth))
+							None => highest = Some((*i, Some(def), depth + depth2))
 						}
 					},
 					
-					Kind::Op(ref op) if op == ";" => {
+					Kind::Op(ref op) if op == ";" => if depth2 == 0 {
+						limit = *i;
 						*i += 1;
 						break;
 					},
-					Kind::GroupOp(ref op) if op == "}" => break, // NEEDS FIXING
-					Kind::GroupOp(ref op) if op == "{" => break, // NEEDS FIXING
+					
+					Kind::Reserved(_) if depth2 == 0 => {
+						*i -= 1;
+						
+						let mut depth = 0;
+						while *i > 0 {
+							match tokens[*i].kind {
+								Kind::GroupOp(ref op) if op == "}" => depth += 1,
+								Kind::GroupOp(ref op) if op == "{" => if depth > 1 {
+									depth -= 1;
+								} else {
+									break;
+								},
+								
+								_ => tokens[*i].children.borrow_mut().clear() // TMP until better performant solution found
+							}
+							
+							*i -= 1;
+						}
+						
+						limit = *i;
+						highest = None;
+						
+						while *i > start {
+							tokens[*i].children.borrow_mut().clear(); // TMP until better performant solution found
+							*i -= 1;
+						}
+						
+						continue;
+					},
+					
+					Kind::GroupOp(ref op) if op == "{" => {
+						match highest {
+							Some(func) => if depth + depth2 >= func.2 {
+								highest = Some((*i, None, depth + depth2));
+							},
+							None => highest = Some((*i, None, depth + depth2))
+						}
+						
+						depth2 += 1;
+						dived = true;
+					},
+					
+					Kind::GroupOp(ref op) if op == "}" => if depth2 > 0 {
+						depth2 -= 1;
+					} else {
+						if dived {
+							*i -= 1;
+							
+							let mut depth = 0;
+							while *i > 0 {
+								match tokens[*i].kind {
+									Kind::GroupOp(ref op) if op == "}" => depth += 1,
+									Kind::GroupOp(ref op) if op == "{" => if depth > 1 {
+										depth -= 1;
+									} else {
+										tokens[*i].children.borrow_mut().clear(); // TMP until better performant solution found
+										break;
+									},
+									
+									_ => ()
+								}
+								
+								tokens[*i].children.borrow_mut().clear(); // TMP until better performant solution found
+								*i -= 1;
+							}
+							
+							limit = *i;
+							highest = None;
+							
+							while *i > start {
+								tokens[*i].children.borrow_mut().clear();  // TMP until better performant solution found
+								*i -= 1;
+							}
+							
+							continue;
+						}
+						
+						limit = *i;
+						break;
+					},
 					
 					Kind::Op(ref op) => {
 						let mut name = op.to_string();
@@ -504,22 +687,33 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						
 						if let Some(def) = is_defined(functions, &name) {
 							match highest {
-								Some(func) => if (def.precedence > func.1.precedence && depth == func.2) || depth > func.2 {
-									highest = Some((start, def, depth));
+								Some(func) => match func.1 {
+									Some(def2) => if (def.precedence > def2.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
+										highest = Some((start, Some(def), depth + depth2));
+									},
+									None => if depth + depth2 > func.2 {
+										highest = Some((start, Some(def), depth + depth2));
+									}
 								},
-								None => highest = Some((start, def, depth))
+								None => highest = Some((start, Some(def), depth + depth2))
 							}
 						} else if name == "->" {
+							limit = *i;
 							break;
 						} else {
 							let mut j = 1;
 							while j < name.len() {
 								if let Some(def) = is_defined(functions, &name[..name.len() - j]) {
 									match highest {
-										Some(func) => if (def.precedence > func.1.precedence && depth == func.2) || depth > func.2 {
-											highest = Some((start, def, depth));
+										Some(func) => match func.1 {
+											Some(def2) => if (def.precedence > def2.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
+												highest = Some((start, Some(def), depth + depth2));
+											},
+											None => if depth + depth2 > func.2 {
+												highest = Some((start, Some(def), depth + depth2));
+											}
 										},
-										None => highest = Some((start, def, depth))
+										None => highest = Some((start, Some(def), depth + depth2))
 									}
 									
 									break;
@@ -561,6 +755,11 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 					}
 				}
 				*i -= 1;
+			} else if let Kind::GroupOp(ref op) = tokens[*i].kind {
+				if op == "{" {
+					depth2 += 1;
+					dived = true;
+				}
 			}
 			
 			*i += 1;
@@ -569,7 +768,11 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 		match highest {
 			Some(func) => {
 				lowest = Some(func.0);
-				parse_func(tokens, (func.0, func.1), functions);
+				
+				match func.1 {
+					Some(def) => parse_func(tokens, (func.0, def), functions),
+					None => parse_group(tokens, func.0, functions)
+				}
 			},
 			None => break
 		}
@@ -709,11 +912,13 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 						
 						Kind::Type(_) => body = parse_type_decl(tokens, functions, i, body),
 						
+						Kind::Op(ref op) if op == ";" => *i += 1,
+						
 						_ => if let Some(token) = parse_statement(tokens, functions, i) {
 							body.push(token);
 						} else {
 							body.push(start); // Should this really be pushing start instead of *i?
-							*i += 1;
+//							*i += 1;
 						}
 					}
 				}

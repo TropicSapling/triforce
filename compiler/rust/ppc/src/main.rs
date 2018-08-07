@@ -28,7 +28,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.3.6-alpha")
+		.version("0.4.0-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")

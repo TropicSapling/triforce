@@ -35,7 +35,7 @@ func no_args {
 func init {
 	(1 2 +++ 3-- * 4 5++ 6++ --- 7 8)-- backwards_println; // Like the most complex expression I can think of, took ages to make this get parsed successfully ;-;
 	
-	let res = 1 * 2 + 3 ** 4 * 5 + 6; // 'let' is necessary to allow variable shadowing, decrease bugs and make code clearer for both the compiler and the reader
+	let res = 1 * 2 + {println "This was printed from inside an expression!"; 3 ** 4} * 5 + 6; // 'let' is necessary to allow variable shadowing, decrease bugs and make code clearer for both the compiler and the reader
 	res += 123;
 	println res;
 	
@@ -45,6 +45,13 @@ func init {
 	
 	const constant = "\nThis is a constant string.";
 	println constant;
+	
+/*	macro print_str = {
+		const constant = "\nThis is a constant string.";
+		println constant;
+	};
+	
+	print_str; */
 	
 	no_args;
 }
