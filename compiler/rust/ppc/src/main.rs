@@ -28,7 +28,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.4.2-alpha")
+		.version("0.4.3-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -181,12 +181,12 @@ fn main() -> Result<(), std::io::Error> {
 		
 		let out = if matches.is_present("optimise") {
 			Command::new("rustc")
-				.args(&["-O", "--out-dir", &final_output_dir, &output])
+				.args(&["-O", "--color", "always", "--out-dir", &final_output_dir, &output])
 				.output()
 				.expect("failed to execute process")
 		} else {
 			Command::new("rustc")
-				.args(&["-g", "--out-dir", &final_output_dir, &output])
+				.args(&["-g", "--color", "always", "--out-dir", &final_output_dir, &output])
 				.output()
 				.expect("failed to execute process")
 		};
