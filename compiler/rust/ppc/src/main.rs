@@ -51,6 +51,9 @@ fn main() -> Result<(), std::io::Error> {
 			.short("r")
 			.long("rust")
 			.help("Compiles into Rust instead of executable"))
+		.arg(Arg::with_name("optimise")
+			.short("O")
+			.help("Optimises executable"))
 		.get_matches();
 	
 	let debugging = matches.is_present("debug");
@@ -176,10 +179,17 @@ fn main() -> Result<(), std::io::Error> {
 		
 		fs::create_dir_all(&final_output_dir)?;
 		
-		let out = Command::new("rustc")
-			.args(&["--out-dir", &final_output_dir, &output])
-			.output()
-			.expect("failed to execute process");
+		let out = if matches.is_present("optimise") {
+			Command::new("rustc")
+				.args(&["-O", "--out-dir", &final_output_dir, &output])
+				.output()
+				.expect("failed to execute process")
+		} else {
+			Command::new("rustc")
+				.args(&["-g", "--out-dir", &final_output_dir, &output])
+				.output()
+				.expect("failed to execute process")
+		};
 		
 		if out.stdout.len() > 0 {
 			print!("{}", str::from_utf8(&out.stdout).unwrap());
