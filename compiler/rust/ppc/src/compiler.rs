@@ -603,15 +603,15 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 					},
 					
 					Kind::GroupOp(ref op) if op == "{" => {
-						depth2 += 1;
-						dived = true;
-						
 						match highest {
-							Some(func) => if depth + depth2 > func.2 {
+							Some(func) => if depth + depth2 >= func.2 {
 								highest = Some((*i, None, depth + depth2));
 							},
 							None => highest = Some((*i, None, depth + depth2))
 						}
+						
+						depth2 += 1;
+						dived = true;
 					}, // MAY NEED FIXING
 					Kind::GroupOp(ref op) if op == "}" => if depth2 > 0 {
 						depth2 -= 1;
