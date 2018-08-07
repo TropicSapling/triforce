@@ -471,6 +471,10 @@ fn parse_group(tokens: &Vec<Token>, i: usize, functions: &Vec<Function>) {
 		let mut skip = (false, "");
 		
 		match tokens[i + j].kind {
+			Kind::Op(ref op) if op == ";" => {
+				j += 1;
+				continue;
+			},
 			Kind::Op(ref op) => skip = (true, op),
 			
 			Kind::GroupOp(ref op) if op == "{" => depth += 1,
@@ -745,6 +749,11 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 					}
 				}
 				*i -= 1;
+			} else if let Kind::GroupOp(ref op) = tokens[*i].kind {
+				if op == "{" {
+					depth2 += 1;
+					dived = true;
+				}
 			}
 			
 			*i += 1;
@@ -876,7 +885,7 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 					Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
 						nests -= 1;
 					} else {
-						break;
+						break; // ERROR
 					},
 					
 					_ => match tokens[*i].kind {
