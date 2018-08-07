@@ -544,6 +544,106 @@ fn parse_group(tokens: &Vec<Token>, i: usize, functions: &Vec<Function>) {
 	}
 }
 
+fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
+	let mut depth = 0;
+	let mut dived = false;
+	let mut limit = tokens.len();
+	while *i < limit {
+		match tokens[*i].kind {
+			Kind::Op(ref op) if op == ";" => if depth == 0 {
+				limit = *i;
+				break;
+			},
+			
+			Kind::Reserved(_) if depth == 0 => {
+				*i -= 1;
+				
+				let mut depth = 0;
+				while *i > 0 {
+					match tokens[*i].kind {
+						Kind::GroupOp(ref op) if op == "}" => depth += 1,
+						Kind::GroupOp(ref op) if op == "{" => if depth > 1 {
+							depth -= 1;
+						} else {
+							break;
+						},
+						
+						_ => ()
+					}
+					
+					*i -= 1;
+				}
+				
+				limit = *i;
+				break;
+			},
+			
+			Kind::GroupOp(ref op) if op == "{" => {
+				depth += 1;
+				dived = true;
+			},
+			
+			Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
+				depth -= 1;
+			} else {
+				if dived {
+					*i -= 1;
+					
+					let mut depth = 0;
+					while *i > 0 {
+						match tokens[*i].kind {
+							Kind::GroupOp(ref op) if op == "}" => depth += 1,
+							Kind::GroupOp(ref op) if op == "{" => if depth > 1 {
+								depth -= 1;
+							} else {
+								break;
+							},
+							
+							_ => ()
+						}
+						
+						*i -= 1;
+					}
+				}
+				
+				limit = *i;
+				break;
+			},
+			
+			Kind::Op(ref op) => {
+				let mut name = op.to_string();
+				let start = *i;
+				
+				*i += 1;
+				while *i < tokens.len() {
+					match tokens[*i].kind {
+						Kind::Op(ref op) => name += op,
+						_ => break
+					}
+					
+					*i += 1;
+				}
+				*i -= 1;
+				
+				if *i + 1 >= tokens.len() {
+					panic!("Unexpected EOF");
+				}
+				
+				if name == "->" {
+					limit = start;
+					break;
+				}
+			},
+			
+			_ => ()
+		}
+		
+		*i += 1;
+	}
+	
+	limit
+}
+
 fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
 	match tokens[*i + 1].kind {
 		Kind::GroupOp(ref op) if op == "}" => {
@@ -554,13 +654,13 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	}
 	
 	let start = *i;
-	let mut limit = tokens.len();
+	let limit = get_parse_limit(tokens, i);
 	let mut lowest = None;
+	
 	loop {
 		let mut highest: Option<(usize, Option<&Function>, u8)> = None;
 		let mut depth = 0;
 		let mut depth2 = 0;
-		let mut dived = false;
 		*i = start;
 		while *i < limit {
 			if tokens[*i].children.borrow().len() < 1 {
@@ -579,42 +679,6 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						}
 					},
 					
-					Kind::Op(ref op) if op == ";" => if depth2 == 0 {
-						limit = *i;
-						*i += 1;
-						break;
-					},
-					
-					Kind::Reserved(_) if depth2 == 0 => {
-						*i -= 1;
-						
-						let mut depth = 0;
-						while *i > 0 {
-							match tokens[*i].kind {
-								Kind::GroupOp(ref op) if op == "}" => depth += 1,
-								Kind::GroupOp(ref op) if op == "{" => if depth > 1 {
-									depth -= 1;
-								} else {
-									break;
-								},
-								
-								_ => tokens[*i].children.borrow_mut().clear() // TMP until better performant solution found
-							}
-							
-							*i -= 1;
-						}
-						
-						limit = *i;
-						highest = None;
-						
-						while *i > start {
-							tokens[*i].children.borrow_mut().clear(); // TMP until better performant solution found
-							*i -= 1;
-						}
-						
-						continue;
-					},
-					
 					Kind::GroupOp(ref op) if op == "{" => {
 						match highest {
 							Some(func) => if depth + depth2 >= func.2 {
@@ -624,49 +688,13 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						}
 						
 						depth2 += 1;
-						dived = true;
 					},
 					
 					Kind::GroupOp(ref op) if op == "}" => if depth2 > 0 {
 						depth2 -= 1;
-					} else {
-						if dived {
-							*i -= 1;
-							
-							let mut depth = 0;
-							while *i > 0 {
-								match tokens[*i].kind {
-									Kind::GroupOp(ref op) if op == "}" => depth += 1,
-									Kind::GroupOp(ref op) if op == "{" => if depth > 1 {
-										depth -= 1;
-									} else {
-										tokens[*i].children.borrow_mut().clear(); // TMP until better performant solution found
-										break;
-									},
-									
-									_ => ()
-								}
-								
-								tokens[*i].children.borrow_mut().clear(); // TMP until better performant solution found
-								*i -= 1;
-							}
-							
-							limit = *i;
-							highest = None;
-							
-							while *i > start {
-								tokens[*i].children.borrow_mut().clear();  // TMP until better performant solution found
-								*i -= 1;
-							}
-							
-							continue;
-						}
-						
-						limit = *i;
-						break;
 					},
 					
-					Kind::Op(ref op) => {
+					Kind::Op(ref op) if op != ";" => {
 						let mut name = op.to_string();
 						let start = *i;
 						
@@ -697,9 +725,6 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 								},
 								None => highest = Some((start, Some(def), depth + depth2))
 							}
-						} else if name == "->" {
-							limit = *i;
-							break;
 						} else {
 							let mut j = 1;
 							while j < name.len() {
@@ -758,7 +783,6 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 			} else if let Kind::GroupOp(ref op) = tokens[*i].kind {
 				if op == "{" {
 					depth2 += 1;
-					dived = true;
 				}
 			}
 			
