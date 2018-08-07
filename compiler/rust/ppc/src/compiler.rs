@@ -308,6 +308,12 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 	i -= 1;
 	while i - j > 0 && j - offset < def.pos {
 		match tokens[i - j].kind {
+			Kind::Op(ref op) if op == ";" => {
+				j += 1;
+				offset += 1;
+				continue;
+			},
+			
 			Kind::Op(ref op) => {
 				let mut name = op.to_string();
 				
@@ -393,6 +399,11 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 		let mut skip = (false, "");
 		
 		match tokens[i + j].kind {
+			Kind::Op(ref op) if op == ";" => {
+				j += 1;
+				offset += 1;
+				continue;
+			},
 			Kind::Op(ref op) => skip = (true, op),
 			
 			Kind::GroupOp(ref op) if op == "{" => (),
@@ -531,10 +542,6 @@ fn parse_group(tokens: &Vec<Token>, i: usize, functions: &Vec<Function>) {
 	if i + j >= tokens.len() {
 		panic!("Unexpected EOF");
 	}
-	
-	if tokens[i].children.borrow().len() < 1 {
-//		tokens[i].children.borrow_mut().push(usize::MAX);
-	}
 }
 
 fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
@@ -605,9 +612,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 							*i -= 1;
 						}
 						
-//						*i = start;
 						continue;
-//						break;
 					},
 					
 					Kind::GroupOp(ref op) if op == "{" => {
@@ -620,7 +625,8 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						
 						depth2 += 1;
 						dived = true;
-					}, // MAY NEED FIXING
+					},
+					
 					Kind::GroupOp(ref op) if op == "}" => if depth2 > 0 {
 						depth2 -= 1;
 					} else {
@@ -658,7 +664,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 						
 						limit = *i;
 						break;
-					}, // MAY NEED FIXING
+					},
 					
 					Kind::Op(ref op) => {
 						let mut name = op.to_string();
@@ -885,7 +891,7 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 					Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
 						nests -= 1;
 					} else {
-						break; // ERROR
+						break;
 					},
 					
 					_ => match tokens[*i].kind {
