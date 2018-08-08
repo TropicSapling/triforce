@@ -10,7 +10,7 @@ mod compiler;
 
 use clap::{Arg, App};
 use term_painter::{ToStyle, Color::*};
-use kernel32::SetConsoleMode;
+use kernel32::{GetConsoleMode, SetConsoleMode};
 
 use std::{
 	fs,
@@ -194,11 +194,14 @@ fn main() -> Result<(), std::io::Error> {
 				.expect("failed to execute process")
 		};
 		
-		let handle;
 		if cfg!(target_os = "windows") {
+			// Makes sure colours are displayed correctly on Windows
+			
 			unsafe {
-				handle = kernel32::GetStdHandle(winapi::um::winbase::STD_OUTPUT_HANDLE);
-				SetConsoleMode(handle, 0x0004); // Makes sure colours are displayed correctly on Windows
+				let handle = kernel32::GetStdHandle(winapi::um::winbase::STD_OUTPUT_HANDLE);
+				let mut mode = 0;
+				GetConsoleMode(handle, &mut mode);
+				SetConsoleMode(handle, mode | 0x0004);
 			}
 		}
 		
