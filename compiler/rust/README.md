@@ -1,5 +1,15 @@
 # P+ compiler written in Rust
 
+## Installation
+### Linux
+1. Run `install.sh`
+2. Run `cargo build --release` inside of the `ppc` folder
+
+### Windows
+1. Install the Rust compiler from https://www.rust-lang.org
+2. Run `install.bat`
+3. Download an executable from one of the releases **or** run `cargo build --release` inside of the `ppc` folder if you wish to build it yourself.
+
 ## Implemented Features
 #### Definitions
 <sup>Keywords surrounded by</sup>
