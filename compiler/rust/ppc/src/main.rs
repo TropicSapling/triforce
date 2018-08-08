@@ -1,13 +1,16 @@
 extern crate clap;
 extern crate term_painter;
 
+#[cfg(windows)] extern crate winapi;
+#[cfg(windows)] extern crate kernel32;
+
 mod lib;
 mod lexer;
 mod compiler;
 
 use clap::{Arg, App};
-
 use term_painter::{ToStyle, Color::*};
+use kernel32::{GetConsoleMode, SetConsoleMode};
 
 use std::{
 	fs,
@@ -28,7 +31,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.4.2-alpha")
+		.version("0.4.3-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -181,15 +184,26 @@ fn main() -> Result<(), std::io::Error> {
 		
 		let out = if matches.is_present("optimise") {
 			Command::new("rustc")
-				.args(&["-O", "--out-dir", &final_output_dir, &output])
+				.args(&["-O", "--color", "always", "--out-dir", &final_output_dir, &output])
 				.output()
 				.expect("failed to execute process")
 		} else {
 			Command::new("rustc")
-				.args(&["-g", "--out-dir", &final_output_dir, &output])
+				.args(&["-g", "--color", "always", "--out-dir", &final_output_dir, &output])
 				.output()
 				.expect("failed to execute process")
 		};
+		
+		if cfg!(target_os = "windows") {
+			// Makes sure colours are displayed correctly on Windows
+			
+			unsafe {
+				let handle = kernel32::GetStdHandle(winapi::um::winbase::STD_OUTPUT_HANDLE);
+				let mut mode = 0;
+				GetConsoleMode(handle, &mut mode);
+				SetConsoleMode(handle, mode | 0x0004);
+			}
+		}
 		
 		if out.stdout.len() > 0 {
 			print!("{}", str::from_utf8(&out.stdout).unwrap());
