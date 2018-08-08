@@ -31,7 +31,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.4.3-alpha")
+		.version("0.4.4-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -172,7 +172,11 @@ fn main() -> Result<(), std::io::Error> {
 	let mut out_file = File::create(output)?;
 	out_file.write_all(out_contents.as_bytes())?;
 	
+	Command::new("rustfmt").arg(output).output().expect("failed to format Rust code");
+	
 	//////// CREATE BINARY OUTPUT ////////
+	
+	let mut error = false;
 	
 	if !matches.is_present("rust") || matches.is_present("run") {
 		if debugging {
@@ -186,12 +190,12 @@ fn main() -> Result<(), std::io::Error> {
 			Command::new("rustc")
 				.args(&["-O", "--color", "always", "--out-dir", &final_output_dir, &output])
 				.output()
-				.expect("failed to execute process")
+				.expect("failed to compile Rust code")
 		} else {
 			Command::new("rustc")
 				.args(&["-g", "--color", "always", "--out-dir", &final_output_dir, &output])
 				.output()
-				.expect("failed to execute process")
+				.expect("failed to compile Rust code")
 		};
 		
 		if cfg!(target_os = "windows") {
@@ -211,12 +215,13 @@ fn main() -> Result<(), std::io::Error> {
 		
 		if out.stderr.len() > 0 {
 			print!("{}", str::from_utf8(&out.stderr).unwrap());
+			error = true;
 		}
 	}
 	
 	//////// RUN COMPILED BINARY ////////
 	
-	if matches.is_present("run") {
+	if matches.is_present("run") && !error {
 		let out = if cfg!(target_os = "windows") {
 			Command::new(&final_output)
 				.output()
