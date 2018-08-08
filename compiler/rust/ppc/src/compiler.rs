@@ -135,7 +135,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	let mut func_args = Vec::new();
 	let mut par_type = vec![vec![]];
 	
-	// STAGE 1: DEFINE FUNCTIONS (this is done in a separate loop to allow function definitions to be placed both before and after function calls)
+	// DEFINE FUNCTIONS (this is done in a separate loop to allow function definitions to be placed both before and after function calls)
 	let mut i = 0;
 	while i < tokens.len() {
 		let token = &tokens[i];
@@ -227,7 +227,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				par_type = vec![vec![]];
 				func_args = Vec::new();
 				func = false;
-			} else { // Operator (function) name
+			} else if op != "|" { // Operator (function) name
 				functions[last_item].name += op;
 				functions[last_item].pos = functions[last_item].args.len();
 				
