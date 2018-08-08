@@ -1,13 +1,16 @@
 extern crate clap;
 extern crate term_painter;
 
+#[cfg(windows)] extern crate winapi;
+#[cfg(windows)] extern crate kernel32;
+
 mod lib;
 mod lexer;
 mod compiler;
 
 use clap::{Arg, App};
-
 use term_painter::{ToStyle, Color::*};
+use kernel32::SetConsoleMode;
 
 use std::{
 	fs,
@@ -190,6 +193,14 @@ fn main() -> Result<(), std::io::Error> {
 				.output()
 				.expect("failed to execute process")
 		};
+		
+		let handle;
+		if cfg!(target_os = "windows") {
+			unsafe {
+				handle = kernel32::GetStdHandle(winapi::um::winbase::STD_OUTPUT_HANDLE);
+				SetConsoleMode(handle, 0x0004); // Makes sure colours are displayed correctly on Windows
+			}
+		}
 		
 		if out.stdout.len() > 0 {
 			print!("{}", str::from_utf8(&out.stdout).unwrap());

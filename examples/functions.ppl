@@ -39,7 +39,7 @@ func init {
 	res += 123;
 	println res;
 	
-	unsigned int n = 456; // 'let' is however not necessary when specifying a type since it's obvious that it's a declaration anyway
+//	unsigned int n = 456; // 'let' is however not necessary when specifying a type since it's obvious that it's a declaration anyway
 	n *= 789;
 	println n;
 	
