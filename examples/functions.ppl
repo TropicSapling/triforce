@@ -46,12 +46,12 @@ func init {
 	const constant = "\nThis is a constant string.";
 	println constant;
 	
-/*	macro print_str = {
+	macro print_str = {
 		const constant = "\nThis is a constant string.";
 		println constant;
 	};
 	
-	print_str; */
+	print_str;
 	
 	no_args;
 }

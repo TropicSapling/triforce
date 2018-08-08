@@ -64,6 +64,11 @@ pub struct FunctionArg<'a> {
 	pub typ: Vec<Vec<Type>>
 }
 
+pub struct Macro {
+	pub name: Token,
+	pub contents: Vec<Token>,
+}
+
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
 	let mut default_out = (*input).parent().unwrap().to_path_buf();
 	default_out.push("rust");

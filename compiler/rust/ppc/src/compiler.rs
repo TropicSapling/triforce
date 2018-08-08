@@ -909,9 +909,19 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 			
 			while *i < tokens.len() {
 				let start = *i;
+				
+				if let Kind::GroupOp(ref op) = tokens[*i].kind {
+					if op == "{" {
+						nests += 1;
+						if let Some(token) = parse_statement(tokens, functions, i) {
+							body.push(token);
+						} else {
+							body.push(start); // Should this really be pushing start instead of *i?
+						}
+					}
+				}
+				
 				match tokens[*i].kind {
-					Kind::GroupOp(ref op) if op == "{" => nests += 1,
-					
 					Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
 						nests -= 1;
 					} else {
@@ -942,7 +952,6 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 							body.push(token);
 						} else {
 							body.push(start); // Should this really be pushing start instead of *i?
-//							*i += 1;
 						}
 					}
 				}
