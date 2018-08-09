@@ -951,7 +951,7 @@ pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, i: &mut usi
 					let mut error = false;
 					
 					let out = Command::new("rustc")
-							.args(&["--color", "always", "--out-dir", "macros", "macros\\macro.exe"])
+							.args(&["--color", "always", "--out-dir", "macros", "macros\\macro.rs"])
 							.output()
 							.expect("failed to compile Rust code");
 					
