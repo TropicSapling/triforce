@@ -1,3 +1,4 @@
+use std::usize;
 use std::cell::RefCell;
 use lib::{Token, Kind, Type, FilePos, Macro, MacroFunction, Function, FunctionArg};
 use compiler::{parse, parse_statement};
@@ -522,6 +523,8 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 			},
 			
 			Kind::Var(ref name, _) => {
+				let call_pos = i;
+				
 				let mut j = 0;
 				while j < macros.len() {
 					if let Kind::Var(ref name2, _) = macros[j].name.kind {
@@ -604,7 +607,12 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 						functions.push(macro_funcs[j].func.clone());
 						parse_statement(tokens, &functions, &mut i);
 						
-						// WIP
+						let args = tokens[call_pos].children.borrow();
+						if args.len() >= 1 && args[0] != usize::MAX {
+							for arg in args.iter() {
+								// WIP
+							}
+						}
 						
 						break;
 					}
