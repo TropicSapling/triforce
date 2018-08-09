@@ -4,7 +4,7 @@ use std::{path::PathBuf, cell::RefCell};
 pub enum Kind {
     GroupOp(String),
     Literal(bool),
-    Number(u64, u64),
+    Number(usize, usize),
     Op(String),
     Reserved(String),
     Str1(String),

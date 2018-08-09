@@ -155,7 +155,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 				if num_pos > 0 && (item == "." || num_pos == 2) {
 					if num_pos == 2 {
 						match string.kind {
-							Kind::Number(n, _) => string.kind = Kind::Number(n, item.parse::<u64>().unwrap()),
+							Kind::Number(n, _) => string.kind = Kind::Number(n, item.parse::<usize>().unwrap()),
 							_ => unreachable!()
 						}
 						
@@ -173,7 +173,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 					num_pos = 0;
 				}
 				
-				let int_res = item.parse::<u64>();
+				let int_res = item.parse::<usize>();
 				
 				if item == "/" {
 					possible_comment = true;
@@ -384,6 +384,14 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 								
 								Kind::Reserved(ref keyword) if keyword == "return" => {
 									macro_funcs[last_item].returns.push(Vec::new());
+									
+									code.push(tokens[i].clone());
+									code.push(Token {
+										kind: Kind::Number(point, 0),
+										pos: FilePos {line: tokens[i].pos.line, col: tokens[i].pos.col + 2},
+										children: RefCell::new(Vec::new())
+									});
+									
 									tokens.remove(i);
 									
 									let mut depth = 0;
