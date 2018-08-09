@@ -241,11 +241,20 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 	res
 }
 
-fn del_outofscope_macros(macros: &mut Vec<Macro>, depth: usize) {
+fn del_outofscope_macros(macros: &mut Vec<Macro>, macro_funcs: &mut Vec<MacroFunction>, depth: usize) {
 	let mut i = 0;
 	while i < macros.len() {
 		if depth < macros[i].depth {
 			macros.remove(i);
+		} else {
+			i += 1;
+		}
+	}
+	
+	i = 0;
+	while i < macro_funcs.len() {
+		if depth < macro_funcs[i].depth {
+			macro_funcs.remove(i);
 		} else {
 			i += 1;
 		}
@@ -262,7 +271,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 			Kind::GroupOp(ref op) if op == "{" => full_depth += 1,
 			Kind::GroupOp(ref op) if op == "}" => if full_depth > 0 {
 				full_depth -= 1;
-				del_outofscope_macros(&mut macros, full_depth);
+				del_outofscope_macros(&mut macros, &mut macro_funcs, full_depth);
 			} else {
 				panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
 			},
@@ -446,8 +455,6 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 							pos: FilePos {line: 0, col: 0},
 							children: RefCell::new(Vec::new())
 						});
-						
-						// WIP
 					},
 					
 					_ => {
@@ -531,6 +538,19 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 							i -= 1;
 							break;
 						}
+					}
+					
+					j += 1;
+				}
+				
+				j = 0;
+				while j < macro_funcs.len() {
+					if name == &macro_funcs[j].func.name {
+						// Run macro function
+						
+						// WIP
+						
+						break;
 					}
 					
 					j += 1;
