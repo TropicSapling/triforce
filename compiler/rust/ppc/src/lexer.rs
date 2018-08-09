@@ -564,7 +564,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 									panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
 								},
 								
-								Kind::GroupOp(ref op) if op == ";" && depth == 0 => break,
+								Kind::Op(ref op) if op == ";" && depth == 0 => break,
 								
 								Kind::Type(ref typ) => {
 									let mut types = vec![vec![typ.clone()]];
@@ -608,20 +608,13 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 						parse_statement(tokens, &functions, &mut i);
 						
 						let args = tokens[call_pos].children.borrow();
+						let mut new_code = Vec::new();
 						if args.len() >= 1 && args[0] != usize::MAX {
 							for (a, arg) in args.iter().enumerate() {
-								let arg_name = &macro_funcs[j].func.args[a].name.clone();
-								for token in macro_funcs[j].code.iter_mut() {
-									let replace = match token.kind {
-										Kind::Var(ref name, _) if name == arg_name => {
-											true
-										},
-										
-										_ => false
-									};
-									
-									if replace {
-										*token = tokens[*arg].clone();
+								for token in macro_funcs[j].code.iter() {
+									match token.kind {
+										Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => new_code.push(tokens[*arg].clone()),
+										_ => new_code.push(token.clone())
 									}
 								}
 							}
