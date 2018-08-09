@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use lib::{Token, Kind, Type, FilePos};
+use lib::{Token, Kind, Type, FilePos, Macro};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -241,10 +241,73 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 	res
 }
 
+fn del_outofscope_macros(macros: &mut Vec<Macro>, depth: usize) {
+	let mut i = 0;
+	while i < macros.len() {
+		if depth < macros[i].depth {
+			macros.remove(i);
+		} else {
+			i += 1;
+		}
+	}
+}
+
 pub fn lex3(tokens: &mut Vec<Token>) {
+	let mut macros = Vec::new();
+	let mut full_depth = 0;
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind.clone() {
+			Kind::GroupOp(ref op) if op == "{" => full_depth += 1,
+			Kind::GroupOp(ref op) if op == "}" => if full_depth > 0 {
+				full_depth -= 1;
+				del_outofscope_macros(&mut macros, full_depth);
+			} else {
+				panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
+			},
+			
+			Kind::Type(ref typ) if typ == &Type::Macro => {
+				tokens.remove(i);
+				
+				let name;
+				match tokens[i].kind.clone() {
+					Kind::Type(ref typ) if typ == &Type::Func => {
+						tokens.remove(i);
+						name = tokens[i].clone();
+					},
+					
+					_ => name = tokens[i].clone()
+				}
+				
+				let mut contents = Vec::new();
+				let mut depth = 0;
+				
+				tokens.drain(i..i + 2);
+				while i < tokens.len() {
+					match tokens[i].kind.clone() {
+						Kind::GroupOp(ref op) if op == "{" => depth += 1,
+						Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
+							depth -= 1;
+						} else {
+							panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
+						}
+						
+						Kind::Op(ref op) if op == ";" && depth == 0 => {
+							tokens.remove(i);
+							i -= 1;
+							break;
+						},
+						
+						_ => ()
+					}
+					
+					contents.push(tokens[i].clone());
+					tokens.remove(i);
+				}
+				
+				macros.push(Macro {name, contents, depth: full_depth});
+			},
+			
 			Kind::Type(ref typ) => {
 				let mut types = vec![vec![typ.clone()]];
 				
@@ -270,7 +333,32 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				
 				match tokens[i].kind {
 					Kind::Var(_, ref mut typ) => *typ = types, // This should probably be changed because it's not really good for performance to copy a vector like this...
-					_ => ()
+					_ => i -= 1
+				}
+			},
+			
+			Kind::Var(ref name, _) => {
+				let mut j = 0;
+				while j < macros.len() {
+					if let Kind::Var(ref name2, _) = macros[j].name.kind {
+						if name == name2 {
+							// Expand macro
+							
+							tokens[i] = macros[j].contents[0].clone();
+							let mut pos = i + 1;
+							let mut k = 1;
+							while k < macros[j].contents.len() {
+								tokens.insert(pos, macros[j].contents[k].clone());
+								pos += 1;
+								k += 1;
+							}
+							
+							i -= 1;
+							break;
+						}
+					}
+					
+					j += 1;
 				}
 			},
 			
