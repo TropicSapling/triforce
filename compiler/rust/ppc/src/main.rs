@@ -167,7 +167,7 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let mut i = 0;
 	while i < tokens.len() {
-		parse3(&tokens, &macro_functions, &functions, &mut i)?;
+		parse3(&mut tokens, &macro_functions, &functions, &mut i)?;
 		i += 1;
 	}
 	

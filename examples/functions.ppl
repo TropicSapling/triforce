@@ -68,6 +68,6 @@ func init {
 	
 	no_args;
 	
-	unsigned int n = force_positive 123;
+	const unsigned int n = force_positive 123;
 	println n;
 }

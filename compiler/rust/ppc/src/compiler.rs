@@ -896,15 +896,15 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	}
 }
 
-pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, functions: &Vec<Function>, i: &mut usize) -> Result<(), Error> {
-	match tokens[*i].kind {
+pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &Vec<MacroFunction>, functions: &Vec<Function>, i: &mut usize) -> Result<(), Error> {
+	match tokens[*i].kind.clone() {
 		Kind::Var(ref name, _) => {
 			let mut j = 0;
 			while j < macro_funcs.len() {
 				if name == &macro_funcs[j].func.name {
 					// Run macro function
 					
-					let args = tokens[*i].children.borrow();
+					let args = tokens[*i].children.borrow().clone();
 					let mut new_code = Vec::new();
 					let mut new_points: Vec<Vec<Token>> = Vec::new();
 					if args.len() >= 1 && args[0] != usize::MAX {
@@ -929,23 +929,23 @@ pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, functions: 
 					}
 					
 					let mut out_contents = String::new();
-					let mut i = 0;
-					while i < new_code.len() {
-						out_contents = compile(&new_code, &functions, &mut i, out_contents);
-						i += 1;
+					let mut k = 0;
+					while k < new_code.len() {
+						out_contents = compile(&new_code, &functions, &mut k, out_contents);
+						k += 1;
 					}
 					
 					out_contents.insert_str(9, "->Result<(),usize>");
-					let mut i = 0;
-					while i + 6 < out_contents.len() {
-						if &out_contents[i..i + 6] == "return" {
-							i += 7;
-							out_contents.insert_str(i, "Err(");
-							i += 5;
-							out_contents.insert(i, ')');
+					let mut k = 0;
+					while k + 6 < out_contents.len() {
+						if &out_contents[k..k + 6] == "return" {
+							k += 7;
+							out_contents.insert_str(k, "Err(");
+							k += 5;
+							out_contents.insert(k, ')');
 						}
 						
-						i += 1;
+						k += 1;
 					}
 					
 					//////// CREATE RUST OUTPUT ////////
@@ -993,7 +993,20 @@ pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, functions: 
 						}
 						
 						if out.stderr.len() > 0 {
-							print!("{}", str::from_utf8(&out.stderr).unwrap());
+							if out.stderr.starts_with(b"Error: ") {
+								let point = str::from_utf8(&out.stderr).unwrap()[7..out.stderr.len() - 1].parse::<usize>();
+								
+								if let Ok(point) = point {
+									tokens.remove(*i);
+									let length = &new_points[point].len();
+									for point in &new_points[point][1..length - 1] {
+										tokens.insert(*i, point.clone());
+										*i += 1;
+									}
+								}
+							} else {
+								print!("{}", str::from_utf8(&out.stderr).unwrap());
+							}
 						}
 					}
 					
