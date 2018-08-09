@@ -241,11 +241,31 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 	res
 }
 
+fn del_outofscope_macros(macros: &mut Vec<Macro>, depth: usize) {
+	let mut i = 0;
+	while i < macros.len() {
+		if depth < macros[i].depth {
+			macros.remove(i);
+		} else {
+			i += 1;
+		}
+	}
+}
+
 pub fn lex3(tokens: &mut Vec<Token>) {
 	let mut macros = Vec::new();
+	let mut full_depth = 0;
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind.clone() {
+			Kind::GroupOp(ref op) if op == "{" => full_depth += 1,
+			Kind::GroupOp(ref op) if op == "}" => if full_depth > 0 {
+				full_depth -= 1;
+				del_outofscope_macros(&mut macros, full_depth);
+			} else {
+				panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
+			},
+			
 			Kind::Type(ref typ) if typ == &Type::Macro => {
 				tokens.remove(i);
 				
@@ -285,7 +305,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 					tokens.remove(i);
 				}
 				
-				macros.push(Macro {name, contents});
+				macros.push(Macro {name, contents, depth: full_depth});
 			},
 			
 			Kind::Type(ref typ) => {
@@ -313,7 +333,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				
 				match tokens[i].kind {
 					Kind::Var(_, ref mut typ) => *typ = types, // This should probably be changed because it's not really good for performance to copy a vector like this...
-					_ => ()
+					_ => i -= 1
 				}
 			},
 			

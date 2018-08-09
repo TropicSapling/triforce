@@ -67,6 +67,7 @@ pub struct FunctionArg<'a> {
 pub struct Macro {
 	pub name: Token,
 	pub contents: Vec<Token>,
+	pub depth: usize
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
