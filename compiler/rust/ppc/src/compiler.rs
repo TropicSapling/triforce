@@ -1107,7 +1107,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					output = compile_func(tokens, functions, i, output);
 				},
 				
-				"+" | "-" | "*" | "/" | "%" | "==" | "!=" | "&&" | "|" | "||" | "^" | "<" | ">" | "<<" | ">>" => {
+				"+" | "-" | "*" | "/" | "%" | "==" | "<=" | ">=" | "!=" | "&&" | "|" | "||" | "^" | "<" | ">" | "<<" | ">>" => {
 					*i = args[0];
 					output += "(";
 					output = compile_func(tokens, functions, i, output);
