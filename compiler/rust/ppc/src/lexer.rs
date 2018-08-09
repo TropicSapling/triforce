@@ -1,7 +1,7 @@
 use std::usize;
 use std::cell::RefCell;
 use lib::{Token, Kind, Type, FilePos, Macro, MacroFunction, Function, FunctionArg};
-use compiler::{parse, parse_statement};
+use compiler::{parse, parse2, parse_statement};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -243,7 +243,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 	res
 }
 
-fn del_outofscope_macros(macros: &mut Vec<Macro>, macro_funcs: &mut Vec<MacroFunction>, depth: usize) {
+fn del_outofscope_macros(macros: &mut Vec<Macro>, depth: usize) {
 	let mut i = 0;
 	while i < macros.len() {
 		if depth < macros[i].depth {
@@ -253,28 +253,32 @@ fn del_outofscope_macros(macros: &mut Vec<Macro>, macro_funcs: &mut Vec<MacroFun
 		}
 	}
 	
-	i = 0;
+/*	i = 0;
 	while i < macro_funcs.len() {
 		if depth < macro_funcs[i].depth {
 			macro_funcs.remove(i);
 		} else {
 			i += 1;
 		}
-	}
+	} */
 }
 
-pub fn lex3(tokens: &mut Vec<Token>) {
+pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<MacroFunction>) {
 	let mut macros = Vec::new();
 	let mut macro_funcs = Vec::new();
 	let mut full_depth = 0;
-	let mut start = 0;
+	let mut bpos = 0;
+//	let mut start = 0;
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind.clone() {
-			Kind::GroupOp(ref op) if op == "{" => full_depth += 1,
+			Kind::GroupOp(ref op) if op == "{" => {
+				full_depth += 1;
+				bpos += 1;
+			},
 			Kind::GroupOp(ref op) if op == "}" => if full_depth > 0 {
 				full_depth -= 1;
-				del_outofscope_macros(&mut macros, &mut macro_funcs, full_depth);
+				del_outofscope_macros(&mut macros, full_depth);
 			} else {
 				panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
 			},
@@ -316,7 +320,8 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 							],
 							
 							returns: vec![],
-							depth: full_depth
+							depth: full_depth,
+							bpos
 						});
 						
 						let mut last_item = macro_funcs.len();
@@ -414,7 +419,11 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 								},
 								
 								Kind::Reserved(ref keyword) if keyword == "return" => {
-									macro_funcs[last_item].returns.push(Vec::new());
+									macro_funcs[last_item].returns.push(vec![Token {
+										kind: Kind::Op(String::from(";")),
+										pos: FilePos {line: 0, col: 0},
+										children: RefCell::new(Vec::new())
+									}]);
 									
 									macro_funcs[last_item].code.push(tokens[i].clone());
 									macro_funcs[last_item].code.push(Token {
@@ -443,6 +452,12 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 										tokens.remove(i);
 									}
 									
+									macro_funcs[last_item].returns[point].push(Token {
+										kind: Kind::Op(String::from(";")),
+										pos: FilePos {line: 0, col: 0},
+										children: RefCell::new(Vec::new())
+									});
+									
 									point += 1;
 								},
 								
@@ -458,6 +473,19 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 							pos: FilePos {line: 0, col: 0},
 							children: RefCell::new(Vec::new())
 						});
+						
+						functions.push(macro_funcs[last_item].func.clone());
+						
+						match lex3(&mut macro_funcs[last_item].code, functions) {
+							(f, _) => functions = f
+						}
+						
+						functions = parse(&macro_funcs[last_item].code, functions);
+						parse2(&mut macro_funcs[last_item].code, &functions, &mut 2);
+						
+						for point in macro_funcs[last_item].returns.iter() {
+							parse_statement(point, &functions, &mut 0);
+						}
 					},
 					
 					_ => {
@@ -523,7 +551,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 			},
 			
 			Kind::Var(ref name, _) => {
-				let call_pos = i;
+//				let call_pos = i;
 				
 				let mut j = 0;
 				while j < macros.len() {
@@ -548,7 +576,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 					j += 1;
 				}
 				
-				j = 0;
+/*				j = 0;
 				while j < macro_funcs.len() {
 					if name == &macro_funcs[j].func.name {
 						// Run macro function
@@ -603,7 +631,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 						
 						// Parse line
 						i = start;
-						let mut functions = parse(tokens);
+						let mut functions = parse(tokens, functions);
 						functions.push(macro_funcs[j].func.clone());
 						parse_statement(tokens, &functions, &mut i);
 						
@@ -636,7 +664,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 					}
 					
 					j += 1;
-				}
+				} */
 			},
 			
 			_ => ()
@@ -644,4 +672,6 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 		
 		i += 1;
 	}
+	
+	(functions, macro_funcs)
 }

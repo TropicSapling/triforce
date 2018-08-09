@@ -76,7 +76,8 @@ pub struct MacroFunction {
 	pub func: Function,
 	pub code: Vec<Token>,
 	pub returns: Vec<Vec<Token>>,
-	pub depth: usize
+	pub depth: usize,
+	pub bpos: usize
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {

@@ -1,6 +1,6 @@
 use std::usize;
 use std::cell::RefMut;
-use lib::{Token, Kind, Type, Function, FunctionArg};
+use lib::{Token, Kind, Type, Function, FunctionArg, MacroFunction};
 
 macro_rules! get_val {
 	($e:expr) => ({
@@ -128,8 +128,11 @@ fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function> {
 	None
 }
 
-pub fn parse<'a>(tokens: &'a Vec<Token>) -> Vec<Function> {
-	let mut functions: Vec<Function> = def_builtin_funcs!();
+pub fn def_functions() -> Vec<Function> {
+	def_builtin_funcs!()
+}
+
+pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Function> {
 	let mut func = false;
 	let mut func_pos = 0;
 	let mut func_args = Vec::new();
@@ -468,7 +471,7 @@ fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
 	let mut limit = tokens.len();
 	while *i < limit {
 		match tokens[*i].kind {
-			Kind::Op(ref op) if op == ";" => if depth == 0 {
+			Kind::Op(ref op) if op == ";" && *i > 0 => if depth == 0 {
 				limit = *i;
 				break;
 			},
@@ -877,6 +880,51 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 						}
 					}
 				}
+			}
+		},
+		
+		_ => ()
+	}
+}
+
+pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, i: &mut usize) {
+	match tokens[*i].kind {
+		Kind::Var(ref name, _) => {
+			let mut j = 0;
+			while j < macro_funcs.len() {
+				if name == &macro_funcs[j].func.name {
+					// Run macro function
+					
+					let args = tokens[*i].children.borrow();
+					let mut new_code = Vec::new();
+					let mut new_points: Vec<Vec<Token>> = Vec::new();
+					if args.len() >= 1 && args[0] != usize::MAX {
+						for (a, arg) in args.iter().enumerate() {
+							for token in macro_funcs[j].code.iter() {
+								match token.kind {
+									Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => new_code.push(tokens[*arg].clone()),
+									_ => new_code.push(token.clone())
+								}
+							}
+							
+							for (p, point) in macro_funcs[j].returns.iter().enumerate() {
+								new_points.push(Vec::new());
+								for token in point.iter() {
+									match token.kind {
+										Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => new_points[p].push(tokens[*arg].clone()),
+										_ => new_points[p].push(token.clone())
+									}
+								}
+							}
+						}
+					}
+					
+					// WIP
+					
+					break;
+				}
+				
+				j += 1;
 			}
 		},
 		
