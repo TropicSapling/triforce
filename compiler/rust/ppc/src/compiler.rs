@@ -935,7 +935,18 @@ pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, functions: 
 						i += 1;
 					}
 					
-					out_contents.insert_str(9, "->usize");
+					out_contents.insert_str(9, "->Result<(),usize>");
+					let mut i = 0;
+					while i + 6 < out_contents.len() {
+						if &out_contents[i..i + 6] == "return" {
+							i += 7;
+							out_contents.insert_str(i, "Err(");
+							i += 5;
+							out_contents.insert(i, ')');
+						}
+						
+						i += 1;
+					}
 					
 					//////// CREATE RUST OUTPUT ////////
 					
@@ -968,11 +979,11 @@ pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, functions: 
 					
 					if !error {
 						let out = if cfg!(target_os = "windows") {
-							Command::new("macros\\macros.exe")
+							Command::new("macros\\macro.exe")
 								.output()
 								.expect("failed to execute process")
 						} else {
-							Command::new("./macros/macros.exe")
+							Command::new("./macros/macro.exe")
 								.output()
 								.expect("failed to execute process")
 						};
