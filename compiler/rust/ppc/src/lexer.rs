@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use lib::{Token, Kind, Type, FilePos, Macro};
+use lib::{Token, Kind, Type, FilePos, Macro, MacroFunction, Function, FunctionArg};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -254,6 +254,7 @@ fn del_outofscope_macros(macros: &mut Vec<Macro>, depth: usize) {
 
 pub fn lex3(tokens: &mut Vec<Token>) {
 	let mut macros = Vec::new();
+	let mut macro_funcs = Vec::new();
 	let mut full_depth = 0;
 	let mut i = 0;
 	while i < tokens.len() {
@@ -269,43 +270,137 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 			Kind::Type(ref typ) if typ == &Type::Macro => {
 				tokens.remove(i);
 				
-				let name;
 				match tokens[i].kind.clone() {
-					Kind::Type(ref typ) if typ == &Type::Func => {
+					Kind::Type(ref typ) if typ == &Type::Func => { // Macro function
 						tokens.remove(i);
-						name = tokens[i].clone();
-					},
-					
-					_ => name = tokens[i].clone()
-				}
-				
-				let mut contents = Vec::new();
-				let mut depth = 0;
-				
-				tokens.drain(i..i + 2);
-				while i < tokens.len() {
-					match tokens[i].kind.clone() {
-						Kind::GroupOp(ref op) if op == "{" => depth += 1,
-						Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
-							depth -= 1;
-						} else {
-							panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
+						
+						macro_funcs.push(MacroFunction {
+							func: Function {
+								name: String::from(""),
+								pos: 0,
+								args: vec![],
+								precedence: 1,
+								output: vec![]
+							},
+							
+							returns: vec![vec![]],
+							depth: full_depth
+						});
+						
+						let mut last_item = macro_funcs.len();
+						if last_item != 0 {
+							last_item -= 1;
 						}
 						
-						Kind::Op(ref op) if op == ";" && depth == 0 => {
-							tokens.remove(i);
-							i -= 1;
-							break;
-						},
+						let mut par_type = vec![vec![]];
 						
-						_ => ()
-					}
+						while i < tokens.len() {
+							match tokens[i].kind.clone() {
+								Kind::Type(_) => match tokens[i + 1].kind {
+									Kind::GroupOp(ref op) if op == "{" => {
+										let end = i;
+										let mut t = 0;
+										while i > 0 {
+											match tokens[i].kind {
+												Kind::Type(ref typ) => par_type[t].push(typ.clone()),
+												Kind::Op(ref op) if op == "|" => {
+													par_type.push(Vec::new());
+													t += 1;
+												},
+												_ => break
+											}
+											
+											i -= 1;
+										}
+										
+										par_type.reverse();
+										for section in par_type.iter_mut() {
+											section.reverse();
+										}
+										
+										i = end;
+									},
+									
+									_ => ()
+								},
+								
+								Kind::Var(ref name, ref typ) => if typ[0].len() == 0 || typ[0][0] == Type::Func { // Function name
+									macro_funcs[last_item].func.name += name;
+									macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
+								} else { // Function args
+									macro_funcs[last_item].func.args.push(FunctionArg {name: name.clone(), typ: typ.clone()});
+								},
+								
+								Kind::Op(ref op) => if op == "-" {
+									match tokens[i + 1].kind {
+										Kind::Op(ref op) if op == ">" => i += 1,
+										_ => { // Operator (function) name
+											macro_funcs[last_item].func.name += op;
+											macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
+										}
+									}
+								} else if op == ";" { // End of function declaration
+									panic!("{}:{} Macro functions must have a body.", tokens[i].pos.line, tokens[i].pos.col);
+								} else if op != "|" { // Operator (function) name
+									macro_funcs[last_item].func.name += op;
+									macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
+								},
+								
+								Kind::GroupOp(ref op) => if op == "{" { // Function body
+									macro_funcs[last_item].func.output = par_type.clone();
+									if macro_funcs[last_item].func.name == "**" {
+										macro_funcs[last_item].func.precedence = 247;
+									} else if par_type[0].len() > 0 {
+										if macro_funcs[last_item].func.args.len() == 1 {
+											macro_funcs[last_item].func.precedence = 255;
+										} else {
+											macro_funcs[last_item].func.precedence = 2;
+										}
+									}
+									
+									// WIP
+									
+									break;
+								},
+								
+								_ => ()
+							}
+							
+							i += 1;
+						}
+					},
 					
-					contents.push(tokens[i].clone());
-					tokens.remove(i);
+					_ => {
+						let name = tokens[i].clone();
+						let mut contents = Vec::new();
+						let mut depth = 0;
+						
+						tokens.drain(i..i + 2);
+						while i < tokens.len() {
+							match tokens[i].kind.clone() {
+								Kind::GroupOp(ref op) if op == "{" => depth += 1,
+								Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
+									depth -= 1;
+								} else {
+									panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
+								}
+								
+								Kind::Op(ref op) if op == ";" && depth == 0 => {
+									tokens.remove(i);
+									i -= 1;
+									break;
+								},
+								
+								_ => ()
+							}
+							
+							contents.push(tokens[i].clone());
+							tokens.remove(i);
+						}
+						
+						macros.push(Macro {name, contents, depth: full_depth});
+					}
 				}
-				
-				macros.push(Macro {name, contents, depth: full_depth});
 			},
 			
 			Kind::Type(ref typ) => {

@@ -31,7 +31,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.5.0-alpha")
+		.version("0.6.0-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -137,11 +137,7 @@ fn main() -> Result<(), std::io::Error> {
 //		println!("{} LEX3: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
-	// These strings would not be necessary if Rust had <scope> or <lifetime> properties like P+, but oh well...
-	let func_name_a = String::from("a");
-	let func_name_b = String::from("b");
-	
-	let functions = parse(&tokens, &func_name_a, &func_name_b);
+	let functions = parse(&tokens);
 	
 	let mut i = 0;
 	while i < tokens.len() {

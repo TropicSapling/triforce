@@ -7,6 +7,15 @@ macro print_str = {
 	println constant;
 };
 
+macro func force_positive (int n) {
+	if n >= 0 {
+		n
+	} else {
+		println "WARNING: Number is negative, converting into positive";
+		-n
+	}
+}
+
 // func (int i) print; // Commented for now because apparently Rust doesn't support this
 
 func (int i) backwards_println {
@@ -58,4 +67,7 @@ func init {
 	println macro_str;
 	
 	no_args;
+	
+	unsigned int n = force_positive -123;
+	println n;
 }

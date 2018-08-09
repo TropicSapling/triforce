@@ -50,23 +50,29 @@ pub struct FilePos {
 }
 
 #[derive(Debug)]
-pub struct Function<'a> {
+pub struct Function {
 	pub name: String,
 	pub pos: usize,
-	pub args: Vec<FunctionArg<'a>>,
+	pub args: Vec<FunctionArg>,
 	pub output: Vec<Vec<Type>>,
 	pub precedence: u8
 }
 
 #[derive(Debug)]
-pub struct FunctionArg<'a> {
-	pub name: &'a str,
+pub struct FunctionArg {
+	pub name: String,
 	pub typ: Vec<Vec<Type>>
 }
 
 pub struct Macro {
 	pub name: Token,
 	pub contents: Vec<Token>,
+	pub depth: usize
+}
+
+pub struct MacroFunction {
+	pub func: Function,
+	pub returns: Vec<Vec<Token>>,
 	pub depth: usize
 }
 

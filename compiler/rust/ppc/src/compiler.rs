@@ -69,46 +69,46 @@ macro_rules! def_builtin_op {
 }
 
 macro_rules! def_builtin_funcs {
-	($a:expr, $b:expr) => (vec![
+	() => (vec![
 		// WIP; 'typ' structure needs support for multiple types ('int|fraction' for these operators)
-		def_builtin_op!($a, $b, "+", Type::Int, Type::Int, Type::Int, 245),
-		def_builtin_op!($a, $b, "-", Type::Int, Type::Int, Type::Int, 245),
-		def_builtin_op!($a, $b, "*", Type::Int, Type::Int, Type::Int, 246),
-		def_builtin_op!($a, $b, "/", Type::Int, Type::Int, Type::Int, 246),
-		def_builtin_op!($a, $b, "%", Type::Int, Type::Int, Type::Int, 246),
+		def_builtin_op!(String::from("a"), String::from("b"), "+", Type::Int, Type::Int, Type::Int, 245),
+		def_builtin_op!(String::from("a"), String::from("b"), "-", Type::Int, Type::Int, Type::Int, 245),
+		def_builtin_op!(String::from("a"), String::from("b"), "*", Type::Int, Type::Int, Type::Int, 246),
+		def_builtin_op!(String::from("a"), String::from("b"), "/", Type::Int, Type::Int, Type::Int, 246),
+		def_builtin_op!(String::from("a"), String::from("b"), "%", Type::Int, Type::Int, Type::Int, 246),
 		
 		// WIP; 'typ' structure needs support for multiple types (all types for these operators)
-		def_builtin_op!($a, $b, "==", Type::Int, Type::Int, Type::Bool, 242),
-		def_builtin_op!($a, $b, "!=", Type::Int, Type::Int, Type::Bool, 242),
-		def_builtin_op!($a, $b, "<", Type::Int, Type::Int, Type::Bool, 243),
-		def_builtin_op!($a, $b, "<=", Type::Int, Type::Int, Type::Bool, 243),
-		def_builtin_op!($a, $b, ">", Type::Int, Type::Int, Type::Bool, 243),
-		def_builtin_op!($a, $b, ">=", Type::Int, Type::Int, Type::Bool, 243),
+		def_builtin_op!(String::from("a"), String::from("b"), "==", Type::Int, Type::Int, Type::Bool, 242),
+		def_builtin_op!(String::from("a"), String::from("b"), "!=", Type::Int, Type::Int, Type::Bool, 242),
+		def_builtin_op!(String::from("a"), String::from("b"), "<", Type::Int, Type::Int, Type::Bool, 243),
+		def_builtin_op!(String::from("a"), String::from("b"), "<=", Type::Int, Type::Int, Type::Bool, 243),
+		def_builtin_op!(String::from("a"), String::from("b"), ">", Type::Int, Type::Int, Type::Bool, 243),
+		def_builtin_op!(String::from("a"), String::from("b"), ">=", Type::Int, Type::Int, Type::Bool, 243),
 		
-		def_builtin_op!($a, $b, "&&", Type::Bool, Type::Bool, Type::Bool, 238),
-		def_builtin_op!($a, $b, "||", Type::Bool, Type::Bool, Type::Bool, 237),
+		def_builtin_op!(String::from("a"), String::from("b"), "&&", Type::Bool, Type::Bool, Type::Bool, 238),
+		def_builtin_op!(String::from("a"), String::from("b"), "||", Type::Bool, Type::Bool, Type::Bool, 237),
 		
-		def_builtin_op!($a, $b, "<<", Type::Int, Type::Int, Type::Int, 244),
-		def_builtin_op!($a, $b, ">>", Type::Int, Type::Int, Type::Int, 244),
-		def_builtin_op!($a, $b, "^", Type::Int, Type::Int, Type::Int, 240),
+		def_builtin_op!(String::from("a"), String::from("b"), "<<", Type::Int, Type::Int, Type::Int, 244),
+		def_builtin_op!(String::from("a"), String::from("b"), ">>", Type::Int, Type::Int, Type::Int, 244),
+		def_builtin_op!(String::from("a"), String::from("b"), "^", Type::Int, Type::Int, Type::Int, 240),
 		
 		// WIP; 'macro' types are not yet implemented
-		def_builtin_op!($a, $b, "=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "+=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "-=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "*=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "/=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "%=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, ">>=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "<<=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "^=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "+=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "-=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "*=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "/=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "%=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), ">>=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "<<=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "^=", Type::Int, Type::Int, Type::Void, 0),
 		
 		Function {
 			name: String::from("println"),
 			pos: 0,
 			args: vec![
 				FunctionArg {
-					name: $a,
+					name: String::from("a"),
 					typ: vec![vec![Type::Int]] // WIP; No support for strings yet
 				}
 			],
@@ -118,7 +118,7 @@ macro_rules! def_builtin_funcs {
 	])
 }
 
-fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a>> {
+fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function> {
 	for def in defs {
 		if def.name == call {
 			return Some(&def);
@@ -128,8 +128,8 @@ fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a
 	None
 }
 
-pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a str) -> Vec<Function<'a>> {
-	let mut functions: Vec<Function> = def_builtin_funcs!(func_par_a, func_par_b);
+pub fn parse<'a>(tokens: &'a Vec<Token>) -> Vec<Function> {
+	let mut functions: Vec<Function> = def_builtin_funcs!();
 	let mut func = false;
 	let mut func_pos = 0;
 	let mut func_args = Vec::new();
@@ -138,14 +138,12 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	// DEFINE FUNCTIONS (this is done in a separate loop to allow function definitions to be placed both before and after function calls)
 	let mut i = 0;
 	while i < tokens.len() {
-		let token = &tokens[i];
-		
 		let mut last_item = functions.len();
 		if last_item != 0 {
 			last_item -= 1;
 		}
 		
-		match token.kind {
+		match tokens[i].kind {
 			Kind::Type(ref typ) if !func => match typ {
 				&Type::Func => {
 					functions.push(Function {name: String::from(""), pos: 0, args: vec![], precedence: 1, output: vec![]});
@@ -191,7 +189,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				
 				tokens[func_pos].children.borrow_mut().push(i);
 			} else { // Function args
-				functions[last_item].args.push(FunctionArg {name, typ: typ.clone()});
+				functions[last_item].args.push(FunctionArg {name: name.clone(), typ: typ.clone()});
 				func_args.push(i);
 			},
 			
