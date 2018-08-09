@@ -9,10 +9,10 @@ macro print_str = {
 
 macro func force_positive (int n) {
 	if n >= 0 {
-		n
+		return n;
 	} else {
 		println "WARNING: Number is negative, converting into positive";
-		-n
+		return -n;
 	}
 }
 

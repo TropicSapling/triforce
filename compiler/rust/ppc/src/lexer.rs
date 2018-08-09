@@ -283,7 +283,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 								output: vec![]
 							},
 							
-							returns: vec![vec![]],
+							returns: vec![],
 							depth: full_depth
 						});
 						
@@ -294,6 +294,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 						
 						let mut par_type = vec![vec![]];
 						
+						let mut last_token_kind = tokens[i - 1].kind.clone();
 						while i < tokens.len() {
 							match tokens[i].kind.clone() {
 								Kind::Type(_) => match tokens[i + 1].kind {
@@ -324,11 +325,11 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 									_ => ()
 								},
 								
-								Kind::Var(ref name, ref typ) => if typ[0].len() == 0 || typ[0][0] == Type::Func { // Function name
+								Kind::Var(ref name, _) => if let Kind::Type(_) = last_token_kind { // Function args
+									macro_funcs[last_item].func.args.push(FunctionArg {name: name.clone(), typ: Vec::new()}); // Arg types for macro functions are WIP; TODO: replace 'Vec::new()' with actual type
+								} else { // Function name
 									macro_funcs[last_item].func.name += name;
 									macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
-								} else { // Function args
-									macro_funcs[last_item].func.args.push(FunctionArg {name: name.clone(), typ: typ.clone()});
 								},
 								
 								Kind::Op(ref op) => if op == "-" {
@@ -365,14 +366,15 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 								_ => ()
 							}
 							
+							last_token_kind = tokens[i].kind.clone();
 							tokens.remove(i);
 						}
 						
 						let mut code = Vec::new();
+						let mut point = 0;
 						let mut depth = 0;
 						while i < tokens.len() {
-							let token = tokens[i].kind.clone();
-							match token {
+							match tokens[i].kind.clone() {
 								Kind::GroupOp(ref op) if op == "{" => depth += 1,
 								Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
 									depth -= 1;
@@ -380,10 +382,35 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 									break;
 								},
 								
+								Kind::Reserved(ref keyword) if keyword == "return" => {
+									macro_funcs[last_item].returns.push(Vec::new());
+									tokens.remove(i);
+									
+									let mut depth = 0;
+									while i < tokens.len() {
+										match tokens[i].kind.clone() {
+											Kind::GroupOp(ref op) if op == "{" => depth += 1,
+											Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
+												depth -= 1;
+											} else {
+												panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
+											},
+											
+											Kind::Op(ref op) if op == ";" && depth == 0 => break,
+											_ => ()
+										}
+										
+										macro_funcs[last_item].returns[point].push(tokens[i].clone());
+										tokens.remove(i);
+									}
+									
+									point += 1;
+								},
+								
 								_ => ()
 							}
 							
-							code.push(token);
+							code.push(tokens[i].clone());
 							tokens.remove(i);
 						}
 						
