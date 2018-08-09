@@ -1,6 +1,12 @@
 #[allow(unused)]
 import std::fs::File as FileHandler; // To test importing
 
+// Side note: macros can also be defined inside of functions, and will in that case only work inside of that function
+macro print_str = {
+	const constant = "This is a constant string printed using a macro.\n";
+	println constant;
+};
+
 // func (int i) print; // Commented for now because apparently Rust doesn't support this
 
 func (int i) backwards_println {
@@ -45,11 +51,6 @@ func init {
 	
 	const constant = "\nThis is a constant string.";
 	println constant;
-	
-	macro print_str = {
-		const constant = "\nThis is a constant string.";
-		println constant;
-	};
 	
 	print_str;
 	

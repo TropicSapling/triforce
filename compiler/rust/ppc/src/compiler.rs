@@ -464,86 +464,6 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 	}
 }
 
-fn parse_group(tokens: &Vec<Token>, i: usize, functions: &Vec<Function>) {
-	let mut j = 1;
-	let mut depth = 0;
-	while i + j < tokens.len() {
-		let mut k = 0;
-		while k < tokens.len() {
-			if let Ok(children) = tokens[k].children.try_borrow() {
-				if children.contains(&(i + j)) {
-					break;
-				}
-			}
-			
-			k += 1;
-		}
-		
-		let mut skip = (false, "");
-		
-		match tokens[i + j].kind {
-			Kind::Op(ref op) if op == ";" => {
-				j += 1;
-				continue;
-			},
-			Kind::Op(ref op) => skip = (true, op),
-			
-			Kind::GroupOp(ref op) if op == "{" => depth += 1,
-			Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
-				depth -= 1;
-			} else {
-				break;
-			},
-			
-			Kind::GroupOp(_) | Kind::Type(_) => {
-				j += 1;
-				continue;
-			},
-			
-			_ => ()
-		}
-		
-		if k < tokens.len() {
-			match tokens[i + j + 1].kind {
-				Kind::Op(_) if skip.0 => (),
-				_ => {
-					j += 1;
-					continue;
-				}
-			}
-		} else {
-			tokens[i].children.borrow_mut().push(i + j);
-		}
-		
-		if skip.0 {
-			let mut name = skip.1.to_string();
-			
-			j += 1;
-			while i + j < tokens.len() {
-				match tokens[i + j].kind {
-					Kind::Op(ref op) => {
-						name += op;
-						
-						if let Some(_) = is_defined(functions, &name) {
-							j += 1;
-						} else {
-							break;
-						}
-					},
-					_ => break
-				}
-			}
-			j -= 1;
-		}
-		
-		j += 1;
-	}
-	
-	if i + j >= tokens.len() {
-		panic!("Unexpected EOF");
-	}
-}
-
 fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
 	let mut depth = 0;
 	let mut dived = false;
@@ -665,7 +585,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 		while *i < limit {
 			if tokens[*i].children.borrow().len() < 1 {
 				match tokens[*i].kind {
-					Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, name) {
+					Kind::Var(ref name, _) if depth2 == 0 => if let Some(def) = is_defined(functions, name) {
 						match highest {
 							Some(func) => match func.1 {
 								Some(def2) => if (def.precedence > def2.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
@@ -680,11 +600,13 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 					},
 					
 					Kind::GroupOp(ref op) if op == "{" => {
-						match highest {
-							Some(func) => if depth + depth2 >= func.2 {
-								highest = Some((*i, None, depth + depth2));
-							},
-							None => highest = Some((*i, None, depth + depth2))
+						if depth2 == 0 {
+							match highest {
+								Some(func) => if depth + depth2 >= func.2 {
+									highest = Some((*i, None, depth + depth2));
+								},
+								None => highest = Some((*i, None, depth + depth2))
+							}
 						}
 						
 						depth2 += 1;
@@ -713,42 +635,44 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 							panic!("Unexpected EOF");
 						}
 						
-						if let Some(def) = is_defined(functions, &name) {
-							match highest {
-								Some(func) => match func.1 {
-									Some(def2) => if (def.precedence > def2.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
-										highest = Some((start, Some(def), depth + depth2));
-									},
-									None => if depth + depth2 > func.2 {
-										highest = Some((start, Some(def), depth + depth2));
-									}
-								},
-								None => highest = Some((start, Some(def), depth + depth2))
-							}
-						} else {
-							let mut j = 1;
-							while j < name.len() {
-								if let Some(def) = is_defined(functions, &name[..name.len() - j]) {
-									match highest {
-										Some(func) => match func.1 {
-											Some(def2) => if (def.precedence > def2.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
-												highest = Some((start, Some(def), depth + depth2));
-											},
-											None => if depth + depth2 > func.2 {
-												highest = Some((start, Some(def), depth + depth2));
-											}
+						if depth2 == 0 {
+							if let Some(def) = is_defined(functions, &name) {
+								match highest {
+									Some(func) => match func.1 {
+										Some(def2) => if (def.precedence > def2.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
+											highest = Some((start, Some(def), depth + depth2));
 										},
-										None => highest = Some((start, Some(def), depth + depth2))
+										None => if depth + depth2 > func.2 {
+											highest = Some((start, Some(def), depth + depth2));
+										}
+									},
+									None => highest = Some((start, Some(def), depth + depth2))
+								}
+							} else {
+								let mut j = 1;
+								while j < name.len() {
+									if let Some(def) = is_defined(functions, &name[..name.len() - j]) {
+										match highest {
+											Some(func) => match func.1 {
+												Some(def2) => if (def.precedence > def2.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
+													highest = Some((start, Some(def), depth + depth2));
+												},
+												None => if depth + depth2 > func.2 {
+													highest = Some((start, Some(def), depth + depth2));
+												}
+											},
+											None => highest = Some((start, Some(def), depth + depth2))
+										}
+										
+										break;
 									}
 									
-									break;
+									j += 1;
 								}
 								
-								j += 1;
-							}
-							
-							if j >= name.len() {
-								panic!("{}:{} Undefined operator '{}'", tokens[*i].pos.line, tokens[*i].pos.col, &name);
+								if j >= name.len() {
+									panic!("{}:{} Undefined operator '{}'", tokens[*i].pos.line, tokens[*i].pos.col, &name);
+								}
 							}
 						}
 					},
@@ -795,7 +719,7 @@ fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 				
 				match func.1 {
 					Some(def) => parse_func(tokens, (func.0, def), functions),
-					None => parse_group(tokens, func.0, functions)
+					None => parse2(tokens, functions, &mut func.0.clone())
 				}
 			},
 			None => break
