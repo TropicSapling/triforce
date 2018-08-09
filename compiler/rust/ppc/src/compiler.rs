@@ -1,5 +1,14 @@
-use std::usize;
-use std::cell::RefMut;
+use std::{
+	fs,
+	fs::File,
+	io::prelude::*,
+	io::Error,
+	process::Command,
+	str,
+	usize,
+	cell::RefMut
+};
+
 use lib::{Token, Kind, Type, Function, FunctionArg, MacroFunction};
 
 macro_rules! get_val {
@@ -887,7 +896,7 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	}
 }
 
-pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, i: &mut usize) {
+pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, i: &mut usize) -> Result<(), Error> {
 	match tokens[*i].kind {
 		Kind::Var(ref name, _) => {
 			let mut j = 0;
@@ -919,6 +928,69 @@ pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, i: &mut usi
 						}
 					}
 					
+					let mut out_contents = String::new();
+					let mut i = 0;
+					while i < new_code.len() {
+						out_contents = compile(&new_code, &Vec::new(), &mut i, out_contents);
+						i += 1;
+					}
+					
+					out_contents.insert_str(10, "->usize");
+					
+					//////// CREATE RUST OUTPUT ////////
+					
+					fs::create_dir_all("macros")?;
+					
+					let mut out_file = File::create("macros\\macro.rs")?;
+					out_file.write_all(out_contents.as_bytes())?;
+					
+					Command::new("rustfmt").arg("macros\\macro.rs").output().expect("failed to format Rust code");
+					
+					//////// CREATE BINARY OUTPUT ////////
+					
+					let mut error = false;
+					
+					let out = Command::new("rustc")
+							.args(&["--color", "always", "--out-dir", "macros", "macros\\macro.exe"])
+							.output()
+							.expect("failed to compile Rust code");
+					
+					if out.stdout.len() > 0 {
+						print!("{}", str::from_utf8(&out.stdout).unwrap());
+					}
+					
+					if out.stderr.len() > 0 {
+						print!("{}", str::from_utf8(&out.stderr).unwrap());
+						error = true;
+					}
+					
+					//////// RUN COMPILED BINARY ////////
+					
+					if !error {
+						let out = if cfg!(target_os = "windows") {
+							Command::new("macros\\macros.exe")
+								.output()
+								.expect("failed to execute process")
+						} else {
+							Command::new("./macros/macros.exe")
+								.output()
+								.expect("failed to execute process")
+						};
+						
+						if out.stdout.len() > 0 {
+							print!("{}", str::from_utf8(&out.stdout).unwrap());
+						}
+						
+						if out.stderr.len() > 0 {
+							print!("{}", str::from_utf8(&out.stderr).unwrap());
+						}
+					}
+					
+					//////// DELETE RUST FILES ////////
+					
+					fs::remove_file("macros\\macro.rs")?;
+//					fs::remove_dir("macros")?; // Doesn't work (on Windows) for some reason?
+					
 					// WIP
 					
 					break;
@@ -930,6 +1002,8 @@ pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, i: &mut usi
 		
 		_ => ()
 	}
+	
+	Ok(())
 }
 
 fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {

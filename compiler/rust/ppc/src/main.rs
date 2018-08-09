@@ -63,6 +63,17 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let mut input = PathBuf::from(matches.value_of("input").unwrap());
 	
+	if cfg!(target_os = "windows") {
+		// Makes sure colours are displayed correctly on Windows
+		
+		unsafe {
+			let handle = kernel32::GetStdHandle(winapi::um::winbase::STD_OUTPUT_HANDLE);
+			let mut mode = 0;
+			GetConsoleMode(handle, &mut mode);
+			SetConsoleMode(handle, mode | 0x0004);
+		}
+	}
+	
 	if debugging {
 		println!("{} INPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), input);
 	}
@@ -156,7 +167,7 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let mut i = 0;
 	while i < tokens.len() {
-		parse3(&tokens, &macro_functions, &mut i);
+		parse3(&tokens, &macro_functions, &mut i)?;
 		i += 1;
 	}
 	
@@ -208,17 +219,6 @@ fn main() -> Result<(), std::io::Error> {
 				.output()
 				.expect("failed to compile Rust code")
 		};
-		
-		if cfg!(target_os = "windows") {
-			// Makes sure colours are displayed correctly on Windows
-			
-			unsafe {
-				let handle = kernel32::GetStdHandle(winapi::um::winbase::STD_OUTPUT_HANDLE);
-				let mut mode = 0;
-				GetConsoleMode(handle, &mut mode);
-				SetConsoleMode(handle, mode | 0x0004);
-			}
-		}
 		
 		if out.stdout.len() > 0 {
 			print!("{}", str::from_utf8(&out.stdout).unwrap());
