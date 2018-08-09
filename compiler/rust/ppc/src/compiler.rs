@@ -896,7 +896,7 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	}
 }
 
-pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, i: &mut usize) -> Result<(), Error> {
+pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, functions: &Vec<Function>, i: &mut usize) -> Result<(), Error> {
 	match tokens[*i].kind {
 		Kind::Var(ref name, _) => {
 			let mut j = 0;
@@ -931,11 +931,11 @@ pub fn parse3(tokens: &Vec<Token>, macro_funcs: &Vec<MacroFunction>, i: &mut usi
 					let mut out_contents = String::new();
 					let mut i = 0;
 					while i < new_code.len() {
-						out_contents = compile(&new_code, &Vec::new(), &mut i, out_contents);
+						out_contents = compile(&new_code, &functions, &mut i, out_contents);
 						i += 1;
 					}
 					
-					out_contents.insert_str(10, "->usize");
+					out_contents.insert_str(9, "->usize");
 					
 					//////// CREATE RUST OUTPUT ////////
 					
