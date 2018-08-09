@@ -607,12 +607,22 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 						functions.push(macro_funcs[j].func.clone());
 						parse_statement(tokens, &functions, &mut i);
 						
-						let args = tokens[call_pos].children.borrow();
+						let args = tokens[call_pos].children.borrow().clone();
 						if args.len() >= 1 && args[0] != usize::MAX {
-							for arg in args.iter() {
-								// WIP
+							for (a, arg) in args.iter().enumerate() {
+								for (i, token) in macro_funcs[j].code.iter().enumerate() {
+									match token.kind {
+										Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => {
+											tokens[i] = tokens[*arg].clone();
+										},
+										
+										_ => ()
+									}
+								}
 							}
 						}
+						
+						// WIP
 						
 						break;
 					}
