@@ -896,6 +896,34 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	}
 }
 
+fn correct_indexes_after_del(tokens: &Vec<Token>, i: usize) {
+	for token in tokens {
+		let mut children = token.children.borrow_mut();
+		let mut c = 0;
+		while c < children.len() {
+			if children[c] > i && children[c] != usize::MAX {
+				children[c] -= 1;
+			}
+			
+			c += 1;
+		}
+	}
+}
+
+fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize) {
+	for token in tokens {
+		let mut children = token.children.borrow_mut();
+		let mut c = 0;
+		while c < children.len() {
+			if children[c] > i && children[c] != usize::MAX {
+				children[c] += 1;
+			}
+			
+			c += 1;
+		}
+	}
+}
+
 pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &Vec<MacroFunction>, functions: &Vec<Function>, i: &mut usize) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
 		Kind::Var(ref name, _) => {
@@ -927,6 +955,14 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &Vec<MacroFunction>, functio
 							}
 						}
 					}
+					
+					// Remove macro call since it will be replaced later
+					for child in args.iter() {
+						tokens.remove(*child);
+						correct_indexes_after_del(tokens, *child);
+					}
+					tokens.remove(*i);
+					correct_indexes_after_del(tokens, *i);
 					
 					let mut out_contents = String::new();
 					let mut k = 0;
@@ -997,10 +1033,10 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &Vec<MacroFunction>, functio
 								let point = str::from_utf8(&out.stderr).unwrap()[7..out.stderr.len() - 1].parse::<usize>();
 								
 								if let Ok(point) = point {
-									tokens.remove(*i);
 									let length = &new_points[point].len();
 									for point in &new_points[point][1..length - 1] {
 										tokens.insert(*i, point.clone());
+										correct_indexes_after_add(tokens, *i);
 										*i += 1;
 									}
 								}
@@ -1014,8 +1050,6 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &Vec<MacroFunction>, functio
 					
 					fs::remove_file("macros\\macro.rs")?;
 //					fs::remove_dir("macros")?; // Doesn't work (on Windows) for some reason?
-					
-					// WIP
 					
 					break;
 				}

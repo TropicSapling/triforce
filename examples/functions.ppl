@@ -9,6 +9,7 @@ macro print_str = {
 
 macro func force_positive (int n) {
 	if n >= 0 {
+		println "OK: Good to go!";
 		return n;
 	} else {
 		println "WARNING: Number is negative, converting into positive";
