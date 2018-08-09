@@ -49,7 +49,7 @@ pub struct FilePos {
     pub col: usize
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Function {
 	pub name: String,
 	pub pos: usize,
@@ -58,7 +58,7 @@ pub struct Function {
 	pub precedence: u8
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct FunctionArg {
 	pub name: String,
 	pub typ: Vec<Vec<Type>>

@@ -562,7 +562,7 @@ fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
 	limit
 }
 
-fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
+pub fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
 	match tokens[*i + 1].kind {
 		Kind::GroupOp(ref op) if op == "}" => {
 			*i += 1;

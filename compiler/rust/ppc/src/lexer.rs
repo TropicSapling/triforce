@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use lib::{Token, Kind, Type, FilePos, Macro, MacroFunction, Function, FunctionArg};
+use compiler::{parse, parse_statement};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -265,6 +266,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 	let mut macros = Vec::new();
 	let mut macro_funcs = Vec::new();
 	let mut full_depth = 0;
+	let mut start = 0;
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind.clone() {
@@ -547,6 +549,60 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				while j < macro_funcs.len() {
 					if name == &macro_funcs[j].func.name {
 						// Run macro function
+						
+						// Finish lexing line
+						let mut depth = 0;
+						while i < tokens.len() {
+							match tokens[i].kind.clone() {
+								Kind::GroupOp(ref op) if op == "{" => depth += 1,
+								Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
+									depth -= 1;
+								} else {
+									panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
+								},
+								
+								Kind::GroupOp(ref op) if op == ";" && depth == 0 => break,
+								
+								Kind::Type(ref typ) => {
+									let mut types = vec![vec![typ.clone()]];
+									
+									i += 1;
+									
+									let mut t = 0;
+									while i < tokens.len() {
+										match tokens[i].kind {
+											Kind::Type(ref typ) => types[t].push(typ.clone()),
+											Kind::Op(ref op) if op == "|" => {
+												types.push(Vec::new());
+												t += 1;
+											},
+											_ => break
+										};
+										
+										i += 1;
+									}
+									
+									if i >= tokens.len() {
+										panic!("Unexpected EOF");
+									}
+									
+									match tokens[i].kind {
+										Kind::Var(_, ref mut typ) => *typ = types, // This should probably be changed because it's not really good for performance to copy a vector like this...
+										_ => i -= 1
+									}
+								},
+								
+								_ => ()
+							}
+							
+							i += 1;
+						}
+						
+						// Parse line
+						i = start;
+						let mut functions = parse(tokens);
+						functions.push(macro_funcs[j].func.clone());
+						parse_statement(tokens, &functions, &mut i);
 						
 						// WIP
 						
