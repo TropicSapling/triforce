@@ -283,6 +283,26 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 								output: vec![]
 							},
 							
+							code: vec![
+								Token {
+									kind: Kind::Type(Type::Func),
+									pos: FilePos {line: 0, col: 0}, // Obviously wrong but the pos is irrelevant anyway
+									children: RefCell::new(Vec::new())
+								},
+								
+								Token {
+									kind: Kind::Var(String::from("init"), Vec::new()),
+									pos: FilePos {line: 0, col: 0},
+									children: RefCell::new(Vec::new())
+								},
+								
+								Token {
+									kind: Kind::GroupOp(String::from("{")),
+									pos: FilePos {line: 0, col: 0},
+									children: RefCell::new(Vec::new())
+								}
+							],
+							
 							returns: vec![],
 							depth: full_depth
 						});
@@ -370,7 +390,6 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 							tokens.remove(i);
 						}
 						
-						let mut code = Vec::new();
 						let mut point = 0;
 						let mut depth = 0;
 						while i < tokens.len() {
@@ -385,10 +404,10 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 								Kind::Reserved(ref keyword) if keyword == "return" => {
 									macro_funcs[last_item].returns.push(Vec::new());
 									
-									code.push(tokens[i].clone());
-									code.push(Token {
+									macro_funcs[last_item].code.push(tokens[i].clone());
+									macro_funcs[last_item].code.push(Token {
 										kind: Kind::Number(point, 0),
-										pos: FilePos {line: tokens[i].pos.line, col: tokens[i].pos.col + 2},
+										pos: FilePos {line: 0, col: 0},
 										children: RefCell::new(Vec::new())
 									});
 									
@@ -418,9 +437,15 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 								_ => ()
 							}
 							
-							code.push(tokens[i].clone());
+							macro_funcs[last_item].code.push(tokens[i].clone());
 							tokens.remove(i);
 						}
+						
+						macro_funcs[last_item].code.push(Token {
+							kind: Kind::GroupOp(String::from("}")),
+							pos: FilePos {line: 0, col: 0},
+							children: RefCell::new(Vec::new())
+						});
 						
 						// WIP
 					},
