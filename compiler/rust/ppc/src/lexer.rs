@@ -358,16 +358,36 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 										}
 									}
 									
-									// WIP
-									
+									tokens.remove(i);
 									break;
 								},
 								
 								_ => ()
 							}
 							
-							i += 1;
+							tokens.remove(i);
 						}
+						
+						let mut code = Vec::new();
+						let mut depth = 0;
+						while i < tokens.len() {
+							let token = tokens[i].kind.clone();
+							match token {
+								Kind::GroupOp(ref op) if op == "{" => depth += 1,
+								Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
+									depth -= 1;
+								} else {
+									break;
+								},
+								
+								_ => ()
+							}
+							
+							code.push(token);
+							tokens.remove(i);
+						}
+						
+						// WIP
 					},
 					
 					_ => {
