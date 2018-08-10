@@ -226,7 +226,10 @@ fn main() -> Result<(), std::io::Error> {
 		
 		if out.stderr.len() > 0 {
 			print!("{}", str::from_utf8(&out.stderr).unwrap());
-			error = true;
+			
+			if !out.stderr.starts_with(b"\x1b[0m\x1b[1m\x1b[38;5;11mwarning") {
+				error = true;
+			}
 		}
 	}
 	
