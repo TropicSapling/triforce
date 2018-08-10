@@ -1073,19 +1073,10 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 					*functions = parse(&new_code, functions.clone()); // Ik, it's not good to clone for performance but I was just too lazy to fix the issues...
 					parse2(&mut new_code, &functions, &mut 2);
 					
-					let mut exception = [0, 0];
+					let mut lowest = [1, 1];
 					for (p, point) in new_points.iter().enumerate() {
 						if let Some(token) = parse_statement(point, &functions, &mut 0) {
-							'outer: for (t, tok) in tokens.iter_mut().enumerate() {
-								let mut children = tok.children.borrow_mut();
-								for child in children.iter_mut() {
-									if *child == *i {
-										*child = *i + token - 1; // -1 because 'point' starts with semicolon that is ignored later
-										exception[p] = t;
-										break 'outer;
-									}
-								}
-							}
+							lowest[p] = token;
 						}
 					}
 					
@@ -1158,15 +1149,27 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 								let point = str::from_utf8(&out.stderr).unwrap()[7..out.stderr.len() - 1].parse::<usize>();
 								
 								if let Ok(point) = point {
+									let mut exception = 0;
+									'outer: for (t, tok) in tokens.iter_mut().enumerate() {
+										let mut children = tok.children.borrow_mut();
+										for child in children.iter_mut() {
+											if *child == *i {
+												*child = *i + lowest[point] - 1; // -1 because 'point' starts with semicolon that is ignored later
+												exception = t;
+												break 'outer;
+											}
+										}
+									}
+									
 									let length = &new_points[point].len();
 									for (t, token) in new_points[point][1..length - 1].iter().enumerate() {
 										tokens.insert(*i, token.clone());
 										
-										if exception[point] > *i {
-											exception[point] += 1;
+										if exception > *i {
+											exception += 1;
 										}
 										
-										correct_indexes_after_add(tokens, *i, exception[point]);
+										correct_indexes_after_add(tokens, *i, exception);
 										
 										let mut children = tokens[*i].children.borrow_mut();
 										for child in children.iter_mut() {
