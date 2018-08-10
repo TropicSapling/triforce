@@ -1041,9 +1041,15 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &Vec<MacroFunction>, functio
 								
 								if let Ok(point) = point {
 									let length = &new_points[point].len();
-									for token in &new_points[point][1..length - 1] {
+									for (t, token) in new_points[point][1..length - 1].iter().enumerate() {
 										tokens.insert(*i, token.clone());
 										correct_indexes_after_add(tokens, *i);
+										
+										let mut children = tokens[*i].children.borrow_mut();
+										for child in children.iter_mut() {
+											*child = *i + *child - t;
+										}
+										
 										*i += 1;
 									}
 								}
