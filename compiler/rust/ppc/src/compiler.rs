@@ -1070,7 +1070,16 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 					parse2(&mut new_code, &functions, &mut 2);
 					
 					for point in new_points.iter() {
-						parse_statement(point, &functions, &mut 0);
+						if let Some(token) = parse_statement(point, &functions, &mut 0) {
+							for tok in tokens.iter() {
+								let mut children = tok.children.borrow_mut();
+								for child in children.iter_mut() {
+									if *child == *i {
+										*child = *i + token;
+									}
+								}
+							}
+						}
 					}
 					
 					let mut out_contents = String::new();
