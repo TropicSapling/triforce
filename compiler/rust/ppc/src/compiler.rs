@@ -6,10 +6,11 @@ use std::{
 	process::Command,
 	str,
 	usize,
-	cell::RefMut
+	cell::RefMut,
+	cell::RefCell
 };
 
-use lib::{Token, Kind, Type, Function, FunctionArg, MacroFunction};
+use lib::{Token, Kind, Type, FilePos, Function, FunctionArg, MacroFunction};
 
 macro_rules! get_val {
 	($e:expr) => ({
@@ -929,13 +930,15 @@ fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exceptions: &Vec<usi
 	}
 }
 
-fn del_all_children(tokens: &mut Vec<Token>, children: Vec<usize>) {
+fn del_all_children(tokens: &mut Vec<Token>, children: &Vec<usize>) {
 	for child in children.iter() {
-		let children = tokens[*child].children.borrow().clone();
-		del_all_children(tokens, children);
-		
-		tokens.remove(*child);
-		correct_indexes_after_del(tokens, *child);
+		if *child != usize::MAX {
+			let children = tokens[*child].children.borrow().clone();
+			del_all_children(tokens, &children);
+			
+			tokens.remove(*child);
+			correct_indexes_after_del(tokens, *child);
+		}
 	}
 }
 
@@ -1044,10 +1047,12 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 								}
 							}
 						}
+					} else {
+						new_code = macro_funcs[j].code.clone();
 					}
 					
 					// Remove macro call since it will be replaced later
-					del_all_children(tokens, args);
+					del_all_children(tokens, &args);
 					tokens.remove(*i);
 					correct_indexes_after_del(tokens, *i);
 					
@@ -1080,6 +1085,11 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 						}
 						
 						k += 1;
+					}
+					
+					if args.len() == 0 || args[0] == usize::MAX {
+						let pos = out_contents.len() - 1;
+						out_contents.insert_str(pos, "Ok(())");
 					}
 					
 					//////// CREATE RUST OUTPUT ////////
@@ -1168,12 +1178,31 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 							} else {
 								print!("{}", str::from_utf8(&out.stderr).unwrap());
 							}
+						} else {
+							tokens.insert(*i, Token {
+								kind: Kind::GroupOp(String::from("(")),
+								pos: FilePos {line: 0, col: 0},
+								children: RefCell::new(Vec::new())
+							});
+							
+							correct_indexes_after_add(tokens, *i, &Vec::new());
+							*i += 1;
+							
+							tokens.insert(*i, Token {
+								kind: Kind::GroupOp(String::from(")")),
+								pos: FilePos {line: 0, col: 0},
+								children: RefCell::new(Vec::new())
+							});
+							
+							correct_indexes_after_add(tokens, *i, &Vec::new());
 						}
 					}
 					
-					//////// DELETE RUST FILES ////////
+					//////// DELETE CREATED FILES ////////
 					
 					fs::remove_file("macros\\macro.rs")?;
+					fs::remove_file("macros\\macro.exe")?;
+					fs::remove_file("macros\\macro.pdb")?;
 //					fs::remove_dir("macros")?; // Doesn't work (on Windows) for some reason?
 					
 					break;
