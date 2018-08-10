@@ -1,7 +1,7 @@
 use std::usize;
 use std::cell::RefCell;
 use lib::{Token, Kind, Type, FilePos, Macro, MacroFunction, Function, FunctionArg};
-use compiler::{parse, parse2, parse_statement};
+// use compiler::{parse, parse2, parse_statement};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()

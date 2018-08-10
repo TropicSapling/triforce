@@ -950,6 +950,7 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 				i += 1;
 			}
 			
+			new_parent.children.borrow_mut().clear();
 			code.push(new_parent);
 //			let new_parent = code.len() - 1;
 			
@@ -965,8 +966,6 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 			for (c, child) in children.iter_mut().enumerate() {
 				*child = new_children[c];
 			} */
-			
-			children.clear();
 		},
 		
 		Kind::Op(ref op) => {
@@ -1002,6 +1001,7 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 					i += 1;
 				}
 				
+				new_parent.children.borrow_mut().clear();
 				code.push(new_parent);
 //				let new_parent = code.len() - 1;
 				
@@ -1017,8 +1017,6 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 				for (c, child) in children.iter_mut().enumerate() {
 					*child = new_children[c];
 				} */
-				
-				children.clear()
 			} else {
 				panic!("{}:{} Undefined operator '{}'", tokens[parent].pos.line, tokens[parent].pos.col, get_val!(tokens[parent].kind));
 			}
@@ -1068,10 +1066,10 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 					correct_indexes_after_del(tokens, *i);
 					
 					// Parse macro function
-					*functions = parse(&macro_funcs[j].code, *functions);
-					parse2(&mut macro_funcs[j].code, &functions, &mut 2);
+					*functions = parse(&new_code, functions.clone()); // Ik, it's not good to clone for performance but I was just too lazy to fix the issues...
+					parse2(&mut new_code, &functions, &mut 2);
 					
-					for point in macro_funcs[j].returns.iter() {
+					for point in new_points.iter() {
 						parse_statement(point, &functions, &mut 0);
 					}
 					
