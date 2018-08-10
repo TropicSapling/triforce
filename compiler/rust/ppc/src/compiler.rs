@@ -14,6 +14,7 @@ use lib::{Token, Kind, Type, Function, FunctionArg, MacroFunction};
 macro_rules! get_val {
 	($e:expr) => ({
 		use lib::Kind::*;
+		use lib::Type::*;
 		match $e {
 			GroupOp(ref val) => val.to_string(),
 			Literal(b) => if b {
@@ -942,7 +943,7 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 			
 			let mut i = 0;
 			while i < def.pos {
-				code.push(tokens[children[i]].clone());
+				move_children(tokens, functions, code, children[i]);
 				new_children.push(code.len() - 1);
 				
 				i += 1;
@@ -953,7 +954,7 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 			
 			let mut i = 0;
 			while i < tokens.len() && i < def.args.len() - def.pos {
-				code.push(tokens[children[i]].clone());
+				move_children(tokens, functions, code, children[i]);
 				new_children.push(code.len() - 1);
 				
 				i += 1;
@@ -965,7 +966,57 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 			}
 		},
 		
-		Kind::Op(ref op) => (), // WIP
+		Kind::Op(ref op) => {
+			let mut name = op.to_string();
+			let mut i = parent + 1;
+			
+			while i < tokens.len() {
+				match tokens[i].kind {
+					Kind::Op(ref op) => {
+						name += op;
+						if let Some(_) = is_defined(functions, &name) {
+							i += 1;
+						} else {
+							name.pop();
+							break;
+						}
+					},
+					
+					_ => break
+				}
+			}
+			
+			if let Some(def) = is_defined(functions, &name) {
+				let children = tokens[parent].children.borrow();
+				let mut new_children = Vec::new();
+				
+				let mut i = 0;
+				while i < def.pos {
+					move_children(tokens, functions, code, children[i]);
+					new_children.push(code.len() - 1);
+					
+					i += 1;
+				}
+				
+				code.push(tokens[parent].clone());
+				let new_parent = code.len() - 1;
+				
+				let mut i = 0;
+				while i < tokens.len() && i < def.args.len() - def.pos {
+					move_children(tokens, functions, code, children[i]);
+					new_children.push(code.len() - 1);
+					
+					i += 1;
+				}
+				
+				let mut children = code[new_parent].children.borrow_mut();
+				for (c, child) in children.iter_mut().enumerate() {
+					*child = new_children[c];
+				}
+			} else {
+				panic!("{}:{} Undefined operator '{}'", tokens[parent].pos.line, tokens[parent].pos.col, get_val!(tokens[parent].kind));
+			}
+		},
 		
 		Kind::GroupOp(ref op) if op == "{" => (), // WIP
 		

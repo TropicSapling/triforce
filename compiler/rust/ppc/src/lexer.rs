@@ -378,7 +378,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 										}
 									}
 								} else if op == ";" { // End of function declaration
-									panic!("{}:{} Macro functions must have a body.", tokens[i].pos.line, tokens[i].pos.col);
+									panic!("{}:{} Macro functions must have a body", tokens[i].pos.line, tokens[i].pos.col);
 								} else if op != "|" { // Operator (function) name
 									macro_funcs[last_item].func.name += op;
 									macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
