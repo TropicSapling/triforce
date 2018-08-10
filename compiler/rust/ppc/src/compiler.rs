@@ -958,9 +958,9 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 			code.push(new_parent);
 //			let new_parent = code.len() - 1;
 			
-			let mut i = 0;
-			while i < tokens.len() && i < def.args.len() - def.pos {
-				move_children(tokens, functions, code, children[i]);
+			i += 1;
+			while i < tokens.len() && i < def.args.len() + 1 {
+				move_children(tokens, functions, code, children[i - 1]);
 //				new_children.push(code.len() - 1);
 				
 				i += 1;
@@ -1009,9 +1009,9 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 				code.push(new_parent);
 //				let new_parent = code.len() - 1;
 				
-				let mut i = 0;
-				while i < tokens.len() && i < def.args.len() - def.pos {
-					move_children(tokens, functions, code, children[i]);
+				i += 1;
+				while i < tokens.len() && i < def.args.len() + 1 {
+					move_children(tokens, functions, code, children[i - 1]);
 //					new_children.push(code.len() - 1);
 					
 					i += 1;
