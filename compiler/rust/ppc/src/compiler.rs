@@ -1080,7 +1080,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 								let mut children = tok.children.borrow_mut();
 								for child in children.iter_mut() {
 									if *child == *i {
-										*child = *i + token;
+										*child = *i + token - 1; // -1 because 'point' starts with semicolon that is ignored later
 										exception[p] = t;
 										break 'outer;
 									}
@@ -1170,7 +1170,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 										
 										let mut children = tokens[*i].children.borrow_mut();
 										for child in children.iter_mut() {
-											*child = *i + *child - t;
+											*child = *i + *child - t - 1; // -1 because 'point' starts with semicolon that is ignored
 										}
 										
 										*i += 1;
