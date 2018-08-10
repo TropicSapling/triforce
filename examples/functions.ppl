@@ -13,7 +13,7 @@ macro func force_positive (int n) {
 		return n;
 	} else {
 		println "WARNING: Number is negative, converting into positive";
-		return 0-n;
+		return 0-(n);
 	}
 }
 

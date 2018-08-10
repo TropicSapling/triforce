@@ -911,9 +911,9 @@ fn correct_indexes_after_del(tokens: &Vec<Token>, i: usize) {
 	}
 }
 
-fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exception: usize) {
+fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exceptions: &Vec<usize>) {
 	for (t, token) in tokens.iter().enumerate() {
-		if t == exception {
+		if exceptions.contains(&t) {
 			continue;
 		}
 		
@@ -1131,13 +1131,13 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 								let point = str::from_utf8(&out.stderr).unwrap()[7..out.stderr.len() - 1].parse::<usize>();
 								
 								if let Ok(point) = point {
-									let mut exception = 0;
+									let mut exceptions = Vec::new();
 									'outer: for (t, tok) in tokens.iter_mut().enumerate() {
 										let mut children = tok.children.borrow_mut();
 										for child in children.iter_mut() {
 											if *child == *i {
 												*child = *i + lowest[point] - 1; // -1 because 'point' starts with semicolon that is ignored later
-												exception = t;
+												exceptions.push(t);
 												break 'outer;
 											}
 										}
@@ -1147,16 +1147,20 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 									for (t, token) in new_points[point][1..length - 1].iter().enumerate() {
 										tokens.insert(*i, token.clone());
 										
-										if exception > *i {
-											exception += 1;
+										for e in exceptions.iter_mut() {
+											if *e > *i {
+												*e += 1;
+											}
 										}
 										
-										correct_indexes_after_add(tokens, *i, exception);
+										correct_indexes_after_add(tokens, *i, &exceptions);
 										
 										let mut children = tokens[*i].children.borrow_mut();
 										for child in children.iter_mut() {
-											*child = *i + *child - t - 1; // -1 because 'point' starts with semicolon that is ignored
+											*child = *i + *child - t - 1;
 										}
+										
+										exceptions.push(*i);
 										
 										*i += 1;
 									}
