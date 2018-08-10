@@ -924,6 +924,16 @@ fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize) {
 	}
 }
 
+fn del_all_children(tokens: &mut Vec<Token>, children: Vec<usize>) {
+	for child in children.iter() {
+		let children = tokens[*child].children.borrow().clone();
+		del_all_children(tokens, children);
+		
+		tokens.remove(*child);
+		correct_indexes_after_del(tokens, *child);
+	}
+}
+
 pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &Vec<MacroFunction>, functions: &Vec<Function>, i: &mut usize) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
 		Kind::Var(ref name, _) => {
@@ -957,10 +967,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &Vec<MacroFunction>, functio
 					}
 					
 					// Remove macro call since it will be replaced later
-					for child in args.iter() {
-						tokens.remove(*child);
-						correct_indexes_after_del(tokens, *child);
-					}
+					del_all_children(tokens, args);
 					tokens.remove(*i);
 					correct_indexes_after_del(tokens, *i);
 					
@@ -1034,8 +1041,8 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &Vec<MacroFunction>, functio
 								
 								if let Ok(point) = point {
 									let length = &new_points[point].len();
-									for point in &new_points[point][1..length - 1] {
-										tokens.insert(*i, point.clone());
+									for token in &new_points[point][1..length - 1] {
+										tokens.insert(*i, token.clone());
 										correct_indexes_after_add(tokens, *i);
 										*i += 1;
 									}

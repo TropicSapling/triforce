@@ -551,8 +551,6 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 			},
 			
 			Kind::Var(ref name, _) => {
-//				let call_pos = i;
-				
 				let mut j = 0;
 				while j < macros.len() {
 					if let Kind::Var(ref name2, _) = macros[j].name.kind {
@@ -575,96 +573,6 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 					
 					j += 1;
 				}
-				
-/*				j = 0;
-				while j < macro_funcs.len() {
-					if name == &macro_funcs[j].func.name {
-						// Run macro function
-						
-						// Finish lexing line
-						let mut depth = 0;
-						while i < tokens.len() {
-							match tokens[i].kind.clone() {
-								Kind::GroupOp(ref op) if op == "{" => depth += 1,
-								Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
-									depth -= 1;
-								} else {
-									panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
-								},
-								
-								Kind::Op(ref op) if op == ";" && depth == 0 => break,
-								
-								Kind::Type(ref typ) => {
-									let mut types = vec![vec![typ.clone()]];
-									
-									i += 1;
-									
-									let mut t = 0;
-									while i < tokens.len() {
-										match tokens[i].kind {
-											Kind::Type(ref typ) => types[t].push(typ.clone()),
-											Kind::Op(ref op) if op == "|" => {
-												types.push(Vec::new());
-												t += 1;
-											},
-											_ => break
-										};
-										
-										i += 1;
-									}
-									
-									if i >= tokens.len() {
-										panic!("Unexpected EOF");
-									}
-									
-									match tokens[i].kind {
-										Kind::Var(_, ref mut typ) => *typ = types, // This should probably be changed because it's not really good for performance to copy a vector like this...
-										_ => i -= 1
-									}
-								},
-								
-								_ => ()
-							}
-							
-							i += 1;
-						}
-						
-						// Parse line
-						i = start;
-						let mut functions = parse(tokens, functions);
-						functions.push(macro_funcs[j].func.clone());
-						parse_statement(tokens, &functions, &mut i);
-						
-						let args = tokens[call_pos].children.borrow();
-						let mut new_code = Vec::new();
-						let mut new_points: Vec<Vec<Token>> = Vec::new();
-						if args.len() >= 1 && args[0] != usize::MAX {
-							for (a, arg) in args.iter().enumerate() {
-								for token in macro_funcs[j].code.iter() {
-									match token.kind {
-										Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => new_code.push(tokens[*arg].clone()),
-										_ => new_code.push(token.clone())
-									}
-								}
-								
-								for (p, point) in macro_funcs[j].returns.iter().enumerate() {
-									for token in point.iter() {
-										match token.kind {
-											Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => new_points[p].push(tokens[*arg].clone()),
-											_ => new_points[p].push(token.clone())
-										}
-									}
-								}
-							}
-						}
-						
-						// WIP
-						
-						break;
-					}
-					
-					j += 1;
-				} */
 			},
 			
 			_ => ()
