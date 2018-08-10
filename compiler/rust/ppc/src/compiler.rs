@@ -1,6 +1,7 @@
 use std::{
 	fs,
 	fs::File,
+	io,
 	io::prelude::*,
 	io::Error,
 	process::Command,
@@ -116,6 +117,19 @@ macro_rules! def_builtin_funcs {
 		
 		Function {
 			name: String::from("println"),
+			pos: 0,
+			args: vec![
+				FunctionArg {
+					name: String::from("a"),
+					typ: vec![vec![Type::Int]] // WIP; No support for strings yet
+				}
+			],
+			precedence: 1,
+			output: vec![]
+		},
+		
+		Function {
+			name: String::from("print"),
 			pos: 0,
 			args: vec![
 				FunctionArg {
@@ -1134,6 +1148,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 						
 						if out.stdout.len() > 0 {
 							print!("{}", str::from_utf8(&out.stdout).unwrap());
+							io::stdout().flush()?;
 						}
 						
 						if out.stderr.len() > 0 {
@@ -1532,12 +1547,14 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					"main"
 				} else if name == "println" {
 					"println!"
+				} else if name == "print" {
+					"print!"
 				} else {
 					name
 				};
 				output += "(";
 				
-				if name == "println" {
+				if name == "println" || name == "print" {
 					output += "\"{}\",";
 				}
 				

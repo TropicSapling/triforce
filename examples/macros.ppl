@@ -1,0 +1,99 @@
+macro print_str = {
+	const constant = "This is a constant string printed using a macro.";
+	println constant;
+};
+
+macro func force_positive (int n) {
+	if n >= 0 {
+		return n;
+	} else {
+		return 0-(n);
+	}
+}
+
+macro func power_of_ppl {
+	
+}
+
+macro func progress0 {
+	print "	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[==                  ]	10%\x1b[0m";
+}
+
+macro func progress1 {
+	print "\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[====                ]	20%\x1b[0m";
+}
+
+macro func progress2 {
+	print "\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[======              ]	30%\x1b[0m";
+}
+
+macro func progress3 {
+	print "\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[==========          ]	50%\x1b[0m";
+}
+
+macro func progress4 {
+	print "\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[==============      ]	70%\x1b[0m";
+}
+
+macro func progress5 {
+	print "\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[=================   ]	85%\x1b[0m";
+}
+
+macro func progress6 {
+	println "\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[====================]	100%\x1b[0m";
+}
+
+func init {
+	macro macro_str = "This string was printed in the form of a local macro.\n";
+	progress0;
+	
+	print_str;
+	print_str;
+	print_str;
+	print_str;
+	print_str;
+	print_str;
+	print_str;
+	print_str;
+	progress1;
+	
+	println macro_str;
+	println macro_str;
+	println macro_str;
+	println macro_str;
+	println macro_str;
+	println macro_str;
+	println macro_str;
+	println macro_str;
+	progress2;
+	
+	power_of_ppl;
+	power_of_ppl;
+	power_of_ppl;
+	power_of_ppl;
+	progress3;
+	power_of_ppl;
+	power_of_ppl;
+	power_of_ppl;
+	power_of_ppl;
+	progress4;
+	
+	const unsigned int n = force_positive 0-123;
+	println n;
+	const unsigned int n = force_positive 0-123;
+	println n;
+	const unsigned int n = force_positive 0-123;
+	println n;
+	const unsigned int n = force_positive 0-123;
+	println n;
+	progress5;
+	const unsigned int n = force_positive 0-123;
+	println n;
+	const unsigned int n = force_positive 0-123;
+	println n;
+	const unsigned int n = force_positive 0-123;
+	println n;
+	const unsigned int n = force_positive 0-123;
+	println n;
+	progress6;
+}
