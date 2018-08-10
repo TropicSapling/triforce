@@ -944,32 +944,23 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 		Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, &name) {
 			let new_parent = tokens[parent].clone();
 			let mut children = tokens[parent].children.borrow_mut();
-//			let mut new_children = Vec::new();
 			
 			let mut i = 0;
 			while i < def.pos {
 				move_children(tokens, functions, code, children[i]);
-//				new_children.push(code.len() - 1);
 				
 				i += 1;
 			}
 			
 			new_parent.children.borrow_mut().clear();
 			code.push(new_parent);
-//			let new_parent = code.len() - 1;
 			
 			i += 1;
 			while i < tokens.len() && i < def.args.len() + 1 {
 				move_children(tokens, functions, code, children[i - 1]);
-//				new_children.push(code.len() - 1);
 				
 				i += 1;
 			}
-			
-/*			let mut children = code[new_parent].children.borrow_mut();
-			for (c, child) in children.iter_mut().enumerate() {
-				*child = new_children[c];
-			} */
 		},
 		
 		Kind::Op(ref op) => {
@@ -995,32 +986,23 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 			if let Some(def) = is_defined(functions, &name) {
 				let new_parent = tokens[parent].clone();
 				let mut children = tokens[parent].children.borrow_mut();
-//				let mut new_children = Vec::new();
 				
 				let mut i = 0;
 				while i < def.pos {
 					move_children(tokens, functions, code, children[i]);
-//					new_children.push(code.len() - 1);
 					
 					i += 1;
 				}
 				
 				new_parent.children.borrow_mut().clear();
 				code.push(new_parent);
-//				let new_parent = code.len() - 1;
 				
 				i += 1;
 				while i < tokens.len() && i < def.args.len() + 1 {
 					move_children(tokens, functions, code, children[i - 1]);
-//					new_children.push(code.len() - 1);
 					
 					i += 1;
 				}
-				
-/*				let mut children = code[new_parent].children.borrow_mut();
-				for (c, child) in children.iter_mut().enumerate() {
-					*child = new_children[c];
-				} */
 			} else {
 				panic!("{}:{} Undefined operator '{}'", tokens[parent].pos.line, tokens[parent].pos.col, get_val!(tokens[parent].kind));
 			}
