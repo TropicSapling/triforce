@@ -144,7 +144,7 @@ fn main() -> Result<(), std::io::Error> {
 	}
 	
 	let mut functions = def_functions();
-	let macro_functions;
+	let mut macro_functions;
 	match lex3(&mut tokens, functions) {
 		(f, m) => {
 			functions = f;
@@ -167,7 +167,7 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let mut i = 0;
 	while i < tokens.len() {
-		parse3(&mut tokens, &macro_functions, &functions, &mut i)?;
+		parse3(&mut tokens, &mut macro_functions, &mut functions, &mut i)?;
 		i += 1;
 	}
 	

@@ -938,32 +938,35 @@ fn del_all_children(tokens: &mut Vec<Token>, children: Vec<usize>) {
 fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<Token>, parent: usize) {
 	match tokens[parent].kind {
 		Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, &name) {
-			let children = tokens[parent].children.borrow();
-			let mut new_children = Vec::new();
+			let new_parent = tokens[parent].clone();
+			let mut children = tokens[parent].children.borrow_mut();
+//			let mut new_children = Vec::new();
 			
 			let mut i = 0;
 			while i < def.pos {
 				move_children(tokens, functions, code, children[i]);
-				new_children.push(code.len() - 1);
+//				new_children.push(code.len() - 1);
 				
 				i += 1;
 			}
 			
-			code.push(tokens[parent].clone());
-			let new_parent = code.len() - 1;
+			code.push(new_parent);
+//			let new_parent = code.len() - 1;
 			
 			let mut i = 0;
 			while i < tokens.len() && i < def.args.len() - def.pos {
 				move_children(tokens, functions, code, children[i]);
-				new_children.push(code.len() - 1);
+//				new_children.push(code.len() - 1);
 				
 				i += 1;
 			}
 			
-			let mut children = code[new_parent].children.borrow_mut();
+/*			let mut children = code[new_parent].children.borrow_mut();
 			for (c, child) in children.iter_mut().enumerate() {
 				*child = new_children[c];
-			}
+			} */
+			
+			children.clear();
 		},
 		
 		Kind::Op(ref op) => {
@@ -987,32 +990,35 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 			}
 			
 			if let Some(def) = is_defined(functions, &name) {
-				let children = tokens[parent].children.borrow();
-				let mut new_children = Vec::new();
+				let new_parent = tokens[parent].clone();
+				let mut children = tokens[parent].children.borrow_mut();
+//				let mut new_children = Vec::new();
 				
 				let mut i = 0;
 				while i < def.pos {
 					move_children(tokens, functions, code, children[i]);
-					new_children.push(code.len() - 1);
+//					new_children.push(code.len() - 1);
 					
 					i += 1;
 				}
 				
-				code.push(tokens[parent].clone());
-				let new_parent = code.len() - 1;
+				code.push(new_parent);
+//				let new_parent = code.len() - 1;
 				
 				let mut i = 0;
 				while i < tokens.len() && i < def.args.len() - def.pos {
 					move_children(tokens, functions, code, children[i]);
-					new_children.push(code.len() - 1);
+//					new_children.push(code.len() - 1);
 					
 					i += 1;
 				}
 				
-				let mut children = code[new_parent].children.borrow_mut();
+/*				let mut children = code[new_parent].children.borrow_mut();
 				for (c, child) in children.iter_mut().enumerate() {
 					*child = new_children[c];
-				}
+				} */
+				
+				children.clear()
 			} else {
 				panic!("{}:{} Undefined operator '{}'", tokens[parent].pos.line, tokens[parent].pos.col, get_val!(tokens[parent].kind));
 			}
@@ -1024,7 +1030,7 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 	}
 }
 
-pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &Vec<MacroFunction>, functions: &Vec<Function>, i: &mut usize) -> Result<(), Error> {
+pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, functions: &mut Vec<Function>, i: &mut usize) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
 		Kind::Var(ref name, _) => {
 			let mut j = 0;
@@ -1060,6 +1066,14 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &Vec<MacroFunction>, functio
 					del_all_children(tokens, args);
 					tokens.remove(*i);
 					correct_indexes_after_del(tokens, *i);
+					
+					// Parse macro function
+					*functions = parse(&macro_funcs[j].code, *functions);
+					parse2(&mut macro_funcs[j].code, &functions, &mut 2);
+					
+					for point in macro_funcs[j].returns.iter() {
+						parse_statement(point, &functions, &mut 0);
+					}
 					
 					let mut out_contents = String::new();
 					let mut k = 0;
