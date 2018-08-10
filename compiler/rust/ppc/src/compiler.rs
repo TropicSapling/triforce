@@ -911,8 +911,12 @@ fn correct_indexes_after_del(tokens: &Vec<Token>, i: usize) {
 	}
 }
 
-fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize) {
-	for token in tokens {
+fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exception: usize) {
+	for (t, token) in tokens.iter().enumerate() {
+		if t == exception {
+			continue;
+		}
+		
 		let mut children = token.children.borrow_mut();
 		let mut c = 0;
 		while c < children.len() {
@@ -1069,13 +1073,16 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 					*functions = parse(&new_code, functions.clone()); // Ik, it's not good to clone for performance but I was just too lazy to fix the issues...
 					parse2(&mut new_code, &functions, &mut 2);
 					
-					for point in new_points.iter() {
+					let mut exception = [0, 0];
+					for (p, point) in new_points.iter().enumerate() {
 						if let Some(token) = parse_statement(point, &functions, &mut 0) {
-							for tok in tokens.iter() {
+							'outer: for (t, tok) in tokens.iter_mut().enumerate() {
 								let mut children = tok.children.borrow_mut();
 								for child in children.iter_mut() {
 									if *child == *i {
 										*child = *i + token;
+										exception[p] = t;
+										break 'outer;
 									}
 								}
 							}
@@ -1154,7 +1161,12 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 									let length = &new_points[point].len();
 									for (t, token) in new_points[point][1..length - 1].iter().enumerate() {
 										tokens.insert(*i, token.clone());
-										correct_indexes_after_add(tokens, *i);
+										
+										if exception[point] > *i {
+											exception[point] += 1;
+										}
+										
+										correct_indexes_after_add(tokens, *i, exception[point]);
 										
 										let mut children = tokens[*i].children.borrow_mut();
 										for child in children.iter_mut() {
