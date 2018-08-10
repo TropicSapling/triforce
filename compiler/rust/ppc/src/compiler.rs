@@ -1,10 +1,20 @@
-use std::usize;
-use std::cell::RefMut;
-use lib::{Token, Kind, Type, Function, FunctionArg};
+use std::{
+	fs,
+	fs::File,
+	io::prelude::*,
+	io::Error,
+	process::Command,
+	str,
+	usize,
+	cell::RefMut
+};
+
+use lib::{Token, Kind, Type, Function, FunctionArg, MacroFunction};
 
 macro_rules! get_val {
 	($e:expr) => ({
 		use lib::Kind::*;
+		use lib::Type::*;
 		match $e {
 			GroupOp(ref val) => val.to_string(),
 			Literal(b) => if b {
@@ -69,46 +79,46 @@ macro_rules! def_builtin_op {
 }
 
 macro_rules! def_builtin_funcs {
-	($a:expr, $b:expr) => (vec![
+	() => (vec![
 		// WIP; 'typ' structure needs support for multiple types ('int|fraction' for these operators)
-		def_builtin_op!($a, $b, "+", Type::Int, Type::Int, Type::Int, 245),
-		def_builtin_op!($a, $b, "-", Type::Int, Type::Int, Type::Int, 245),
-		def_builtin_op!($a, $b, "*", Type::Int, Type::Int, Type::Int, 246),
-		def_builtin_op!($a, $b, "/", Type::Int, Type::Int, Type::Int, 246),
-		def_builtin_op!($a, $b, "%", Type::Int, Type::Int, Type::Int, 246),
+		def_builtin_op!(String::from("a"), String::from("b"), "+", Type::Int, Type::Int, Type::Int, 245),
+		def_builtin_op!(String::from("a"), String::from("b"), "-", Type::Int, Type::Int, Type::Int, 245),
+		def_builtin_op!(String::from("a"), String::from("b"), "*", Type::Int, Type::Int, Type::Int, 246),
+		def_builtin_op!(String::from("a"), String::from("b"), "/", Type::Int, Type::Int, Type::Int, 246),
+		def_builtin_op!(String::from("a"), String::from("b"), "%", Type::Int, Type::Int, Type::Int, 246),
 		
 		// WIP; 'typ' structure needs support for multiple types (all types for these operators)
-		def_builtin_op!($a, $b, "==", Type::Int, Type::Int, Type::Bool, 242),
-		def_builtin_op!($a, $b, "!=", Type::Int, Type::Int, Type::Bool, 242),
-		def_builtin_op!($a, $b, "<", Type::Int, Type::Int, Type::Bool, 243),
-		def_builtin_op!($a, $b, "<=", Type::Int, Type::Int, Type::Bool, 243),
-		def_builtin_op!($a, $b, ">", Type::Int, Type::Int, Type::Bool, 243),
-		def_builtin_op!($a, $b, ">=", Type::Int, Type::Int, Type::Bool, 243),
+		def_builtin_op!(String::from("a"), String::from("b"), "==", Type::Int, Type::Int, Type::Bool, 242),
+		def_builtin_op!(String::from("a"), String::from("b"), "!=", Type::Int, Type::Int, Type::Bool, 242),
+		def_builtin_op!(String::from("a"), String::from("b"), "<", Type::Int, Type::Int, Type::Bool, 243),
+		def_builtin_op!(String::from("a"), String::from("b"), "<=", Type::Int, Type::Int, Type::Bool, 243),
+		def_builtin_op!(String::from("a"), String::from("b"), ">", Type::Int, Type::Int, Type::Bool, 243),
+		def_builtin_op!(String::from("a"), String::from("b"), ">=", Type::Int, Type::Int, Type::Bool, 243),
 		
-		def_builtin_op!($a, $b, "&&", Type::Bool, Type::Bool, Type::Bool, 238),
-		def_builtin_op!($a, $b, "||", Type::Bool, Type::Bool, Type::Bool, 237),
+		def_builtin_op!(String::from("a"), String::from("b"), "&&", Type::Bool, Type::Bool, Type::Bool, 238),
+		def_builtin_op!(String::from("a"), String::from("b"), "||", Type::Bool, Type::Bool, Type::Bool, 237),
 		
-		def_builtin_op!($a, $b, "<<", Type::Int, Type::Int, Type::Int, 244),
-		def_builtin_op!($a, $b, ">>", Type::Int, Type::Int, Type::Int, 244),
-		def_builtin_op!($a, $b, "^", Type::Int, Type::Int, Type::Int, 240),
+		def_builtin_op!(String::from("a"), String::from("b"), "<<", Type::Int, Type::Int, Type::Int, 244),
+		def_builtin_op!(String::from("a"), String::from("b"), ">>", Type::Int, Type::Int, Type::Int, 244),
+		def_builtin_op!(String::from("a"), String::from("b"), "^", Type::Int, Type::Int, Type::Int, 240),
 		
 		// WIP; 'macro' types are not yet implemented
-		def_builtin_op!($a, $b, "=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "+=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "-=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "*=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "/=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "%=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, ">>=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "<<=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!($a, $b, "^=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "+=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "-=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "*=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "/=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "%=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), ">>=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "<<=", Type::Int, Type::Int, Type::Void, 0),
+		def_builtin_op!(String::from("a"), String::from("b"), "^=", Type::Int, Type::Int, Type::Void, 0),
 		
 		Function {
 			name: String::from("println"),
 			pos: 0,
 			args: vec![
 				FunctionArg {
-					name: $a,
+					name: String::from("a"),
 					typ: vec![vec![Type::Int]] // WIP; No support for strings yet
 				}
 			],
@@ -118,7 +128,7 @@ macro_rules! def_builtin_funcs {
 	])
 }
 
-fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a>> {
+fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function> {
 	for def in defs {
 		if def.name == call {
 			return Some(&def);
@@ -128,8 +138,11 @@ fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function<'a
 	None
 }
 
-pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a str) -> Vec<Function<'a>> {
-	let mut functions: Vec<Function> = def_builtin_funcs!(func_par_a, func_par_b);
+pub fn def_functions() -> Vec<Function> {
+	def_builtin_funcs!()
+}
+
+pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Function> {
 	let mut func = false;
 	let mut func_pos = 0;
 	let mut func_args = Vec::new();
@@ -138,14 +151,12 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 	// DEFINE FUNCTIONS (this is done in a separate loop to allow function definitions to be placed both before and after function calls)
 	let mut i = 0;
 	while i < tokens.len() {
-		let token = &tokens[i];
-		
 		let mut last_item = functions.len();
 		if last_item != 0 {
 			last_item -= 1;
 		}
 		
-		match token.kind {
+		match tokens[i].kind {
 			Kind::Type(ref typ) if !func => match typ {
 				&Type::Func => {
 					functions.push(Function {name: String::from(""), pos: 0, args: vec![], precedence: 1, output: vec![]});
@@ -191,7 +202,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, func_par_a: &'a str, func_par_b: &'a st
 				
 				tokens[func_pos].children.borrow_mut().push(i);
 			} else { // Function args
-				functions[last_item].args.push(FunctionArg {name, typ: typ.clone()});
+				functions[last_item].args.push(FunctionArg {name: name.clone(), typ: typ.clone()});
 				func_args.push(i);
 			},
 			
@@ -470,7 +481,7 @@ fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
 	let mut limit = tokens.len();
 	while *i < limit {
 		match tokens[*i].kind {
-			Kind::Op(ref op) if op == ";" => if depth == 0 {
+			Kind::Op(ref op) if op == ";" && *i > 0 => if depth == 0 {
 				limit = *i;
 				break;
 			},
@@ -564,7 +575,7 @@ fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
 	limit
 }
 
-fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
+pub fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
 	match tokens[*i + 1].kind {
 		Kind::GroupOp(ref op) if op == "}" => {
 			*i += 1;
@@ -886,6 +897,298 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	}
 }
 
+fn correct_indexes_after_del(tokens: &Vec<Token>, i: usize) {
+	for token in tokens {
+		let mut children = token.children.borrow_mut();
+		let mut c = 0;
+		while c < children.len() {
+			if children[c] > i && children[c] != usize::MAX {
+				children[c] -= 1;
+			}
+			
+			c += 1;
+		}
+	}
+}
+
+fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exceptions: &Vec<usize>) {
+	for (t, token) in tokens.iter().enumerate() {
+		if exceptions.contains(&t) {
+			continue;
+		}
+		
+		let mut children = token.children.borrow_mut();
+		let mut c = 0;
+		while c < children.len() {
+			if children[c] > i && children[c] != usize::MAX {
+				children[c] += 1;
+			}
+			
+			c += 1;
+		}
+	}
+}
+
+fn del_all_children(tokens: &mut Vec<Token>, children: Vec<usize>) {
+	for child in children.iter() {
+		let children = tokens[*child].children.borrow().clone();
+		del_all_children(tokens, children);
+		
+		tokens.remove(*child);
+		correct_indexes_after_del(tokens, *child);
+	}
+}
+
+fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<Token>, parent: usize) {
+	match tokens[parent].kind {
+		Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, &name) {
+			let new_parent = tokens[parent].clone();
+			let mut children = tokens[parent].children.borrow_mut();
+			
+			let mut i = 0;
+			while i < def.pos {
+				move_children(tokens, functions, code, children[i]);
+				
+				i += 1;
+			}
+			
+			new_parent.children.borrow_mut().clear();
+			code.push(new_parent);
+			
+			i += 1;
+			while i < tokens.len() && i < def.args.len() + 1 {
+				move_children(tokens, functions, code, children[i - 1]);
+				
+				i += 1;
+			}
+		},
+		
+		Kind::Op(ref op) => {
+			let mut name = op.to_string();
+			let mut i = parent + 1;
+			
+			while i < tokens.len() {
+				match tokens[i].kind {
+					Kind::Op(ref op) => {
+						name += op;
+						if let Some(_) = is_defined(functions, &name) {
+							i += 1;
+						} else {
+							name.pop();
+							break;
+						}
+					},
+					
+					_ => break
+				}
+			}
+			
+			if let Some(def) = is_defined(functions, &name) {
+				let new_parent = tokens[parent].clone();
+				let mut children = tokens[parent].children.borrow_mut();
+				
+				let mut i = 0;
+				while i < def.pos {
+					move_children(tokens, functions, code, children[i]);
+					
+					i += 1;
+				}
+				
+				new_parent.children.borrow_mut().clear();
+				code.push(new_parent);
+				
+				i += 1;
+				while i < tokens.len() && i < def.args.len() + 1 {
+					move_children(tokens, functions, code, children[i - 1]);
+					
+					i += 1;
+				}
+			} else {
+				panic!("{}:{} Undefined operator '{}'", tokens[parent].pos.line, tokens[parent].pos.col, get_val!(tokens[parent].kind));
+			}
+		},
+		
+		Kind::GroupOp(ref op) if op == "{" => (), // WIP
+		
+		_ => code.push(tokens[parent].clone())
+	}
+}
+
+pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, functions: &mut Vec<Function>, i: &mut usize) -> Result<(), Error> {
+	match tokens[*i].kind.clone() {
+		Kind::Var(ref name, _) => {
+			let mut j = 0;
+			while j < macro_funcs.len() {
+				if name == &macro_funcs[j].func.name {
+					// Run macro function
+					
+					let args = tokens[*i].children.borrow().clone();
+					let mut new_code = Vec::new();
+					let mut new_points: Vec<Vec<Token>> = Vec::new();
+					if args.len() >= 1 && args[0] != usize::MAX {
+						for (a, arg) in args.iter().enumerate() {
+							for token in macro_funcs[j].code.iter() {
+								match token.kind {
+									Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => move_children(tokens, functions, &mut new_code, *arg),
+									_ => new_code.push(token.clone())
+								}
+							}
+							
+							for (p, point) in macro_funcs[j].returns.iter().enumerate() {
+								new_points.push(Vec::new());
+								for token in point.iter() {
+									match token.kind {
+										Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => move_children(tokens, functions, &mut new_points[p], *arg),
+										_ => new_points[p].push(token.clone())
+									}
+								}
+							}
+						}
+					}
+					
+					// Remove macro call since it will be replaced later
+					del_all_children(tokens, args);
+					tokens.remove(*i);
+					correct_indexes_after_del(tokens, *i);
+					
+					// Parse macro function
+					*functions = parse(&new_code, functions.clone()); // Ik, it's not good to clone for performance but I was just too lazy to fix the issues...
+					parse2(&mut new_code, &functions, &mut 2);
+					
+					let mut lowest = [1, 1];
+					for (p, point) in new_points.iter().enumerate() {
+						if let Some(token) = parse_statement(point, &functions, &mut 0) {
+							lowest[p] = token;
+						}
+					}
+					
+					let mut out_contents = String::new();
+					let mut k = 0;
+					while k < new_code.len() {
+						out_contents = compile(&new_code, &functions, &mut k, out_contents);
+						k += 1;
+					}
+					
+					out_contents.insert_str(9, "->Result<(),usize>");
+					let mut k = 0;
+					while k + 6 < out_contents.len() {
+						if &out_contents[k..k + 6] == "return" {
+							k += 7;
+							out_contents.insert_str(k, "Err(");
+							k += 5;
+							out_contents.insert(k, ')');
+						}
+						
+						k += 1;
+					}
+					
+					//////// CREATE RUST OUTPUT ////////
+					
+					fs::create_dir_all("macros")?;
+					
+					let mut out_file = File::create("macros\\macro.rs")?;
+					out_file.write_all(out_contents.as_bytes())?;
+					
+					Command::new("rustfmt").arg("macros\\macro.rs").output().expect("failed to format Rust code");
+					
+					//////// CREATE BINARY OUTPUT ////////
+					
+					let mut error = false;
+					
+					let out = Command::new("rustc")
+							.args(&["--color", "always", "--out-dir", "macros", "macros\\macro.rs"])
+							.output()
+							.expect("failed to compile Rust code");
+					
+					if out.stdout.len() > 0 {
+						print!("{}", str::from_utf8(&out.stdout).unwrap());
+					}
+					
+					if out.stderr.len() > 0 {
+						print!("{}", str::from_utf8(&out.stderr).unwrap());
+						error = true;
+					}
+					
+					//////// RUN COMPILED BINARY ////////
+					
+					if !error {
+						let out = if cfg!(target_os = "windows") {
+							Command::new("macros\\macro.exe")
+								.output()
+								.expect("failed to execute process")
+						} else {
+							Command::new("./macros/macro.exe")
+								.output()
+								.expect("failed to execute process")
+						};
+						
+						if out.stdout.len() > 0 {
+							print!("{}", str::from_utf8(&out.stdout).unwrap());
+						}
+						
+						if out.stderr.len() > 0 {
+							if out.stderr.starts_with(b"Error: ") {
+								let point = str::from_utf8(&out.stderr).unwrap()[7..out.stderr.len() - 1].parse::<usize>();
+								
+								if let Ok(point) = point {
+									let mut exceptions = Vec::new();
+									'outer: for (t, tok) in tokens.iter_mut().enumerate() {
+										let mut children = tok.children.borrow_mut();
+										for child in children.iter_mut() {
+											if *child == *i {
+												*child = *i + lowest[point] - 1; // -1 because 'point' starts with semicolon that is ignored later
+												exceptions.push(t);
+												break 'outer;
+											}
+										}
+									}
+									
+									let length = &new_points[point].len();
+									for (t, token) in new_points[point][1..length - 1].iter().enumerate() {
+										tokens.insert(*i, token.clone());
+										
+										for e in exceptions.iter_mut() {
+											if *e > *i {
+												*e += 1;
+											}
+										}
+										
+										correct_indexes_after_add(tokens, *i, &exceptions);
+										
+										let mut children = tokens[*i].children.borrow_mut();
+										for child in children.iter_mut() {
+											*child = *i + *child - t - 1;
+										}
+										
+										exceptions.push(*i);
+										
+										*i += 1;
+									}
+								}
+							} else {
+								print!("{}", str::from_utf8(&out.stderr).unwrap());
+							}
+						}
+					}
+					
+					//////// DELETE RUST FILES ////////
+					
+					fs::remove_file("macros\\macro.rs")?;
+//					fs::remove_dir("macros")?; // Doesn't work (on Windows) for some reason?
+					
+					break;
+				}
+				
+				j += 1;
+			}
+		},
+		
+		_ => ()
+	}
+	
+	Ok(())
+}
+
 fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
 		Kind::GroupOp(ref op) if op == "{" => {
@@ -987,7 +1290,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 					output = compile_func(tokens, functions, i, output);
 				},
 				
-				"+" | "-" | "*" | "/" | "%" | "==" | "!=" | "&&" | "|" | "||" | "^" | "<" | ">" | "<<" | ">>" => {
+				"+" | "-" | "*" | "/" | "%" | "==" | "<=" | ">=" | "!=" | "&&" | "|" | "||" | "^" | "<" | ">" | "<<" | ">>" => {
 					*i = args[0];
 					output += "(";
 					output = compile_func(tokens, functions, i, output);

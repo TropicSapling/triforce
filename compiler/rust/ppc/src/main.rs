@@ -23,7 +23,7 @@ use std::{
 
 use lib::get_io;
 use lexer::{lex, lex2, lex3};
-use compiler::{parse, parse2, compile};
+use compiler::{def_functions, parse, parse2, parse3, compile};
 
 fn count_newlines(s: &str) -> usize {
 	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
@@ -31,7 +31,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.5.0-alpha")
+		.version("0.6.0-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -62,6 +62,17 @@ fn main() -> Result<(), std::io::Error> {
 	let debugging = matches.is_present("debug");
 	
 	let mut input = PathBuf::from(matches.value_of("input").unwrap());
+	
+	if cfg!(target_os = "windows") {
+		// Makes sure colours are displayed correctly on Windows
+		
+		unsafe {
+			let handle = kernel32::GetStdHandle(winapi::um::winbase::STD_OUTPUT_HANDLE);
+			let mut mode = 0;
+			GetConsoleMode(handle, &mut mode);
+			SetConsoleMode(handle, mode | 0x0004);
+		}
+	}
 	
 	if debugging {
 		println!("{} INPUT FILE: {:?}", BrightYellow.paint("[DEBUG]"), input);
@@ -132,20 +143,31 @@ fn main() -> Result<(), std::io::Error> {
 //		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
-	lex3(&mut tokens);
+	let mut functions = def_functions();
+	let mut macro_functions;
+	match lex3(&mut tokens, functions) {
+		(f, m) => {
+			functions = f;
+			macro_functions = m;
+		}
+	}
+	
+	
 	if debugging {
 //		println!("{} LEX3: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
-	// These strings would not be necessary if Rust had <scope> or <lifetime> properties like P+, but oh well...
-	let func_name_a = String::from("a");
-	let func_name_b = String::from("b");
-	
-	let functions = parse(&tokens, &func_name_a, &func_name_b);
+	functions = parse(&tokens, functions);
 	
 	let mut i = 0;
 	while i < tokens.len() {
 		parse2(&tokens, &functions, &mut i);
+		i += 1;
+	}
+	
+	let mut i = 0;
+	while i < tokens.len() {
+		parse3(&mut tokens, &mut macro_functions, &mut functions, &mut i)?;
 		i += 1;
 	}
 	
@@ -198,24 +220,16 @@ fn main() -> Result<(), std::io::Error> {
 				.expect("failed to compile Rust code")
 		};
 		
-		if cfg!(target_os = "windows") {
-			// Makes sure colours are displayed correctly on Windows
-			
-			unsafe {
-				let handle = kernel32::GetStdHandle(winapi::um::winbase::STD_OUTPUT_HANDLE);
-				let mut mode = 0;
-				GetConsoleMode(handle, &mut mode);
-				SetConsoleMode(handle, mode | 0x0004);
-			}
-		}
-		
 		if out.stdout.len() > 0 {
 			print!("{}", str::from_utf8(&out.stdout).unwrap());
 		}
 		
 		if out.stderr.len() > 0 {
 			print!("{}", str::from_utf8(&out.stderr).unwrap());
-			error = true;
+			
+			if !out.stderr.starts_with(b"\x1b[0m\x1b[1m\x1b[38;5;11mwarning") {
+				error = true;
+			}
 		}
 	}
 	

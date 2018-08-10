@@ -4,7 +4,7 @@ use std::{path::PathBuf, cell::RefCell};
 pub enum Kind {
     GroupOp(String),
     Literal(bool),
-    Number(u64, u64),
+    Number(usize, usize),
     Op(String),
     Reserved(String),
     Str1(String),
@@ -49,25 +49,35 @@ pub struct FilePos {
     pub col: usize
 }
 
-#[derive(Debug)]
-pub struct Function<'a> {
+#[derive(Clone, Debug)]
+pub struct Function {
 	pub name: String,
 	pub pos: usize,
-	pub args: Vec<FunctionArg<'a>>,
+	pub args: Vec<FunctionArg>,
 	pub output: Vec<Vec<Type>>,
 	pub precedence: u8
 }
 
-#[derive(Debug)]
-pub struct FunctionArg<'a> {
-	pub name: &'a str,
+#[derive(Clone, Debug)]
+pub struct FunctionArg {
+	pub name: String,
 	pub typ: Vec<Vec<Type>>
 }
 
+#[derive(Debug)]
 pub struct Macro {
 	pub name: Token,
 	pub contents: Vec<Token>,
 	pub depth: usize
+}
+
+#[derive(Debug)]
+pub struct MacroFunction {
+	pub func: Function,
+	pub code: Vec<Token>,
+	pub returns: Vec<Vec<Token>>,
+	pub depth: usize,
+	pub bpos: usize
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
