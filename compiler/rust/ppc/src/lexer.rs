@@ -268,7 +268,6 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 	let mut macro_funcs = Vec::new();
 	let mut full_depth = 0;
 	let mut bpos = 0;
-//	let mut start = 0;
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind.clone() {
@@ -479,13 +478,6 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 						match lex3(&mut macro_funcs[last_item].code, functions) {
 							(f, _) => functions = f
 						}
-						
-/*						functions = parse(&macro_funcs[last_item].code, functions);
-						parse2(&mut macro_funcs[last_item].code, &functions, &mut 2);
-						
-						for point in macro_funcs[last_item].returns.iter() {
-							parse_statement(point, &functions, &mut 0);
-						} */
 					},
 					
 					_ => {
