@@ -864,6 +864,8 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 				if let Kind::GroupOp(ref op) = tokens[*i].kind {
 					if op == "{" {
 						nests += 1;
+						
+						body.push(*i);
 						parse2(tokens, functions, i);
 /*						if let Some(token) = parse_statement(tokens, functions, i) {
 							body.push(token);
