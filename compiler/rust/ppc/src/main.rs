@@ -104,15 +104,13 @@ fn main() -> Result<(), std::io::Error> {
 		Ok(t) => t
 	};
 	
-	let mut in_contents = String::from("
-		#[allow(unused)]
-		func (int a) ++ -> int {
-			a + 1 // TMP
+	let mut in_contents = String::from("();
+		macro func (int a)++ {
+			return a += 1;
 		}
 		
-		#[allow(unused)]
-		func (int a) -- -> int {
-			a - 1 // TMP
+		macro func (int a)-- {
+			return a -= 1;
 		}
 		
 		#[allow(unused)]
