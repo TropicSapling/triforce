@@ -946,16 +946,23 @@ fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exceptions: &Vec<usi
 	}
 }
 
-fn del_all_children(tokens: &mut Vec<Token>, children: &Vec<usize>) {
+fn del_all_children(tokens: &mut Vec<Token>, children: &Vec<usize>) -> Vec<usize> {
+	let mut trash = Vec::new();
 	for child in children.iter() {
 		if *child != usize::MAX {
 			let children = tokens[*child].children.borrow().clone();
-			del_all_children(tokens, &children);
+			for i in del_all_children(tokens, &children) {
+				trash.push(i);
+			}
 			
-			tokens.remove(*child);
-			correct_indexes_after_del(tokens, *child);
+			trash.push(*child);
+			
+/*			tokens.remove(*child);
+			correct_indexes_after_del(tokens, *child); */
 		}
 	}
+	
+	trash
 }
 
 fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<Token>, parent: usize) {
@@ -1040,6 +1047,12 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 				
 				i += 1;
 			}
+			
+			code.push(Token {
+				kind: Kind::GroupOp(String::from("}")),
+				pos: FilePos {line: 0, col: 0},
+				children: RefCell::new(Vec::new())
+			});
 		},
 		
 		_ => code.push(tokens[parent].clone())
@@ -1081,7 +1094,24 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 					}
 					
 					// Remove macro call since it will be replaced later
-					del_all_children(tokens, &args);
+					let mut trash = del_all_children(tokens, &args);
+					let mut t = 0;
+					while t < trash.len() {
+						tokens.remove(trash[t]);
+						correct_indexes_after_del(tokens, trash[t]);
+						
+						let mut i = t + 1;
+						while i < trash.len() {
+							if trash[i] > trash[t] && trash[i] != usize::MAX {
+								trash[i] -= 1;
+							}
+							
+							i += 1;
+						}
+						
+						t += 1;
+					}
+					
 					tokens.remove(*i);
 					correct_indexes_after_del(tokens, *i);
 					
