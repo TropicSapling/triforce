@@ -1407,28 +1407,26 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 			
 			*i += 1;
 			while *i < tokens.len() {
-				match tokens[*i].kind {
-					Kind::Op(ref op) => {
-						name += op;
-						if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
-							*i += 1;
-						} else {
-							if name.ends_with("->") {
-								if let Kind::Type(_) = tokens[*i + 1].kind {
-									name.pop();
-									*i -= 1;
-								}
-							}
-							
-							name.pop();
-							break;
-						}
-					},
-					
-					_ => break
+				if let Kind::Op(ref op) = tokens[*i].kind {
+					name += op;
+					*i += 1;
+				} else {
+					break;
 				}
 			}
 			*i -= 1;
+			
+			while *i > 0 {
+				if let Kind::Op(_) = tokens[*i].kind {
+					if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+						break;
+					} else {
+						name.pop();
+					}
+				}
+				
+				*i -= 1;
+			}
 			
 			let args = tokens[start].children.borrow();
 			
