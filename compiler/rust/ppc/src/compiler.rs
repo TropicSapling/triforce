@@ -4,6 +4,7 @@ use std::{
 	io,
 	io::prelude::*,
 	io::Error,
+	io::ErrorKind,
 	process::Command,
 	str,
 	usize,
@@ -614,24 +615,24 @@ pub fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut u
 					Kind::Var(ref name, _) if depth2 == 0 => if let Some(def) = is_defined(functions, name) {
 						match highest {
 							Some(func) => match func.1 {
-								Some(def2) => if (def.precedence > def2.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
-									highest = Some((*i, Some(def), depth + depth2));
+								Some(def2) => if (def.precedence > def2.precedence && depth == func.2) || depth > func.2 {
+									highest = Some((*i, Some(def), depth));
 								},
-								None => if depth + depth2 > func.2 {
-									highest = Some((*i, Some(def), depth + depth2));
+								None => if depth >= func.2 {
+									highest = Some((*i, Some(def), depth));
 								}
 							},
-							None => highest = Some((*i, Some(def), depth + depth2))
+							None => highest = Some((*i, Some(def), depth))
 						}
 					},
 					
 					Kind::GroupOp(ref op) if op == "{" => {
 						if depth2 == 0 {
 							match highest {
-								Some(func) => if depth + depth2 >= func.2 {
-									highest = Some((*i, None, depth + depth2));
+								Some(func) => if depth >= func.2 {
+									highest = Some((*i, None, depth));
 								},
-								None => highest = Some((*i, None, depth + depth2))
+								None => highest = Some((*i, None, depth))
 							}
 						}
 						
@@ -665,14 +666,14 @@ pub fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut u
 							if let Some(def) = is_defined(functions, &name) {
 								match highest {
 									Some(func) => match func.1 {
-										Some(def2) => if (def.precedence > def2.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
-											highest = Some((start, Some(def), depth + depth2));
+										Some(def2) => if (def.precedence > def2.precedence && depth == func.2) || depth > func.2 {
+											highest = Some((start, Some(def), depth));
 										},
-										None => if depth + depth2 > func.2 {
-											highest = Some((start, Some(def), depth + depth2));
+										None => if depth > func.2 {
+											highest = Some((start, Some(def), depth));
 										}
 									},
-									None => highest = Some((start, Some(def), depth + depth2))
+									None => highest = Some((start, Some(def), depth))
 								}
 							} else {
 								let mut j = 1;
@@ -680,14 +681,14 @@ pub fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut u
 									if let Some(def) = is_defined(functions, &name[..name.len() - j]) {
 										match highest {
 											Some(func) => match func.1 {
-												Some(def2) => if (def.precedence > def2.precedence && depth + depth2 == func.2) || depth + depth2 > func.2 {
-													highest = Some((start, Some(def), depth + depth2));
+												Some(def2) => if (def.precedence > def2.precedence && depth == func.2) || depth > func.2 {
+													highest = Some((start, Some(def), depth));
 												},
-												None => if depth + depth2 > func.2 {
-													highest = Some((start, Some(def), depth + depth2));
+												None => if depth > func.2 {
+													highest = Some((start, Some(def), depth));
 												}
 											},
-											None => highest = Some((start, Some(def), depth + depth2))
+											None => highest = Some((start, Some(def), depth))
 										}
 										
 										break;
@@ -863,11 +864,12 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 				if let Kind::GroupOp(ref op) = tokens[*i].kind {
 					if op == "{" {
 						nests += 1;
-						if let Some(token) = parse_statement(tokens, functions, i) {
+						parse2(tokens, functions, i);
+/*						if let Some(token) = parse_statement(tokens, functions, i) {
 							body.push(token);
 						} else {
 							body.push(start); // Should this really be pushing start instead of *i?
-						}
+						} */
 					}
 				}
 				
@@ -1138,11 +1140,11 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 							.expect("failed to compile Rust code");
 					
 					if out.stdout.len() > 0 {
-						print!("{}", str::from_utf8(&out.stdout).unwrap());
+						println!("{}", str::from_utf8(&out.stdout).unwrap());
 					}
 					
 					if out.stderr.len() > 0 {
-						print!("{}", str::from_utf8(&out.stderr).unwrap());
+						println!("{}", str::from_utf8(&out.stderr).unwrap());
 						error = true;
 					}
 					
@@ -1160,7 +1162,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 						};
 						
 						if out.stdout.len() > 0 {
-							print!("{}", str::from_utf8(&out.stdout).unwrap());
+							println!("{}", str::from_utf8(&out.stdout).unwrap());
 							io::stdout().flush()?;
 						}
 						
@@ -1204,7 +1206,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 									}
 								}
 							} else {
-								print!("{}", str::from_utf8(&out.stderr).unwrap());
+								println!("{}", str::from_utf8(&out.stderr).unwrap());
 							}
 						} else {
 							tokens.insert(*i, Token {
@@ -1229,8 +1231,14 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 					//////// DELETE CREATED FILES ////////
 					
 					fs::remove_file("macros\\macro.rs")?;
-					fs::remove_file("macros\\macro.exe")?;
-					fs::remove_file("macros\\macro.pdb")?;
+					
+					if !error {
+						fs::remove_file("macros\\macro.exe")?;
+						fs::remove_file("macros\\macro.pdb")?;
+					} else {
+						return Err(Error::new(ErrorKind::Other, "compilation of macro failed"));
+					}
+					
 //					fs::remove_dir("macros")?; // Doesn't work (on Windows) for some reason?
 					
 					break;
