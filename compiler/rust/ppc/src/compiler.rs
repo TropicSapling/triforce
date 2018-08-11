@@ -956,7 +956,7 @@ fn del_all_children(tokens: &mut Vec<Token>, children: &Vec<usize>) {
 	}
 }
 
-fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<Token>, parent: usize) {
+fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<Token>, parent: usize) {
 	match tokens[parent].kind {
 		Kind::Var(ref name, _) => if let Some(def) = is_defined(functions, &name) {
 			let new_parent = tokens[parent].clone();
@@ -964,7 +964,7 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 			
 			let mut i = 0;
 			while i < def.pos {
-				move_children(tokens, functions, code, children[i]);
+				add_to_code(tokens, functions, code, children[i]);
 				
 				i += 1;
 			}
@@ -974,7 +974,7 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 			
 			i += 1;
 			while i < tokens.len() && i < def.args.len() + 1 {
-				move_children(tokens, functions, code, children[i - 1]);
+				add_to_code(tokens, functions, code, children[i - 1]);
 				
 				i += 1;
 			}
@@ -1006,7 +1006,7 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 				
 				let mut i = 0;
 				while i < def.pos {
-					move_children(tokens, functions, code, children[i]);
+					add_to_code(tokens, functions, code, children[i]);
 					
 					i += 1;
 				}
@@ -1016,7 +1016,7 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 				
 				i += 1;
 				while i < tokens.len() && i < def.args.len() + 1 {
-					move_children(tokens, functions, code, children[i - 1]);
+					add_to_code(tokens, functions, code, children[i - 1]);
 					
 					i += 1;
 				}
@@ -1025,7 +1025,20 @@ fn move_children(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<
 			}
 		},
 		
-		Kind::GroupOp(ref op) if op == "{" => (), // WIP
+		Kind::GroupOp(ref op) if op == "{" => {
+			let new_parent = tokens[parent].clone();
+			let mut children = tokens[parent].children.borrow_mut();
+			
+			new_parent.children.borrow_mut().clear();
+			code.push(new_parent);
+			
+			let mut i = 0;
+			while i < tokens.len() && i < children.len() {
+				add_to_code(tokens, functions, code, children[i]);
+				
+				i += 1;
+			}
+		},
 		
 		_ => code.push(tokens[parent].clone())
 	}
@@ -1046,7 +1059,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 						for (a, arg) in args.iter().enumerate() {
 							for token in macro_funcs[j].code.iter() {
 								match token.kind {
-									Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => move_children(tokens, functions, &mut new_code, *arg),
+									Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => add_to_code(tokens, functions, &mut new_code, *arg),
 									_ => new_code.push(token.clone())
 								}
 							}
@@ -1055,7 +1068,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 								new_points.push(Vec::new());
 								for token in point.iter() {
 									match token.kind {
-										Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => move_children(tokens, functions, &mut new_points[p], *arg),
+										Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => add_to_code(tokens, functions, &mut new_points[p], *arg),
 										_ => new_points[p].push(token.clone())
 									}
 								}
