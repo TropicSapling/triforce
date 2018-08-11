@@ -867,11 +867,9 @@ pub fn parse2(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 						
 						body.push(*i);
 						parse2(tokens, functions, i);
-/*						if let Some(token) = parse_statement(tokens, functions, i) {
-							body.push(token);
-						} else {
-							body.push(start); // Should this really be pushing start instead of *i?
-						} */
+						
+						*i += 1;
+						continue;
 					}
 				}
 				
