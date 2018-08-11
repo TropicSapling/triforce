@@ -467,11 +467,9 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 							tokens.remove(i);
 						}
 						
-						macro_funcs[last_item].code.push(Token {
-							kind: Kind::GroupOp(String::from("}")),
-							pos: FilePos {line: 0, col: 0},
-							children: RefCell::new(Vec::new())
-						});
+						macro_funcs[last_item].code.push(tokens[i].clone());
+						tokens.remove(i);
+						i -= 1;
 						
 						functions.push(macro_funcs[last_item].func.clone());
 						
