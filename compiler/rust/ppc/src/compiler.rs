@@ -1481,6 +1481,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				*i = *statement;
 				output = compile_func(tokens, functions, i, output);
 				
+				*i = *statement;
 				let mut nests = 0;
 				while *i + 1 < tokens.len() {
 					match tokens[*i + 1].kind {
@@ -1497,8 +1498,10 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 							break;
 						},
 						
-						_ => *i += 1
+						_ => ()
 					}
+					
+					*i += 1;
 				}
 			}
 			
@@ -1753,6 +1756,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 					*i = *statement;
 					output = compile_func(tokens, functions, i, output);
 					
+					*i = *statement;
 					let mut nests = 0;
 					while *i + 1 < tokens.len() {
 						match tokens[*i + 1].kind {
@@ -1769,8 +1773,10 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 								break;
 							},
 							
-							_ => *i += 1
+							_ => ()
 						}
+						
+						*i += 1;
 					}
 				}
 				
