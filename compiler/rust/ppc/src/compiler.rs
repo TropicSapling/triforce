@@ -1085,8 +1085,7 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 	let mut j = 0;
 	while j < macro_funcs.len() {
 		if name == &macro_funcs[j].func.name {
-			// Run macro function
-			
+			// Parse function args
 			let args = tokens[*i].children.borrow().clone();
 			let mut new_code = Vec::new();
 			let mut new_points: Vec<Vec<Token>> = Vec::new();
@@ -1111,6 +1110,7 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 				}
 			} else {
 				new_code = macro_funcs[j].code.clone();
+				new_points = macro_funcs[j].returns.clone();
 			}
 			
 			// Remove macro call since it will be replaced later
@@ -1132,8 +1132,10 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 				t += 1;
 			}
 			
-			tokens.remove(*i);
-			correct_indexes_after_del(tokens, *i);
+			for _ in 0..name_tok_len {
+				tokens.remove(*i);
+				correct_indexes_after_del(tokens, *i);
+			}
 			
 			// Parse macro function
 			*functions = parse(&new_code, functions.clone()); // Ik, it's not good to clone for performance but I was just too lazy to fix the issues...
@@ -1146,6 +1148,7 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 				}
 			}
 			
+			// Compile macro function
 			let mut out_contents = String::new();
 			let mut k = 0;
 			while k < new_code.len() {
@@ -1159,14 +1162,14 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 				if &out_contents[k..k + 6] == "return" {
 					k += 7;
 					out_contents.insert_str(k, "Err(");
-					k += 5;
+					k += 5; // TODO: Add support for more than 10 return points
 					out_contents.insert(k, ')');
 				}
 				
 				k += 1;
 			}
 			
-			if args.len() == 0 || args[0] == usize::MAX {
+			if new_points.len() == 0 {
 				let pos = out_contents.len() - 1;
 				out_contents.insert_str(pos, "Ok(())");
 			}
@@ -1327,7 +1330,8 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 					_ => break
 				}
 			}
-			*i -= 1;
+			
+			*i = start;
 			
 			return parse_macro_func(tokens, macro_funcs, functions, i, &name, name.len());
 		},

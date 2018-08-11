@@ -106,11 +106,31 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let mut in_contents = String::from("();
 		macro func (int a)++ {
-			return a += 1;
+			return {
+				a += 1;
+				a - 1
+			};
+		}
+		
+		macro func ++(int a) {
+			return {
+				a += 1;
+				a
+			};
 		}
 		
 		macro func (int a)-- {
-			return a -= 1;
+			return {
+				a -= 1;
+				a + 1
+			};
+		}
+		
+		macro func --(int a) {
+			return {
+				a -= 1;
+				a
+			};
 		}
 		
 		#[allow(unused)]
@@ -124,6 +144,8 @@ fn main() -> Result<(), std::io::Error> {
 			}
 		}
 	");
+	
+	// Necessary to prevent my syntax highlighting from breaking for some reason: "
 	
 	let line_offset = count_newlines(&in_contents);
 	
