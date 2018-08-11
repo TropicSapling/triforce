@@ -345,22 +345,32 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 				let mut name = op.to_string();
 				
 				j += 1;
-				while i - j > 0 {
-					match tokens[i - j].kind {
-						Kind::Op(ref op) => {
-							name.insert(0, op.chars().next().unwrap());
-							
-							if let Some(_) = is_defined(functions, &name) {
-								j += 1;
-								offset += 1;
-							} else {
-								break;
-							}
-						},
-						_ => break
+				while j < tokens.len() {
+					if let Kind::Op(ref op) = tokens[j].kind {
+						name.insert(0, op.chars().next().unwrap());
+						j += 1;
+						offset += 1;
+					} else {
+						break;
 					}
 				}
 				j -= 1;
+				
+				let end = j;
+				while j > 0 {
+					if let Kind::Op(_) = tokens[j].kind {
+						if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+							break;
+						} else {
+							name.pop();
+						}
+					}
+					
+					j -= 1;
+					offset -= 1;
+				}
+				
+				j = end;
 			},
 			
 			Kind::GroupOp(ref op) if op == "{" => (),
@@ -491,7 +501,7 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 	}
 }
 
-fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
+fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> usize {
 	let mut depth = 0;
 	let mut dived = false;
 	let mut limit = tokens.len();
@@ -561,16 +571,7 @@ fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
 				let mut name = op.to_string();
 				let start = *i;
 				
-				*i += 1;
-				while *i < tokens.len() {
-					match tokens[*i].kind {
-						Kind::Op(ref op) => name += op,
-						_ => break
-					}
-					
-					*i += 1;
-				}
-				*i -= 1;
+				get_op_name(tokens, functions, i, &mut name);
 				
 				if *i + 1 >= tokens.len() {
 					panic!("Unexpected EOF");
@@ -601,7 +602,7 @@ pub fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut u
 	}
 	
 	let start = *i;
-	let limit = get_parse_limit(tokens, i);
+	let limit = get_parse_limit(tokens, functions, i);
 	let mut lowest = None;
 	
 	loop {
@@ -647,16 +648,7 @@ pub fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut u
 						let mut name = op.to_string();
 						let start = *i;
 						
-						*i += 1;
-						while *i < tokens.len() {
-							match tokens[*i].kind {
-								Kind::Op(ref op) => name += op,
-								_ => break
-							}
-							
-							*i += 1;
-						}
-						*i -= 1;
+						get_op_name(tokens, functions, i, &mut name);
 						
 						if *i + 1 >= tokens.len() {
 							panic!("Unexpected EOF");
@@ -1342,6 +1334,34 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 	Ok(())
 }
 
+fn get_op_name(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, name: &mut String) {
+	*i += 1;
+	while *i < tokens.len() {
+		if let Kind::Op(ref op) = tokens[*i].kind {
+			*name += op;
+			*i += 1;
+		} else {
+			break;
+		}
+	}
+	*i -= 1;
+	
+	let end = *i;
+	while *i > 0 {
+		if let Kind::Op(_) = tokens[*i].kind {
+			if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+				break;
+			} else {
+				name.pop();
+			}
+		}
+		
+		*i -= 1;
+	}
+	
+	*i = end;
+}
+
 fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
 		Kind::GroupOp(ref op) if op == "{" => {
@@ -1405,28 +1425,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				}
 			}
 			
-			*i += 1;
-			while *i < tokens.len() {
-				if let Kind::Op(ref op) = tokens[*i].kind {
-					name += op;
-					*i += 1;
-				} else {
-					break;
-				}
-			}
-			*i -= 1;
-			
-			while *i > 0 {
-				if let Kind::Op(_) = tokens[*i].kind {
-					if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
-						break;
-					} else {
-						name.pop();
-					}
-				}
-				
-				*i -= 1;
-			}
+			get_op_name(tokens, functions, i, &mut name);
 			
 			let args = tokens[start].children.borrow();
 			
