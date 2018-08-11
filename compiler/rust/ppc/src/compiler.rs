@@ -957,8 +957,30 @@ fn del_all_children(tokens: &mut Vec<Token>, children: &Vec<usize>) -> Vec<usize
 			
 			trash.push(*child);
 			
-/*			tokens.remove(*child);
-			correct_indexes_after_del(tokens, *child); */
+			if let Kind::GroupOp(ref op) = tokens[*child].kind {
+				if op == "{" {
+					let mut depth = 0;
+					let mut i = *child + 1;
+					while i < tokens.len() {
+						match tokens[i].kind {
+							Kind::GroupOp(ref op) if op == "{" => depth += 1,
+							Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
+								depth -= 1;
+							} else {
+								break;
+							},
+							
+							_ => ()
+						}
+						
+						i += 1;
+					}
+					
+					if i < tokens.len() {
+						trash.push(i);
+					}
+				}
+			}
 		}
 	}
 	
