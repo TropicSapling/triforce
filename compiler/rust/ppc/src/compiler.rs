@@ -472,21 +472,31 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 			
 			j += 1;
 			while i + j < tokens.len() {
-				match tokens[i + j].kind {
-					Kind::Op(ref op) => {
-						name += op;
-						
-						if let Some(_) = is_defined(functions, &name) {
-							j += 1;
-							offset += 1;
-						} else {
-							break;
-						}
-					},
-					_ => break
+				if let Kind::Op(ref op) = tokens[i + j].kind {
+					name += op;
+					j += 1;
+					offset += 1;
+				} else {
+					break;
 				}
 			}
 			j -= 1;
+			
+			let end = j;
+			while i + j > 0 {
+				if let Kind::Op(_) = tokens[i + j].kind {
+					if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+						break;
+					} else {
+						name.pop();
+					}
+				}
+				
+				j -= 1;
+				offset -= 1;
+			}
+			
+			j = end;
 		}
 		
 		j += 1;
@@ -707,22 +717,7 @@ pub fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut u
 				}
 			} else if let Kind::Op(ref op) = tokens[*i].kind {
 				let mut name = op.to_string();
-				
-				*i += 1;
-				while *i < tokens.len() {
-					match tokens[*i].kind {
-						Kind::Op(ref op) => {
-							name += op;
-							if let Some(_) = is_defined(functions, &name) {
-								*i += 1;
-							} else {
-								break;
-							}
-						},
-						_ => break
-					}
-				}
-				*i -= 1;
+				get_op_name(tokens, functions, i, &mut name);
 			} else if let Kind::GroupOp(ref op) = tokens[*i].kind {
 				if op == "{" {
 					depth2 += 1;
@@ -1005,23 +1000,9 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 		
 		Kind::Op(ref op) => {
 			let mut name = op.to_string();
-			let mut i = parent + 1;
+			let mut i = parent;
 			
-			while i < tokens.len() {
-				match tokens[i].kind {
-					Kind::Op(ref op) => {
-						name += op;
-						if let Some(_) = is_defined(functions, &name) {
-							i += 1;
-						} else {
-							name.pop();
-							break;
-						}
-					},
-					
-					_ => break
-				}
-			}
+			get_op_name(tokens, functions, &mut i, &mut name);
 			
 			if let Some(def) = is_defined(functions, &name) {
 				let new_parent = tokens[parent].clone();
@@ -1306,23 +1287,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 			let mut name = op.to_string();
 			let start = *i;
 			
-			*i += 1;
-			while *i < tokens.len() {
-				match tokens[*i].kind {
-					Kind::Op(ref op) => {
-						name += op;
-						if let Some(_) = is_defined(functions, &name) {
-							*i += 1;
-						} else {
-							name.pop();
-							break;
-						}
-					},
-					
-					_ => break
-				}
-			}
-			
+			get_op_name(tokens, functions, i, &mut name);
 			*i = start;
 			
 			return parse_macro_func(tokens, macro_funcs, functions, i, &name, name.len());
