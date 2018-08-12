@@ -55,10 +55,13 @@ func no_args {
 func init {
 	macro macro_str = "This string was printed in the form of a local macro.\n";
 	
-	(1 2 +++ 3-- * 4 5++ 6++ --- 7 8)-- backwards_println; // Like the most complex expression I can think of, took ages to make this get parsed successfully ;-;
+	(1 2 +++ (3 - 1) * 4 (5 + 1) (6 + 1) --- 7 8) - 1 backwards_println; // Like the most complex expression I can think of, took ages to make this get parsed successfully ;-;
 	
 	let res = 1 * 2 + {println "This was printed from inside an expression!"; 3 ** 4} * 5 + 6; // 'let' is necessary to allow variable shadowing, decrease bugs and make code clearer for both the compiler and the reader
 	res += 123;
+	
+	const old_res = res++;
+	println old_res;
 	println res;
 	
 	unsigned int n = 456; // 'let' is however not necessary when specifying a type since it's obvious that it's a declaration anyway
@@ -75,6 +78,6 @@ func init {
 	
 	power_of_ppl;
 	
-	const unsigned int n = force_positive 0-123;
+	const unsigned int n = force_positive {0-123};
 	println n;
 }

@@ -346,21 +346,31 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 				
 				j += 1;
 				while i - j > 0 {
-					match tokens[i - j].kind {
-						Kind::Op(ref op) => {
-							name.insert(0, op.chars().next().unwrap());
-							
-							if let Some(_) = is_defined(functions, &name) {
-								j += 1;
-								offset += 1;
-							} else {
-								break;
-							}
-						},
-						_ => break
+					if let Kind::Op(ref op) = tokens[i - j].kind {
+						name.insert(0, op.chars().next().unwrap());
+						j += 1;
+						offset += 1;
+					} else {
+						break;
 					}
 				}
 				j -= 1;
+				
+				let start = j;
+				while j > 0 {
+					if let Kind::Op(_) = tokens[i - j].kind {
+						if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+							break;
+						} else {
+							name.remove(0);
+						}
+					}
+					
+					j -= 1;
+					offset -= 1;
+				}
+				
+				j = start;
 			},
 			
 			Kind::GroupOp(ref op) if op == "{" => (),
@@ -462,21 +472,31 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 			
 			j += 1;
 			while i + j < tokens.len() {
-				match tokens[i + j].kind {
-					Kind::Op(ref op) => {
-						name += op;
-						
-						if let Some(_) = is_defined(functions, &name) {
-							j += 1;
-							offset += 1;
-						} else {
-							break;
-						}
-					},
-					_ => break
+				if let Kind::Op(ref op) = tokens[i + j].kind {
+					name += op;
+					j += 1;
+					offset += 1;
+				} else {
+					break;
 				}
 			}
 			j -= 1;
+			
+			let end = j;
+			while i + j > 0 {
+				if let Kind::Op(_) = tokens[i + j].kind {
+					if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+						break;
+					} else {
+						name.pop();
+					}
+				}
+				
+				j -= 1;
+				offset -= 1;
+			}
+			
+			j = end;
 		}
 		
 		j += 1;
@@ -491,10 +511,11 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 	}
 }
 
-fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
+fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> usize {
 	let mut depth = 0;
 	let mut dived = false;
 	let mut limit = tokens.len();
+	let start = *i;
 	while *i < limit {
 		match tokens[*i].kind {
 			Kind::Op(ref op) if op == ";" && *i > 0 => if depth == 0 {
@@ -561,16 +582,7 @@ fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
 				let mut name = op.to_string();
 				let start = *i;
 				
-				*i += 1;
-				while *i < tokens.len() {
-					match tokens[*i].kind {
-						Kind::Op(ref op) => name += op,
-						_ => break
-					}
-					
-					*i += 1;
-				}
-				*i -= 1;
+				get_op_name(tokens, functions, i, &mut name);
 				
 				if *i + 1 >= tokens.len() {
 					panic!("Unexpected EOF");
@@ -588,6 +600,8 @@ fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
 		*i += 1;
 	}
 	
+	*i = start;
+	
 	limit
 }
 
@@ -601,7 +615,7 @@ pub fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut u
 	}
 	
 	let start = *i;
-	let limit = get_parse_limit(tokens, i);
+	let limit = get_parse_limit(tokens, functions, i);
 	let mut lowest = None;
 	
 	loop {
@@ -647,16 +661,7 @@ pub fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut u
 						let mut name = op.to_string();
 						let start = *i;
 						
-						*i += 1;
-						while *i < tokens.len() {
-							match tokens[*i].kind {
-								Kind::Op(ref op) => name += op,
-								_ => break
-							}
-							
-							*i += 1;
-						}
-						*i -= 1;
+						get_op_name(tokens, functions, i, &mut name);
 						
 						if *i + 1 >= tokens.len() {
 							panic!("Unexpected EOF");
@@ -715,22 +720,7 @@ pub fn parse_statement(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut u
 				}
 			} else if let Kind::Op(ref op) = tokens[*i].kind {
 				let mut name = op.to_string();
-				
-				*i += 1;
-				while *i < tokens.len() {
-					match tokens[*i].kind {
-						Kind::Op(ref op) => {
-							name += op;
-							if let Some(_) = is_defined(functions, &name) {
-								*i += 1;
-							} else {
-								break;
-							}
-						},
-						_ => break
-					}
-				}
-				*i -= 1;
+				get_op_name(tokens, functions, i, &mut name);
 			} else if let Kind::GroupOp(ref op) = tokens[*i].kind {
 				if op == "{" {
 					depth2 += 1;
@@ -928,15 +918,18 @@ fn correct_indexes_after_del(tokens: &Vec<Token>, i: usize) {
 	}
 }
 
-fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exceptions: &Vec<usize>) {
+fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exceptions: &Vec<(usize, Vec<usize>)>) {
 	for (t, token) in tokens.iter().enumerate() {
-		if exceptions.contains(&t) {
-			continue;
-		}
-		
 		let mut children = token.children.borrow_mut();
 		let mut c = 0;
-		while c < children.len() {
+		'outer: while c < children.len() {
+			for e in exceptions {
+				if e.0 == t && e.1.contains(&children[c]) {
+					c += 1;
+					continue 'outer;
+				}
+			}
+			
 			if children[c] > i && children[c] != usize::MAX {
 				children[c] += 1;
 			}
@@ -946,16 +939,45 @@ fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exceptions: &Vec<usi
 	}
 }
 
-fn del_all_children(tokens: &mut Vec<Token>, children: &Vec<usize>) {
+fn del_all_children(tokens: &mut Vec<Token>, children: &Vec<usize>) -> Vec<usize> {
+	let mut trash = Vec::new();
 	for child in children.iter() {
 		if *child != usize::MAX {
 			let children = tokens[*child].children.borrow().clone();
-			del_all_children(tokens, &children);
+			for i in del_all_children(tokens, &children) {
+				trash.push(i);
+			}
 			
-			tokens.remove(*child);
-			correct_indexes_after_del(tokens, *child);
+			trash.push(*child);
+			
+			if let Kind::GroupOp(ref op) = tokens[*child].kind {
+				if op == "{" {
+					let mut depth = 0;
+					let mut i = *child + 1;
+					while i < tokens.len() {
+						match tokens[i].kind {
+							Kind::GroupOp(ref op) if op == "{" => depth += 1,
+							Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
+								depth -= 1;
+							} else {
+								break;
+							},
+							
+							_ => ()
+						}
+						
+						i += 1;
+					}
+					
+					if i < tokens.len() {
+						trash.push(i);
+					}
+				}
+			}
 		}
 	}
+	
+	trash
 }
 
 fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<Token>, parent: usize) {
@@ -980,27 +1002,17 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 				
 				i += 1;
 			}
+		} else {
+			let new_parent = tokens[parent].clone();
+			new_parent.children.borrow_mut().clear();
+			code.push(new_parent);
 		},
 		
 		Kind::Op(ref op) => {
 			let mut name = op.to_string();
-			let mut i = parent + 1;
+			let mut i = parent;
 			
-			while i < tokens.len() {
-				match tokens[i].kind {
-					Kind::Op(ref op) => {
-						name += op;
-						if let Some(_) = is_defined(functions, &name) {
-							i += 1;
-						} else {
-							name.pop();
-							break;
-						}
-					},
-					
-					_ => break
-				}
-			}
+			get_op_name(tokens, functions, &mut i, &mut name);
 			
 			if let Some(def) = is_defined(functions, &name) {
 				let new_parent = tokens[parent].clone();
@@ -1040,218 +1052,305 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 				
 				i += 1;
 			}
+			
+			code.push(Token {
+				kind: Kind::GroupOp(String::from("}")),
+				pos: FilePos {line: 0, col: 0},
+				children: RefCell::new(Vec::new())
+			});
 		},
 		
 		_ => code.push(tokens[parent].clone())
 	}
 }
 
-pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, functions: &mut Vec<Function>, i: &mut usize) -> Result<(), Error> {
-	match tokens[*i].kind.clone() {
-		Kind::Var(ref name, _) => {
-			let mut j = 0;
-			while j < macro_funcs.len() {
-				if name == &macro_funcs[j].func.name {
-					// Run macro function
+fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, functions: &mut Vec<Function>, i: &mut usize, name: &str, name_tok_len: usize) -> Result<(), Error> {
+	let mut j = 0;
+	while j < macro_funcs.len() {
+		if name == &macro_funcs[j].func.name {
+			// Parse function args
+			let args = tokens[*i].children.borrow().clone();
+			let mut new_code = Vec::new();
+			let mut new_points: Vec<Vec<Token>> = Vec::new();
+			if args.len() >= 1 && args[0] != usize::MAX {
+				for (a, arg) in args.iter().enumerate() {
+					for token in macro_funcs[j].code.iter() {
+						match token.kind {
+							Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => add_to_code(tokens, functions, &mut new_code, *arg),
+							_ => new_code.push(token.clone())
+						}
+					}
 					
-					let args = tokens[*i].children.borrow().clone();
-					let mut new_code = Vec::new();
-					let mut new_points: Vec<Vec<Token>> = Vec::new();
-					if args.len() >= 1 && args[0] != usize::MAX {
-						for (a, arg) in args.iter().enumerate() {
-							for token in macro_funcs[j].code.iter() {
-								match token.kind {
-									Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => add_to_code(tokens, functions, &mut new_code, *arg),
-									_ => new_code.push(token.clone())
-								}
-							}
-							
-							for (p, point) in macro_funcs[j].returns.iter().enumerate() {
-								new_points.push(Vec::new());
-								for token in point.iter() {
-									match token.kind {
-										Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => add_to_code(tokens, functions, &mut new_points[p], *arg),
-										_ => new_points[p].push(token.clone())
-									}
-								}
+					for (p, point) in macro_funcs[j].returns.iter().enumerate() {
+						new_points.push(Vec::new());
+						for token in point.iter() {
+							match token.kind {
+								Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => add_to_code(tokens, functions, &mut new_points[p], *arg),
+								_ => new_points[p].push(token.clone())
 							}
 						}
-					} else {
-						new_code = macro_funcs[j].code.clone();
 					}
-					
-					// Remove macro call since it will be replaced later
-					del_all_children(tokens, &args);
-					tokens.remove(*i);
-					correct_indexes_after_del(tokens, *i);
-					
-					// Parse macro function
-					*functions = parse(&new_code, functions.clone()); // Ik, it's not good to clone for performance but I was just too lazy to fix the issues...
-					parse2(&mut new_code, &functions, &mut 2);
-					
-					let mut lowest = [1, 1];
-					for (p, point) in new_points.iter().enumerate() {
-						if let Some(token) = parse_statement(point, &functions, &mut 0) {
-							lowest[p] = token;
-						}
-					}
-					
-					let mut out_contents = String::new();
-					let mut k = 0;
-					while k < new_code.len() {
-						out_contents = compile(&new_code, &functions, &mut k, out_contents);
-						k += 1;
-					}
-					
-					out_contents.insert_str(9, "->Result<(),usize>");
-					let mut k = 0;
-					while k + 6 < out_contents.len() {
-						if &out_contents[k..k + 6] == "return" {
-							k += 7;
-							out_contents.insert_str(k, "Err(");
-							k += 5;
-							out_contents.insert(k, ')');
-						}
-						
-						k += 1;
-					}
-					
-					if args.len() == 0 || args[0] == usize::MAX {
-						let pos = out_contents.len() - 1;
-						out_contents.insert_str(pos, "Ok(())");
-					}
-					
-					//////// CREATE RUST OUTPUT ////////
-					
-					fs::create_dir_all("macros")?;
-					
-					let mut out_file = File::create("macros\\macro.rs")?;
-					out_file.write_all(out_contents.as_bytes())?;
-					
-					Command::new("rustfmt").arg("macros\\macro.rs").output().expect("failed to format Rust code");
-					
-					//////// CREATE BINARY OUTPUT ////////
-					
-					let mut error = false;
-					
-					let out = Command::new("rustc")
-							.args(&["--color", "always", "--out-dir", "macros", "macros\\macro.rs"])
-							.output()
-							.expect("failed to compile Rust code");
-					
-					if out.stdout.len() > 0 {
-						println!("{}", str::from_utf8(&out.stdout).unwrap());
-					}
-					
-					if out.stderr.len() > 0 {
-						println!("{}", str::from_utf8(&out.stderr).unwrap());
-						error = true;
-					}
-					
-					//////// RUN COMPILED BINARY ////////
-					
-					if !error {
-						let out = if cfg!(target_os = "windows") {
-							Command::new("macros\\macro.exe")
-								.output()
-								.expect("failed to execute process")
-						} else {
-							Command::new("./macros/macro.exe")
-								.output()
-								.expect("failed to execute process")
-						};
-						
-						if out.stdout.len() > 0 {
-							println!("{}", str::from_utf8(&out.stdout).unwrap());
-							io::stdout().flush()?;
-						}
-						
-						if out.stderr.len() > 0 {
-							if out.stderr.starts_with(b"Error: ") {
-								let point = str::from_utf8(&out.stderr).unwrap()[7..out.stderr.len() - 1].parse::<usize>();
-								
-								if let Ok(point) = point {
-									let mut exceptions = Vec::new();
-									'outer: for (t, tok) in tokens.iter_mut().enumerate() {
-										let mut children = tok.children.borrow_mut();
-										for child in children.iter_mut() {
-											if *child == *i {
-												*child = *i + lowest[point] - 1; // -1 because 'point' starts with semicolon that is ignored later
-												exceptions.push(t);
-												break 'outer;
-											}
-										}
-									}
-									
-									let length = &new_points[point].len();
-									for (t, token) in new_points[point][1..length - 1].iter().enumerate() {
-										tokens.insert(*i, token.clone());
-										
-										for e in exceptions.iter_mut() {
-											if *e > *i {
-												*e += 1;
-											}
-										}
-										
-										correct_indexes_after_add(tokens, *i, &exceptions);
-										
-										let mut children = tokens[*i].children.borrow_mut();
-										for child in children.iter_mut() {
-											*child = *i + *child - t - 1;
-										}
-										
-										exceptions.push(*i);
-										
-										*i += 1;
-									}
-								}
-							} else {
-								println!("{}", str::from_utf8(&out.stderr).unwrap());
-							}
-						} else {
-							tokens.insert(*i, Token {
-								kind: Kind::GroupOp(String::from("(")),
-								pos: FilePos {line: 0, col: 0},
-								children: RefCell::new(Vec::new())
-							});
-							
-							correct_indexes_after_add(tokens, *i, &Vec::new());
-							*i += 1;
-							
-							tokens.insert(*i, Token {
-								kind: Kind::GroupOp(String::from(")")),
-								pos: FilePos {line: 0, col: 0},
-								children: RefCell::new(Vec::new())
-							});
-							
-							correct_indexes_after_add(tokens, *i, &Vec::new());
-						}
-					}
-					
-					//////// DELETE CREATED FILES ////////
-					
-					fs::remove_file("macros\\macro.rs")?;
-					
-					if !error {
-						fs::remove_file("macros\\macro.exe")?;
-						fs::remove_file("macros\\macro.pdb")?;
-					} else {
-						return Err(Error::new(ErrorKind::Other, "compilation of macro failed"));
-					}
-					
-//					fs::remove_dir("macros")?; // Doesn't work (on Windows) for some reason?
-					
-					break;
+				}
+			} else {
+				new_code = macro_funcs[j].code.clone();
+				new_points = macro_funcs[j].returns.clone();
+			}
+			
+			// Remove macro call since it will be replaced later
+			let mut trash = del_all_children(tokens, &args);
+			let mut t = 0;
+			while t < trash.len() {
+				tokens.remove(trash[t]);
+				correct_indexes_after_del(tokens, trash[t]);
+				
+				if *i > trash[t] {
+					*i -= 1;
 				}
 				
-				j += 1;
+				let mut i = t + 1;
+				while i < trash.len() {
+					if trash[i] > trash[t] && trash[i] != usize::MAX {
+						trash[i] -= 1;
+					}
+					
+					i += 1;
+				}
+				
+				t += 1;
 			}
+			
+			for _ in 0..name_tok_len {
+				tokens.remove(*i);
+				correct_indexes_after_del(tokens, *i);
+			}
+			
+			// Parse macro function
+			*functions = parse(&new_code, functions.clone()); // Ik, it's not good to clone for performance but I was just too lazy to fix the issues...
+			parse2(&mut new_code, &functions, &mut 2);
+			
+			let mut lowest = [1, 1];
+			for (p, point) in new_points.iter().enumerate() {
+				if let Some(token) = parse_statement(point, &functions, &mut 0) {
+					lowest[p] = token;
+				}
+			}
+			
+			// Compile macro function
+			let mut out_contents = String::new();
+			let mut k = 0;
+			while k < new_code.len() {
+				out_contents = compile(&new_code, &functions, &mut k, out_contents);
+				k += 1;
+			}
+			
+			out_contents.insert_str(9, "->Result<(),usize>");
+			let mut k = 0;
+			while k + 6 < out_contents.len() {
+				if &out_contents[k..k + 6] == "return" {
+					k += 7;
+					out_contents.insert_str(k, "Err(");
+					k += 5; // TODO: Add support for more than 10 return points
+					out_contents.insert(k, ')');
+				}
+				
+				k += 1;
+			}
+			
+			if new_points.len() == 0 {
+				let pos = out_contents.len() - 1;
+				out_contents.insert_str(pos, "Ok(())");
+			}
+			
+			//////// CREATE RUST OUTPUT ////////
+			
+			fs::create_dir_all("macros")?;
+			
+			let mut out_file = File::create("macros\\macro.rs")?;
+			out_file.write_all(out_contents.as_bytes())?;
+			
+			Command::new("rustfmt").arg("macros\\macro.rs").output().expect("failed to format Rust code");
+			
+			//////// CREATE BINARY OUTPUT ////////
+			
+			let mut error = false;
+			
+			let out = Command::new("rustc")
+					.args(&["--color", "always", "--out-dir", "macros", "macros\\macro.rs"])
+					.output()
+					.expect("failed to compile Rust code");
+			
+			if out.stdout.len() > 0 {
+				println!("{}", str::from_utf8(&out.stdout).unwrap());
+			}
+			
+			if out.stderr.len() > 0 {
+				println!("{}", str::from_utf8(&out.stderr).unwrap());
+				
+				if !out.stderr.starts_with(b"\x1b[0m\x1b[1m\x1b[38;5;11mwarning") {
+					error = true;
+				}
+			}
+			
+			//////// RUN COMPILED BINARY ////////
+			
+			if !error {
+				let out = if cfg!(target_os = "windows") {
+					Command::new("macros\\macro.exe")
+						.output()
+						.expect("failed to execute process")
+				} else {
+					Command::new("./macros/macro.exe")
+						.output()
+						.expect("failed to execute process")
+				};
+				
+				if out.stdout.len() > 0 {
+					println!("{}", str::from_utf8(&out.stdout).unwrap());
+					io::stdout().flush()?;
+				}
+				
+				if out.stderr.len() > 0 {
+					if out.stderr.starts_with(b"Error: ") {
+						// Replace macro function call with results
+						
+						let point = str::from_utf8(&out.stderr).unwrap()[7..out.stderr.len() - 1].parse::<usize>();
+						
+						if let Ok(point) = point {
+							let mut exceptions: Vec<(usize, Vec<usize>)> = Vec::new();
+							let mut e = 0;
+							'outer: for (t, tok) in tokens.iter_mut().enumerate() {
+								let mut children = tok.children.borrow_mut();
+								for child in children.iter_mut() {
+									if *child == *i {
+										if e == 0 || exceptions[e - 1].0 != t {
+											exceptions.push((t, Vec::new()));
+											e += 1;
+										}
+										
+										*child = *i + lowest[point] - 1; // -1 because 'point' starts with semicolon that is ignored later
+										exceptions[e - 1].1.push(*child);
+										break 'outer;
+									}
+								}
+							}
+							
+							let length = &new_points[point].len();
+							for (t, token) in new_points[point][1..length - 1].iter().enumerate() {
+								tokens.insert(*i, token.clone());
+								
+								for e in exceptions.iter_mut() {
+									if e.0 > *i {
+										e.0 += 1;
+									}
+								}
+								
+								exceptions.push((*i, Vec::new()));
+								let e = exceptions.len() - 1;
+								
+								{
+									let mut children = tokens[*i].children.borrow_mut();
+									for child in children.iter_mut() {
+										*child = *i + *child - t - 1;
+										exceptions[e].1.push(*child);
+									}
+								}
+								
+								correct_indexes_after_add(tokens, *i, &exceptions);
+								
+								*i += 1;
+							}
+						}
+					} else {
+						println!("{}", str::from_utf8(&out.stderr).unwrap());
+					}
+				} else {
+					tokens.insert(*i, Token {
+						kind: Kind::GroupOp(String::from("(")),
+						pos: FilePos {line: 0, col: 0},
+						children: RefCell::new(Vec::new())
+					});
+					
+					correct_indexes_after_add(tokens, *i, &Vec::new());
+					*i += 1;
+					
+					tokens.insert(*i, Token {
+						kind: Kind::GroupOp(String::from(")")),
+						pos: FilePos {line: 0, col: 0},
+						children: RefCell::new(Vec::new())
+					});
+					
+					correct_indexes_after_add(tokens, *i, &Vec::new());
+				}
+			}
+			
+			//////// DELETE CREATED FILES ////////
+			
+			fs::remove_file("macros\\macro.rs")?;
+			
+			if !error {
+				fs::remove_file("macros\\macro.exe")?;
+				fs::remove_file("macros\\macro.pdb")?;
+			} else {
+				return Err(Error::new(ErrorKind::Other, "compilation of macro failed"));
+			}
+			
+//			fs::remove_dir("macros")?; // Doesn't work (on Windows) for some reason?
+			
+			break;
+		}
+		
+		j += 1;
+	}
+	
+	Ok(())
+}
+
+pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, functions: &mut Vec<Function>, i: &mut usize) -> Result<(), Error> {
+	match tokens[*i].kind.clone() {
+		Kind::Var(ref name, _) => return parse_macro_func(tokens, macro_funcs, functions, i, name, 1),
+		
+		Kind::Op(ref op) if op != ";" && op != ":" => { // 'op != ":"' part is tmp, used to allow Rust-style importing
+			let mut name = op.to_string();
+			let start = *i;
+			
+			get_op_name(tokens, functions, i, &mut name);
+			
+			let end = *i;
+			*i = start;
+			
+			let res = parse_macro_func(tokens, macro_funcs, functions, i, &name, name.len());
+			*i = end;
+			
+			return res;
 		},
 		
 		_ => ()
 	}
 	
 	Ok(())
+}
+
+fn get_op_name(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, name: &mut String) {
+	*i += 1;
+	while *i < tokens.len() {
+		if let Kind::Op(ref op) = tokens[*i].kind {
+			*name += op;
+			*i += 1;
+		} else {
+			break;
+		}
+	}
+	*i -= 1;
+	
+	while *i > 0 {
+		if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+			break;
+		} else {
+			name.pop();
+		}
+		
+		*i -= 1;
+	}
 }
 
 fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
@@ -1317,30 +1416,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				}
 			}
 			
-			*i += 1;
-			while *i < tokens.len() {
-				match tokens[*i].kind {
-					Kind::Op(ref op) => {
-						name += op;
-						if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
-							*i += 1;
-						} else {
-							if name.ends_with("->") {
-								if let Kind::Type(_) = tokens[*i + 1].kind {
-									name.pop();
-									*i -= 1;
-								}
-							}
-							
-							name.pop();
-							break;
-						}
-					},
-					
-					_ => break
-				}
-			}
-			*i -= 1;
+			get_op_name(tokens, functions, i, &mut name);
 			
 			let args = tokens[start].children.borrow();
 			
@@ -1429,6 +1505,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				*i = *statement;
 				output = compile_func(tokens, functions, i, output);
 				
+				*i = *statement;
 				let mut nests = 0;
 				while *i + 1 < tokens.len() {
 					match tokens[*i + 1].kind {
@@ -1445,8 +1522,10 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 							break;
 						},
 						
-						_ => *i += 1
+						_ => ()
 					}
+					
+					*i += 1;
 				}
 			}
 			
@@ -1701,6 +1780,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 					*i = *statement;
 					output = compile_func(tokens, functions, i, output);
 					
+					*i = *statement;
 					let mut nests = 0;
 					while *i + 1 < tokens.len() {
 						match tokens[*i + 1].kind {
@@ -1717,8 +1797,10 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 								break;
 							},
 							
-							_ => *i += 1
+							_ => ()
 						}
+						
+						*i += 1;
 					}
 				}
 				
