@@ -358,12 +358,10 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 				
 				let start = j;
 				while j > 0 {
-					if let Kind::Op(_) = tokens[i - j].kind {
-						if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
-							break;
-						} else {
-							name.remove(0);
-						}
+					if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+						break;
+					} else {
+						name.remove(0);
 					}
 					
 					j -= 1;
@@ -482,21 +480,16 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 			}
 			j -= 1;
 			
-			let end = j;
 			while i + j > 0 {
-				if let Kind::Op(_) = tokens[i + j].kind {
-					if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
-						break;
-					} else {
-						name.pop();
-					}
+				if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+					break;
+				} else {
+					name.pop();
 				}
 				
 				j -= 1;
 				offset -= 1;
 			}
-			
-			j = end;
 		}
 		
 		j += 1;
