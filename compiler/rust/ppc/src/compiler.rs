@@ -996,6 +996,10 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 				
 				i += 1;
 			}
+		} else {
+			let new_parent = tokens[parent].clone();
+			new_parent.children.borrow_mut().clear();
+			code.push(new_parent);
 		},
 		
 		Kind::Op(ref op) => {
@@ -1092,6 +1096,10 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 			while t < trash.len() {
 				tokens.remove(trash[t]);
 				correct_indexes_after_del(tokens, trash[t]);
+				
+				if *i > trash[t] {
+					*i -= 1;
+				}
 				
 				let mut i = t + 1;
 				while i < trash.len() {
