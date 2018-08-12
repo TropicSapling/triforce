@@ -982,7 +982,6 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 			let mut i = 0;
 			while i < def.pos {
 				add_to_code(tokens, functions, code, children[i]);
-				
 				i += 1;
 			}
 			
@@ -992,7 +991,6 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 			i += 1;
 			while i < tokens.len() && i < def.args.len() + 1 {
 				add_to_code(tokens, functions, code, children[i - 1]);
-				
 				i += 1;
 			}
 		} else {
@@ -1014,7 +1012,6 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 				let mut i = 0;
 				while i < def.pos {
 					add_to_code(tokens, functions, code, children[i]);
-					
 					i += 1;
 				}
 				
@@ -1024,7 +1021,6 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 				i += 1;
 				while i < tokens.len() && i < def.args.len() + 1 {
 					add_to_code(tokens, functions, code, children[i - 1]);
-					
 					i += 1;
 				}
 			} else {
@@ -1042,8 +1038,15 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 			let mut i = 0;
 			while i < tokens.len() && i < children.len() {
 				add_to_code(tokens, functions, code, children[i]);
-				
 				i += 1;
+				
+				if i < children.len() {
+					code.push(Token {
+						kind: Kind::Op(String::from(";")),
+						pos: FilePos {line: 0, col: 0},
+						children: RefCell::new(Vec::new())
+					});
+				}
 			}
 			
 			code.push(Token {
