@@ -16,27 +16,27 @@ macro func power_of_ppl {
 }
 
 macro func progress0 {
-	print "	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[==                  ]	10%\x1b[0m";
+	print "	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[=                   ]	5%\x1b[0m";
 }
 
 macro func progress1 {
-	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[====                ]	20%\x1b[0m";
+	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[==                  ]	10%\x1b[0m";
 }
 
 macro func progress2 {
-	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[======              ]	30%\x1b[0m";
+	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[===                 ]	15%\x1b[0m";
 }
 
 macro func progress3 {
-	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[==========          ]	50%\x1b[0m";
+	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[========            ]	40%\x1b[0m";
 }
 
 macro func progress4 {
-	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[==============      ]	70%\x1b[0m";
+	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[============        ]	60%\x1b[0m";
 }
 
 macro func progress5 {
-	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[=================   ]	85%\x1b[0m";
+	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[================    ]	80%\x1b[0m";
 }
 
 macro func progress6 {
