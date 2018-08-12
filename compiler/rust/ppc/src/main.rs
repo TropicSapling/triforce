@@ -105,7 +105,7 @@ fn main() -> Result<(), std::io::Error> {
 	};
 	
 	let mut in_contents = String::from("();
-/*		macro func (int a)++ {
+		macro func (int a)++ {
 			return {
 				a += 1;
 				a - 1
@@ -131,7 +131,7 @@ fn main() -> Result<(), std::io::Error> {
 				a -= 1;
 				a
 			};
-		} */
+		}
 		
 		#[allow(unused)]
 		func (int base) ** (unsigned int exp) -> int {
@@ -144,8 +144,6 @@ fn main() -> Result<(), std::io::Error> {
 			}
 		}
 	");
-	
-	// Necessary to prevent my syntax highlighting from breaking for some reason: "
 	
 	let line_offset = count_newlines(&in_contents);
 	

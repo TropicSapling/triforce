@@ -1288,9 +1288,14 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 			let start = *i;
 			
 			get_op_name(tokens, functions, i, &mut name);
+			
+			let end = *i;
 			*i = start;
 			
-			return parse_macro_func(tokens, macro_funcs, functions, i, &name, name.len());
+			let res = parse_macro_func(tokens, macro_funcs, functions, i, &name, name.len());
+			*i = end;
+			
+			return res;
 		},
 		
 		_ => ()
