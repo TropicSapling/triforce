@@ -60,7 +60,7 @@ func init {
 	let res = 1 * 2 + {println "This was printed from inside an expression!"; 3 ** 4} * 5 + 6; // 'let' is necessary to allow variable shadowing, decrease bugs and make code clearer for both the compiler and the reader
 	res += 123;
 	
-	const old_res = res++ * 7;
+	const old_res = res++;
 	println old_res;
 	println res;
 	
