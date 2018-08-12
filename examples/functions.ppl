@@ -78,6 +78,5 @@ func init {
 	
 	power_of_ppl;
 	
-	const unsigned int n = force_positive {0-123};
-	println n;
+	println force_positive {0-123};
 }

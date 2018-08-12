@@ -31,7 +31,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.6.5-alpha")
+		.version("0.6.6-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -105,28 +105,28 @@ fn main() -> Result<(), std::io::Error> {
 	};
 	
 	let mut in_contents = String::from("();
-		macro func (int a)++ -> int {
+		macro func (int a)++ {
 			return {
 				a += 1;
 				a - 1
 			};
 		}
 		
-		macro func ++(int a) -> int {
+		macro func ++(int a) {
 			return {
 				a += 1;
 				a
 			};
 		}
 		
-		macro func (int a)-- -> int {
+		macro func (int a)-- {
 			return {
 				a -= 1;
 				a + 1
 			};
 		}
 		
-		macro func --(int a) -> int {
+		macro func --(int a) {
 			return {
 				a -= 1;
 				a

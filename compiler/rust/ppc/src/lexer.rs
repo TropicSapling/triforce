@@ -294,7 +294,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 								name: String::from(""),
 								pos: 0,
 								args: vec![],
-								precedence: 1,
+								precedence: 2,
 								output: vec![]
 							},
 							
@@ -390,8 +390,6 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 									} else if par_type[0].len() > 0 {
 										if macro_funcs[last_item].func.args.len() == 1 {
 											macro_funcs[last_item].func.precedence = 255;
-										} else {
-											macro_funcs[last_item].func.precedence = 2;
 										}
 									}
 									
