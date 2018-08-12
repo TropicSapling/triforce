@@ -515,6 +515,7 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	let mut depth = 0;
 	let mut dived = false;
 	let mut limit = tokens.len();
+	let start = *i;
 	while *i < limit {
 		match tokens[*i].kind {
 			Kind::Op(ref op) if op == ";" && *i > 0 => if depth == 0 {
@@ -598,6 +599,8 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 		
 		*i += 1;
 	}
+	
+	*i = start;
 	
 	limit
 }
@@ -1291,7 +1294,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 	match tokens[*i].kind.clone() {
 		Kind::Var(ref name, _) => return parse_macro_func(tokens, macro_funcs, functions, i, name, 1),
 		
-		Kind::Op(ref op) => {
+		Kind::Op(ref op) if op != ";" && op != ":" => { // 'op != ":"' part is tmp, used to allow Rust-style importing
 			let mut name = op.to_string();
 			let start = *i;
 			
@@ -1324,20 +1327,15 @@ fn get_op_name(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, na
 	}
 	*i -= 1;
 	
-	let end = *i;
 	while *i > 0 {
-		if let Kind::Op(_) = tokens[*i].kind {
-			if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
-				break;
-			} else {
-				name.pop();
-			}
+		if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+			break;
+		} else {
+			name.pop();
 		}
 		
 		*i -= 1;
 	}
-	
-	*i = end;
 }
 
 fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
