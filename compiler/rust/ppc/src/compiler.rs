@@ -358,12 +358,10 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 				
 				let start = j;
 				while j > 0 {
-					if let Kind::Op(_) = tokens[i - j].kind {
-						if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
-							break;
-						} else {
-							name.remove(0);
-						}
+					if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+						break;
+					} else {
+						name.remove(0);
 					}
 					
 					j -= 1;
@@ -482,21 +480,16 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 			}
 			j -= 1;
 			
-			let end = j;
 			while i + j > 0 {
-				if let Kind::Op(_) = tokens[i + j].kind {
-					if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
-						break;
-					} else {
-						name.pop();
-					}
+				if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
+					break;
+				} else {
+					name.pop();
 				}
 				
 				j -= 1;
 				offset -= 1;
 			}
-			
-			j = end;
 		}
 		
 		j += 1;
@@ -930,7 +923,7 @@ fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exceptions: &Vec<(us
 				}
 			}
 			
-			if children[c] > i && children[c] != usize::MAX {
+			if children[c] >= i && children[c] != usize::MAX {
 				children[c] += 1;
 			}
 			
@@ -1096,12 +1089,31 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 				new_points = macro_funcs[j].returns.clone();
 			}
 			
+			// Save parent of macro call
+			let mut exceptions = Vec::new();
+			let mut parent = (0, 0);
+			'outer: for (t, tok) in tokens.iter_mut().enumerate() {
+				let mut children = tok.children.borrow_mut();
+				for (c, child) in children.iter().enumerate() {
+					if *child == *i {
+						exceptions.push((t, vec![*child]));
+						parent = (t, c);
+						
+						break 'outer;
+					}
+				}
+			}
+			
 			// Remove macro call since it will be replaced later
 			let mut trash = del_all_children(tokens, &args);
 			let mut t = 0;
 			while t < trash.len() {
 				tokens.remove(trash[t]);
 				correct_indexes_after_del(tokens, trash[t]);
+				if parent.0 > trash[t] {
+					parent.0 -= 1;
+					exceptions[0].0 -= 1;
+				}
 				
 				if *i > trash[t] {
 					*i -= 1;
@@ -1122,6 +1134,10 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 			for _ in 0..name_tok_len {
 				tokens.remove(*i);
 				correct_indexes_after_del(tokens, *i);
+				if parent.0 > *i {
+					parent.0 -= 1;
+					exceptions[0].0 -= 1;
+				}
 			}
 			
 			// Parse macro function
@@ -1216,30 +1232,15 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 						let point = str::from_utf8(&out.stderr).unwrap()[7..out.stderr.len() - 1].parse::<usize>();
 						
 						if let Ok(point) = point {
-							let mut exceptions: Vec<(usize, Vec<usize>)> = Vec::new();
-							let mut e = 0;
-							'outer: for (t, tok) in tokens.iter_mut().enumerate() {
-								let mut children = tok.children.borrow_mut();
-								for child in children.iter_mut() {
-									if *child == *i {
-										if e == 0 || exceptions[e - 1].0 != t {
-											exceptions.push((t, Vec::new()));
-											e += 1;
-										}
-										
-										*child = *i + lowest[point] - 1; // -1 because 'point' starts with semicolon that is ignored later
-										exceptions[e - 1].1.push(*child);
-										break 'outer;
-									}
-								}
-							}
+							tokens[parent.0].children.borrow_mut()[parent.1] = *i + lowest[point] - 1; // -1 because 'point' starts with semicolon that is ignored later
+							exceptions[0].1[0] = *i + lowest[point] - 1;
 							
 							let length = &new_points[point].len();
 							for (t, token) in new_points[point][1..length - 1].iter().enumerate() {
 								tokens.insert(*i, token.clone());
 								
 								for e in exceptions.iter_mut() {
-									if e.0 > *i {
+									if e.0 >= *i {
 										e.0 += 1;
 									}
 								}
