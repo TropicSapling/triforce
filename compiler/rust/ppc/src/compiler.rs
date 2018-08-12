@@ -345,8 +345,8 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 				let mut name = op.to_string();
 				
 				j += 1;
-				while j < tokens.len() {
-					if let Kind::Op(ref op) = tokens[j].kind {
+				while i - j > 0 {
+					if let Kind::Op(ref op) = tokens[i - j].kind {
 						name.insert(0, op.chars().next().unwrap());
 						j += 1;
 						offset += 1;
@@ -356,13 +356,13 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 				}
 				j -= 1;
 				
-				let end = j;
+				let start = j;
 				while j > 0 {
-					if let Kind::Op(_) = tokens[j].kind {
+					if let Kind::Op(_) = tokens[i - j].kind {
 						if let Some(_) = is_defined(functions, &name) { // NEEDS FIXING FOR RETURN ARROWS [EDIT: Has this been fixed yet?]
 							break;
 						} else {
-							name.pop();
+							name.remove(0);
 						}
 					}
 					
@@ -370,7 +370,7 @@ fn parse_func(tokens: &Vec<Token>, func: (usize, &Function), functions: &Vec<Fun
 					offset -= 1;
 				}
 				
-				j = end;
+				j = start;
 			},
 			
 			Kind::GroupOp(ref op) if op == "{" => (),
