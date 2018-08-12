@@ -918,15 +918,18 @@ fn correct_indexes_after_del(tokens: &Vec<Token>, i: usize) {
 	}
 }
 
-fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exceptions: &Vec<usize>) {
+fn correct_indexes_after_add(tokens: &Vec<Token>, i: usize, exceptions: &Vec<(usize, Vec<usize>)>) {
 	for (t, token) in tokens.iter().enumerate() {
-		if exceptions.contains(&t) {
-			continue;
-		}
-		
 		let mut children = token.children.borrow_mut();
 		let mut c = 0;
-		while c < children.len() {
+		'outer: while c < children.len() {
+			for e in exceptions {
+				if e.0 == t && e.1.contains(&children[c]) {
+					c += 1;
+					continue 'outer;
+				}
+			}
+			
 			if children[c] > i && children[c] != usize::MAX {
 				children[c] += 1;
 			}
@@ -1208,16 +1211,24 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 				
 				if out.stderr.len() > 0 {
 					if out.stderr.starts_with(b"Error: ") {
+						// Replace macro function call with results
+						
 						let point = str::from_utf8(&out.stderr).unwrap()[7..out.stderr.len() - 1].parse::<usize>();
 						
 						if let Ok(point) = point {
-							let mut exceptions = Vec::new();
+							let mut exceptions: Vec<(usize, Vec<usize>)> = Vec::new();
+							let mut e = 0;
 							'outer: for (t, tok) in tokens.iter_mut().enumerate() {
 								let mut children = tok.children.borrow_mut();
 								for child in children.iter_mut() {
 									if *child == *i {
+										if e == 0 || exceptions[e - 1].0 != t {
+											exceptions.push((t, Vec::new()));
+											e += 1;
+										}
+										
 										*child = *i + lowest[point] - 1; // -1 because 'point' starts with semicolon that is ignored later
-										exceptions.push(t);
+										exceptions[e - 1].1.push(*child);
 										break 'outer;
 									}
 								}
@@ -1228,19 +1239,23 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 								tokens.insert(*i, token.clone());
 								
 								for e in exceptions.iter_mut() {
-									if *e > *i {
-										*e += 1;
+									if e.0 > *i {
+										e.0 += 1;
+									}
+								}
+								
+								exceptions.push((*i, Vec::new()));
+								let e = exceptions.len() - 1;
+								
+								{
+									let mut children = tokens[*i].children.borrow_mut();
+									for child in children.iter_mut() {
+										*child = *i + *child - t - 1;
+										exceptions[e].1.push(*child);
 									}
 								}
 								
 								correct_indexes_after_add(tokens, *i, &exceptions);
-								
-								let mut children = tokens[*i].children.borrow_mut();
-								for child in children.iter_mut() {
-									*child = *i + *child - t - 1;
-								}
-								
-								exceptions.push(*i);
 								
 								*i += 1;
 							}
