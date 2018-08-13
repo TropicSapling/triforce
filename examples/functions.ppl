@@ -15,6 +15,22 @@ macro func force_positive (int n) {
 		println "WARNING: Number is negative, converting into positive";
 		return -n;
 	}
+	
+	println "test";
+	
+	return 123;
+	return 123;
+	return 123;
+	return 123;
+	return 123;
+	return 123;
+	return 123;
+	return 123;
+	return 123;
+	return 123;
+	return 123;
+	return 123;
+	return 123;
 }
 
 macro func power_of_ppl {
@@ -27,6 +43,8 @@ func (int i) backwards_println {
 	if true { // To test if statements
 		println i;
 	}
+	
+	println "test";
 	
 	if 9 + 10 == 21 || 10 + 9 == 21 {
 		println false;

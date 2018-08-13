@@ -846,7 +846,7 @@ fn parse_if(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 			}
 		},
 		
-		_ => ()
+		_ => *i -= 1
 	}
 }
 
@@ -1252,7 +1252,16 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 				if &out_contents[k..k + 6] == "return" {
 					k += 7;
 					out_contents.insert_str(k, "Err(");
-					k += 5; // TODO: Add support for more than 10 return points
+					k += 5;
+					
+					while k < out_contents.len() {
+						if let Ok(_) = &out_contents[k..k + 1].parse::<usize>() {
+							k += 1;
+						} else {
+							break;
+						}
+					}
+					
 					out_contents.insert(k, ')');
 				}
 				
