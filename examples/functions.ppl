@@ -80,6 +80,6 @@ func init {
 	
 	println force_positive {
 		println "This gets printed both at compile time and runtime!";
-		-123
+		0-123
 	};
 }

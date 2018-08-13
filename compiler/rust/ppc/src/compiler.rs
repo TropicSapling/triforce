@@ -333,6 +333,34 @@ fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec
 	
 	let mut depth = 0;
 	i -= 1;
+	
+	if i == 0 {
+		if def.name == "-" {
+			let last = tokens.len() - 1;
+			match tokens[last].kind.clone() {
+				Kind::Op(ref op) if op == ";" => {
+					tokens.insert(last, Token {
+						kind: Kind::Number(0, 0),
+						pos: FilePos {line: 0, col: 0},
+						children: RefCell::new(Vec::new())
+					});
+				},
+				
+				_ => {
+					tokens.push(Token {
+						kind: Kind::Number(0, 0),
+						pos: FilePos {line: 0, col: 0},
+						children: RefCell::new(Vec::new())
+					});
+				}
+			}
+			
+			tokens[start].children.borrow_mut().insert(0, last);
+		} else {
+			panic!("{}:{} Missing lhs arg for function call to '{}'", tokens[start].pos.line, tokens[start].pos.col, get_val!(tokens[start].kind));
+		}
+	}
+	
 	while i - j > 0 && j - offset < def.pos {
 		match tokens[i - j].kind.clone() {
 			Kind::Op(ref op) if op == ";" => if depth > 0 {
@@ -341,13 +369,26 @@ fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec
 				continue;
 			} else {
 				if def.name == "-" {
-					tokens.push(Token {
-						kind: Kind::Number(0, 0),
-						pos: FilePos {line: 0, col: 0},
-						children: RefCell::new(Vec::new())
-					});
+					let last = tokens.len() - 1;
+					match tokens[last].kind.clone() {
+						Kind::Op(ref op) if op == ";" => {
+							tokens.insert(last, Token {
+								kind: Kind::Number(0, 0),
+								pos: FilePos {line: 0, col: 0},
+								children: RefCell::new(Vec::new())
+							});
+						},
+						
+						_ => {
+							tokens.push(Token {
+								kind: Kind::Number(0, 0),
+								pos: FilePos {line: 0, col: 0},
+								children: RefCell::new(Vec::new())
+							});
+						}
+					}
 					
-					tokens[start].children.borrow_mut().insert(0, tokens.len() - 1);
+					tokens[start].children.borrow_mut().insert(0, last);
 					break;
 				} else {
 					panic!("{}:{} Missing lhs arg for function call to '{}'", tokens[start].pos.line, tokens[start].pos.col, get_val!(tokens[start].kind));
