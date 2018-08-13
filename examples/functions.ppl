@@ -13,7 +13,7 @@ macro func force_positive (int n) {
 		return n;
 	} else {
 		println "WARNING: Number is negative, converting into positive";
-		return 0 - (n);
+		return -(n);
 	}
 }
 
@@ -80,6 +80,6 @@ func init {
 	
 	println force_positive {
 		println "This gets printed both at compile time and runtime!";
-		0 - 123
+		-123
 	};
 }

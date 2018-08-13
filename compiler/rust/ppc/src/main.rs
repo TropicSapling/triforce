@@ -31,7 +31,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.6.6-alpha")
+		.version("0.6.7-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -179,7 +179,7 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let mut i = 0;
 	while i < tokens.len() {
-		parse2(&tokens, &functions, &mut i);
+		parse2(&mut tokens, &functions, &mut i);
 		i += 1;
 	}
 	
