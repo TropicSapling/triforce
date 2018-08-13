@@ -344,6 +344,8 @@ fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec
 						pos: FilePos {line: 0, col: 0},
 						children: RefCell::new(Vec::new())
 					});
+					
+					tokens[start].children.borrow_mut().insert(0, last);
 				},
 				
 				_ => {
@@ -352,10 +354,10 @@ fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec
 						pos: FilePos {line: 0, col: 0},
 						children: RefCell::new(Vec::new())
 					});
+					
+					tokens[start].children.borrow_mut().insert(0, last + 1);
 				}
 			}
-			
-			tokens[start].children.borrow_mut().insert(0, last);
 		} else {
 			panic!("{}:{} Missing lhs arg for function call to '{}'", tokens[start].pos.line, tokens[start].pos.col, get_val!(tokens[start].kind));
 		}
@@ -377,6 +379,8 @@ fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec
 								pos: FilePos {line: 0, col: 0},
 								children: RefCell::new(Vec::new())
 							});
+							
+							tokens[start].children.borrow_mut().insert(0, last);
 						},
 						
 						_ => {
@@ -385,10 +389,11 @@ fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec
 								pos: FilePos {line: 0, col: 0},
 								children: RefCell::new(Vec::new())
 							});
+							
+							tokens[start].children.borrow_mut().insert(0, last + 1);
 						}
 					}
 					
-					tokens[start].children.borrow_mut().insert(0, last);
 					break;
 				} else {
 					panic!("{}:{} Missing lhs arg for function call to '{}'", tokens[start].pos.line, tokens[start].pos.col, get_val!(tokens[start].kind));
