@@ -10,6 +10,18 @@ export {
 		}
 	}
 	
+	macro func (list arr) index_of (unsigned int i) (check) { // Example: `let my_list = [[1, 2], [2, 3], [3, 4]]; println my_list index_of (x) (my_list[x][0] == 2)` prints '1'
+		return {
+			for [let i = 0; i < arr length; i++] {
+				if check {
+					return i;
+				}
+			}
+			
+			-1
+		};
+	}
+	
 	func (unsigned int n)! -> unsigned int { // Factorial, example: `5!` -> `5*4*3*2` -> `120`
 		if n <= 2 {
 			return n;
