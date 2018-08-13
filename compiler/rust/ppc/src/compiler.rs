@@ -592,26 +592,6 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	while *i < limit {
 		match tokens[*i].kind {
 			Kind::Op(ref op) if op == ";" && *i > 0 => if depth == 0 {
-				if dived {
-					*i -= 1;
-					
-					let mut depth = 0;
-					while *i > 0 {
-						match tokens[*i].kind {
-							Kind::GroupOp(ref op) if op == "}" => depth += 1,
-							Kind::GroupOp(ref op) if op == "{" => if depth > 1 {
-								depth -= 1;
-							} else {
-								break;
-							},
-							
-							_ => ()
-						}
-						
-						*i -= 1;
-					}
-				}
-				
 				limit = *i;
 				break;
 			},
