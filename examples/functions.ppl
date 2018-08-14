@@ -16,7 +16,7 @@ macro func force_positive (int n) {
 		return -n;
 	}
 	
-	println "test";
+/*	println "test";
 	
 	return 123;
 	return 123;
@@ -30,7 +30,7 @@ macro func force_positive (int n) {
 	return 123;
 	return 123;
 	return 123;
-	return 123;
+	return 123; */
 }
 
 macro func power_of_ppl {
@@ -44,7 +44,7 @@ func (int i) backwards_println {
 		println i;
 	}
 	
-	println "test";
+//	println "test";
 	
 	if 9 + 10 == 21 || 10 + 9 == 21 {
 		println false;
