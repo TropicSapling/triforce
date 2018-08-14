@@ -1144,10 +1144,12 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 	}
 }
 
-fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, functions: &mut Vec<Function>, i: &mut usize, name: &str, name_tok_len: usize) -> Result<(), Error> {
+fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, functions: &mut Vec<Function>, i: &mut usize, name: &str, name_tok_len: usize, depth: usize, rows: &Vec<usize>, found: &mut bool) -> Result<(), Error> {
 	let mut j = 0;
 	while j < macro_funcs.len() {
-		if name == &macro_funcs[j].func.name {
+		if name == &macro_funcs[j].func.name && depth >= macro_funcs[j].depth && rows[macro_funcs[j].depth] == macro_funcs[j].row {
+			*found = true;
+			
 			// Parse function args
 			let args = tokens[*i].children.borrow().clone();
 			let mut new_code = Vec::new();
@@ -1420,9 +1422,9 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 	Ok(())
 }
 
-pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, functions: &mut Vec<Function>, i: &mut usize) -> Result<(), Error> {
+pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, functions: &mut Vec<Function>, i: &mut usize, depth: &mut usize, rows: &mut Vec<usize>) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
-		Kind::Var(ref name, _) => return parse_macro_func(tokens, macro_funcs, functions, i, name, 1),
+		Kind::Var(ref name, _) => return parse_macro_func(tokens, macro_funcs, functions, i, name, 1, *depth, rows, &mut false),
 		
 		Kind::Op(ref op) if op != ";" && op != ":" => { // 'op != ":"' part is tmp, used to allow Rust-style importing
 			let mut name = op.to_string();
@@ -1433,10 +1435,29 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 			let end = *i;
 			*i = start;
 			
-			let res = parse_macro_func(tokens, macro_funcs, functions, i, &name, name.len());
-			*i = end;
+			let mut found = false;
+			let res = parse_macro_func(tokens, macro_funcs, functions, i, &name, name.len(), *depth, rows, &mut found);
+			
+			if !found {
+				*i = end;
+			}
 			
 			return res;
+		},
+		
+		Kind::GroupOp(ref op) if op == "{" => {
+			*depth += 1;
+			if *depth + 1 > rows.len() {
+				rows.push(0);
+			} else {
+				rows[*depth] += 1;
+			}
+		},
+		
+		Kind::GroupOp(ref op) if op == "}" => if *depth > 0 {
+			*depth -= 1;
+		} else {
+			panic!("{}:{} Excess ending bracket", tokens[*i].pos.line, tokens[*i].pos.col);
 		},
 		
 		_ => ()

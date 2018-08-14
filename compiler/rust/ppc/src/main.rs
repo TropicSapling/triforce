@@ -182,9 +182,11 @@ fn main() -> Result<(), std::io::Error> {
 		i += 1;
 	}
 	
+	let mut depth = 0;
+	let mut rows = vec![0];
 	let mut i = 0;
 	while i < tokens.len() {
-		parse3(&mut tokens, &mut macro_functions, &mut functions, &mut i)?;
+		parse3(&mut tokens, &mut macro_functions, &mut functions, &mut i, &mut depth, &mut rows)?;
 		i += 1;
 	}
 	
