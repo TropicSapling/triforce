@@ -252,29 +252,25 @@ fn del_outofscope_macros(macros: &mut Vec<Macro>, depth: usize) {
 			i += 1;
 		}
 	}
-	
-/*	i = 0;
-	while i < macro_funcs.len() {
-		if depth < macro_funcs[i].depth {
-			macro_funcs.remove(i);
-		} else {
-			i += 1;
-		}
-	} */
 }
 
 pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<MacroFunction>) {
 	let mut macros = Vec::new();
 	let mut macro_funcs = Vec::new();
 	let mut full_depth = 0;
-	let mut bpos = 0;
+	let mut rows = vec![0];
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind.clone() {
 			Kind::GroupOp(ref op) if op == "{" => {
 				full_depth += 1;
-				bpos += 1;
+				if full_depth + 1 > rows.len() {
+					rows.push(0);
+				} else {
+					rows[full_depth] += 1;
+				}
 			},
+			
 			Kind::GroupOp(ref op) if op == "}" => if full_depth > 0 {
 				full_depth -= 1;
 				del_outofscope_macros(&mut macros, full_depth);
@@ -320,7 +316,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 							
 							returns: vec![],
 							depth: full_depth,
-							bpos
+							row: rows[full_depth]
 						});
 						
 						let mut last_item = macro_funcs.len();

@@ -31,7 +31,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.6.8-alpha")
+		.version("0.6.9-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -170,7 +170,6 @@ fn main() -> Result<(), std::io::Error> {
 		}
 	}
 	
-	
 	if debugging {
 //		println!("{} LEX3: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
@@ -183,9 +182,11 @@ fn main() -> Result<(), std::io::Error> {
 		i += 1;
 	}
 	
+	let mut depth = 0;
+	let mut rows = vec![0];
 	let mut i = 0;
 	while i < tokens.len() {
-		parse3(&mut tokens, &mut macro_functions, &mut functions, &mut i)?;
+		parse3(&mut tokens, &mut macro_functions, &mut functions, &mut i, &mut depth, &mut rows)?;
 		i += 1;
 	}
 	
