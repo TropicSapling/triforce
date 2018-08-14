@@ -1153,21 +1153,39 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 			let mut new_code = Vec::new();
 			let mut new_points: Vec<Vec<Token>> = Vec::new();
 			if args.len() >= 1 && args[0] != usize::MAX {
-				for (a, arg) in args.iter().enumerate() {
-					for token in macro_funcs[j].code.iter() {
-						match token.kind {
-							Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => add_to_code(tokens, functions, &mut new_code, *arg),
-							_ => new_code.push(token.clone())
-						}
-					}
-					
-					for (p, point) in macro_funcs[j].returns.iter().enumerate() {
-						new_points.push(Vec::new());
-						for token in point.iter() {
-							match token.kind {
-								Kind::Var(ref name, _) if name == &macro_funcs[j].func.args[a].name => add_to_code(tokens, functions, &mut new_points[p], *arg),
-								_ => new_points[p].push(token.clone())
+				'tok_search: for token in macro_funcs[j].code.iter() {
+					match token.kind {
+						Kind::Var(ref name, _) => {
+							for (a, arg) in args.iter().enumerate() {
+								if name == &macro_funcs[j].func.args[a].name {
+									add_to_code(tokens, functions, &mut new_code, *arg);
+									continue 'tok_search;
+								}
 							}
+							
+							new_code.push(token.clone())
+						},
+						
+						_ => new_code.push(token.clone())
+					}
+				}
+					
+				for (p, point) in macro_funcs[j].returns.iter().enumerate() {
+					new_points.push(Vec::new());
+					'tok_search2: for token in point.iter() {
+						match token.kind {
+							Kind::Var(ref name, _) => {
+								for (a, arg) in args.iter().enumerate() {
+									if name == &macro_funcs[j].func.args[a].name {
+										add_to_code(tokens, functions, &mut new_points[p], *arg);
+										continue 'tok_search2;
+									}
+								}
+								
+								new_points[p].push(token.clone())
+							},
+							
+							_ => new_points[p].push(token.clone())
 						}
 					}
 				}
@@ -1252,7 +1270,16 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 				if &out_contents[k..k + 6] == "return" {
 					k += 7;
 					out_contents.insert_str(k, "Err(");
-					k += 5; // TODO: Add support for more than 10 return points
+					k += 5;
+					
+					while k < out_contents.len() {
+						if let Ok(_) = &out_contents[k..k + 1].parse::<usize>() {
+							k += 1;
+						} else {
+							break;
+						}
+					}
+					
 					out_contents.insert(k, ')');
 				}
 				
