@@ -1,6 +1,6 @@
 use std::usize;
 use std::cell::RefCell;
-use lib::{Token, Kind, Type, FilePos, Macro, MacroFunction, Function, FunctionArg};
+use lib::{Token, Kind, Type, FilePos, MacroFunction, Function, FunctionArg};
 // use compiler::{parse, parse2, parse_statement};
 
 fn is_var(c: char) -> bool {
@@ -243,19 +243,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 	res
 }
 
-fn del_outofscope_macros(macros: &mut Vec<Macro>, depth: usize) {
-	let mut i = 0;
-	while i < macros.len() {
-		if depth < macros[i].depth {
-			macros.remove(i);
-		} else {
-			i += 1;
-		}
-	}
-}
-
 pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<MacroFunction>) {
-	let mut macros = Vec::new();
 	let mut macro_funcs = Vec::new();
 	let mut full_depth = 0;
 	let mut rows = vec![0];
@@ -273,235 +261,198 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 			
 			Kind::GroupOp(ref op) if op == "}" => if full_depth > 0 {
 				full_depth -= 1;
-				del_outofscope_macros(&mut macros, full_depth);
 			} else {
 				panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
 			},
 			
 			Kind::Type(ref typ) if typ == &Type::Macro => {
 				tokens.remove(i);
+				tokens.remove(i);
 				
-				match tokens[i].kind.clone() {
-					Kind::Type(ref typ) if typ == &Type::Func => { // Macro function
-						tokens.remove(i);
-						
-						macro_funcs.push(MacroFunction {
-							func: Function {
-								name: String::from(""),
-								pos: 0,
-								args: vec![],
-								precedence: 2,
-								output: vec![]
-							},
-							
-							code: vec![
-								Token {
-									kind: Kind::Type(Type::Func),
-									pos: FilePos {line: 0, col: 0}, // Obviously wrong but the pos is irrelevant anyway
-									children: RefCell::new(Vec::new())
-								},
-								
-								Token {
-									kind: Kind::Var(String::from("init"), Vec::new()),
-									pos: FilePos {line: 0, col: 0},
-									children: RefCell::new(Vec::new())
-								},
-								
-								Token {
-									kind: Kind::GroupOp(String::from("{")),
-									pos: FilePos {line: 0, col: 0},
-									children: RefCell::new(Vec::new())
-								}
-							],
-							
-							returns: vec![],
-							depth: full_depth,
-							row: rows[full_depth]
-						});
-						
-						let mut last_item = macro_funcs.len();
-						if last_item != 0 {
-							last_item -= 1;
-						}
-						
-						let mut par_type = vec![vec![]];
-						
-						let mut last_token_kind = tokens[i - 1].kind.clone();
-						while i < tokens.len() {
-							match tokens[i].kind.clone() {
-								Kind::Type(_) => match tokens[i + 1].kind {
-									Kind::GroupOp(ref op) if op == "{" => {
-										let end = i;
-										let mut t = 0;
-										while i > 0 {
-											match tokens[i].kind {
-												Kind::Type(ref typ) => par_type[t].push(typ.clone()),
-												Kind::Op(ref op) if op == "|" => {
-													par_type.push(Vec::new());
-													t += 1;
-												},
-												_ => break
-											}
-											
-											i -= 1;
-										}
-										
-										par_type.reverse();
-										for section in par_type.iter_mut() {
-											section.reverse();
-										}
-										
-										i = end;
-									},
-									
-									_ => ()
-								},
-								
-								Kind::Var(ref name, _) => if let Kind::Type(_) = last_token_kind { // Function args
-									macro_funcs[last_item].func.args.push(FunctionArg {name: name.clone(), typ: Vec::new()}); // Arg types for macro functions are WIP; TODO: replace 'Vec::new()' with actual type
-								} else { // Function name
-									macro_funcs[last_item].func.name += name;
-									macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
-								},
-								
-								Kind::Op(ref op) => if op == "-" {
-									match tokens[i + 1].kind {
-										Kind::Op(ref op) if op == ">" => i += 1,
-										_ => { // Operator (function) name
-											macro_funcs[last_item].func.name += op;
-											macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
-										}
-									}
-								} else if op == ";" { // End of function declaration
-									panic!("{}:{} Macro functions must have a body", tokens[i].pos.line, tokens[i].pos.col);
-								} else if op != "|" { // Operator (function) name
-									macro_funcs[last_item].func.name += op;
-									macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
-								},
-								
-								Kind::GroupOp(ref op) => if op == "{" { // Function body
-									macro_funcs[last_item].func.output = par_type.clone();
-									if macro_funcs[last_item].func.name == "**" {
-										macro_funcs[last_item].func.precedence = 247;
-									} else if par_type[0].len() > 0 {
-										if macro_funcs[last_item].func.args.len() == 1 {
-											macro_funcs[last_item].func.precedence = 255;
-										}
-									}
-									
-									tokens.remove(i);
-									break;
-								},
-								
-								_ => ()
-							}
-							
-							last_token_kind = tokens[i].kind.clone();
-							tokens.remove(i);
-						}
-						
-						let mut point = 0;
-						let mut depth = 0;
-						while i < tokens.len() {
-							match tokens[i].kind.clone() {
-								Kind::GroupOp(ref op) if op == "{" => depth += 1,
-								Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
-									depth -= 1;
-								} else {
-									break;
-								},
-								
-								Kind::Reserved(ref keyword) if keyword == "return" => {
-									macro_funcs[last_item].returns.push(vec![Token {
-										kind: Kind::Op(String::from(";")),
-										pos: FilePos {line: 0, col: 0},
-										children: RefCell::new(Vec::new())
-									}]);
-									
-									macro_funcs[last_item].code.push(tokens[i].clone());
-									macro_funcs[last_item].code.push(Token {
-										kind: Kind::Number(point, 0),
-										pos: FilePos {line: 0, col: 0},
-										children: RefCell::new(Vec::new())
-									});
-									
-									tokens.remove(i);
-									
-									let mut depth = 0;
-									while i < tokens.len() {
-										match tokens[i].kind.clone() {
-											Kind::GroupOp(ref op) if op == "{" => depth += 1,
-											Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
-												depth -= 1;
-											} else {
-												panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
-											},
-											
-											Kind::Op(ref op) if op == ";" && depth == 0 => break,
-											_ => ()
-										}
-										
-										macro_funcs[last_item].returns[point].push(tokens[i].clone());
-										tokens.remove(i);
-									}
-									
-									macro_funcs[last_item].returns[point].push(Token {
-										kind: Kind::Op(String::from(";")),
-										pos: FilePos {line: 0, col: 0},
-										children: RefCell::new(Vec::new())
-									});
-									
-									point += 1;
-								},
-								
-								_ => ()
-							}
-							
-							macro_funcs[last_item].code.push(tokens[i].clone());
-							tokens.remove(i);
-						}
-						
-						macro_funcs[last_item].code.push(tokens[i].clone());
-						tokens.remove(i);
-						i -= 1;
-						
-						functions.push(macro_funcs[last_item].func.clone());
-						
-						match lex3(&mut macro_funcs[last_item].code, functions) {
-							(f, _) => functions = f
-						}
+				macro_funcs.push(MacroFunction {
+					func: Function {
+						name: String::from(""),
+						pos: 0,
+						args: vec![],
+						precedence: 2,
+						output: vec![]
 					},
 					
-					_ => {
-						let name = tokens[i].clone();
-						let mut contents = Vec::new();
-						let mut depth = 0;
+					code: vec![
+						Token {
+							kind: Kind::Type(Type::Func),
+							pos: FilePos {line: 0, col: 0}, // Obviously wrong but the pos is irrelevant anyway
+							children: RefCell::new(Vec::new())
+						},
 						
-						tokens.drain(i..i + 2);
-						while i < tokens.len() {
-							match tokens[i].kind.clone() {
-								Kind::GroupOp(ref op) if op == "{" => depth += 1,
-								Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
-									depth -= 1;
-								} else {
-									panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
+						Token {
+							kind: Kind::Var(String::from("init"), Vec::new()),
+							pos: FilePos {line: 0, col: 0},
+							children: RefCell::new(Vec::new())
+						},
+						
+						Token {
+							kind: Kind::GroupOp(String::from("{")),
+							pos: FilePos {line: 0, col: 0},
+							children: RefCell::new(Vec::new())
+						}
+					],
+					
+					returns: vec![],
+					depth: full_depth,
+					row: rows[full_depth]
+				});
+				
+				let mut last_item = macro_funcs.len();
+				if last_item != 0 {
+					last_item -= 1;
+				}
+				
+				let mut par_type = vec![vec![]];
+				
+				let mut last_token_kind = tokens[i - 1].kind.clone();
+				while i < tokens.len() {
+					match tokens[i].kind.clone() {
+						Kind::Type(_) => match tokens[i + 1].kind {
+							Kind::GroupOp(ref op) if op == "{" => {
+								let end = i;
+								let mut t = 0;
+								while i > 0 {
+									match tokens[i].kind {
+										Kind::Type(ref typ) => par_type[t].push(typ.clone()),
+										Kind::Op(ref op) if op == "|" => {
+											par_type.push(Vec::new());
+											t += 1;
+										},
+										_ => break
+									}
+									
+									i -= 1;
 								}
 								
-								Kind::Op(ref op) if op == ";" && depth == 0 => {
-									tokens.remove(i);
-									i -= 1;
-									break;
-								},
+								par_type.reverse();
+								for section in par_type.iter_mut() {
+									section.reverse();
+								}
 								
-								_ => ()
+								i = end;
+							},
+							
+							_ => ()
+						},
+						
+						Kind::Var(ref name, _) => if let Kind::Type(_) = last_token_kind { // Function args
+							macro_funcs[last_item].func.args.push(FunctionArg {name: name.clone(), typ: Vec::new()}); // Arg types for macro functions are WIP; TODO: replace 'Vec::new()' with actual type
+						} else { // Function name
+							macro_funcs[last_item].func.name += name;
+							macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
+						},
+						
+						Kind::Op(ref op) => if op == "-" {
+							match tokens[i + 1].kind {
+								Kind::Op(ref op) if op == ">" => i += 1,
+								_ => { // Operator (function) name
+									macro_funcs[last_item].func.name += op;
+									macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
+								}
+							}
+						} else if op == ";" { // End of function declaration
+							panic!("{}:{} Macro functions must have a body", tokens[i].pos.line, tokens[i].pos.col);
+						} else if op != "|" { // Operator (function) name
+							macro_funcs[last_item].func.name += op;
+							macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
+						},
+						
+						Kind::GroupOp(ref op) => if op == "{" { // Function body
+							macro_funcs[last_item].func.output = par_type.clone();
+							if macro_funcs[last_item].func.name == "**" {
+								macro_funcs[last_item].func.precedence = 247;
+							} else if par_type[0].len() > 0 {
+								if macro_funcs[last_item].func.args.len() == 1 {
+									macro_funcs[last_item].func.precedence = 255;
+								}
 							}
 							
-							contents.push(tokens[i].clone());
 							tokens.remove(i);
-						}
+							break;
+						},
 						
-						macros.push(Macro {name, contents, depth: full_depth});
+						_ => ()
 					}
+					
+					last_token_kind = tokens[i].kind.clone();
+					tokens.remove(i);
+				}
+				
+				let mut point = 0;
+				let mut depth = 0;
+				while i < tokens.len() {
+					match tokens[i].kind.clone() {
+						Kind::GroupOp(ref op) if op == "{" => depth += 1,
+						Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
+							depth -= 1;
+						} else {
+							break;
+						},
+						
+						Kind::Reserved(ref keyword) if keyword == "return" => {
+							macro_funcs[last_item].returns.push(vec![Token {
+								kind: Kind::Op(String::from(";")),
+								pos: FilePos {line: 0, col: 0},
+								children: RefCell::new(Vec::new())
+							}]);
+							
+							macro_funcs[last_item].code.push(tokens[i].clone());
+							macro_funcs[last_item].code.push(Token {
+								kind: Kind::Number(point, 0),
+								pos: FilePos {line: 0, col: 0},
+								children: RefCell::new(Vec::new())
+							});
+							
+							tokens.remove(i);
+							
+							let mut depth = 0;
+							while i < tokens.len() {
+								match tokens[i].kind.clone() {
+									Kind::GroupOp(ref op) if op == "{" => depth += 1,
+									Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
+										depth -= 1;
+									} else {
+										panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
+									},
+									
+									Kind::Op(ref op) if op == ";" && depth == 0 => break,
+									_ => ()
+								}
+								
+								macro_funcs[last_item].returns[point].push(tokens[i].clone());
+								tokens.remove(i);
+							}
+							
+							macro_funcs[last_item].returns[point].push(Token {
+								kind: Kind::Op(String::from(";")),
+								pos: FilePos {line: 0, col: 0},
+								children: RefCell::new(Vec::new())
+							});
+							
+							point += 1;
+						},
+						
+						_ => ()
+					}
+					
+					macro_funcs[last_item].code.push(tokens[i].clone());
+					tokens.remove(i);
+				}
+				
+				macro_funcs[last_item].code.push(tokens[i].clone());
+				tokens.remove(i);
+				i -= 1;
+				
+				functions.push(macro_funcs[last_item].func.clone());
+				
+				match lex3(&mut macro_funcs[last_item].code, functions) {
+					(f, _) => functions = f
 				}
 			},
 			
@@ -531,31 +482,6 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 				match tokens[i].kind {
 					Kind::Var(_, ref mut typ) => *typ = types, // This should probably be changed because it's not really good for performance to copy a vector like this...
 					_ => i -= 1
-				}
-			},
-			
-			Kind::Var(ref name, _) => {
-				let mut j = 0;
-				while j < macros.len() {
-					if let Kind::Var(ref name2, _) = macros[j].name.kind {
-						if name == name2 {
-							// Expand macro
-							
-							tokens[i] = macros[j].contents[0].clone();
-							let mut pos = i + 1;
-							let mut k = 1;
-							while k < macros[j].contents.len() {
-								tokens.insert(pos, macros[j].contents[k].clone());
-								pos += 1;
-								k += 1;
-							}
-							
-							i -= 1;
-							break;
-						}
-					}
-					
-					j += 1;
 				}
 			},
 			
