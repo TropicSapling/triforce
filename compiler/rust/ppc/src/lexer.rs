@@ -269,7 +269,90 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 				
 				match tokens[i + 1].kind.clone() {
 					Kind::Op(ref op) if op == ";" => {
-						// Auto-initialised macros; WIP
+						// Auto-initialised macros
+						
+						macro_funcs.push(MacroFunction {
+							func: Function {
+								name: match tokens[i].kind.clone() {
+									Kind::Var(name, _) => name,
+									_ => panic!("{}:{} Invalid macro name", tokens[i].pos.line, tokens[i].pos.col) // Allow operators in the future?
+								},
+								pos: 0,
+								args: vec![],
+								precedence: 2,
+								output: vec![vec![]]
+							},
+							
+							code: vec![
+								Token {
+									kind: Kind::Type(Type::Func),
+									pos: FilePos {line: 0, col: 0}, // Obviously wrong but the pos is irrelevant anyway
+									children: RefCell::new(Vec::new())
+								},
+								
+								Token {
+									kind: Kind::Var(String::from("init"), vec![vec![Type::Func]]),
+									pos: FilePos {line: 0, col: 0},
+									children: RefCell::new(Vec::new())
+								},
+								
+								Token {
+									kind: Kind::GroupOp(String::from("{")),
+									pos: FilePos {line: 0, col: 0},
+									children: RefCell::new(Vec::new())
+								},
+								
+								Token {
+									kind: Kind::Reserved(String::from("return")),
+									pos: FilePos {line: 0, col: 0},
+									children: RefCell::new(Vec::new())
+								},
+								
+								Token {
+									kind: Kind::Number(0, 0),
+									pos: FilePos {line: 0, col: 0},
+									children: RefCell::new(Vec::new())
+								},
+								
+								Token {
+									kind: Kind::Op(String::from(";")),
+									pos: FilePos {line: 0, col: 0},
+									children: RefCell::new(Vec::new())
+								},
+								
+								Token {
+									kind: Kind::GroupOp(String::from("}")),
+									pos: FilePos {line: 0, col: 0},
+									children: RefCell::new(Vec::new())
+								}
+							],
+							
+							returns: vec![vec![
+								Token {
+									kind: Kind::Op(String::from(";")),
+									pos: FilePos {line: 0, col: 0},
+									children: RefCell::new(Vec::new())
+								},
+								
+								Token {
+									kind: Kind::Number(0, 0), // TMP
+									pos: FilePos {line: 0, col: 0},
+									children: RefCell::new(Vec::new())
+								},
+								
+								Token {
+									kind: Kind::Op(String::from(";")),
+									pos: FilePos {line: 0, col: 0},
+									children: RefCell::new(Vec::new())
+								}
+							]],
+							
+							depth: full_depth,
+							row: rows[full_depth]
+						});
+						
+						tokens.remove(i);
+						i -= 1;
 					},
 					
 					_ => {
