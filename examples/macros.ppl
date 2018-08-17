@@ -1,11 +1,11 @@
-macro func print_str {
+macro print_str {
 	return {
 		const constant = "This is a constant string printed using a macro.";
 		println constant;
 	};
 }
 
-macro func force_positive (int n) {
+macro force_positive (int n) {
 	if n >= 0 {
 		return n;
 	} else {
@@ -13,40 +13,40 @@ macro func force_positive (int n) {
 	}
 }
 
-macro func power_of_ppl {
+macro power_of_ppl {
 	
 }
 
-macro func progress0 {
+macro progress0 {
 	print "	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[=                   ]	5%\x1b[0m";
 }
 
-macro func progress1 {
+macro progress1 {
 	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[====                ]	20%\x1b[0m";
 }
 
-macro func progress2 {
+macro progress2 {
 	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[=======             ]	35%\x1b[0m";
 }
 
-macro func progress3 {
+macro progress3 {
 	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[==========          ]	50%\x1b[0m";
 }
 
-macro func progress4 {
+macro progress4 {
 	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[=============       ]	65%\x1b[0m";
 }
 
-macro func progress5 {
+macro progress5 {
 	print "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[================    ]	80%\x1b[0m";
 }
 
-macro func progress6 {
+macro progress6 {
 	println "\x1b[A\r	\x1b[0m\x1b[1m\x1b[38;5;10mLoading macros...	[====================]	100%\x1b[0m";
 }
 
 func init {
-	macro func macro_str {
+	macro macro_str {
 		return "This string was printed in the form of a local macro.\n";
 	}
 	

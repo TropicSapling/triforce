@@ -1,8 +1,8 @@
 #[allow(unused)]
 import std::fs::File as FileHandler; // To test importing
 
-// Side note: macro functions can also be defined inside of functions, and will in that case only work inside of that function
-macro func force_positive (int n) {
+// Side note: macros can also be defined inside of functions, and will in that case only work inside of that function
+macro force_positive (int n) {
 	if n >= 0 {
 		println "OK: Good to go!";
 		return n;
@@ -12,7 +12,7 @@ macro func force_positive (int n) {
 	}
 }
 
-macro func power_of_ppl {
+macro power_of_ppl {
 	println "  _______ _     _       _       _   _                                                  __   _____       \n |__   __| |   (_)     (_)     | | | |                                                / _| |  __ \\  _   \n    | |  | |__  _ ___   _ ___  | |_| |__   ___   _ __   _____      _____ _ __    ___ | |_  | |__) || |_ \n    | |  | '_ \\| / __| | / __| | __| '_ \\ / _ \\ | '_ \\ / _ \\ \\ /\\ / / _ \\ '__|  / _ \\|  _| |  ___/_   _|\n    | |  | | | | \\__ \\ | \\__ \\ | |_| | | |  __/ | |_) | (_) \\ V  V /  __/ |    | (_) | |   | |     |_|  \n    |_|  |_| |_|_|___/ |_|___/  \\__|_| |_|\\___| | .__/ \\___/ \\_/\\_/ \\___|_|     \\___/|_|   |_|          \n                                                | |                                                     \n                                                |_|                                                     ";
 }
 
