@@ -244,6 +244,8 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 
 pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<MacroFunction>) {
 	let mut macro_funcs = Vec::new();
+	let mut m_default_val = 0;
+	let mut mdv_changes = vec![0];
 	let mut full_depth = 0;
 	let mut rows = vec![0];
 	let mut i = 0;
@@ -251,14 +253,22 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 		match tokens[i].kind.clone() {
 			Kind::GroupOp(ref op) if op == "{" => {
 				full_depth += 1;
+				
 				if full_depth + 1 > rows.len() {
 					rows.push(0);
 				} else {
 					rows[full_depth] += 1;
 				}
+				
+				if full_depth + 1 > mdv_changes.len() {
+					mdv_changes.push(0);
+				} else {
+					mdv_changes[full_depth] = 0;
+				}
 			},
 			
 			Kind::GroupOp(ref op) if op == "}" => if full_depth > 0 {
+				m_default_val -= mdv_changes[full_depth];
 				full_depth -= 1;
 			} else {
 				panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
@@ -335,7 +345,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 								},
 								
 								Token {
-									kind: Kind::Number(0, 0), // TMP
+									kind: Kind::Number(m_default_val, 0),
 									pos: FilePos {line: 0, col: 0},
 									children: RefCell::new(Vec::new())
 								},
@@ -353,6 +363,9 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 						
 						tokens.remove(i);
 						i -= 1;
+						
+						m_default_val += 1;
+						mdv_changes[full_depth] += 1;
 					},
 					
 					_ => {
