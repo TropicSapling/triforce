@@ -80,6 +80,12 @@ export {
 			return bytes &= ~(1 << b);
 		} else return bytes |= (bytes >> b) & 1;
 	}
+	
+	macro change_bit (b) of (bytes) to (b2) { // This is different from 'set_bit' in that it doesn't store the result in a variable
+		if b2 == 0 {
+			return bytes & ~(1 << b);
+		} else return bytes | (bytes >> b) & 1;
+	}
 }
 
 // OLD SYNTAX BELOW, NEEDS UPDATING
