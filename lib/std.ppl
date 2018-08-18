@@ -71,8 +71,14 @@ export {
 	
 	def_macro continue as return (LoopContinue) void;
 	
-	macro (bytes) bit (b) { // Notice that which bit you get depends on if it's little-endian or big-endian
-		(bytes >> b) & 1
+	macro get_bit (b) of (bytes) { // Notice that which bit you get depends on if it's little-endian or big-endian
+		return (bytes >> b) & 1;
+	}
+	
+	macro set_bit (b) of (bytes) to (b2) { // Notice that which bit you set depends on if it's little-endian or big-endian
+		if b2 == 0 {
+			return bytes &= ~(1 << b);
+		} else return bytes |= (bytes >> b) & 1;
 	}
 }
 
