@@ -1,6 +1,6 @@
 use std::usize;
 use std::cell::RefCell;
-use lib::{Token, Kind, Type, FilePos, MacroFunction, Function, FunctionArg};
+use lib::{Token, Kind, Type, FilePos, Macro, Function, FunctionArg};
 
 fn is_var(c: char) -> bool {
 	c == '_' || c == '$' || c.is_alphanumeric()
@@ -242,8 +242,8 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 	res
 }
 
-pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<MacroFunction>) {
-	let mut macro_funcs = Vec::new();
+pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<Macro>) {
+	let mut macros = Vec::new();
 	let mut m_default_val = 0;
 	let mut mdv_changes = vec![0];
 	let mut full_depth = 0;
@@ -281,7 +281,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 					Kind::Op(ref op) if op == ";" => {
 						// Auto-initialised macros
 						
-						macro_funcs.push(MacroFunction {
+						macros.push(Macro {
 							func: Function {
 								name: match tokens[i].kind.clone() {
 									Kind::Var(name, _) => name,
@@ -371,7 +371,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 					_ => {
 						// Macro functions
 						
-						macro_funcs.push(MacroFunction {
+						macros.push(Macro {
 							func: Function {
 								name: String::from(""),
 								pos: 0,
@@ -405,7 +405,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 							row: rows[full_depth]
 						});
 						
-						let mut last_item = macro_funcs.len();
+						let mut last_item = macros.len();
 						if last_item != 0 {
 							last_item -= 1;
 						}
@@ -444,34 +444,34 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 								},
 								
 								Kind::Var(ref name, _) => if let Kind::Type(_) = last_token_kind { // Function args
-									macro_funcs[last_item].func.args.push(FunctionArg {name: name.clone(), typ: Vec::new()}); // Arg types for macro functions are WIP; TODO: replace 'Vec::new()' with actual type
+									macros[last_item].func.args.push(FunctionArg {name: name.clone(), typ: Vec::new()}); // Arg types for macro functions are WIP; TODO: replace 'Vec::new()' with actual type
 								} else { // Function name
-									macro_funcs[last_item].func.name += name;
-									macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
+									macros[last_item].func.name += name;
+									macros[last_item].func.pos = macros[last_item].func.args.len();
 								},
 								
 								Kind::Op(ref op) => if op == "-" {
 									match tokens[i + 1].kind {
 										Kind::Op(ref op) if op == ">" => i += 1,
 										_ => { // Operator (function) name
-											macro_funcs[last_item].func.name += op;
-											macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
+											macros[last_item].func.name += op;
+											macros[last_item].func.pos = macros[last_item].func.args.len();
 										}
 									}
 								} else if op == ";" { // End of function declaration
 									panic!("{}:{} Macro functions must have a body", tokens[i].pos.line, tokens[i].pos.col);
 								} else if op != "|" { // Operator (function) name
-									macro_funcs[last_item].func.name += op;
-									macro_funcs[last_item].func.pos = macro_funcs[last_item].func.args.len();
+									macros[last_item].func.name += op;
+									macros[last_item].func.pos = macros[last_item].func.args.len();
 								},
 								
 								Kind::GroupOp(ref op) => if op == "{" { // Function body
-									macro_funcs[last_item].func.output = par_type.clone();
-									if macro_funcs[last_item].func.name == "**" {
-										macro_funcs[last_item].func.precedence = 247;
+									macros[last_item].func.output = par_type.clone();
+									if macros[last_item].func.name == "**" {
+										macros[last_item].func.precedence = 247;
 									} else if par_type[0].len() > 0 {
-										if macro_funcs[last_item].func.args.len() == 1 {
-											macro_funcs[last_item].func.precedence = 255;
+										if macros[last_item].func.args.len() == 1 {
+											macros[last_item].func.precedence = 255;
 										}
 									}
 									
@@ -498,14 +498,14 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 								},
 								
 								Kind::Reserved(ref keyword) if keyword == "return" => {
-									macro_funcs[last_item].returns.push(vec![Token {
+									macros[last_item].returns.push(vec![Token {
 										kind: Kind::Op(String::from(";")),
 										pos: FilePos {line: 0, col: 0},
 										children: RefCell::new(Vec::new())
 									}]);
 									
-									macro_funcs[last_item].code.push(tokens[i].clone());
-									macro_funcs[last_item].code.push(Token {
+									macros[last_item].code.push(tokens[i].clone());
+									macros[last_item].code.push(Token {
 										kind: Kind::Number(point, 0),
 										pos: FilePos {line: 0, col: 0},
 										children: RefCell::new(Vec::new())
@@ -527,11 +527,11 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 											_ => ()
 										}
 										
-										macro_funcs[last_item].returns[point].push(tokens[i].clone());
+										macros[last_item].returns[point].push(tokens[i].clone());
 										tokens.remove(i);
 									}
 									
-									macro_funcs[last_item].returns[point].push(Token {
+									macros[last_item].returns[point].push(Token {
 										kind: Kind::Op(String::from(";")),
 										pos: FilePos {line: 0, col: 0},
 										children: RefCell::new(Vec::new())
@@ -543,17 +543,17 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 								_ => ()
 							}
 							
-							macro_funcs[last_item].code.push(tokens[i].clone());
+							macros[last_item].code.push(tokens[i].clone());
 							tokens.remove(i);
 						}
 						
-						macro_funcs[last_item].code.push(tokens[i].clone());
+						macros[last_item].code.push(tokens[i].clone());
 						tokens.remove(i);
 						i -= 1;
 						
-						functions.push(macro_funcs[last_item].func.clone());
+						functions.push(macros[last_item].func.clone());
 						
-						match lex3(&mut macro_funcs[last_item].code, functions) {
+						match lex3(&mut macros[last_item].code, functions) {
 							(f, _) => functions = f
 						}
 					}
@@ -595,5 +595,5 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 		i += 1;
 	}
 	
-	(functions, macro_funcs)
+	(functions, macros)
 }

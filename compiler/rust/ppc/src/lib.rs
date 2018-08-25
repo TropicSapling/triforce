@@ -65,7 +65,7 @@ pub struct FunctionArg {
 }
 
 #[derive(Debug)]
-pub struct MacroFunction {
+pub struct Macro {
 	pub func: Function,
 	pub code: Vec<Token>,
 	pub returns: Vec<Vec<Token>>,
