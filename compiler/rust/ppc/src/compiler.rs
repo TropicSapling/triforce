@@ -11,7 +11,7 @@ use std::{
 	cell::RefCell
 };
 
-use lib::{Token, Kind, Type, FilePos, Function, FunctionArg, MacroFunction};
+use lib::{Token, Kind, Type, FilePos, Function, FunctionArg, Macro};
 
 macro_rules! get_val {
 	($e:expr) => ({
@@ -1144,10 +1144,10 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 	}
 }
 
-fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, functions: &mut Vec<Function>, i: &mut usize, name: &str, name_tok_len: usize, depth: usize, rows: &Vec<usize>, found: &mut bool) -> Result<(), Error> {
+fn parse_macro_func(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut Vec<Function>, i: &mut usize, name: &str, name_tok_len: usize, depth: usize, rows: &Vec<usize>, found: &mut bool) -> Result<(), Error> {
 	let mut j = 0;
-	while j < macro_funcs.len() {
-		if name == &macro_funcs[j].func.name && depth >= macro_funcs[j].depth && rows[macro_funcs[j].depth] == macro_funcs[j].row {
+	while j < macros.len() {
+		if name == &macros[j].func.name && depth >= macros[j].depth && rows[macros[j].depth] == macros[j].row {
 			*found = true;
 			
 			// Parse function args
@@ -1155,11 +1155,11 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 			let mut new_code = Vec::new();
 			let mut new_points: Vec<Vec<Token>> = Vec::new();
 			if args.len() >= 1 && args[0] != usize::MAX {
-				'tok_search: for token in macro_funcs[j].code.iter() {
+				'tok_search: for token in macros[j].code.iter() {
 					match token.kind {
 						Kind::Var(ref name, _) => {
 							for (a, arg) in args.iter().enumerate() {
-								if name == &macro_funcs[j].func.args[a].name {
+								if name == &macros[j].func.args[a].name {
 									add_to_code(tokens, functions, &mut new_code, *arg);
 									continue 'tok_search;
 								}
@@ -1172,13 +1172,13 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 					}
 				}
 					
-				for (p, point) in macro_funcs[j].returns.iter().enumerate() {
+				for (p, point) in macros[j].returns.iter().enumerate() {
 					new_points.push(Vec::new());
 					'tok_search2: for token in point.iter() {
 						match token.kind {
 							Kind::Var(ref name, _) => {
 								for (a, arg) in args.iter().enumerate() {
-									if name == &macro_funcs[j].func.args[a].name {
+									if name == &macros[j].func.args[a].name {
 										add_to_code(tokens, functions, &mut new_points[p], *arg);
 										continue 'tok_search2;
 									}
@@ -1192,8 +1192,8 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 					}
 				}
 			} else {
-				new_code = macro_funcs[j].code.clone();
-				new_points = macro_funcs[j].returns.clone();
+				new_code = macros[j].code.clone();
+				new_points = macros[j].returns.clone();
 			}
 			
 			// Save parent of macro call
@@ -1422,9 +1422,9 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction
 	Ok(())
 }
 
-pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, functions: &mut Vec<Function>, i: &mut usize, depth: &mut usize, rows: &mut Vec<usize>) -> Result<(), Error> {
+pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut Vec<Function>, i: &mut usize, depth: &mut usize, rows: &mut Vec<usize>) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
-		Kind::Var(ref name, _) => return parse_macro_func(tokens, macro_funcs, functions, i, name, 1, *depth, rows, &mut false),
+		Kind::Var(ref name, _) => return parse_macro_func(tokens, macros, functions, i, name, 1, *depth, rows, &mut false),
 		
 		Kind::Op(ref op) if op != ";" && op != ":" => { // 'op != ":"' part is tmp, used to allow Rust-style importing
 			let mut name = op.to_string();
@@ -1436,7 +1436,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macro_funcs: &mut Vec<MacroFunction>, fun
 			*i = start;
 			
 			let mut found = false;
-			let res = parse_macro_func(tokens, macro_funcs, functions, i, &name, name.len(), *depth, rows, &mut found);
+			let res = parse_macro_func(tokens, macros, functions, i, &name, name.len(), *depth, rows, &mut found);
 			
 			if !found {
 				*i = end;

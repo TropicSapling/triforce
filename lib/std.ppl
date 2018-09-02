@@ -1,16 +1,24 @@
 type LoopBreak, LoopContinue extends *;
 
 export {
-	macro func (f)? { // Error forwarding, example: `(fs.readFile "file")?` returns file contents if read is successful, else returns error
-		let res = f;
-		if res.Type == Type.Error {
-			return res;
-		} else {
-			res
-		}
+	macro def_macro (m) as (expr) {
+		return macro m {
+			return expr;
+		};
 	}
 	
-	macro func (list arr) index_of (unsigned int i) (check) { // Example: `let my_list = [[1, 2], [2, 3], [3, 4]]; println my_list index_of (x) (my_list[x][0] == 2)` prints '1'
+	macro (f)? { // Error forwarding, example: `(fs.readFile "file")?` returns file contents if read is successful, else returns error
+		return {
+			let res = f;
+			if res.Type == Type.Error {
+				return res;
+			} else {
+				res
+			}
+		};
+	}
+	
+	macro (list arr) index_of (unsigned int i) (check) { // Example: `let my_list = [[1, 2], [2, 3], [3, 4]]; println my_list index_of (x) (my_list[x][0] == 2)` prints '1'
 		return {
 			for [let i = 0; i < arr length; i++] {
 				if check {
@@ -43,23 +51,41 @@ export {
 		}
 	}
 
-	macro func while (cond) (body) {
-		$while func { cond } func { body }
+	macro while (cond) (body) {
+		return $while func { cond } func { body };
 	}
 	
-	macro func for [init, check, change] (body) {
-		init;
-		while check {
-			body;
-			change;
-		}
+	macro for [init, check, change] (body) {
+		return {
+			init;
+			while check {
+				body;
+				change;
+			}
+		};
 	}
 	
-	macro func break (val) {
-		return (LoopBreak) val
+	macro break (val) {
+		return return (LoopBreak) val;
 	}
 	
-	macro continue = return (LoopContinue) void;
+	def_macro continue as return (LoopContinue) void;
+	
+	macro get_bit (b) of (bytes) { // Notice that which bit you get depends on if it's little-endian or big-endian
+		return (bytes >> b) & 1;
+	}
+	
+	macro set_bit (b) of (bytes) to (b2) { // Notice that which bit you set depends on if it's little-endian or big-endian
+		if b2 == 0 {
+			return bytes &= ~(1 << b);
+		} else return bytes |= (bytes >> b) & 1;
+	}
+	
+	macro change_bit (b) of (bytes) to (b2) { // This is different from 'set_bit' in that it doesn't store the result in a variable
+		if b2 == 0 {
+			return bytes & ~(1 << b);
+		} else return bytes | (bytes >> b) & 1;
+	}
 }
 
 // OLD SYNTAX BELOW, NEEDS UPDATING

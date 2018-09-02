@@ -127,8 +127,8 @@ P+ is for...
 --------
 
 ### Conditionals
-* `if(<condition>) { <code> } [else if(<condition>) { <code> } else if...] [else { <code> }]`
-* `match(<var>) { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }` (equivalent of C's `switch`)
+* `if <condition> { <code> } [else if <condition> { <code> } else if...] [else { <code> }]`
+* `match <var> { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }` (equivalent of C's `switch`)
 
 --------
 
@@ -151,9 +151,9 @@ P+ is for...
 --------
 
 ### Loops
-* `while(<condition>) { <code> }`
+* `while <condition> { <code> }`
 * `foreach <item> in <list> { <code> }`
-* `repeat(<n times>) { <code> }`
+* `repeat <n times> { <code> }`
 * `break [<value>] [from <function>]`
 * `continue`
 
