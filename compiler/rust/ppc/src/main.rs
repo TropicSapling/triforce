@@ -175,7 +175,7 @@ fn main() -> Result<(), std::io::Error> {
 //		println!("{} LEX1: {:#?}\n", BrightYellow.paint("[DEBUG]"), lexed_contents);
 	}
 	
-	let ops = lex_ops(&lexed_contents);
+	let (lexed_contents, ops) = lex_ops(lexed_contents);
 	
 	let mut tokens = lex2(lexed_contents, line_offset, &ops);
 	if debugging {

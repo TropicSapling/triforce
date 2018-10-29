@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use lib::{Token, Kind, Type, FilePos, Macro, Function, FunctionArg};
 
 fn is_var(c: char) -> bool {
-	c == '_' || c == '$' || c.is_alphanumeric()
+	c != '{' && c != '}' && c != '[' && c != ']' && c != '(' && c != ')' && c != ';' && !c.is_whitespace()
 }
 
 pub fn lex<'a>(contents: &'a String) -> Vec<&'a str> {
@@ -26,24 +26,48 @@ pub fn lex<'a>(contents: &'a String) -> Vec<&'a str> {
 	result
 }
 
-pub fn lex_ops<'a>(tokens: &Vec<&'a str>) -> Vec<&'a str> {
+pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 	let mut ops = Vec::new();
+	let mut new_tokens = Vec::new();
 	
 	let mut i = 0;
 	while i < tokens.len() {
 		if tokens[i] == "operator" {
 			i += 2;
-			ops.push(tokens[i]);
+			ops.push(tokens[i].chars().next().unwrap());
 			i += 1;
+		} else {
+			let mut indexes = Vec::new();
+			for (i, c) in tokens[i].chars().enumerate() {
+				if ops.contains(&c) {
+					indexes.push(i);
+				}
+			}
+			
+			for (c, idx) in indexes.iter().enumerate() {
+				if c == 0 {
+					if *idx != 0 {
+						new_tokens.push(&tokens[i][..*idx]);
+					}
+				} else if *idx != indexes[c - 1] {
+					new_tokens.push(&tokens[i][indexes[c - 1]..*idx]);
+				}
+				
+				new_tokens.push(&tokens[i][*idx..*idx + 1]);
+			}
+			
+			if indexes.len() == 0 {
+				new_tokens.push(tokens[i]);
+			}
 		}
 		
 		i += 1;
 	}
 	
-	ops
+	(new_tokens, ops)
 }
 
-pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<&str>) -> Vec<Token> {
+pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token> {
 	let mut res: Vec<Token> = Vec::new();
 	let mut string = Token {
 		kind: Kind::Str1(String::from("")),
@@ -241,7 +265,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<&str>) -> Vec<Token
 							continue;
 						},
 						
-						_ => if ops.contains(&item) {
+						_ => if ops.contains(&item.chars().next().unwrap()) {
 							Kind::Op(item.to_string())
 						} else {
 							Kind::Var(item.to_string(), vec![Vec::new()])
