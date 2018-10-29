@@ -38,8 +38,11 @@ pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 			if tokens[i] == "\n" {
 				ignoring = false;
 			}
-		} else if tokens[i].starts_with("//") {
+			
+			new_tokens.push(tokens[i]);
+		} else if tokens[i].starts_with("//") || tokens[i].starts_with("'") || tokens[i].starts_with("\"") {
 			ignoring = true;
+			new_tokens.push(tokens[i]);
 		} else if tokens[i] == "operator" {
 			i += 2;
 			ops.push(tokens[i].chars().next().unwrap());
