@@ -54,6 +54,10 @@ pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 				}
 				
 				new_tokens.push(&tokens[i][*idx..*idx + 1]);
+				
+				if c == indexes.len() - 1 && *idx + 1 < tokens[i].len() {
+					new_tokens.push(&tokens[i][*idx + 1..]);
+				}
 			}
 			
 			if indexes.len() == 0 {
