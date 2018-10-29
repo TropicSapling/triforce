@@ -31,7 +31,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.7.0-alpha")
+		.version("0.8.0-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -105,6 +105,25 @@ fn main() -> Result<(), std::io::Error> {
 	};
 	
 	let mut in_contents = String::from("();
+		operator +;
+		operator -;
+		operator *;
+		operator /;
+		operator %;
+		operator =;
+		operator &;
+		operator |;
+		operator ^;
+		operator <;
+		operator >;
+		operator !;
+		operator ~;
+		operator ?;
+		operator :;
+		operator .;
+		operator ,;
+		operator @;
+		
 		macro func (int a)++ {
 			return {
 				a += 1;
@@ -156,7 +175,7 @@ fn main() -> Result<(), std::io::Error> {
 //		println!("{} LEX1: {:#?}\n", BrightYellow.paint("[DEBUG]"), lexed_contents);
 	}
 	
-	let mut tokens = lex2(lexed_contents, line_offset);
+	let (mut tokens, ops) = lex2(lexed_contents, line_offset);
 	if debugging {
 //		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
