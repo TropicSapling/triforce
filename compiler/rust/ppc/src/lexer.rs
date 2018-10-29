@@ -32,7 +32,7 @@ pub fn lex_ops<'a>(tokens: &Vec<&'a str>) -> Vec<&'a str> {
 	let mut i = 0;
 	while i < tokens.len() {
 		if tokens[i] == "operator" {
-			i += 1;
+			i += 2;
 			ops.push(tokens[i]);
 			i += 1;
 		}
