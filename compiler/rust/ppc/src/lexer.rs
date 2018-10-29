@@ -26,9 +26,25 @@ pub fn lex<'a>(contents: &'a String) -> Vec<&'a str> {
 	result
 }
 
-pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> (Vec<Token>, Vec<&str>) {
-	let mut res: Vec<Token> = Vec::new();
+pub fn lex_ops<'a>(tokens: &Vec<&'a str>) -> Vec<&'a str> {
 	let mut ops = Vec::new();
+	
+	let mut i = 0;
+	while i < tokens.len() {
+		if tokens[i] == "operator" {
+			i += 1;
+			ops.push(tokens[i]);
+			i += 1;
+		}
+		
+		i += 1;
+	}
+	
+	ops
+}
+
+pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<&str>) -> Vec<Token> {
+	let mut res: Vec<Token> = Vec::new();
 	let mut string = Token {
 		kind: Kind::Str1(String::from("")),
 		pos: FilePos {line: 1, col: 1},
@@ -41,7 +57,6 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> (Vec<Token>, Vec<&str>) {
 	let mut ignoring = false;
 	let mut ignoring2 = false;
 	let mut possible_comment = false;
-	let mut op_up_nxt = false;
 	
 	let mut num_pos = 0;
 	let mut line = 1;
@@ -189,11 +204,6 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> (Vec<Token>, Vec<&str>) {
 					};
 					
 					num_pos = 1;
-				} else if item == "operator" {
-					op_up_nxt = true;
-				} else if op_up_nxt {
-					ops.push(item);
-					op_up_nxt = false;
 				} else {
 					string.kind = match item {
 						"{" | "}" | "[" | "]" | "(" | ")" | ";" => Kind::GroupOp(item.to_string()),
@@ -252,7 +262,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> (Vec<Token>, Vec<&str>) {
 		col += 1;
 	}
 	
-	(res, ops)
+	res
 }
 
 pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<Macro>) {

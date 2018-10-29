@@ -22,7 +22,7 @@ use std::{
 };
 
 use lib::get_io;
-use lexer::{lex, lex2, lex3};
+use lexer::{lex, lex_ops, lex2, lex3};
 use compiler::{def_functions, parse, parse2, parse3, compile};
 
 fn count_newlines(s: &str) -> usize {
@@ -175,7 +175,9 @@ fn main() -> Result<(), std::io::Error> {
 //		println!("{} LEX1: {:#?}\n", BrightYellow.paint("[DEBUG]"), lexed_contents);
 	}
 	
-	let (mut tokens, ops) = lex2(lexed_contents, line_offset);
+	let ops = lex_ops(&lexed_contents);
+	
+	let mut tokens = lex2(lexed_contents, line_offset, &ops);
 	if debugging {
 //		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
