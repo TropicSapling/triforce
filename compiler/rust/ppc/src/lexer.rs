@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use lib::{Token, Kind, Type, FilePos, Macro, Function, FunctionArg};
 
 fn is_var(c: char) -> bool {
-	c != '{' && c != '}' && c != '[' && c != ']' && c != '(' && c != ')' && c != ';' && !c.is_whitespace()
+	c != '{' && c != '}' && c != '[' && c != ']' && c != '(' && c != ')' && c != ';' && c != '"' && c != '\'' && !c.is_whitespace()
 }
 
 pub fn lex<'a>(contents: &'a String) -> Vec<&'a str> {
