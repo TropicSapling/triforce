@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use lib::{Token, Kind, Type, FilePos, Macro, Function, FunctionArg};
 
 fn is_var(c: char) -> bool {
-	c != '{' && c != '}' && c != '[' && c != ']' && c != '(' && c != ')' && c != ';' && c != '"' && c != '\'' && !c.is_whitespace()
+	c != '{' && c != '}' && c != '[' && c != ']' && c != '(' && c != ')' && c != ';' && c != '"' && c != '\'' && c != '/' && c != '*' && c != '\\' && !c.is_whitespace()
 }
 
 pub fn lex<'a>(contents: &'a String) -> Vec<&'a str> {
@@ -31,6 +31,10 @@ pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 	let mut new_tokens = Vec::new();
 	
 	let mut ignoring = false;
+	let mut ignoring2 = false;
+	let mut in_str = false;
+	let mut in_str2 = false;
+	let mut escaping = false;
 	
 	let mut i = 0;
 	while i < tokens.len() {
@@ -40,8 +44,42 @@ pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 			}
 			
 			new_tokens.push(tokens[i]);
-		} else if tokens[i].starts_with("//") || tokens[i].starts_with("'") || tokens[i].starts_with("\"") {
+		} else if ignoring2 {
+			if tokens[i] == "*" && tokens[i + 1] == "/" {
+				ignoring2 = false;
+			}
+			
+			new_tokens.push(tokens[i]);
+		} else if tokens[i] == "/" && tokens[i + 1] == "/" {
 			ignoring = true;
+			new_tokens.push(tokens[i]);
+		} else if tokens[i] == "/" && tokens[i + 1] == "*" {
+			ignoring2 = true;
+			new_tokens.push(tokens[i]);
+		} else if escaping {
+			new_tokens.push(tokens[i]);
+			escaping = false;
+		} else if in_str {
+			if tokens[i] == "\"" {
+				in_str = false;
+			} else if tokens[i] == "\\" {
+				escaping = true;
+			}
+			
+			new_tokens.push(tokens[i]);
+		} else if in_str2 {
+			if tokens[i] == "'" {
+				in_str2 = false;
+			} else if tokens[i] == "\\" {
+				escaping = true;
+			}
+			
+			new_tokens.push(tokens[i]);
+		} else if tokens[i] == "\"" {
+			in_str = true;
+			new_tokens.push(tokens[i]);
+		} else if tokens[i] == "'" {
+			in_str2 = true;
 			new_tokens.push(tokens[i]);
 		} else if tokens[i] == "operator" {
 			i += 2;
