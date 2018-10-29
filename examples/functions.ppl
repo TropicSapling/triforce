@@ -1,6 +1,8 @@
 #[allow(unused)]
 import std::fs::File as FileHandler; // To test importing
 
+operator $; // custom operator example
+
 // Side note: macros can also be defined inside of functions, and will in that case only work inside of that function
 macro force_positive (int n) {
 	if n >= 0 {

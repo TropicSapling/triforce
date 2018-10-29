@@ -30,9 +30,17 @@ pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 	let mut ops = Vec::new();
 	let mut new_tokens = Vec::new();
 	
+	let mut ignoring = false;
+	
 	let mut i = 0;
 	while i < tokens.len() {
-		if tokens[i] == "operator" {
+		if ignoring {
+			if tokens[i] == "\n" {
+				ignoring = false;
+			}
+		} else if tokens[i].starts_with("//") {
+			ignoring = true;
+		} else if tokens[i] == "operator" {
 			i += 2;
 			ops.push(tokens[i].chars().next().unwrap());
 			i += 1;
