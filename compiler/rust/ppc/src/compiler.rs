@@ -233,26 +233,6 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 						}
 					}
 				}
-			} else if op == ";" { // End of function declaration
-				functions[last_item].output = par_type.clone();
-				if functions[last_item].name == "**" {
-					functions[last_item].precedence = 247;
-				} else if par_type[0].len() > 0 {
-					if func_args.len() == 1 {
-						functions[last_item].precedence = 255;
-					} else {
-						functions[last_item].precedence = 2;
-					}
-				}
-				
-				let func_name_pos = tokens[func_pos].children.borrow()[0];
-				for arg in func_args {
-					tokens[func_name_pos].children.borrow_mut().push(arg);
-				}
-				
-				par_type = vec![vec![]];
-				func_args = Vec::new();
-				func = false;
 			} else if op != "|" { // Operator (function) name
 				functions[last_item].name += op;
 				functions[last_item].pos = functions[last_item].args.len();
@@ -314,6 +294,26 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 					
 					i += 1;
 				} */
+			} else if op == ";" { // End of function declaration
+				functions[last_item].output = par_type.clone();
+				if functions[last_item].name == "**" {
+					functions[last_item].precedence = 247;
+				} else if par_type[0].len() > 0 {
+					if func_args.len() == 1 {
+						functions[last_item].precedence = 255;
+					} else {
+						functions[last_item].precedence = 2;
+					}
+				}
+				
+				let func_name_pos = tokens[func_pos].children.borrow()[0];
+				for arg in func_args {
+					tokens[func_name_pos].children.borrow_mut().push(arg);
+				}
+				
+				par_type = vec![vec![]];
+				func_args = Vec::new();
+				func = false;
 			},
 			
 			_ => ()
@@ -338,7 +338,7 @@ fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec
 		if def.name == "-" {
 			let last = tokens.len() - 1;
 			match tokens[last].kind.clone() {
-				Kind::Op(ref op) if op == ";" => {
+				Kind::GroupOp(ref op) if op == ";" => {
 					tokens.insert(last, Token {
 						kind: Kind::Number(0, 0),
 						pos: FilePos {line: 0, col: 0},
@@ -365,7 +365,7 @@ fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec
 	
 	while i - j > 0 && j - offset < def.pos {
 		match tokens[i - j].kind.clone() {
-			Kind::Op(ref op) if op == ";" => if depth > 0 {
+			Kind::GroupOp(ref op) if op == ";" => if depth > 0 {
 				j += 1;
 				offset += 1;
 				continue;
@@ -373,7 +373,7 @@ fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec
 				if def.name == "-" {
 					let last = tokens.len() - 1;
 					match tokens[last].kind.clone() {
-						Kind::Op(ref op) if op == ";" => {
+						Kind::GroupOp(ref op) if op == ";" => {
 							tokens.insert(last, Token {
 								kind: Kind::Number(0, 0),
 								pos: FilePos {line: 0, col: 0},
@@ -514,11 +514,12 @@ fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec
 		let mut skip = (false, "");
 		
 		match tokens[i + j].kind {
-			Kind::Op(ref op) if op == ";" => {
+			Kind::GroupOp(ref op) if op == ";" => {
 				j += 1;
 				offset += 1;
 				continue;
 			},
+			
 			Kind::Op(ref op) => skip = (true, op),
 			
 			Kind::GroupOp(ref op) if op == "{" => (),
@@ -591,7 +592,7 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	let start = *i;
 	while *i < limit {
 		match tokens[*i].kind {
-			Kind::Op(ref op) if op == ";" && *i > 0 => if depth == 0 {
+			Kind::GroupOp(ref op) if op == ";" && *i > 0 => if depth == 0 {
 				limit = *i;
 				break;
 			},
@@ -730,7 +731,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 						depth2 -= 1;
 					},
 					
-					Kind::Op(ref op) if op != ";" => {
+					Kind::Op(ref op) => {
 						let mut name = op.to_string();
 						let start = *i;
 						
@@ -965,7 +966,7 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 						
 						Kind::Type(_) => parse_type_decl(tokens, functions, i, parent),
 						
-						Kind::Op(ref op) if op == ";" => *i += 1,
+						Kind::GroupOp(ref op) if op == ";" => *i += 1,
 						
 						_ => if let Some(token) = parse_statement(tokens, functions, i) {
 							tokens[parent].children.borrow_mut().push(token);
@@ -1126,7 +1127,7 @@ fn add_to_code(tokens: &Vec<Token>, functions: &Vec<Function>, code: &mut Vec<To
 				
 				if i < children.len() {
 					code.push(Token {
-						kind: Kind::Op(String::from(";")),
+						kind: Kind::GroupOp(String::from(";")),
 						pos: FilePos {line: 0, col: 0},
 						children: RefCell::new(Vec::new())
 					});
@@ -1426,7 +1427,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut 
 	match tokens[*i].kind.clone() {
 		Kind::Var(ref name, _) => return parse_macro_func(tokens, macros, functions, i, name, 1, *depth, rows, &mut false),
 		
-		Kind::Op(ref op) if op != ";" && op != ":" => { // 'op != ":"' part is tmp, used to allow Rust-style importing
+		Kind::Op(ref op) if op != ":" => { // 'op != ":"' part is tmp, used to allow Rust-style importing
 			let mut name = op.to_string();
 			let start = *i;
 			
@@ -1503,7 +1504,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				let mut nests = 0;
 				while *i + 1 < tokens.len() {
 					match tokens[*i + 1].kind {
-						Kind::Op(ref op) if op == ";" => {
+						Kind::GroupOp(ref op) if op == ";" => {
 							output += ";";
 							break;
 						},
@@ -1603,7 +1604,6 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 							'.' => "dot",
 							',' => "comma",
 							'@' => "at",
-							';' => "semic", // Should this really be allowed? Overriding the functionality of the semicolon may cause major issues
 							_ => unreachable!()
 						};
 					}
@@ -1645,7 +1645,7 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 				let mut nests = 0;
 				while *i + 1 < tokens.len() {
 					match tokens[*i + 1].kind {
-						Kind::Op(ref op) if op == ";" => {
+						Kind::GroupOp(ref op) if op == ";" => {
 							output += ";";
 							break;
 						},
@@ -1875,7 +1875,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 						*i += 1;
 					},
 					
-					Kind::Op(ref op) if op == ";" => {
+					Kind::GroupOp(ref op) if op == ";" => {
 						output += ";";
 						success = true;
 						break;
@@ -1920,7 +1920,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 					let mut nests = 0;
 					while *i + 1 < tokens.len() {
 						match tokens[*i + 1].kind {
-							Kind::Op(ref op) if op == ";" => {
+							Kind::GroupOp(ref op) if op == ";" => {
 								output += ";";
 								break;
 							},

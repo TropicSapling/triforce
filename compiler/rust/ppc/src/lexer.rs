@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use lib::{Token, Kind, Type, FilePos, Macro, Function, FunctionArg};
 
 fn is_var(c: char) -> bool {
-	c == '_' || c == '$' || c.is_alphanumeric()
+	c != '{' && c != '}' && c != '[' && c != ']' && c != '(' && c != ')' && c != ';' && c != '"' && c != '\'' && c != '/' && c != '*' && c != '\\' && !c.is_whitespace()
 }
 
 pub fn lex<'a>(contents: &'a String) -> Vec<&'a str> {
@@ -26,7 +26,101 @@ pub fn lex<'a>(contents: &'a String) -> Vec<&'a str> {
 	result
 }
 
-pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
+pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
+	let mut ops = Vec::new();
+	let mut new_tokens = Vec::new();
+	
+	let mut ignoring = false;
+	let mut ignoring2 = false;
+	let mut in_str = false;
+	let mut in_str2 = false;
+	let mut escaping = false;
+	
+	let mut i = 0;
+	while i < tokens.len() {
+		if ignoring {
+			if tokens[i] == "\n" {
+				ignoring = false;
+			}
+			
+			new_tokens.push(tokens[i]);
+		} else if ignoring2 {
+			if tokens[i] == "*" && tokens[i + 1] == "/" {
+				ignoring2 = false;
+			}
+			
+			new_tokens.push(tokens[i]);
+		} else if tokens[i] == "/" && tokens[i + 1] == "/" {
+			ignoring = true;
+			new_tokens.push(tokens[i]);
+		} else if tokens[i] == "/" && tokens[i + 1] == "*" {
+			ignoring2 = true;
+			new_tokens.push(tokens[i]);
+		} else if escaping {
+			new_tokens.push(tokens[i]);
+			escaping = false;
+		} else if in_str {
+			if tokens[i] == "\"" {
+				in_str = false;
+			} else if tokens[i] == "\\" {
+				escaping = true;
+			}
+			
+			new_tokens.push(tokens[i]);
+		} else if in_str2 {
+			if tokens[i] == "'" {
+				in_str2 = false;
+			} else if tokens[i] == "\\" {
+				escaping = true;
+			}
+			
+			new_tokens.push(tokens[i]);
+		} else if tokens[i] == "\"" {
+			in_str = true;
+			new_tokens.push(tokens[i]);
+		} else if tokens[i] == "'" {
+			in_str2 = true;
+			new_tokens.push(tokens[i]);
+		} else if tokens[i] == "operator" {
+			i += 2;
+			ops.push(tokens[i].chars().next().unwrap());
+			i += 1;
+		} else {
+			let mut indexes = Vec::new();
+			for (i, c) in tokens[i].chars().enumerate() {
+				if ops.contains(&c) {
+					indexes.push(i);
+				}
+			}
+			
+			for (c, idx) in indexes.iter().enumerate() {
+				if c == 0 {
+					if *idx != 0 {
+						new_tokens.push(&tokens[i][..*idx]);
+					}
+				} else if *idx != indexes[c - 1] + 1 {
+					new_tokens.push(&tokens[i][indexes[c - 1] + 1..*idx]);
+				}
+				
+				new_tokens.push(&tokens[i][*idx..*idx + 1]);
+				
+				if c == indexes.len() - 1 && *idx + 1 < tokens[i].len() {
+					new_tokens.push(&tokens[i][*idx + 1..]);
+				}
+			}
+			
+			if indexes.len() == 0 {
+				new_tokens.push(tokens[i]);
+			}
+		}
+		
+		i += 1;
+	}
+	
+	(new_tokens, ops)
+}
+
+pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token> {
 	let mut res: Vec<Token> = Vec::new();
 	let mut string = Token {
 		kind: Kind::Str1(String::from("")),
@@ -189,8 +283,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 					num_pos = 1;
 				} else {
 					string.kind = match item {
-						"+" | "-" | "*" | "/" | "%" | "=" | "&" | "|" | "^" | "<" | ">" | "!" | "~" | "?" | ":" | "." | "," | "@" | ";" => Kind::Op(item.to_string()),
-						"{" | "}" | "[" | "]" | "(" | ")" => Kind::GroupOp(item.to_string()),
+						"{" | "}" | "[" | "]" | "(" | ")" | ";" => Kind::GroupOp(item.to_string()),
 						"array" => Kind::Type(Type::Array),
 						"bool" => Kind::Type(Type::Bool),
 						"chan" => Kind::Type(Type::Chan),
@@ -213,16 +306,23 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize) -> Vec<Token> {
 						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "let" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Kind::Reserved(item.to_string()),
 						"false" => Kind::Literal(false),
 						"true" => Kind::Literal(true),
+						
 						"\n" => {
 							line += 1;
 							col = 1;
 							continue;
 						},
+						
 						"\r" | "\t" | " " => {
 							col += 1;
 							continue;
 						},
-						_ => Kind::Var(item.to_string(), vec![Vec::new()])
+						
+						_ => if ops.contains(&item.chars().next().unwrap()) {
+							Kind::Op(item.to_string())
+						} else {
+							Kind::Var(item.to_string(), vec![Vec::new()])
+						}
 					};
 					
 					string.pos = if line > line_offset {
@@ -278,7 +378,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 				tokens.remove(i);
 				
 				match tokens[i + 1].kind.clone() {
-					Kind::Op(ref op) if op == ";" => {
+					Kind::GroupOp(ref op) if op == ";" => {
 						// Auto-initialised macros
 						
 						macros.push(Macro {
@@ -325,7 +425,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 								},
 								
 								Token {
-									kind: Kind::Op(String::from(";")),
+									kind: Kind::GroupOp(String::from(";")),
 									pos: FilePos {line: 0, col: 0},
 									children: RefCell::new(Vec::new())
 								},
@@ -339,7 +439,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 							
 							returns: vec![vec![
 								Token {
-									kind: Kind::Op(String::from(";")),
+									kind: Kind::GroupOp(String::from(";")),
 									pos: FilePos {line: 0, col: 0},
 									children: RefCell::new(Vec::new())
 								},
@@ -351,7 +451,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 								},
 								
 								Token {
-									kind: Kind::Op(String::from(";")),
+									kind: Kind::GroupOp(String::from(";")),
 									pos: FilePos {line: 0, col: 0},
 									children: RefCell::new(Vec::new())
 								}
@@ -458,8 +558,6 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 											macros[last_item].func.pos = macros[last_item].func.args.len();
 										}
 									}
-								} else if op == ";" { // End of function declaration
-									panic!("{}:{} Macro functions must have a body", tokens[i].pos.line, tokens[i].pos.col);
 								} else if op != "|" { // Operator (function) name
 									macros[last_item].func.name += op;
 									macros[last_item].func.pos = macros[last_item].func.args.len();
@@ -477,6 +575,8 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 									
 									tokens.remove(i);
 									break;
+								} else if op == ";" { // End of function declaration
+									panic!("{}:{} Macro functions must have a body", tokens[i].pos.line, tokens[i].pos.col);
 								},
 								
 								_ => ()
@@ -499,7 +599,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 								
 								Kind::Reserved(ref keyword) if keyword == "return" => {
 									macros[last_item].returns.push(vec![Token {
-										kind: Kind::Op(String::from(";")),
+										kind: Kind::GroupOp(String::from(";")),
 										pos: FilePos {line: 0, col: 0},
 										children: RefCell::new(Vec::new())
 									}]);
@@ -523,7 +623,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 												panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
 											},
 											
-											Kind::Op(ref op) if op == ";" && depth == 0 => break,
+											Kind::GroupOp(ref op) if op == ";" && depth == 0 => break,
 											_ => ()
 										}
 										
@@ -532,7 +632,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 									}
 									
 									macros[last_item].returns[point].push(Token {
-										kind: Kind::Op(String::from(";")),
+										kind: Kind::GroupOp(String::from(";")),
 										pos: FilePos {line: 0, col: 0},
 										children: RefCell::new(Vec::new())
 									});
