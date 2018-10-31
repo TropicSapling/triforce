@@ -1,4 +1,4 @@
-use std::{path::PathBuf, cell::RefCell};
+use std::{path::PathBuf};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
@@ -21,7 +21,6 @@ pub enum Type {
 	Char,
 	Const,
 	Fraction,
-	Func,
 	Heap,
 	Int,
 	List,
@@ -36,6 +35,7 @@ pub enum Type {
 	Volatile
 }
 
+#[derive(Clone, Debug)]
 pub enum FunctionSection {
 	ID(String),
 	Arg(String, Vec<Vec<Type>>)

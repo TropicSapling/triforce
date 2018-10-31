@@ -11,7 +11,7 @@ use std::{
 	cell::RefCell
 };
 
-use lib::{Token, Kind, Type, FilePos, Function, FunctionArg, Macro};
+use lib::{Token, Kind, Type, FilePos, Function, FunctionSection, Macro};
 
 macro_rules! get_val {
 	($e:expr) => ({
@@ -61,7 +61,7 @@ macro_rules! def_builtin_op {
 	($a:expr, $b:expr, $name:expr, $typ1:expr, $typ2:expr, $output:expr, $precedence:expr) => (Function {
 		structure: vec![
 			FunctionSection::Arg($a, vec![vec![$typ1]]),
-			FunctionSection::ID($name),
+			FunctionSection::ID(String::from($name)),
 			FunctionSection::Arg($b, vec![vec![$typ2]])
 		],
 		
@@ -167,7 +167,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind {
-			Kind::Type(ref typ) if typ == &Type::Func => {
+			Kind::Reserved(ref keyword, ref mut children) if keyword == "func" => {
 				let mut func_struct = vec![];
 				let mut precedence = 1;
 				
@@ -207,10 +207,10 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 						
 						Kind::Var(ref name, ref typ, _) => if typ.len() > 0 {
 							// Function arg
-							func_struct.push(FunctionSection::Arg(name, typ));
+							func_struct.push(FunctionSection::Arg(name.to_string(), *typ));
 						} else {
 							// Function name
-							func_struct.push(FunctionSection::ID(name));
+							func_struct.push(FunctionSection::ID(name.to_string()));
 						},
 						
 						_ => ()
@@ -221,11 +221,13 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 				
 				// Get function output
 				let output = if let Kind::Type(_, ref typ) = tokens[i].kind {
-					precedence = if has_one_arg(func_struct) {
-						255
-					} else {
-						2
-					};
+					if precedence != 247 {
+						precedence = if has_one_arg(func_struct) {
+							255
+						} else {
+							2
+						};
+					}
 					
 					*typ
 				} else {
@@ -237,6 +239,15 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 					output,
 					precedence
 				});
+				
+				while i < tokens.len() {
+					match tokens[i].kind {
+						Kind::GroupOp(ref op, _) if op == "{" || op == ";" => break,
+						_ => i += 1
+					}
+				}
+				
+				children.push(i); // Save function body index
 			},
 			
 			_ => i += 1
@@ -245,7 +256,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 	
 	/////////////// OLD CODE BELOW ///////////////
 	
-	let mut func = false;
+/*	let mut func = false;
 	let mut func_pos = 0;
 	let mut func_args = Vec::new();
 	let mut par_type = vec![vec![]];
@@ -407,7 +418,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 		}
 		
 		i += 1;
-	}
+	} */
 	
 	functions
 }
@@ -1949,7 +1960,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 	let children = tokens[*i].children.borrow();
 	
 	match tokens[*i].kind {
-		Kind::Reserved(ref keyword) if keyword == "import" => {
+		Kind::Reserved(ref keyword, _) if keyword == "import" => {
 			// Using Rust-style importing for now
 			output += "use ";
 			*i += 1;
@@ -1980,7 +1991,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 			}
 		},
 		
-		Type(ref typ) if typ == &Func => {
+		Reserved(ref keyword, _) if keyword == "func" => {
 			output += "fn ";
 			
 			*i = children[0];
