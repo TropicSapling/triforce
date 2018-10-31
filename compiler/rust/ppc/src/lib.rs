@@ -1,16 +1,16 @@
-use std::{path::PathBuf};
+use std::{path::PathBuf, cell::RefCell};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
-    GroupOp(String, Vec<usize>),
+    GroupOp(String, RefCell<Vec<usize>>),
     Literal(bool),
     Number(usize, usize),
-    Op(String, Vec<usize>),
-    Reserved(String, Vec<usize>),
+    Op(String, RefCell<Vec<usize>>),
+    Reserved(String, RefCell<Vec<usize>>),
     Str1(String),
     Str2(String),
     Type(Type, Vec<Vec<Type>>),
-    Var(String, Vec<Vec<Type>>, Vec<usize>)
+    Var(String, Vec<Vec<Type>>, RefCell<Vec<usize>>)
 }
 
 #[derive(Clone, PartialEq, Debug)]

@@ -1,4 +1,4 @@
-use std::usize;
+use std::{usize, cell::RefCell};
 use lib::{Token, Kind, Type, FilePos, Macro, Function};
 
 fn is_var(c: char) -> bool {
@@ -176,7 +176,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 				} else {
 					possible_comment = false;
 					
-					string.kind = Kind::Op(String::from("/"), Vec::new());
+					string.kind = Kind::Op(String::from("/"), RefCell::new(Vec::new()));
 					string.pos = if line > line_offset {
 						FilePos {line: line - line_offset, col}
 					} else {
@@ -281,7 +281,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 					num_pos = 1;
 				} else {
 					string.kind = match item {
-						"{" | "}" | "[" | "]" | "(" | ")" | ";" => Kind::GroupOp(item.to_string(), Vec::new()),
+						"{" | "}" | "[" | "]" | "(" | ")" | ";" => Kind::GroupOp(item.to_string(), RefCell::new(Vec::new())),
 						"array" => Kind::Type(Type::Array, Vec::new()),
 						"bool" => Kind::Type(Type::Bool, Vec::new()),
 						"chan" => Kind::Type(Type::Chan, Vec::new()),
@@ -300,7 +300,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 						"unsigned" => Kind::Type(Type::Unsigned, Vec::new()),
 						"volatile" => Kind::Type(Type::Volatile, Vec::new()),
 						"void" => Kind::Type(Type::Void, Vec::new()),
-						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "func" | "goto" | "if" | "import" | "in" | "let" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Kind::Reserved(item.to_string(), Vec::new()),
+						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "func" | "goto" | "if" | "import" | "in" | "let" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Kind::Reserved(item.to_string(), RefCell::new(Vec::new())),
 						"false" => Kind::Literal(false),
 						"true" => Kind::Literal(true),
 						
@@ -316,9 +316,9 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 						},
 						
 						_ => if ops.contains(&item.chars().next().unwrap()) {
-							Kind::Op(item.to_string(), Vec::new())
+							Kind::Op(item.to_string(), RefCell::new(Vec::new()))
 						} else {
-							Kind::Var(item.to_string(), vec![Vec::new()], Vec::new())
+							Kind::Var(item.to_string(), vec![Vec::new()], RefCell::new(Vec::new()))
 						}
 					};
 					

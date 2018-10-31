@@ -23,7 +23,8 @@ use std::{
 
 use lib::get_io;
 use lexer::{lex, lex_ops, lex2, lex3};
-use compiler::{def_functions, parse, parse2, parse3, compile};
+// use compiler::{def_functions, parse, parse2, parse3, compile};
+use compiler::{def_functions, parse};
 
 fn count_newlines(s: &str) -> usize {
 	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
@@ -199,7 +200,7 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let mut i = 0;
 	while i < tokens.len() {
-		parse2(&mut tokens, &functions, &mut i);
+//		parse2(&mut tokens, &functions, &mut i);
 		i += 1;
 	}
 	
@@ -207,7 +208,7 @@ fn main() -> Result<(), std::io::Error> {
 	let mut rows = vec![0];
 	let mut i = 0;
 	while i < tokens.len() {
-		parse3(&mut tokens, &mut macros, &mut functions, &mut i, &mut depth, &mut rows)?;
+//		parse3(&mut tokens, &mut macros, &mut functions, &mut i, &mut depth, &mut rows)?;
 		i += 1;
 	}
 	
@@ -218,7 +219,7 @@ fn main() -> Result<(), std::io::Error> {
 	let mut out_contents = String::new();
 	let mut i = 0;
 	while i < tokens.len() {
-		out_contents = compile(&tokens, &functions, &mut i, out_contents);
+//		out_contents = compile(&tokens, &functions, &mut i, out_contents);
 		i += 1;
 	}
 	
