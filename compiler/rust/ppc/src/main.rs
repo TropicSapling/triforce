@@ -124,7 +124,7 @@ fn main() -> Result<(), std::io::Error> {
 		operator ,;
 		operator @;
 		
-		macro func (int a)++ {
+/*		macro func (int a)++ {
 			return {
 				a += 1;
 				a - 1
@@ -150,7 +150,7 @@ fn main() -> Result<(), std::io::Error> {
 				a -= 1;
 				a
 			};
-		}
+		} */
 		
 		#[allow(unused)]
 		func (int base) ** (unsigned int exp) -> int {
