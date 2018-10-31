@@ -283,27 +283,27 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 					num_pos = 1;
 				} else {
 					string.kind = match item {
-						"{" | "}" | "[" | "]" | "(" | ")" | ";" => Kind::GroupOp(item.to_string()),
-						"array" => Kind::Type(Type::Array),
-						"bool" => Kind::Type(Type::Bool),
-						"chan" => Kind::Type(Type::Chan),
-						"char" => Kind::Type(Type::Char),
-						"const" => Kind::Type(Type::Const),
-						"fraction" => Kind::Type(Type::Fraction),
-						"func" => Kind::Type(Type::Func),
-						"heap" => Kind::Type(Type::Heap),
-						"int" => Kind::Type(Type::Int),
-						"list" => Kind::Type(Type::List),
-						"macro" => Kind::Type(Type::Macro),
-						"only" => Kind::Type(Type::Only),
-						"pointer" => Kind::Type(Type::Pointer),
-						"register" => Kind::Type(Type::Register),
-						"stack" => Kind::Type(Type::Stack),
-						"unique" => Kind::Type(Type::Unique),
-						"unsigned" => Kind::Type(Type::Unsigned),
-						"volatile" => Kind::Type(Type::Volatile),
-						"void" => Kind::Type(Type::Void),
-						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "let" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Kind::Reserved(item.to_string()),
+						"{" | "}" | "[" | "]" | "(" | ")" | ";" => Kind::GroupOp(item.to_string(), Vec::new()),
+						"array" => Kind::Type(Type::Array, Vec::new()),
+						"bool" => Kind::Type(Type::Bool, Vec::new()),
+						"chan" => Kind::Type(Type::Chan, Vec::new()),
+						"char" => Kind::Type(Type::Char, Vec::new()),
+						"const" => Kind::Type(Type::Const, Vec::new()),
+						"fraction" => Kind::Type(Type::Fraction, Vec::new()),
+						"func" => Kind::Type(Type::Func, Vec::new()),
+						"heap" => Kind::Type(Type::Heap, Vec::new()),
+						"int" => Kind::Type(Type::Int, Vec::new()),
+						"list" => Kind::Type(Type::List, Vec::new()),
+						"macro" => Kind::Type(Type::Macro, Vec::new()),
+						"only" => Kind::Type(Type::Only, Vec::new()),
+						"pointer" => Kind::Type(Type::Pointer, Vec::new()),
+						"register" => Kind::Type(Type::Register, Vec::new()),
+						"stack" => Kind::Type(Type::Stack, Vec::new()),
+						"unique" => Kind::Type(Type::Unique, Vec::new()),
+						"unsigned" => Kind::Type(Type::Unsigned, Vec::new()),
+						"volatile" => Kind::Type(Type::Volatile, Vec::new()),
+						"void" => Kind::Type(Type::Void, Vec::new()),
+						"as" | "async" | "break" | "continue" | "else" | "export" | "foreach" | "from" | "goto" | "if" | "import" | "in" | "let" | "match" | "receive" | "repeat" | "return" | "select" | "send" | "to" | "type" | "until" | "when" | "while" => Kind::Reserved(item.to_string(), Vec::new()),
 						"false" => Kind::Literal(false),
 						"true" => Kind::Literal(true),
 						
@@ -319,9 +319,9 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 						},
 						
 						_ => if ops.contains(&item.chars().next().unwrap()) {
-							Kind::Op(item.to_string())
+							Kind::Op(item.to_string(), Vec::new())
 						} else {
-							Kind::Var(item.to_string(), vec![Vec::new()])
+							Kind::Var(item.to_string(), vec![Vec::new()], Vec::new())
 						}
 					};
 					
@@ -374,7 +374,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 				panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
 			},
 			
-			Kind::Type(ref typ) if typ == &Type::Macro => {
+			Kind::Type(ref typ, _) if typ == &Type::Macro => {
 				tokens.remove(i);
 				
 				match tokens[i + 1].kind.clone() {
@@ -395,7 +395,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 							
 							code: vec![
 								Token {
-									kind: Kind::Type(Type::Func),
+									kind: Kind::Type(Type::Func, Vec::new()),
 									pos: FilePos {line: 0, col: 0}, // Obviously wrong but the pos is irrelevant anyway
 									children: RefCell::new(Vec::new())
 								},
@@ -482,7 +482,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 							
 							code: vec![
 								Token {
-									kind: Kind::Type(Type::Func),
+									kind: Kind::Type(Type::Func, Vec::new()),
 									pos: FilePos {line: 0, col: 0}, // Obviously wrong but the pos is irrelevant anyway
 									children: RefCell::new(Vec::new())
 								},
@@ -515,13 +515,13 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 						let mut last_token_kind = tokens[i - 1].kind.clone();
 						while i < tokens.len() {
 							match tokens[i].kind.clone() {
-								Kind::Type(_) => match tokens[i + 1].kind {
+								Kind::Type(_,_) => match tokens[i + 1].kind {
 									Kind::GroupOp(ref op) if op == "{" => {
 										let end = i;
 										let mut t = 0;
 										while i > 0 {
 											match tokens[i].kind {
-												Kind::Type(ref typ) => par_type[t].push(typ.clone()),
+												Kind::Type(ref typ, _) => par_type[t].push(typ.clone()),
 												Kind::Op(ref op) if op == "|" => {
 													par_type.push(Vec::new());
 													t += 1;
@@ -543,7 +543,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 									_ => ()
 								},
 								
-								Kind::Var(ref name, _) => if let Kind::Type(_) = last_token_kind { // Function args
+								Kind::Var(ref name, _) => if let Kind::Type(_,_) = last_token_kind { // Function args
 									macros[last_item].func.args.push(FunctionArg {name: name.clone(), typ: Vec::new()}); // Arg types for macro functions are WIP; TODO: replace 'Vec::new()' with actual type
 								} else { // Function name
 									macros[last_item].func.name += name;
@@ -660,7 +660,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 				}
 			},
 			
-			Kind::Type(ref typ) => {
+			Kind::Type(ref typ, ref mut typs) => {
 				let mut types = vec![vec![typ.clone()]];
 				
 				i += 1;
@@ -668,7 +668,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 				let mut t = 0;
 				while i < tokens.len() {
 					match tokens[i].kind {
-						Kind::Type(ref typ) => types[t].push(typ.clone()),
+						Kind::Type(ref typ, _) => types[t].push(typ.clone()),
 						Kind::Op(ref op) if op == "|" => {
 							types.push(Vec::new());
 							t += 1;
@@ -685,7 +685,11 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 				
 				match tokens[i].kind {
 					Kind::Var(_, ref mut typ) => *typ = types, // This should probably be changed because it's not really good for performance to copy a vector like this...
-					_ => i -= 1
+					
+					_ => {
+						i -= 1;
+						*typs = types;
+					}
 				}
 			},
 			

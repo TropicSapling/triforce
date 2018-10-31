@@ -59,24 +59,19 @@ macro_rules! get_val {
 
 macro_rules! def_builtin_op {
 	($a:expr, $b:expr, $name:expr, $typ1:expr, $typ2:expr, $output:expr, $precedence:expr) => (Function {
-		name: String::from($name),
-		pos: 1,
-		args: vec![
-			FunctionArg {
-				name: $a,
-				typ: vec![vec![$typ1]]
-			},
-			FunctionArg {
-				name: $b,
-				typ: vec![vec![$typ2]]
-			}
+		structure: vec![
+			FunctionSection::Arg($a, vec![vec![$typ1]]),
+			FunctionSection::ID($name),
+			FunctionSection::Arg($b, vec![vec![$typ2]])
 		],
-		precedence: $precedence, // NOTE: 0 is *lowest* precedence, not highest. Highest precedence is 255.
+		
 		output: if $output == Type::Void {
 			vec![vec![]]
 		} else {
 			vec![vec![$output]]
-		}
+		},
+		
+		precedence: $precedence // NOTE: 0 is *lowest* precedence, not highest. Highest precedence is 255.
 	})
 }
 
@@ -116,29 +111,25 @@ macro_rules! def_builtin_funcs {
 		def_builtin_op!(String::from("a"), String::from("b"), "^=", Type::Int, Type::Int, Type::Void, 0),
 		
 		Function {
-			name: String::from("println"),
-			pos: 0,
-			args: vec![
-				FunctionArg {
-					name: String::from("a"),
-					typ: vec![vec![Type::Int]] // WIP; No support for strings yet
-				}
+			structure: vec![
+				FunctionSection::ID(String::from("println")),
+				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]) // WIP; No support for strings yet
 			],
-			precedence: 1,
-			output: vec![]
+			
+			output: vec![],
+			
+			precedence: 1
 		},
 		
 		Function {
-			name: String::from("print"),
-			pos: 0,
-			args: vec![
-				FunctionArg {
-					name: String::from("a"),
-					typ: vec![vec![Type::Int]] // WIP; No support for strings yet
-				}
+			structure: vec![
+				FunctionSection::ID(String::from("print")),
+				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]) // WIP; No support for strings yet
 			],
-			precedence: 1,
-			output: vec![]
+			
+			output: vec![],
+			
+			precedence: 1
 		}
 	])
 }
@@ -157,7 +148,103 @@ pub fn def_functions() -> Vec<Function> {
 	def_builtin_funcs!()
 }
 
+fn has_one_arg(structure: Vec<FunctionSection>) -> bool {
+	let mut found_arg = false;
+	for section in structure {
+		if let FunctionSection::Arg(_,_) = section {
+			if found_arg {
+				return false;
+			} else {
+				found_arg = true;
+			}
+		}
+	}
+	
+	found_arg
+}
+
 pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Function> {
+	let mut i = 0;
+	while i < tokens.len() {
+		match tokens[i].kind {
+			Kind::Type(ref typ) if typ == &Type::Func => {
+				let mut func_struct = vec![];
+				let mut precedence = 1;
+				
+				i += 1;
+				
+				// Parse function structure
+				while i < tokens.len() {
+					match tokens[i].kind {
+						Kind::GroupOp(ref op, _) if op == "{" || op == ";" => break, // End of function structure
+						
+						Kind::Op(ref op, _) => {
+							let mut name = op.to_string();
+							
+							i += 1;
+							while i < tokens.len() {
+								match tokens[i].kind {
+									Kind::Op(ref op, _) => {
+										name += op;
+										i += 1;
+									},
+									
+									_ => break
+								}
+							}
+							
+							if name == "->" {
+								break; // End of function structure
+							} else {
+								// Function name
+								func_struct.push(FunctionSection::ID(name));
+								
+								if name == "**" {
+									precedence = 247;
+								}
+							}
+						},
+						
+						Kind::Var(ref name, ref typ, _) => if typ.len() > 0 {
+							// Function arg
+							func_struct.push(FunctionSection::Arg(name, typ));
+						} else {
+							// Function name
+							func_struct.push(FunctionSection::ID(name));
+						},
+						
+						_ => ()
+					}
+					
+					i += 1;
+				}
+				
+				// Get function output
+				let output = if let Kind::Type(_, ref typ) = tokens[i].kind {
+					precedence = if has_one_arg(func_struct) {
+						255
+					} else {
+						2
+					};
+					
+					*typ
+				} else {
+					Vec::new()
+				};
+				
+				functions.push(Function {
+					structure: func_struct,
+					output,
+					precedence
+				});
+			},
+			
+			_ => i += 1
+		}
+	}
+	
+	/////////////// OLD CODE BELOW ///////////////
+	
 	let mut func = false;
 	let mut func_pos = 0;
 	let mut func_args = Vec::new();

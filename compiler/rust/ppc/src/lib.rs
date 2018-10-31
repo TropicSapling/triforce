@@ -2,15 +2,15 @@ use std::{path::PathBuf, cell::RefCell};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
-    GroupOp(String),
+    GroupOp(String, Vec<usize>),
     Literal(bool),
     Number(usize, usize),
-    Op(String),
-    Reserved(String),
+    Op(String, Vec<usize>),
+    Reserved(String, Vec<usize>),
     Str1(String),
     Str2(String),
-    Type(Type),
-    Var(String, Vec<Vec<Type>>)
+    Type(Type, Vec<Vec<Type>>),
+    Var(String, Vec<Vec<Type>>, Vec<usize>)
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -36,11 +36,15 @@ pub enum Type {
 	Volatile
 }
 
+pub enum FunctionSection {
+	ID(String),
+	Arg(String, Vec<Vec<Type>>)
+}
+
 #[derive(Clone, Debug)]
 pub struct Token {
     pub kind: Kind,
-    pub pos: FilePos,
-    pub children: RefCell<Vec<usize>>
+    pub pos: FilePos
 }
 
 #[derive(Clone, Debug)]
@@ -51,17 +55,9 @@ pub struct FilePos {
 
 #[derive(Clone, Debug)]
 pub struct Function {
-	pub name: String,
-	pub pos: usize,
-	pub args: Vec<FunctionArg>,
+	pub structure: Vec<FunctionSection>,
 	pub output: Vec<Vec<Type>>,
 	pub precedence: u8
-}
-
-#[derive(Clone, Debug)]
-pub struct FunctionArg {
-	pub name: String,
-	pub typ: Vec<Vec<Type>>
 }
 
 #[derive(Debug)]
