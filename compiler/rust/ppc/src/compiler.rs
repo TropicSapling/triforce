@@ -423,7 +423,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 	functions
 }
 
-fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec<Function>) {
+/* fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec<Function>) {
 	let (mut i, def) = func;
 	let start = i;
 	let mut j = 0;
@@ -916,39 +916,35 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 	}
 	
 	lowest
-}
+} */
 
-fn parse_if(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
+fn parse_if(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: RefCell<Vec<usize>>) {
 //	let start = *i;
-	let children = match tokens[*i].kind {
-		Kind::Reserved(_, _, ref mut children) => children,
-		_ => unreachable!()
-	};
 	*i += 1;
 	
 	let next = *i;
 	if let Some(token) = parse_statement(tokens, functions, i) {
 //		tokens[start].children.borrow_mut().push(token);
-		children.push(token);
+		children.borrow_mut().push(token);
 	} else {
 //		tokens[start].children.borrow_mut().push(next);
-		children.push(next);
+		children.borrow_mut().push(next);
 	}
 	
 //	tokens[start].children.borrow_mut().push(*i);
-	children.push(*i);
+	children.borrow_mut().push(*i);
 	
 	parse2(tokens, functions, i);
 	*i += 1;
 	
 	match tokens[*i].kind.clone() {
-		Kind::Reserved(ref keyword) if keyword == "else" => {
+		Kind::Reserved(ref keyword, _) if keyword == "else" => {
 			*i += 1;
 //			tokens[start].children.borrow_mut().push(*i);
-			children.push(*i);
+			children.borrow_mut().push(*i);
 			
 			match tokens[*i].kind.clone() {
-				Kind::Reserved(ref keyword) if keyword == "if" => parse_if(tokens, functions, i),
+				Kind::Reserved(ref keyword, children) if keyword == "if" => parse_if(tokens, functions, i, children),
 				_ => parse2(tokens, functions, i)
 			}
 		},
@@ -957,38 +953,30 @@ fn parse_if(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	}
 }
 
-fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
+fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: RefCell<Vec<usize>>) {
 //	let start = *i;
-	let children = match tokens[*i].kind {
-		Kind::Reserved(_, _, ref mut children) => children,
-		_ => unreachable!()
-	};
 	*i += 1;
 	
 	let next = *i;
 	if let Some(token) = parse_statement(tokens, functions, i) {
 //		tokens[start].children.borrow_mut().push(token);
-		children.push(token);
+		children.borrow_mut().push(token);
 	} else {
 //		tokens[start].children.borrow_mut().push(next);
-		children.push(next);
+		children.borrow_mut().push(next);
 	}
 }
 
-fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
+fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, body: RefCell<Vec<usize>>) {
 	let start = *i + 1;
 	
 	{
 //		let mut body = tokens[*i].children.borrow_mut();
-		let mut body = match tokens[*i].kind {
-			Kind::Reserved(_, _, ref mut children) => children,
-			_ => unreachable!()
-		};
 		*i += 1;
 		
 		while *i < tokens.len() {
 			match tokens[*i].kind {
-				Kind::Op(_) => break,
+				Kind::Op(_,_) => break,
 				_ => *i += 1
 			}
 		}
@@ -997,7 +985,7 @@ fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) 
 			panic!("Unexpected EOF");
 		}
 		
-		body.push(*i);
+		body.borrow_mut().push(*i);
 	}
 	
 	*i = start;
@@ -1005,7 +993,7 @@ fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) 
 }
 
 // fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, parent: usize) {
-fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: Vec<usize>) {
+/* fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: Vec<usize>) {
 	let start = *i + 1;
 	
 	{
@@ -1039,7 +1027,7 @@ fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 	
 	*i = start;
 	parse_statement(tokens, functions, i);
-}
+} */
 
 pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	match tokens[*i].kind.clone() {
@@ -1072,22 +1060,22 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 					},
 					
 					_ => match tokens[*i].kind.clone() {
-						Kind::Reserved(ref keyword, _) if keyword == "if" => {
+						Kind::Reserved(ref keyword, grandchildren) if keyword == "if" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
 							children.borrow_mut().push(*i);
-							parse_if(tokens, functions, i);
+							parse_if(tokens, functions, i, grandchildren);
 						},
 						
-						Kind::Reserved(ref keyword, _) if keyword == "return" => {
+						Kind::Reserved(ref keyword, grandchildren) if keyword == "return" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
 							children.borrow_mut().push(*i);
-							parse_ret(tokens, functions, i);
+							parse_ret(tokens, functions, i, grandchildren);
 						},
 						
-						Kind::Reserved(ref keyword, _) if keyword == "let" => {
+						Kind::Reserved(ref keyword, grandchildren) if keyword == "let" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
 							children.borrow_mut().push(*i);
-							parse_let(tokens, functions, i);
+							parse_let(tokens, functions, i, grandchildren);
 						},
 						
 //						Kind::Type(_) => parse_type_decl(tokens, functions, i, parent),
