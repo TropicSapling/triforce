@@ -24,7 +24,7 @@ use std::{
 use lib::get_io;
 use lexer::{lex, lex_ops, lex2, lex3};
 // use compiler::{def_functions, parse, parse2, parse3, compile};
-use compiler::{def_functions, parse};
+use compiler::{def_functions, parse, parse2};
 
 fn count_newlines(s: &str) -> usize {
 	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
@@ -200,7 +200,7 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let mut i = 0;
 	while i < tokens.len() {
-//		parse2(&mut tokens, &functions, &mut i);
+		parse2(&mut tokens, &functions, &mut i);
 		i += 1;
 	}
 	

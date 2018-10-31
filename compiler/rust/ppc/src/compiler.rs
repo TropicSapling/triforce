@@ -423,7 +423,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 	functions
 }
 
-/* fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec<Function>) {
+fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec<Function>) {
 	let (mut i, def) = func;
 	let start = i;
 	let mut j = 0;
@@ -1043,7 +1043,7 @@ fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 
 pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
 	match tokens[*i].kind.clone() {
-		Kind::GroupOp(ref op, ref mut children) if op == "{" => {
+		Kind::GroupOp(ref op, ref children) if op == "{" => {
 //			let parent = *i;
 			let mut nests = 0;
 			*i += 1;
@@ -1051,12 +1051,12 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 			while *i < tokens.len() {
 				let start = *i;
 				
-				if let Kind::GroupOp(ref op) = tokens[*i].kind.clone() {
+				if let Kind::GroupOp(ref op, _) = tokens[*i].kind.clone() {
 					if op == "{" {
 						nests += 1;
 						
 //						{tokens[parent].children.borrow_mut().push(*i);}
-						children.push(*i);
+						children.borrow_mut().push(*i);
 						parse2(tokens, functions, i);
 						
 						*i += 1;
@@ -1065,42 +1065,42 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 				}
 				
 				match tokens[*i].kind.clone() {
-					Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
+					Kind::GroupOp(ref op, _) if op == "}" => if nests > 0 {
 						nests -= 1;
 					} else {
 						break;
 					},
 					
 					_ => match tokens[*i].kind.clone() {
-						Kind::Reserved(ref keyword) if keyword == "if" => {
+						Kind::Reserved(ref keyword, _) if keyword == "if" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
-							children.push(*i);
+							children.borrow_mut().push(*i);
 							parse_if(tokens, functions, i);
 						},
 						
-						Kind::Reserved(ref keyword) if keyword == "return" => {
+						Kind::Reserved(ref keyword, _) if keyword == "return" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
-							children.push(*i);
+							children.borrow_mut().push(*i);
 							parse_ret(tokens, functions, i);
 						},
 						
-						Kind::Reserved(ref keyword) if keyword == "let" => {
+						Kind::Reserved(ref keyword, _) if keyword == "let" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
-							children.push(*i);
+							children.borrow_mut().push(*i);
 							parse_let(tokens, functions, i);
 						},
 						
 //						Kind::Type(_) => parse_type_decl(tokens, functions, i, parent),
 //						Kind::Type(_) => parse_type_decl(tokens, functions, i, children),
 						
-						Kind::GroupOp(ref op) if op == ";" => *i += 1,
+						Kind::GroupOp(ref op, _) if op == ";" => *i += 1,
 						
 						_ => if let Some(token) = parse_statement(tokens, functions, i) {
 //							tokens[parent].children.borrow_mut().push(token);
-							children.push(token);
+							children.borrow_mut().push(token);
 						} else {
 //							tokens[parent].children.borrow_mut().push(start); // Should this really be pushing start instead of *i?
-							children.push(start);
+							children.borrow_mut().push(start);
 						}
 					}
 				}
@@ -1111,7 +1111,7 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 	}
 }
 
-fn correct_indexes_after_del(tokens: &Vec<Token>, i: usize) {
+/* fn correct_indexes_after_del(tokens: &Vec<Token>, i: usize) {
 	for token in tokens {
 		let mut children = token.children.borrow_mut();
 		let mut c = 0;
