@@ -60,7 +60,7 @@ macro_rules! def_builtin_op {
 	($a:expr, $b:expr, $name:expr, $typ1:expr, $typ2:expr, $output:expr, $precedence:expr) => (Function {
 		structure: vec![
 			FunctionSection::Arg($a, vec![vec![$typ1]]),
-			FunctionSection::ID(String::from($name)),
+			FunctionSection::OpID(String::from($name)),
 			FunctionSection::Arg($b, vec![vec![$typ2]])
 		],
 		
@@ -113,7 +113,7 @@ macro_rules! def_builtin_funcs {
 			structure: vec![
 				FunctionSection::ID(String::from("let")),
 				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]), // WIP; No support for any types yet
-				FunctionSection::ID(String::from("=")),
+				FunctionSection::OpID(String::from("=")),
 				FunctionSection::Arg(String::from("b"), vec![vec![Type::Int]]), // WIP; No support for any types yet
 			],
 			
@@ -214,7 +214,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 									precedence = 247;
 								}
 								
-								func_struct.push(FunctionSection::ID(name));
+								func_struct.push(FunctionSection::OpID(name));
 							}
 						},
 						
@@ -984,10 +984,10 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 			Some(func) => {
 				lowest = Some(func.0);
 				
-				match func.1 {
+/*				match func.1 {
 					Some(def) => parse_func(tokens, (func.0, def), functions),
 					None => parse2(tokens, functions, &mut func.0.clone())
-				}
+				} */
 			},
 			None => break
 		}
@@ -1144,10 +1144,10 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 							parse_if(tokens, functions, i, grandchildren);
 						}, */
 						
-						Kind::Reserved(ref keyword, grandchildren) if keyword == "return" => {
+						Kind::Reserved(ref keyword, ref grandchildren) if keyword == "return" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
 							children.borrow_mut().push(*i);
-							parse_ret(tokens, functions, i, grandchildren);
+							parse_ret(tokens, functions, i, grandchildren.clone());
 						},
 						
 /*						Kind::Reserved(ref keyword, grandchildren) if keyword == "let" => {

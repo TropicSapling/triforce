@@ -38,6 +38,7 @@ pub enum Type {
 #[derive(Clone, Debug)]
 pub enum FunctionSection {
 	ID(String),
+	OpID(String),
 	Arg(String, Vec<Vec<Type>>)
 }
 
