@@ -964,14 +964,14 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	limit
 }
 
-fn update_matches(matches: &mut Vec<(&Function, Vec<&FunctionSection>, usize)>, functions: &Vec<Function>, name: String, depth: usize, is_op: bool) {
-	for f in functions {
+fn update_matches<'a>(matches: &mut Vec<(usize, Vec<&'a FunctionSection>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, is_op: bool) {
+	for (i, f) in functions.iter().enumerate() {
 		for section in &f.structure {
 			match section {
-				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name => if let Some(m) = matches.iter().find(|m| m.0 as *const _ == f as *const _) {
+				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name => if let Some(m) = matches.iter().find(|m| m.0 == i) {
 					
 				} else {
-					matches.push((f, vec![section], depth));
+					matches.push((i, vec![section], depth));
 				},
 				
 				_ => ()
