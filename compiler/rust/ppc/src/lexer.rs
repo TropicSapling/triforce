@@ -30,7 +30,7 @@ pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 	let mut new_tokens = Vec::new();
 	
 	let mut ignoring = false;
-	let mut ignoring2 = false;
+	let mut ignoring2 = 0;
 	let mut in_str = false;
 	let mut in_str2 = false;
 	let mut escaping = false;
@@ -43,17 +43,29 @@ pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 			}
 			
 			new_tokens.push(tokens[i]);
-		} else if ignoring2 {
+		} else if ignoring2 > 0 {
 			if tokens[i] == "*" && tokens[i + 1] == "/" {
-				ignoring2 = false;
+				ignoring2 -= 1;
+				new_tokens.push(tokens[i]);
+				i += 1;
+			} else if tokens[i] == "/" && tokens[i + 1] == "*" {
+				ignoring2 += 1;
+				new_tokens.push(tokens[i]);
+				i += 1;
 			}
 			
 			new_tokens.push(tokens[i]);
 		} else if tokens[i] == "/" && tokens[i + 1] == "/" {
 			ignoring = true;
+			
+			new_tokens.push(tokens[i]);
+			i += 1;
 			new_tokens.push(tokens[i]);
 		} else if tokens[i] == "/" && tokens[i + 1] == "*" {
-			ignoring2 = true;
+			ignoring2 = 1;
+			
+			new_tokens.push(tokens[i]);
+			i += 1;
 			new_tokens.push(tokens[i]);
 		} else if escaping {
 			new_tokens.push(tokens[i]);
@@ -130,8 +142,9 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 	let mut in_str2 = false;
 	let mut escaping = false;
 	let mut ignoring = false;
-	let mut ignoring2 = false;
+	let mut ignoring2 = 0;
 	let mut possible_comment = false;
+	let mut possible_comment_end = false;
 	
 	let mut num_pos = 0;
 	let mut line = 1;
@@ -144,16 +157,26 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 				col = 0;
 				ignoring = false;
 			}
-		} else if ignoring2 {
-			if possible_comment {
+		} else if ignoring2 > 0 {
+			if possible_comment_end {
 				if item == "/" {
-					ignoring2 = false;
+					ignoring2 -= 1;
 				}
 				
-				possible_comment = false;
-			}
-			
-			if item == "*" {
+				if item != "*" {
+					possible_comment_end = false;
+				}
+			} else if possible_comment {
+				if item == "*" {
+					ignoring2 += 1;
+				}
+				
+				if item != "/" {
+					possible_comment = false;
+				}
+			} else if item == "*" {
+				possible_comment_end = true;
+			} else if item == "/" {
 				possible_comment = true;
 			}
 			
@@ -169,7 +192,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 					
 					continue;
 				} else if item == "*" {
-					ignoring2 = true;
+					ignoring2 = 1;
 					possible_comment = false;
 					
 					continue;
