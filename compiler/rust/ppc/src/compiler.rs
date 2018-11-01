@@ -970,8 +970,18 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<&'a FunctionSection>, usize)
 		for (j, section) in f.structure.iter().enumerate() {
 			match section {
 				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name => if let Some(m) = matches.iter_mut().find(|m| m.0 == i) {
-					if m.1.len() < j {
+					if m.1.len() == j {
 						m.1.push(section);
+						break;
+					}
+				} else {
+					stupid_rs_scopes = true;
+				},
+				
+				FunctionSection::Arg(_,_) => if let Some(m) = matches.iter_mut().find(|m| m.0 == i) {
+					if m.1.len() == j {
+						m.1.push(section);
+						break;
 					}
 				} else {
 					stupid_rs_scopes = true;
@@ -982,7 +992,7 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<&'a FunctionSection>, usize)
 			
 			if stupid_rs_scopes {
 				matches.push((i, vec![section], depth));
-				stupid_rs_scopes = false;
+				break;
 			}
 		}
 	}
