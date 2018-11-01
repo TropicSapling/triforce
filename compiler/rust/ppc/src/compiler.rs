@@ -996,7 +996,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 	lowest
 }
 
-fn parse_if(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: RefCell<Vec<usize>>) {
+/* fn parse_if(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: RefCell<Vec<usize>>) {
 //	let start = *i;
 	*i += 1;
 	
@@ -1029,7 +1029,7 @@ fn parse_if(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, c
 		
 		_ => ()
 	}
-}
+} */
 
 fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: RefCell<Vec<usize>>) {
 //	let start = *i;
@@ -1138,11 +1138,11 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 					},
 					
 					_ => match tokens[*i].kind.clone() {
-						Kind::Reserved(ref keyword, grandchildren) if keyword == "if" => {
+/*						Kind::Reserved(ref keyword, grandchildren) if keyword == "if" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
 							children.borrow_mut().push(*i);
 							parse_if(tokens, functions, i, grandchildren);
-						},
+						}, */
 						
 						Kind::Reserved(ref keyword, grandchildren) if keyword == "return" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
@@ -1150,11 +1150,11 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 							parse_ret(tokens, functions, i, grandchildren);
 						},
 						
-						Kind::Reserved(ref keyword, grandchildren) if keyword == "let" => {
+/*						Kind::Reserved(ref keyword, grandchildren) if keyword == "let" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
 							children.borrow_mut().push(*i);
 							parse_let(tokens, functions, i, grandchildren);
-						},
+						}, */
 						
 //						Kind::Type(_) => parse_type_decl(tokens, functions, i, parent),
 //						Kind::Type(_) => parse_type_decl(tokens, functions, i, children),
