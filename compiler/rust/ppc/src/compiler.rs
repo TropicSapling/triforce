@@ -964,6 +964,22 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	limit
 }
 
+fn update_matches(matches: &mut Vec<(&Function, Vec<&FunctionSection>, usize)>, functions: &Vec<Function>, name: String, depth: usize, is_op: bool) {
+	for f in functions {
+		for section in &f.structure {
+			match section {
+				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name => if let Some(m) = matches.iter().find(|m| m.0 as *const _ == f as *const _) {
+					
+				} else {
+					matches.push((f, vec![section], depth));
+				},
+				
+				_ => ()
+			}
+		}
+	}
+}
+
 pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
 	let start = *i;
 	let limit = get_parse_limit(tokens, functions, i);
@@ -971,14 +987,48 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 	
 	loop {
 		let mut highest: Option<(usize, Option<&Function>, u8)> = None;
+		let mut matches = Vec::new();
 		let mut depth = 0;
 		let mut depth2 = 0;
 		*i = start;
 		while *i < limit {
-			
+			match tokens[*i].kind {
+				Kind::GroupOp(ref op, _) if op == "(" => depth += 1,
+				Kind::GroupOp(ref op, _) if op == ")" => if depth > 0 {
+					depth -= 1;
+				} else {
+					panic!("{}:{} Excess ending parenthesis", tokens[*i].pos.line, tokens[*i].pos.col);
+				},
+				
+				Kind::GroupOp(ref op, _) if op == "{" => depth2 += 1,
+				Kind::GroupOp(ref op, _) if op == "}" => depth2 -= 1,
+				
+				Kind::Op(ref op, _) => {
+					let mut name = op.to_string();
+					
+					*i += 1;
+					while *i < limit {
+						match tokens[*i].kind {
+							Kind::Op(ref op, _) => name += op,
+							_ => break
+						}
+						
+						*i += 1;
+					}
+					*i -= 1;
+					
+					update_matches(&mut matches, functions, name, depth + depth2, true);
+				},
+				
+				Kind::Var(ref name, _, _) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, false),
+				
+				_ => ()
+			}
 			
 			*i += 1;
 		}
+		
+		println!("{:#?}", matches);
 		
 		match highest {
 			Some(func) => {

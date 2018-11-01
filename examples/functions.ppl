@@ -48,11 +48,11 @@ func (int i) backwards_println {
 	println i;
 }
 
-func (int a) (int b) +++ (int c) (int d) -> int {
+func (int a) ++ (int b) + (int c) ++ (int d) -> int {
 	return a + b + c + d; // To test return keyword
 }
 
-func (int a) (int b) --- (int c) (int d) -> int {
+func (int a) ++ (int b) - (int c) ++ (int d) -> int {
 	a + b - c - d
 }
 
@@ -61,7 +61,7 @@ func no_args {
 }
 
 func init {
-	(1 2 +++ (3 - 1) * 4 (5 + 1) (6 + 1) --- 7 8) - 1 backwards_println; // Like the most complex expression I can think of, took ages to make this get parsed successfully ;-;
+	(1 ++ 2 + (3 - 1) * 4 ++ (5 + 1) ++ (6 + 1) - 7 ++ 8) - 1 backwards_println; // Like the most complex expression I can think of, took ages to make this get parsed successfully ;-;
 	
 /*	let res = 1 * 2 + {println "This was printed from inside an expression!"; 3 ** 4} * 5 + 6; // 'let' is necessary to allow variable shadowing, decrease bugs and make code clearer for both the compiler and the reader
 	res += 123;
