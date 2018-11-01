@@ -125,28 +125,46 @@ fn main() -> Result<(), std::io::Error> {
 		operator ,;
 		operator @;
 		
-/*		macro func (int a)++ {
+/*		macro if (cond) (body) {
+			return {
+/*				let res;
+				cond && res = body;
+				res */
+				cond && body
+			};
+		}
+		
+		macro if (cond) (body) else (expr) {
+			return {
+/*				let res;
+				(cond && res = body) || res = expr;
+				res */
+				(cond && body) || expr
+			};
+		}
+		
+		macro (int a)++ {
 			return {
 				a += 1;
 				a - 1
 			};
 		}
 		
-		macro func ++(int a) {
+		macro ++(int a) {
 			return {
 				a += 1;
 				a
 			};
 		}
 		
-		macro func (int a)-- {
+		macro (int a)-- {
 			return {
 				a -= 1;
 				a + 1
 			};
 		}
 		
-		macro func --(int a) {
+		macro --(int a) {
 			return {
 				a -= 1;
 				a

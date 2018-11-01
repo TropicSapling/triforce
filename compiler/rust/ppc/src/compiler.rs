@@ -111,6 +111,19 @@ macro_rules! def_builtin_funcs {
 		
 		Function {
 			structure: vec![
+				FunctionSection::ID(String::from("let")),
+				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]), // WIP; No support for any types yet
+				FunctionSection::ID(String::from("=")),
+				FunctionSection::Arg(String::from("b"), vec![vec![Type::Int]]), // WIP; No support for any types yet
+			],
+			
+			output: vec![],
+			
+			precedence: 0
+		},
+		
+		Function {
+			structure: vec![
 				FunctionSection::ID(String::from("println")),
 				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]) // WIP; No support for strings yet
 			],

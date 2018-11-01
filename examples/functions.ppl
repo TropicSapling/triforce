@@ -32,7 +32,7 @@ macro $(int n) {
 func (int i) backwards_println {
 	if true { // To test if statements
 		println i;
-	}
+	};
 	
 	if 9 + 10 == 21 || 10 + 9 == 21 {
 		println false;
@@ -40,10 +40,10 @@ func (int i) backwards_println {
 		if true { // To test nested if statements
 			println true;
 			println true;
-		}
+		};
 	} else {
 		println false;
-	}
+	};
 }
 
 func (int a) (int b) +++ (int c) (int d) -> int {
