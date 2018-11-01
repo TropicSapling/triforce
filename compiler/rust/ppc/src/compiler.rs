@@ -918,6 +918,71 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 	lowest
 } */
 
+fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> usize {
+	let mut depth = 0;
+	let mut limit = tokens.len();
+	let start = *i;
+	while *i < limit {
+		match tokens[*i].kind {
+			Kind::GroupOp(ref op, _) if op == ";" => if depth == 0 {
+				limit = *i;
+				break;
+			},
+			
+			Kind::GroupOp(ref op, _) if op == "{" => {
+				depth += 1;
+			},
+			
+			Kind::GroupOp(ref op, _) if op == "}" => if depth > 0 {
+				depth -= 1;
+			} else {
+				limit = *i;
+				break;
+			},
+			
+			_ => ()
+		}
+		
+		*i += 1;
+	}
+	
+	*i = start;
+	
+	limit
+}
+
+pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
+	let start = *i;
+	let limit = get_parse_limit(tokens, functions, i);
+	let mut lowest = None;
+	
+	loop {
+		let mut highest: Option<(usize, Option<&Function>, u8)> = None;
+		let mut depth = 0;
+		let mut depth2 = 0;
+		*i = start;
+		while *i < limit {
+			
+			
+			*i += 1;
+		}
+		
+		match highest {
+			Some(func) => {
+				lowest = Some(func.0);
+				
+				match func.1 {
+					Some(def) => parse_func(tokens, (func.0, def), functions),
+					None => parse2(tokens, functions, &mut func.0.clone())
+				}
+			},
+			None => break
+		}
+	}
+	
+	lowest
+}
+
 fn parse_if(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: RefCell<Vec<usize>>) {
 //	let start = *i;
 	*i += 1;
