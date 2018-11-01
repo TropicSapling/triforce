@@ -967,10 +967,12 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 fn update_matches<'a>(matches: &mut Vec<(usize, Vec<&'a FunctionSection>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, is_op: bool) {
 	for (i, f) in functions.iter().enumerate() {
 		let mut stupid_rs_scopes = false;
-		for section in &f.structure {
+		for (j, section) in f.structure.iter().enumerate() {
 			match section {
 				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name => if let Some(m) = matches.iter_mut().find(|m| m.0 == i) {
-					m.1.push(section);
+					if m.1.len() < j {
+						m.1.push(section);
+					}
 				} else {
 					stupid_rs_scopes = true;
 				},
