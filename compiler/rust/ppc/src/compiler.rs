@@ -989,11 +989,9 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 			}
 		}
 	} else {
-		all_children.push(blueprint[0].1); // This needs improvements, by doing this you can't use the value returned from the function
-		
 		match &tokens[blueprint[0].1].kind {
-			Kind::Op(_, _, ref sidekicks) | Kind::Var(_, _, _, ref sidekicks) => {
-				sidekicks.borrow_mut().push(usize::MAX);
+			Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => {
+				children.borrow_mut().push(usize::MAX);
 			},
 			
 			_ => unreachable!()
