@@ -949,6 +949,28 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 							
 							i -= 1;
 						}
+						
+						let mut s2 = s + 1;
+						while s2 < blueprint.len() {
+							match blueprint[s2].0 {
+								FunctionSection::ID(_) | FunctionSection::OpID(_) => break,
+								_ => s2 += 1
+							}
+						}
+						
+						if s2 >= blueprint.len() {
+							let mut i = section.1 + 1;
+							let mut s = s + 1;
+							while i < tokens.len() && s < blueprint.len() {
+								if !all_children.contains(&i) {
+									children.borrow_mut().push(i);
+									all_children.push(i);
+									s += 1;
+								}
+								
+								i += 1;
+							}
+						}
 					},
 					
 					_ => unreachable!()
