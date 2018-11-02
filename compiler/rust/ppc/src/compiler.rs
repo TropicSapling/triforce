@@ -928,27 +928,16 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 		_ => unreachable!()
 	};
 	
-	for section in blueprint {
-		match section.0 {
-			FunctionSection::ID(_) | FunctionSection::OpID(_) => {
-				parents = match &tokens[section.1].kind {
-					Kind::GroupOp(_, _, ref arr) | Kind::Op(_, _, ref arr) | Kind::Var(_, _, _, ref arr) => arr,
-					_ => unreachable!()
-				};
-				
-				break;
-			},
-			
-			_ => ()
-		}
-	}
-	
 	for (s, section) in blueprint.iter().enumerate() {
 		match section.0 {
 			FunctionSection::ID(_) | FunctionSection::OpID(_) => {
 				let parent = &tokens[section.1];
 				match parent.kind {
-					Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => {
+					Kind::Op(_, ref children, ref sidekicks) | Kind::Var(_, _, ref children, ref sidekicks) => {
+						if last_s == 0 {
+							parents = sidekicks;
+						}
+						
 						let mut i = section.1 - 1;
 						let mut c = 0;
 						while i > 0 && c < s - last_s {
@@ -965,8 +954,12 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 					_ => unreachable!()
 				}
 				
+				if last_s != 0 {
+					parents.borrow_mut().push(section.1);
+					all_children.push(section.1);
+				}
+				
 				last_s = s + 1;
-				parents.borrow_mut().push(section.1);
 			},
 			
 			_ => ()
