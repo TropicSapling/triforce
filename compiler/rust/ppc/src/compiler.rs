@@ -977,7 +977,7 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 						_ => unreachable!()
 					}
 					
-					if last_s != 0 {
+					if last_s != 0 { // BUG: NEVER RUNS
 						parents.borrow_mut().push(section.1);
 						all_children.push(section.1);
 					}
@@ -989,7 +989,7 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 			}
 		}
 	} else {
-		all_children.push(blueprint[0].1);
+		all_children.push(blueprint[0].1); // This needs improvements, by doing this you can't use the value returned from the function
 		
 		match &tokens[blueprint[0].1].kind {
 			Kind::Op(_, _, ref sidekicks) | Kind::Var(_, _, _, ref sidekicks) => {
@@ -1117,7 +1117,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 					cleanup_matches2(&mut matches, functions, depth + depth2);
 				},
 				
-				Kind::Op(ref op, _, _) => {
+				Kind::Op(ref op, ref children, _) => {
 					let mut name = op.to_string();
 					let start = *i;
 					
@@ -1132,12 +1132,12 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 					}
 					*i -= 1;
 					
-					if !all_children.contains(&start) {
+					if children.borrow().len() == 0 && !all_children.contains(&start) {
 						update_matches(&mut matches, functions, name, depth + depth2, start, true);
 					}
 				},
 				
-				Kind::Var(ref name, _, _, _) if !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false),
+				Kind::Var(ref name, _, ref children, _) if children.borrow().len() == 0 && !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false),
 				
 				_ => if !all_children.contains(i) {
 					update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false);
