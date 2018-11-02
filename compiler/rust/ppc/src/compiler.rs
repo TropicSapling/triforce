@@ -1035,35 +1035,30 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 }
 
 fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, pos: usize, is_op: bool) {
-	let mut updated = Vec::new();
 	for (i, f) in functions.iter().enumerate() {
 		for (j, section) in f.structure.iter().enumerate() {
 			match section {
 				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name => {
-					for (mid, m) in matches.iter_mut().filter(|m| m.0 == i).enumerate() {
-						if m.1.len() == j && m.2 == depth && !updated.contains(&mid) {
+					for m in matches.iter_mut().filter(|m| m.0 == i) {
+						if m.1.len() == j && m.2 == depth && pos != m.1[m.1.len() - 1].1 {
 							m.1.push((section, pos));
-							updated.push(mid);
 						}
 					}
 					
 					if j == 0 {
 						matches.push((i, vec![(section, pos)], depth));
-						updated.push(matches.len() - 1);
 					}
 				},
 				
 				FunctionSection::Arg(_,_) => {
-					for (mid, m) in matches.iter_mut().filter(|m| m.0 == i).enumerate() {
-						if m.1.len() == j && m.2 == depth && !updated.contains(&mid) {
+					for m in matches.iter_mut().filter(|m| m.0 == i) {
+						if m.1.len() == j && m.2 == depth && pos != m.1[m.1.len() - 1].1 {
 							m.1.push((section, pos));
-							updated.push(mid);
 						}
 					}
 					
 					if j == 0 {
 						matches.push((i, vec![(section, pos)], depth));
-						updated.push(matches.len() - 1);
 					}
 				},
 				
@@ -1122,7 +1117,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 					cleanup_matches2(&mut matches, functions, depth + depth2);
 				},
 				
-				Kind::Op(ref op, _, _) if !all_children.contains(i) => {
+				Kind::Op(ref op, _, _) => {
 					let mut name = op.to_string();
 					let start = *i;
 					
@@ -1137,7 +1132,9 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 					}
 					*i -= 1;
 					
-					update_matches(&mut matches, functions, name, depth + depth2, start, true);
+					if !all_children.contains(&start) {
+						update_matches(&mut matches, functions, name, depth + depth2, start, true);
+					}
 				},
 				
 				Kind::Var(ref name, _, _, _) if !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false),
@@ -1155,6 +1152,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 		match get_highest(&matches, functions) {
 			Some(m) => {
 				lowest = Some(m.0);
+				println!("{:?}", m);
 				parse_func(tokens, &m.1, all_children);
 			},
 			
