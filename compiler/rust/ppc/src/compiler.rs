@@ -931,6 +931,10 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 	lowest
 } */
 
+fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)>) {
+	// WIP
+}
+
 fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> usize {
 	let mut depth = 0;
 	let mut limit = tokens.len();
@@ -1032,7 +1036,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 	let mut lowest = None;
 	
 	loop {
-		let mut highest: Option<(usize, Option<&Function>, u8)> = None;
+//		let mut highest: Option<(usize, Option<&Function>, u8)> = None;
 		let mut matches = Vec::new();
 		let mut depth = 0;
 		let mut depth2 = 0;
@@ -1081,17 +1085,17 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 		
 		cleanup_matches(&mut matches, functions);
 		
-		println!("{:#?}", get_highest(&matches, functions));
-		
-		match highest {
-			Some(func) => {
-				lowest = Some(func.0);
+		match get_highest(&matches, functions) {
+			Some(m) => {
+				lowest = Some(m.0);
+				parse_func(tokens, &m.1);
 				
 /*				match func.1 {
 					Some(def) => parse_func(tokens, (func.0, def), functions),
 					None => parse2(tokens, functions, &mut func.0.clone())
 				} */
 			},
+			
 			None => break
 		}
 	}
