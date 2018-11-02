@@ -18,7 +18,7 @@ macro_rules! get_val {
 		use lib::Kind::*;
 		use lib::Type::*;
 		match $e {
-			GroupOp(ref val) => val.to_string(),
+			GroupOp(ref val, _, _) => val.to_string(),
 			Literal(b) => if b {
 				String::from("true")
 			} else {
@@ -27,11 +27,11 @@ macro_rules! get_val {
 			Number(int, fraction) => {
 				int.to_string() + "." + &fraction.to_string()
 			},
-			Op(ref val) => val.to_string(),
-			Reserved(ref val) => val.to_string(),
+			Op(ref val, _, _) => val.to_string(),
+			Reserved(ref val, _) => val.to_string(),
 			Str1(ref val) => val.to_string(),
 			Str2(ref val) => val.to_string(),
-			Type(ref typ) => match typ {
+			Type(ref typ, _) => match typ {
 				&Array => String::from("array"),
 				&Chan => String::from("chan"),
 				&Const => String::from("const"),
@@ -51,7 +51,7 @@ macro_rules! get_val {
 				&Unsigned => String::from("unsigned"),
 				&Void => String::from("void"),
 			},
-			Var(ref name, _) => name.to_string()
+			Var(ref name, _, _, _) => name.to_string()
 		}
 	});
 }
@@ -146,16 +146,6 @@ macro_rules! def_builtin_funcs {
 	])
 }
 
-/* fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function> {
-	for def in defs {
-		if def.name == call {
-			return Some(&def);
-		}
-	}
-	
-	None
-} */
-
 pub fn def_functions() -> Vec<Function> {
 	def_builtin_funcs!()
 }
@@ -188,15 +178,15 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 				// Parse function structure
 				while i < tokens.len() {
 					match tokens[i].kind {
-						Kind::GroupOp(ref op, _) if op == "{" || op == ";" => break, // End of function structure
+						Kind::GroupOp(ref op, _, _) if op == "{" || op == ";" => break, // End of function structure
 						
-						Kind::Op(ref op, _) => {
+						Kind::Op(ref op, _, _) => {
 							let mut name = op.to_string();
 							
 							i += 1;
 							while i < tokens.len() {
 								match tokens[i].kind {
-									Kind::Op(ref op, _) => {
+									Kind::Op(ref op, _, _) => {
 										name += op;
 										i += 1;
 									},
@@ -218,7 +208,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 							}
 						},
 						
-						Kind::Var(ref name, ref typ, _) => if typ[0].len() > 0 {
+						Kind::Var(ref name, ref typ, _, _) => if typ[0].len() > 0 {
 							// Function arg
 							func_struct.push(FunctionSection::Arg(name.to_string(), typ.clone()));
 						} else {
@@ -255,7 +245,7 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 				
 				while i < tokens.len() {
 					match tokens[i].kind {
-						Kind::GroupOp(ref op, _) if op == "{" || op == ";" => break,
+						Kind::GroupOp(ref op, _, _) if op == "{" || op == ";" => break,
 						_ => i += 1
 					}
 				}
@@ -933,12 +923,25 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 
 fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)>, all_children: &mut Vec<usize>) {
 	let mut last_s = 0;
+	let mut main_parent = &tokens[0];
+	
+	for section in blueprint {
+		match section.0 {
+			FunctionSection::ID(_) | FunctionSection::OpID(_) => {
+				main_parent = &tokens[section.1];
+				break;
+			},
+			
+			_ => ()
+		}
+	};
+	
 	for (s, section) in blueprint.iter().enumerate() {
 		match section.0 {
 			FunctionSection::ID(_) | FunctionSection::OpID(_) => {
 				let parent = &tokens[section.1];
 				match parent.kind {
-					Kind::Op(_, ref children) | Kind::Var(_, _, ref children) => {
+					Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => {
 						let mut i = section.1 - 1;
 						let mut c = 0;
 						while i > 0 && c < s - last_s {
@@ -969,16 +972,16 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	let start = *i;
 	while *i < limit {
 		match tokens[*i].kind {
-			Kind::GroupOp(ref op, _) if op == ";" => if depth == 0 {
+			Kind::GroupOp(ref op, _, _) if op == ";" => if depth == 0 {
 				limit = *i;
 				break;
 			},
 			
-			Kind::GroupOp(ref op, _) if op == "{" => {
+			Kind::GroupOp(ref op, _, _) if op == "{" => {
 				depth += 1;
 			},
 			
-			Kind::GroupOp(ref op, _) if op == "}" => if depth > 0 {
+			Kind::GroupOp(ref op, _, _) if op == "}" => if depth > 0 {
 				depth -= 1;
 			} else {
 				limit = *i;
@@ -1070,28 +1073,28 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 		*i = start;
 		while *i < limit {
 			match tokens[*i].kind {
-				Kind::GroupOp(ref op, _) if op == "(" => depth += 1,
-				Kind::GroupOp(ref op, _) if op == ")" => if depth > 0 {
+				Kind::GroupOp(ref op, _, _) if op == "(" => depth += 1,
+				Kind::GroupOp(ref op, _, _) if op == ")" => if depth > 0 {
 					depth -= 1;
 					cleanup_matches2(&mut matches, functions, depth + depth2);
 				} else {
 					panic!("{}:{} Excess ending parenthesis", tokens[*i].pos.line, tokens[*i].pos.col);
 				},
 				
-				Kind::GroupOp(ref op, _) if op == "{" => depth2 += 1,
-				Kind::GroupOp(ref op, _) if op == "}" => {
+				Kind::GroupOp(ref op, _, _) if op == "{" => depth2 += 1,
+				Kind::GroupOp(ref op, _, _) if op == "}" => {
 					depth2 -= 1;
 					cleanup_matches2(&mut matches, functions, depth + depth2);
 				},
 				
-				Kind::Op(ref op, _) if !all_children.contains(i) => {
+				Kind::Op(ref op, _, _) if !all_children.contains(i) => {
 					let mut name = op.to_string();
 					let start = *i;
 					
 					*i += 1;
 					while *i < limit {
 						match tokens[*i].kind {
-							Kind::Op(ref op, _) => name += op,
+							Kind::Op(ref op, _, _) => name += op,
 							_ => break
 						}
 						
@@ -1102,7 +1105,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 					update_matches(&mut matches, functions, name, depth + depth2, start, true);
 				},
 				
-				Kind::Var(ref name, _, _) if !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false),
+				Kind::Var(ref name, _, _, _) if !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false),
 				
 				_ => if !all_children.contains(i) {
 					update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false);
@@ -1185,7 +1188,7 @@ fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &
 		
 		while *i < tokens.len() {
 			match tokens[*i].kind {
-				Kind::Op(_,_) => break,
+				Kind::Op(_,_,_) => break,
 				_ => *i += 1
 			}
 		}
@@ -1240,7 +1243,7 @@ fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &
 
 pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) {
 	match tokens[*i].kind.clone() {
-		Kind::GroupOp(ref op, ref children) if op == "{" => {
+		Kind::GroupOp(ref op, ref children, _) if op == "{" => {
 //			let parent = *i;
 			let mut nests = 0;
 			*i += 1;
@@ -1248,7 +1251,7 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: 
 			while *i < tokens.len() {
 				let start = *i;
 				
-				if let Kind::GroupOp(ref op, _) = tokens[*i].kind.clone() {
+				if let Kind::GroupOp(ref op, _, _) = tokens[*i].kind.clone() {
 					if op == "{" {
 						nests += 1;
 						
@@ -1262,7 +1265,7 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: 
 				}
 				
 				match tokens[*i].kind.clone() {
-					Kind::GroupOp(ref op, _) if op == "}" => if nests > 0 {
+					Kind::GroupOp(ref op, _, _) if op == "}" => if nests > 0 {
 						nests -= 1;
 					} else {
 						break;
@@ -1290,7 +1293,7 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: 
 //						Kind::Type(_) => parse_type_decl(tokens, functions, i, parent),
 //						Kind::Type(_) => parse_type_decl(tokens, functions, i, children),
 						
-						Kind::GroupOp(ref op, _) if op == ";" => *i += 1,
+						Kind::GroupOp(ref op, _, _) if op == ";" => *i += 1,
 						
 						_ => if let Some(token) = parse_statement(tokens, functions, all_children, i) {
 //							tokens[parent].children.borrow_mut().push(token);

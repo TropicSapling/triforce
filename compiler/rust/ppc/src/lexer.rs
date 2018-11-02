@@ -199,7 +199,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 				} else {
 					possible_comment = false;
 					
-					string.kind = Kind::Op(String::from("/"), RefCell::new(Vec::new()));
+					string.kind = Kind::Op(String::from("/"), RefCell::new(Vec::new()), RefCell::new(Vec::new()));
 					string.pos = if line > line_offset {
 						FilePos {line: line - line_offset, col}
 					} else {
@@ -304,7 +304,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 					num_pos = 1;
 				} else {
 					string.kind = match item {
-						"{" | "}" | "[" | "]" | "(" | ")" | ";" => Kind::GroupOp(item.to_string(), RefCell::new(Vec::new())),
+						"{" | "}" | "[" | "]" | "(" | ")" | ";" => Kind::GroupOp(item.to_string(), RefCell::new(Vec::new()), RefCell::new(Vec::new())),
 						"array" => Kind::Type(Type::Array, Vec::new()),
 						"bool" => Kind::Type(Type::Bool, Vec::new()),
 						"chan" => Kind::Type(Type::Chan, Vec::new()),
@@ -339,9 +339,9 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 						},
 						
 						_ => if ops.contains(&item.chars().next().unwrap()) {
-							Kind::Op(item.to_string(), RefCell::new(Vec::new()))
+							Kind::Op(item.to_string(), RefCell::new(Vec::new()), RefCell::new(Vec::new()))
 						} else {
-							Kind::Var(item.to_string(), vec![Vec::new()], RefCell::new(Vec::new()))
+							Kind::Var(item.to_string(), vec![Vec::new()], RefCell::new(Vec::new()), RefCell::new(Vec::new()))
 						}
 					};
 					
@@ -371,7 +371,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind.clone() {
-			Kind::GroupOp(ref op, _) if op == "{" => {
+			Kind::GroupOp(ref op, _, _) if op == "{" => {
 				full_depth += 1;
 				
 				if full_depth + 1 > rows.len() {
@@ -387,7 +387,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 				}
 			},
 			
-			Kind::GroupOp(ref op, _) if op == "}" => if full_depth > 0 {
+			Kind::GroupOp(ref op, _, _) if op == "}" => if full_depth > 0 {
 				m_default_val -= mdv_changes[full_depth];
 				full_depth -= 1;
 			} else {
@@ -689,7 +689,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 				while i < tokens.len() {
 					match tokens[i].kind {
 						Kind::Type(ref typ, _) => types[t].push(typ.clone()),
-						Kind::Op(ref op, _) if op == "|" => {
+						Kind::Op(ref op, _, _) if op == "|" => {
 							types.push(Vec::new());
 							t += 1;
 						},
@@ -704,7 +704,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 				}
 				
 				match tokens[i].kind {
-					Kind::Var(_, ref mut typ, _) => *typ = types, // This should probably be changed because it's not really good for performance to copy a vector like this...
+					Kind::Var(_, ref mut typ, _, _) => *typ = types, // This should probably be changed because it's not really good for performance to copy a vector like this...
 					
 					_ => {
 						i -= 1;
