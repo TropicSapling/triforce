@@ -1068,6 +1068,37 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 
 fn cleanup_matches(matches: &mut Vec<(usize, Vec<(&FunctionSection, usize)>, usize)>, functions: &Vec<Function>) {
 	matches.retain(|m| m.1.len() == functions[m.0].structure.len());
+	
+	let mut i = 0;
+	while i < matches.len() {
+		let mut found = false;
+		for (j, m) in matches.iter().enumerate() {
+			if j != i {
+				let mut matching = true;
+				for section in &matches[i].1 {
+					match section.0 {
+						FunctionSection::ID(_) | FunctionSection::OpID(_) => if !m.1.contains(&section) {
+							matching = false;
+							break;
+						},
+						
+						_ => ()
+					}
+				}
+				
+				if matching {
+					found = true;
+					break;
+				}
+			}
+		}
+		
+		if found {
+			matches.remove(i);
+		} else {
+			i += 1;
+		}
+	}
 }
 
 fn cleanup_matches2(matches: &mut Vec<(usize, Vec<(&FunctionSection, usize)>, usize)>, functions: &Vec<Function>, depth: usize) {

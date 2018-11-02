@@ -35,7 +35,7 @@ pub enum Type {
 	Volatile
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum FunctionSection {
 	ID(String),
 	OpID(String),
