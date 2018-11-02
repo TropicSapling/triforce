@@ -998,7 +998,7 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 	}
 }
 
-fn cleanup_matches<'a>(matches: &'a mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &Vec<Function>) {
+fn cleanup_matches(matches: &mut Vec<(usize, Vec<(&FunctionSection, usize)>, usize)>, functions: &Vec<Function>) {
 	matches.retain(|m| m.1.len() == functions[m.0].structure.len());
 }
 
@@ -1061,6 +1061,8 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 			
 			*i += 1;
 		}
+		
+		cleanup_matches(&mut matches, functions);
 		
 		println!("{:#?}", get_highest(&matches, functions));
 		
