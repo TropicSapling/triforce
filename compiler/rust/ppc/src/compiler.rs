@@ -964,35 +964,35 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	limit
 }
 
-fn update_matches<'a>(matches: &mut Vec<(usize, Vec<&'a FunctionSection>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, is_op: bool) {
+fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, pos: usize, is_op: bool) {
 	for (i, f) in functions.iter().enumerate() {
-		let mut stupid_rs_scopes = false;
 		for (j, section) in f.structure.iter().enumerate() {
 			match section {
-				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name => if let Some(m) = matches.iter_mut().find(|m| m.0 == i) {
-					if m.1.len() == j {
-						m.1.push(section);
-						break;
+				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name => {
+					for m in matches.iter_mut().filter(|m| m.0 == i) {
+						if m.1.len() == j {
+							m.1.push((section, pos));
+						}
 					}
-				} else {
-					stupid_rs_scopes = true;
+					
+					if j == 0 {
+						matches.push((i, vec![(section, pos)], depth));
+					}
 				},
 				
-				FunctionSection::Arg(_,_) => if let Some(m) = matches.iter_mut().find(|m| m.0 == i) {
-					if m.1.len() == j {
-						m.1.push(section);
-						break;
+				FunctionSection::Arg(_,_) if name.len() == 0 => {
+					for m in matches.iter_mut().filter(|m| m.0 == i) {
+						if m.1.len() == j {
+							m.1.push((section, pos));
+						}
 					}
-				} else {
-					stupid_rs_scopes = true;
+					
+					if j == 0 {
+						matches.push((i, vec![(section, pos)], depth));
+					}
 				},
 				
 				_ => ()
-			}
-			
-			if stupid_rs_scopes {
-				matches.push((i, vec![section], depth));
-				break;
 			}
 		}
 	}
@@ -1035,18 +1035,16 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 					}
 					*i -= 1;
 					
-					update_matches(&mut matches, functions, name, depth + depth2, true);
+					update_matches(&mut matches, functions, name, depth + depth2, *i, true);
 				},
 				
-				Kind::Var(ref name, _, _) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, false),
+				Kind::Var(ref name, _, _) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false),
 				
-				_ => ()
+				_ => update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false)
 			}
 			
 			*i += 1;
 		}
-		
-		println!("{:#?}", matches);
 		
 		match highest {
 			Some(func) => {
