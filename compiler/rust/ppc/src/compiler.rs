@@ -970,7 +970,7 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 			match section {
 				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name => {
 					for m in matches.iter_mut().filter(|m| m.0 == i) {
-						if m.1.len() == j {
+						if m.1.len() == j && m.2 == depth {
 							m.1.push((section, pos));
 						}
 					}
@@ -982,7 +982,7 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 				
 				FunctionSection::Arg(_,_) if name.len() == 0 => {
 					for m in matches.iter_mut().filter(|m| m.0 == i) {
-						if m.1.len() == j {
+						if m.1.len() == j && m.2 == depth {
 							m.1.push((section, pos));
 						}
 					}
