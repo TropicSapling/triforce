@@ -977,7 +977,7 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 						_ => unreachable!()
 					}
 					
-					if last_s != 0 { // BUG: NEVER RUNS
+					if last_s != 0 {
 						parents.borrow_mut().push(section.1);
 						all_children.push(section.1);
 					}
