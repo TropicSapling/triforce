@@ -965,30 +965,35 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 }
 
 fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, pos: usize, is_op: bool) {
+	let mut updated = Vec::new();
 	for (i, f) in functions.iter().enumerate() {
 		for (j, section) in f.structure.iter().enumerate() {
 			match section {
 				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name => {
-					for m in matches.iter_mut().filter(|m| m.0 == i) {
-						if m.1.len() == j && m.2 == depth {
+					for (mid, m) in matches.iter_mut().filter(|m| m.0 == i).enumerate() {
+						if m.1.len() == j && m.2 == depth && !updated.contains(&mid) {
 							m.1.push((section, pos));
+							updated.push(mid);
 						}
 					}
 					
 					if j == 0 {
 						matches.push((i, vec![(section, pos)], depth));
+						updated.push(matches.len() - 1);
 					}
 				},
 				
-				FunctionSection::Arg(_,_) if name.len() == 0 => {
-					for m in matches.iter_mut().filter(|m| m.0 == i) {
-						if m.1.len() == j && m.2 == depth {
+				FunctionSection::Arg(_,_) => {
+					for (mid, m) in matches.iter_mut().filter(|m| m.0 == i).enumerate() {
+						if m.1.len() == j && m.2 == depth && !updated.contains(&mid) {
 							m.1.push((section, pos));
+							updated.push(mid);
 						}
 					}
 					
 					if j == 0 {
 						matches.push((i, vec![(section, pos)], depth));
+						updated.push(matches.len() - 1);
 					}
 				},
 				
@@ -1002,15 +1007,23 @@ fn cleanup_matches(matches: &mut Vec<(usize, Vec<(&FunctionSection, usize)>, usi
 	matches.retain(|m| m.1.len() == functions[m.0].structure.len());
 }
 
-fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &Vec<Function>) -> &'a (usize, Vec<(&'a FunctionSection, usize)>, usize) {
-	let mut top = &matches[0];
-	for m in matches {
-		if m.2 > top.2 || (m.2 == top.2 && functions[m.0].precedence > functions[top.0].precedence) {
-			top = m;
+fn cleanup_matches2(matches: &mut Vec<(usize, Vec<(&FunctionSection, usize)>, usize)>, functions: &Vec<Function>, depth: usize) {
+	matches.retain(|m| m.2 <= depth || m.1.len() == functions[m.0].structure.len());
+}
+
+fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &Vec<Function>) -> Option<&'a (usize, Vec<(&'a FunctionSection, usize)>, usize)> {
+	if matches.len() > 0 {
+		let mut top = &matches[0];
+		for m in matches {
+			if m.2 > top.2 || (m.2 == top.2 && functions[m.0].precedence > functions[top.0].precedence) {
+				top = m;
+			}
 		}
+		
+		Some(top)
+	} else {
+		None
 	}
-	
-	top
 }
 
 pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
@@ -1029,12 +1042,16 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 				Kind::GroupOp(ref op, _) if op == "(" => depth += 1,
 				Kind::GroupOp(ref op, _) if op == ")" => if depth > 0 {
 					depth -= 1;
+					cleanup_matches2(&mut matches, functions, depth + depth2);
 				} else {
 					panic!("{}:{} Excess ending parenthesis", tokens[*i].pos.line, tokens[*i].pos.col);
 				},
 				
 				Kind::GroupOp(ref op, _) if op == "{" => depth2 += 1,
-				Kind::GroupOp(ref op, _) if op == "}" => depth2 -= 1,
+				Kind::GroupOp(ref op, _) if op == "}" => {
+					depth2 -= 1;
+					cleanup_matches2(&mut matches, functions, depth + depth2);
+				},
 				
 				Kind::Op(ref op, _) => {
 					let mut name = op.to_string();
