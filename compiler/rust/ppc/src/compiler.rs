@@ -998,6 +998,17 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 	}
 }
 
+fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &Vec<Function>) -> &'a (usize, Vec<(&'a FunctionSection, usize)>, usize) {
+	let mut top = &matches[0];
+	for m in matches {
+		if m.2 > top.2 || (m.2 == top.2 && functions[m.0].precedence > functions[top.0].precedence) {
+			top = m;
+		}
+	}
+	
+	top
+}
+
 pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
 	let start = *i;
 	let limit = get_parse_limit(tokens, functions, i);
@@ -1023,6 +1034,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 				
 				Kind::Op(ref op, _) => {
 					let mut name = op.to_string();
+					let start = *i;
 					
 					*i += 1;
 					while *i < limit {
@@ -1035,7 +1047,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 					}
 					*i -= 1;
 					
-					update_matches(&mut matches, functions, name, depth + depth2, *i, true);
+					update_matches(&mut matches, functions, name, depth + depth2, start, true);
 				},
 				
 				Kind::Var(ref name, _, _) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false),
@@ -1045,6 +1057,8 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 			
 			*i += 1;
 		}
+		
+		println!("{:#?}", get_highest(&matches, functions));
 		
 		match highest {
 			Some(func) => {
