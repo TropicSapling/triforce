@@ -941,7 +941,7 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 			
 			_ => ()
 		}
-	};
+	}
 	
 	for (s, section) in blueprint.iter().enumerate() {
 		match section.0 {
