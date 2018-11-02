@@ -923,12 +923,19 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 
 fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)>, all_children: &mut Vec<usize>) {
 	let mut last_s = 0;
-	let mut main_parent = &tokens[0];
+	let mut parents = match &tokens[0].kind {
+		Kind::GroupOp(_, _, ref arr) | Kind::Op(_, _, ref arr) | Kind::Var(_, _, _, ref arr) => arr,
+		_ => unreachable!()
+	};
 	
 	for section in blueprint {
 		match section.0 {
 			FunctionSection::ID(_) | FunctionSection::OpID(_) => {
-				main_parent = &tokens[section.1];
+				parents = match &tokens[section.1].kind {
+					Kind::GroupOp(_, _, ref arr) | Kind::Op(_, _, ref arr) | Kind::Var(_, _, _, ref arr) => arr,
+					_ => unreachable!()
+				};
+				
 				break;
 			},
 			
@@ -959,6 +966,7 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 				}
 				
 				last_s = s + 1;
+				parents.borrow_mut().push(section.1);
 			},
 			
 			_ => ()
