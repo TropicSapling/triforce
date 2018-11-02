@@ -998,6 +998,10 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 	}
 }
 
+fn cleanup_matches<'a>(matches: &'a mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &Vec<Function>) {
+	matches.retain(|m| m.1.len() == functions[m.0].structure.len());
+}
+
 fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &Vec<Function>) -> &'a (usize, Vec<(&'a FunctionSection, usize)>, usize) {
 	let mut top = &matches[0];
 	for m in matches {
