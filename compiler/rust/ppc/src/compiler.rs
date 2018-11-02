@@ -931,8 +931,36 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 	lowest
 } */
 
-fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)>) {
-	// WIP
+fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)>, all_children: &mut Vec<usize>) {
+	let mut last_s = 0;
+	for (s, section) in blueprint.iter().enumerate() {
+		match section.0 {
+			FunctionSection::ID(_) | FunctionSection::OpID(_) => {
+				let parent = &tokens[section.1];
+				match parent.kind {
+					Kind::Op(_, ref children) | Kind::Var(_, _, ref children) => {
+						let mut i = section.1 - 1;
+						let mut c = 0;
+						while i > 0 && c < s - last_s {
+							if !all_children.contains(&i) {
+								children.borrow_mut().push(i);
+								all_children.push(i);
+								c += 1;
+							}
+							
+							i -= 1;
+						}
+					},
+					
+					_ => unreachable!()
+				}
+				
+				last_s = s + 1;
+			},
+			
+			_ => ()
+		}
+	}
 }
 
 fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> usize {
@@ -1030,13 +1058,12 @@ fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, u
 	}
 }
 
-pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> Option<usize> {
+pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) -> Option<usize> {
 	let start = *i;
 	let limit = get_parse_limit(tokens, functions, i);
 	let mut lowest = None;
 	
 	loop {
-//		let mut highest: Option<(usize, Option<&Function>, u8)> = None;
 		let mut matches = Vec::new();
 		let mut depth = 0;
 		let mut depth2 = 0;
@@ -1057,7 +1084,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 					cleanup_matches2(&mut matches, functions, depth + depth2);
 				},
 				
-				Kind::Op(ref op, _) => {
+				Kind::Op(ref op, _) if !all_children.contains(i) => {
 					let mut name = op.to_string();
 					let start = *i;
 					
@@ -1075,9 +1102,11 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 					update_matches(&mut matches, functions, name, depth + depth2, start, true);
 				},
 				
-				Kind::Var(ref name, _, _) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false),
+				Kind::Var(ref name, _, _) if !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false),
 				
-				_ => update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false)
+				_ => if !all_children.contains(i) {
+					update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false);
+				}
 			}
 			
 			*i += 1;
@@ -1088,12 +1117,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 		match get_highest(&matches, functions) {
 			Some(m) => {
 				lowest = Some(m.0);
-				parse_func(tokens, &m.1);
-				
-/*				match func.1 {
-					Some(def) => parse_func(tokens, (func.0, def), functions),
-					None => parse2(tokens, functions, &mut func.0.clone())
-				} */
+				parse_func(tokens, &m.1, all_children);
 			},
 			
 			None => break
@@ -1138,12 +1162,12 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 	}
 } */
 
-fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: RefCell<Vec<usize>>) {
+fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize, children: RefCell<Vec<usize>>) {
 //	let start = *i;
 	*i += 1;
 	
 	let next = *i;
-	if let Some(token) = parse_statement(tokens, functions, i) {
+	if let Some(token) = parse_statement(tokens, functions, all_children, i) {
 //		tokens[start].children.borrow_mut().push(token);
 		children.borrow_mut().push(token);
 	} else {
@@ -1152,7 +1176,7 @@ fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 	}
 }
 
-fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, body: RefCell<Vec<usize>>) {
+fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize, body: RefCell<Vec<usize>>) {
 	let start = *i + 1;
 	
 	{
@@ -1174,7 +1198,7 @@ fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 	}
 	
 	*i = start;
-	parse_statement(tokens, functions, i);
+	parse_statement(tokens, functions, all_children, i);
 }
 
 // fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, parent: usize) {
@@ -1214,7 +1238,7 @@ fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, 
 	parse_statement(tokens, functions, i);
 } */
 
-pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
+pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) {
 	match tokens[*i].kind.clone() {
 		Kind::GroupOp(ref op, ref children) if op == "{" => {
 //			let parent = *i;
@@ -1230,7 +1254,7 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 						
 //						{tokens[parent].children.borrow_mut().push(*i);}
 						children.borrow_mut().push(*i);
-						parse2(tokens, functions, i);
+						parse2(tokens, functions, all_children, i);
 						
 						*i += 1;
 						continue;
@@ -1254,7 +1278,7 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 						Kind::Reserved(ref keyword, ref grandchildren) if keyword == "return" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
 							children.borrow_mut().push(*i);
-							parse_ret(tokens, functions, i, grandchildren.clone());
+							parse_ret(tokens, functions, all_children, i, grandchildren.clone());
 						},
 						
 /*						Kind::Reserved(ref keyword, grandchildren) if keyword == "let" => {
@@ -1268,7 +1292,7 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 						
 						Kind::GroupOp(ref op, _) if op == ";" => *i += 1,
 						
-						_ => if let Some(token) = parse_statement(tokens, functions, i) {
+						_ => if let Some(token) = parse_statement(tokens, functions, all_children, i) {
 //							tokens[parent].children.borrow_mut().push(token);
 							children.borrow_mut().push(token);
 						} else {
