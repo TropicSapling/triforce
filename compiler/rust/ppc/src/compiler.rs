@@ -922,69 +922,81 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 } */
 
 fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)>, all_children: &mut Vec<usize>) {
-	let mut last_s = 0;
-	let mut parents = match &tokens[0].kind {
-		Kind::GroupOp(_, _, ref arr) | Kind::Op(_, _, ref arr) | Kind::Var(_, _, _, ref arr) => arr,
-		_ => unreachable!()
-	};
-	
-	for (s, section) in blueprint.iter().enumerate() {
-		match section.0 {
-			FunctionSection::ID(_) | FunctionSection::OpID(_) => {
-				let parent = &tokens[section.1];
-				match parent.kind {
-					Kind::Op(_, ref children, ref sidekicks) | Kind::Var(_, _, ref children, ref sidekicks) => {
-						if last_s == 0 {
-							parents = sidekicks;
-						}
-						
-						let mut i = section.1 - 1;
-						let mut c = 0;
-						while i > 0 && c < s - last_s {
-							if !all_children.contains(&i) {
-								children.borrow_mut().push(i);
-								all_children.push(i);
-								c += 1;
+	if blueprint.len() > 1 {
+		let mut last_s = 0;
+		let mut parents = match &tokens[0].kind {
+			Kind::GroupOp(_, _, ref arr) | Kind::Op(_, _, ref arr) | Kind::Var(_, _, _, ref arr) => arr,
+			_ => unreachable!()
+		};
+		
+		for (s, section) in blueprint.iter().enumerate() {
+			match section.0 {
+				FunctionSection::ID(_) | FunctionSection::OpID(_) => {
+					let parent = &tokens[section.1];
+					match parent.kind {
+						Kind::Op(_, ref children, ref sidekicks) | Kind::Var(_, _, ref children, ref sidekicks) => {
+							if last_s == 0 {
+								parents = sidekicks;
 							}
 							
-							i -= 1;
-						}
-						
-						let mut s2 = s + 1;
-						while s2 < blueprint.len() {
-							match blueprint[s2].0 {
-								FunctionSection::ID(_) | FunctionSection::OpID(_) => break,
-								_ => s2 += 1
-							}
-						}
-						
-						if s2 >= blueprint.len() {
-							let mut i = section.1 + 1;
-							let mut s = s + 1;
-							while i < tokens.len() && s < blueprint.len() {
+							let mut i = section.1 - 1;
+							let mut c = 0;
+							while i > 0 && c < s - last_s {
 								if !all_children.contains(&i) {
 									children.borrow_mut().push(i);
 									all_children.push(i);
-									s += 1;
+									c += 1;
 								}
 								
-								i += 1;
+								i -= 1;
 							}
-						}
-					},
+							
+							let mut s2 = s + 1;
+							while s2 < blueprint.len() {
+								match blueprint[s2].0 {
+									FunctionSection::ID(_) | FunctionSection::OpID(_) => break,
+									_ => s2 += 1
+								}
+							}
+							
+							if s2 >= blueprint.len() {
+								let mut i = section.1 + 1;
+								let mut s = s + 1;
+								while i < tokens.len() && s < blueprint.len() {
+									if !all_children.contains(&i) {
+										children.borrow_mut().push(i);
+										all_children.push(i);
+										s += 1;
+									}
+									
+									i += 1;
+								}
+							}
+						},
+						
+						_ => unreachable!()
+					}
 					
-					_ => unreachable!()
-				}
+					if last_s != 0 {
+						parents.borrow_mut().push(section.1);
+						all_children.push(section.1);
+					}
+					
+					last_s = s + 1;
+				},
 				
-				if last_s != 0 {
-					parents.borrow_mut().push(section.1);
-					all_children.push(section.1);
-				}
-				
-				last_s = s + 1;
+				_ => ()
+			}
+		}
+	} else {
+		all_children.push(blueprint[0].1);
+		
+		match &tokens[blueprint[0].1].kind {
+			Kind::Op(_, _, ref sidekicks) | Kind::Var(_, _, _, ref sidekicks) => {
+				sidekicks.borrow_mut().push(usize::MAX);
 			},
 			
-			_ => ()
+			_ => unreachable!()
 		}
 	}
 }
