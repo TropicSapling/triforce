@@ -942,10 +942,14 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 							let mut i = section.1 - 1;
 							let mut c = 0;
 							while i > 0 && c < s - last_s {
-								if !all_children.contains(&i) {
-									children.borrow_mut().push(i);
-									all_children.push(i);
-									c += 1;
+								match tokens[i].kind {
+									Kind::GroupOp(ref op, _, _) if op == ")" || op == "}" => (),
+									
+									_ => if !all_children.contains(&i) {
+										children.borrow_mut().push(i);
+										all_children.push(i);
+										c += 1;
+									}
 								}
 								
 								i -= 1;
@@ -963,10 +967,14 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 								let mut i = section.1 + 1;
 								let mut s = s + 1;
 								while i < tokens.len() && s < blueprint.len() {
-									if !all_children.contains(&i) {
-										children.borrow_mut().push(i);
-										all_children.push(i);
-										s += 1;
+									match tokens[i].kind {
+										Kind::GroupOp(ref op, _, _) if op == ")" || op == "}" => (),
+										
+										_ => if !all_children.contains(&i) {
+											children.borrow_mut().push(i);
+											all_children.push(i);
+											s += 1;
+										}
 									}
 									
 									i += 1;
@@ -1132,7 +1140,13 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 		*i = start;
 		while *i < limit {
 			match tokens[*i].kind {
-				Kind::GroupOp(ref op, _, _) if op == "(" => depth += 1,
+				Kind::GroupOp(ref op, _, _) if op == "(" => {
+					depth += 1;
+					if !all_children.contains(i) {
+						update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false);
+					}
+				},
+				
 				Kind::GroupOp(ref op, _, _) if op == ")" => if depth > 0 {
 					depth -= 1;
 					cleanup_matches2(&mut matches, functions, depth + depth2);
@@ -1140,7 +1154,13 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 					panic!("{}:{} Excess ending parenthesis", tokens[*i].pos.line, tokens[*i].pos.col);
 				},
 				
-				Kind::GroupOp(ref op, _, _) if op == "{" => depth2 += 1,
+				Kind::GroupOp(ref op, _, _) if op == "{" => {
+					depth2 += 1;
+					if !all_children.contains(i) {
+						update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false);
+					}
+				},
+				
 				Kind::GroupOp(ref op, _, _) if op == "}" => {
 					depth2 -= 1;
 					cleanup_matches2(&mut matches, functions, depth + depth2);
