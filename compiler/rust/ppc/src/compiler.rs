@@ -1240,26 +1240,26 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 					Kind::Op(_, ref children, ref sidekicks) | Kind::Var(_, _, ref children, ref sidekicks) => {
 						for section in &m.1 {
 							match section.0 {
-								FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => print!("{}", name),
-								_ => print!("_")
+								FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => print!(" {}", name),
+								FunctionSection::Arg(ref arg, _) => print!(" {}", arg)
 							}
 						}
 						
 						print!(": (");
 						for child in children.borrow().iter() {
 							if *child != usize::MAX {
-								print!("{}, ", get_val!(tokens[*child].kind));
+								print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
 							}
 						}
 						print!("), {{");
 						
 						for s in sidekicks.borrow().iter() {
-							match tokens[lowest.unwrap()].kind {
-								Kind::Op(ref name, ref children, ref sidekicks) | Kind::Var(ref name, _, ref children, ref sidekicks) => {
-									print!("{}: (", name);
+							match tokens[*s].kind {
+								Kind::Op(ref name, ref children, _) | Kind::Var(ref name, _, ref children, _) => {
+									print!("{}[{}]: (", name, s);
 									for child in children.borrow().iter() {
 										if *child != usize::MAX {
-											print!("{}, ", get_val!(tokens[*child].kind));
+											print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
 										}
 									}
 									print!("), ");
