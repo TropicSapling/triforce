@@ -1099,7 +1099,7 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 				
 				FunctionSection::Arg(_,_) => {
 					for m in matches.iter_mut().filter(|m| m.0 == i) {
-						if m.1.len() == j && m.2 == depth && pos != m.1[m.1.len() - 1].1 {
+						if m.1.len() == j && m.2 <= depth && pos != m.1[m.1.len() - 1].1 {
 							m.1.push((section, pos));
 						}
 					}
