@@ -1089,8 +1089,18 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 			match section {
 				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name && !has_children => {
 					for m in matches.iter_mut().filter(|m| m.0 == i) {
-						if m.1.len() == j && m.2 == depth && pos != m.1[m.1.len() - 1].1 {
-							m.1.push((section, pos));
+						if m.1.len() == j && pos != m.1[m.1.len() - 1].1 {
+							if let Some(_) = m.1.iter().find(|s| match s.0 {
+								FunctionSection::Arg(_,_) => false,
+								_ => true
+							}) {
+								if m.2 == depth {
+									m.1.push((section, pos));
+								}
+							} else {
+								m.1.push((section, pos));
+								m.2 = depth;
+							}
 						}
 					}
 					
@@ -1153,7 +1163,13 @@ fn cleanup_matches(matches: &mut Vec<(usize, Vec<(&FunctionSection, usize)>, usi
 }
 
 fn cleanup_matches2(matches: &mut Vec<(usize, Vec<(&FunctionSection, usize)>, usize)>, functions: &Vec<Function>, depth: usize) {
-	matches.retain(|m| m.2 <= depth || m.1.len() == functions[m.0].structure.len());
+	matches.retain(|m| m.2 <= depth || m.1.len() == functions[m.0].structure.len() || match m.1.iter().find(|s| match s.0 {
+		FunctionSection::Arg(_,_) => false,
+		_ => true
+	}) {
+		Some(_) => false,
+		None => true
+	});
 }
 
 fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &Vec<Function>) -> Option<&'a (usize, Vec<(&'a FunctionSection, usize)>, usize)> {
