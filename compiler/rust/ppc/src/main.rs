@@ -181,13 +181,12 @@ fn main() -> Result<(), std::io::Error> {
 		
 		#[allow(unused)]
 		func (int base) ** (unsigned int exp) -> int {
-			if exp == 0 {
+			if exp == 0
 				1
-			} else if exp % 2 == 0 {
+			else if exp % 2 == 0
 				base ** (exp / 2) * base ** (exp / 2)
-			} else {
+			else
 				base * base ** (exp / 2) * base ** (exp / 2)
-			}
 		}
 	");
 	
