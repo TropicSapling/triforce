@@ -982,6 +982,13 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 							
 							if s2 >= blueprint.len() {
 								let mut i = section.1 + 1;
+								while i < tokens.len() {
+									match tokens[i].kind {
+										Kind::Op(_,_,_) => i += 1,
+										_ => break
+									}
+								}
+								
 								let mut s = s + 1;
 								while i < tokens.len() && s < blueprint.len() {
 									match tokens[i].kind {
