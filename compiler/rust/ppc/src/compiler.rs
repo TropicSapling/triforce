@@ -1160,7 +1160,7 @@ fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, u
 	if matches.len() > 0 {
 		let mut top = &matches[0];
 		for m in matches {
-			if m.2 > top.2 || (m.2 == top.2 && functions[m.0].precedence > functions[top.0].precedence) {
+			if m.2 > top.2 || (m.2 == top.2 && functions[m.0].precedence >= functions[top.0].precedence) {
 				top = m;
 			}
 		}
@@ -1197,7 +1197,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 					cleanup_matches2(&mut matches, functions, depth + depth2);
 				},
 				
-				Kind::Op(ref op, ref children, _) => {
+				Kind::Op(ref op, ref children, ref sidekicks) => {
 					let mut name = op.to_string();
 					let start = *i;
 					
@@ -1213,11 +1213,11 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 					*i -= 1;
 					
 					if !all_children.contains(&start) {
-						update_matches(&mut matches, functions, name, depth + depth2, start, true, children.borrow().len() > 0);
+						update_matches(&mut matches, functions, name, depth + depth2, start, true, children.borrow().len() > 0 || sidekicks.borrow().len() > 0);
 					}
 				},
 				
-				Kind::Var(ref name, _, ref children, _) if !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false, children.borrow().len() > 0),
+				Kind::Var(ref name, _, ref children, ref sidekicks) if !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false, children.borrow().len() > 0 || sidekicks.borrow().len() > 0),
 				
 				_ => if !all_children.contains(i) {
 					update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false, false);
