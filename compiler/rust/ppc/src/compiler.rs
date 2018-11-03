@@ -1308,7 +1308,19 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 						print!(": (");
 						for child in children.borrow().iter() {
 							if *child != usize::MAX {
-								print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
+								print!("{}[{}]: {{", get_val!(tokens[*child].kind), *child);
+								match tokens[*child].kind {
+									Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => {
+										for child in children.borrow().iter() {
+											if *child != usize::MAX {
+												print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
+											}
+										}
+									},
+									
+									_ => ()
+								}
+								print!("}}, ");
 							}
 						}
 						print!("), {{");
@@ -1319,7 +1331,19 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 									print!("{}[{}]: (", name, s);
 									for child in children.borrow().iter() {
 										if *child != usize::MAX {
-											print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
+											print!("{}[{}]: {{", get_val!(tokens[*child].kind), *child);
+											match tokens[*child].kind {
+												Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => {
+													for child in children.borrow().iter() {
+														if *child != usize::MAX {
+															print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
+														}
+													}
+												},
+												
+												_ => ()
+											}
+											print!("}}, ");
 										}
 									}
 									print!("), ");
