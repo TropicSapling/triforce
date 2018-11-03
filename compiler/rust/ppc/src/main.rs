@@ -171,6 +171,10 @@ fn main() -> Result<(), std::io::Error> {
 			};
 		} */
 		
+		func if (int cond) (int body) else (int expr) {
+		
+		}
+		
 		#[allow(unused)]
 		func (int base) ** (unsigned int exp) -> int {
 			if exp == 0 {

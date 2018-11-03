@@ -972,6 +972,8 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 								i -= 1;
 							}
 							
+							children.borrow_mut().reverse();
+							
 							let mut s2 = s + 1;
 							while s2 < blueprint.len() {
 								match blueprint[s2].0 {
@@ -1248,7 +1250,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 						for section in &m.1 {
 							match section.0 {
 								FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => print!(" {}", name),
-								FunctionSection::Arg(ref arg, _) => print!(" {}", arg)
+								FunctionSection::Arg(ref arg, _) => print!(" <{}>", arg)
 							}
 						}
 						
