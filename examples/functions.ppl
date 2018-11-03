@@ -4,7 +4,7 @@ import std::fs::File as FileHandler; // To test importing
 operator $; // custom operator example
 
 // Side note: macros can also be defined inside of functions, and will in that case only work inside of that function
-macro force_positive (int n) {
+/* macro force_positive (int n) {
 	if n >= 0 {
 		println "OK: Good to go!";
 		return n;
@@ -25,14 +25,14 @@ macro power_of_ppl {
 
 macro $(int n) {
 	println n;
-}
+} */
 
 // func (int i) print; // Commented for now because apparently Rust doesn't support this
 
 func (int i) backwards_println {
 	if true { // To test if statements
 		println i;
-	}
+	};
 	
 	if 9 + 10 == 21 || 10 + 9 == 21 {
 		println false;
@@ -40,17 +40,19 @@ func (int i) backwards_println {
 		if true { // To test nested if statements
 			println true;
 			println true;
-		}
+		};
 	} else {
 		println false;
-	}
+	};
+	
+	println i;
 }
 
-func (int a) (int b) +++ (int c) (int d) -> int {
+func (int a) ++ (int b) + (int c) ++ (int d) -> int {
 	return a + b + c + d; // To test return keyword
 }
 
-func (int a) (int b) --- (int c) (int d) -> int {
+func (int a) ++ (int b) - (int c) ++ (int d) -> int {
 	a + b - c - d
 }
 
@@ -59,12 +61,12 @@ func no_args {
 }
 
 func init {
-	(1 2 +++ (3 - 1) * 4 (5 + 1) (6 + 1) --- 7 8) - 1 backwards_println; // Like the most complex expression I can think of, took ages to make this get parsed successfully ;-;
+	(1 ++ 2 + (3 - 1) * 4 ++ (5 + 1) ++ (6 + 1) - 7 ++ 8) - 1 backwards_println; // Like the most complex expression I can think of, took ages to make this get parsed successfully ;-;
 	
 	let res = 1 * 2 + {println "This was printed from inside an expression!"; 3 ** 4} * 5 + 6; // 'let' is necessary to allow variable shadowing, decrease bugs and make code clearer for both the compiler and the reader
 	res += 123;
 	
-	const old_res = res++;
+/*	const old_res = res++;
 	println old_res;
 	println res;
 	
@@ -73,11 +75,11 @@ func init {
 	println n;
 	
 	const constant = "\nThis is a constant string.";
-	println constant;
+	println constant; */
 	
 	no_args;
 	
-	power_of_ppl;
+/*	power_of_ppl;
 	
 	println force_positive {
 		println "This gets printed both at compile time and runtime!";
@@ -90,5 +92,5 @@ func init {
 	print ", ";
 	println Tres;
 	
-	$"Custom operator called at compile time";
+	$"Custom operator called at compile time"; */
 }

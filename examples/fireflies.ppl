@@ -1,27 +1,18 @@
-func (int _you) would (int _not) -> int {
-	println "You would not believe your eyes,";
-	8
+macro You would not believe your eyes {
+	return println "You would not believe your eyes";
 }
 
-func (int _seven) (int _believe) your (int _eyes) {
-	println "If ten million fireflies,";
+macro If this code really runs {
+	return println "If ten million fireflies";
 }
 
-func (int _if) this (int _code) (int _really) (int _runs) {
-	println "Lit up the world as I fell asleep.";
+macro Surprise the world as you realise it {
+	return println "Lit up the world as I fell asleep.";
 }
 
 #[allow(non_snake_case)]
 func init {
-	let const You = 0;
-	let const not = 1;
-	let const believe = 2;
-	let const eyes = 3;
-	let const If = 4;
-	let const code = 5;
-	let const really = 6;
-	let const runs = 7;
-	
 	You would not believe your eyes;
 	If this code really runs;
+	Surprise the world as you realise it;
 }

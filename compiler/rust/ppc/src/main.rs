@@ -23,7 +23,8 @@ use std::{
 
 use lib::get_io;
 use lexer::{lex, lex_ops, lex2, lex3};
-use compiler::{def_functions, parse, parse2, parse3, compile};
+// use compiler::{def_functions, parse, parse2, parse3, compile};
+use compiler::{def_functions, parse, parse2};
 
 fn count_newlines(s: &str) -> usize {
 	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
@@ -31,7 +32,7 @@ fn count_newlines(s: &str) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.8.0-alpha")
+		.version("0.9.0-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -124,32 +125,58 @@ fn main() -> Result<(), std::io::Error> {
 		operator ,;
 		operator @;
 		
-		macro func (int a)++ {
+/*		macro if (cond) (body) {
+			return {
+/*				let res;
+				cond && res = body;
+				res */
+				cond && body
+			};
+		}
+		
+		macro if (cond) (body) else (expr) {
+			return {
+/*				let res;
+				(cond && res = body) || res = expr;
+				res */
+				(cond && body) || expr
+			};
+		}
+		
+		macro (int a)++ {
 			return {
 				a += 1;
 				a - 1
 			};
 		}
 		
-		macro func ++(int a) {
+		macro ++(int a) {
 			return {
 				a += 1;
 				a
 			};
 		}
 		
-		macro func (int a)-- {
+		macro (int a)-- {
 			return {
 				a -= 1;
 				a + 1
 			};
 		}
 		
-		macro func --(int a) {
+		macro --(int a) {
 			return {
 				a -= 1;
 				a
 			};
+		} */
+		
+		func if (int cond) (int body) {
+		
+		}
+		
+		func if (int cond) (int body) else (int expr) {
+		
 		}
 		
 		#[allow(unused)]
@@ -197,9 +224,10 @@ fn main() -> Result<(), std::io::Error> {
 	
 	functions = parse(&tokens, functions);
 	
+	let mut all_children = Vec::new();
 	let mut i = 0;
 	while i < tokens.len() {
-		parse2(&mut tokens, &functions, &mut i);
+		parse2(&mut tokens, &functions, &mut all_children, &mut i);
 		i += 1;
 	}
 	
@@ -207,7 +235,7 @@ fn main() -> Result<(), std::io::Error> {
 	let mut rows = vec![0];
 	let mut i = 0;
 	while i < tokens.len() {
-		parse3(&mut tokens, &mut macros, &mut functions, &mut i, &mut depth, &mut rows)?;
+//		parse3(&mut tokens, &mut macros, &mut functions, &mut i, &mut depth, &mut rows)?;
 		i += 1;
 	}
 	
@@ -218,7 +246,7 @@ fn main() -> Result<(), std::io::Error> {
 	let mut out_contents = String::new();
 	let mut i = 0;
 	while i < tokens.len() {
-		out_contents = compile(&tokens, &functions, &mut i, out_contents);
+//		out_contents = compile(&tokens, &functions, &mut i, out_contents);
 		i += 1;
 	}
 	

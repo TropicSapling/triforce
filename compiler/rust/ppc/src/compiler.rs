@@ -11,14 +11,14 @@ use std::{
 	cell::RefCell
 };
 
-use lib::{Token, Kind, Type, FilePos, Function, FunctionArg, Macro};
+use lib::{Token, Kind, Type, FilePos, Function, FunctionSection, Macro};
 
 macro_rules! get_val {
 	($e:expr) => ({
 		use lib::Kind::*;
 		use lib::Type::*;
 		match $e {
-			GroupOp(ref val) => val.to_string(),
+			GroupOp(ref val, _, _) => val.to_string(),
 			Literal(b) => if b {
 				String::from("true")
 			} else {
@@ -27,16 +27,15 @@ macro_rules! get_val {
 			Number(int, fraction) => {
 				int.to_string() + "." + &fraction.to_string()
 			},
-			Op(ref val) => val.to_string(),
-			Reserved(ref val) => val.to_string(),
-			Str1(ref val) => val.to_string(),
-			Str2(ref val) => val.to_string(),
-			Type(ref typ) => match typ {
+			Op(ref val, _, _) => val.to_string(),
+			Reserved(ref val, _) => val.to_string(),
+			Str1(ref val) => "\"".to_string() + val + "\"",
+			Str2(ref val) => "'".to_string() + val + "'",
+			Type(ref typ, _) => match typ {
 				&Array => String::from("array"),
 				&Chan => String::from("chan"),
 				&Const => String::from("const"),
 				&Fraction => String::from("fraction"),
-				&Func => String::from("func"),
 				&Heap => String::from("heap"),
 				&List => String::from("list"),
 				&Macro => String::from("macro"),
@@ -52,31 +51,26 @@ macro_rules! get_val {
 				&Unsigned => String::from("unsigned"),
 				&Void => String::from("void"),
 			},
-			Var(ref name, _) => name.to_string()
+			Var(ref name, _, _, _) => name.to_string()
 		}
 	});
 }
 
 macro_rules! def_builtin_op {
 	($a:expr, $b:expr, $name:expr, $typ1:expr, $typ2:expr, $output:expr, $precedence:expr) => (Function {
-		name: String::from($name),
-		pos: 1,
-		args: vec![
-			FunctionArg {
-				name: $a,
-				typ: vec![vec![$typ1]]
-			},
-			FunctionArg {
-				name: $b,
-				typ: vec![vec![$typ2]]
-			}
+		structure: vec![
+			FunctionSection::Arg($a, vec![vec![$typ1]]),
+			FunctionSection::OpID(String::from($name)),
+			FunctionSection::Arg($b, vec![vec![$typ2]])
 		],
-		precedence: $precedence, // NOTE: 0 is *lowest* precedence, not highest. Highest precedence is 255.
+		
 		output: if $output == Type::Void {
 			vec![vec![]]
 		} else {
 			vec![vec![$output]]
-		}
+		},
+		
+		precedence: $precedence // NOTE: 0 is *lowest* precedence, not highest. Highest precedence is 255.
 	})
 }
 
@@ -104,7 +98,7 @@ macro_rules! def_builtin_funcs {
 		def_builtin_op!(String::from("a"), String::from("b"), ">>", Type::Int, Type::Int, Type::Int, 244),
 		def_builtin_op!(String::from("a"), String::from("b"), "^", Type::Int, Type::Int, Type::Int, 240),
 		
-		// WIP; 'macro' types are not yet implemented
+		// WIP; 'macro' types are not yet implemented [EDIT: aren't they now?]
 		def_builtin_op!(String::from("a"), String::from("b"), "=", Type::Int, Type::Int, Type::Void, 0),
 		def_builtin_op!(String::from("a"), String::from("b"), "+=", Type::Int, Type::Int, Type::Void, 0),
 		def_builtin_op!(String::from("a"), String::from("b"), "-=", Type::Int, Type::Int, Type::Void, 0),
@@ -116,49 +110,156 @@ macro_rules! def_builtin_funcs {
 		def_builtin_op!(String::from("a"), String::from("b"), "^=", Type::Int, Type::Int, Type::Void, 0),
 		
 		Function {
-			name: String::from("println"),
-			pos: 0,
-			args: vec![
-				FunctionArg {
-					name: String::from("a"),
-					typ: vec![vec![Type::Int]] // WIP; No support for strings yet
-				}
+			structure: vec![
+				FunctionSection::ID(String::from("let")),
+				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]), // WIP; No support for any types yet
+				FunctionSection::OpID(String::from("=")),
+				FunctionSection::Arg(String::from("b"), vec![vec![Type::Int]]), // WIP; No support for any types yet
 			],
-			precedence: 1,
-			output: vec![]
+			
+			output: vec![],
+			
+			precedence: 0
 		},
 		
 		Function {
-			name: String::from("print"),
-			pos: 0,
-			args: vec![
-				FunctionArg {
-					name: String::from("a"),
-					typ: vec![vec![Type::Int]] // WIP; No support for strings yet
-				}
+			structure: vec![
+				FunctionSection::ID(String::from("println")),
+				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]) // WIP; No support for strings yet
 			],
-			precedence: 1,
-			output: vec![]
+			
+			output: vec![],
+			
+			precedence: 1
+		},
+		
+		Function {
+			structure: vec![
+				FunctionSection::ID(String::from("print")),
+				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]) // WIP; No support for strings yet
+			],
+			
+			output: vec![],
+			
+			precedence: 1
 		}
 	])
-}
-
-fn is_defined<'a>(defs: &'a Vec<Function>, call: &str) -> Option<&'a Function> {
-	for def in defs {
-		if def.name == call {
-			return Some(&def);
-		}
-	}
-	
-	None
 }
 
 pub fn def_functions() -> Vec<Function> {
 	def_builtin_funcs!()
 }
 
+fn has_one_arg(structure: &Vec<FunctionSection>) -> bool {
+	let mut found_arg = false;
+	for section in structure {
+		if let FunctionSection::Arg(_,_) = section {
+			if found_arg {
+				return false;
+			} else {
+				found_arg = true;
+			}
+		}
+	}
+	
+	found_arg
+}
+
 pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Function> {
-	let mut func = false;
+	let mut i = 0;
+	while i < tokens.len() {
+		match tokens[i].kind {
+			Kind::Reserved(ref keyword, ref children) if keyword == "func" => {
+				let mut func_struct = vec![];
+				let mut precedence = 1;
+				
+				i += 1;
+				
+				// Parse function structure
+				while i < tokens.len() {
+					match tokens[i].kind {
+						Kind::GroupOp(ref op, _, _) if op == "{" || op == ";" => break, // End of function structure
+						
+						Kind::Op(ref op, _, _) => {
+							let mut name = op.to_string();
+							
+							i += 1;
+							while i < tokens.len() {
+								match tokens[i].kind {
+									Kind::Op(ref op, _, _) => {
+										name += op;
+										i += 1;
+									},
+									
+									_ => break
+								}
+							}
+							
+							if name == "->" {
+								break; // End of function structure
+							} else {
+								// Function name
+								
+								if name == "**" {
+									precedence = 247;
+								}
+								
+								func_struct.push(FunctionSection::OpID(name));
+							}
+						},
+						
+						Kind::Var(ref name, ref typ, _, _) => if typ[0].len() > 0 {
+							// Function arg
+							func_struct.push(FunctionSection::Arg(name.to_string(), typ.clone()));
+						} else {
+							// Function name
+							func_struct.push(FunctionSection::ID(name.to_string()));
+						},
+						
+						_ => ()
+					}
+					
+					i += 1;
+				}
+				
+				// Get function output
+				let output = if let Kind::Type(_, ref typ) = tokens[i].kind {
+					if precedence != 247 {
+						precedence = if has_one_arg(&func_struct) {
+							255
+						} else {
+							2
+						};
+					}
+					
+					typ.clone()
+				} else {
+					Vec::new()
+				};
+				
+				functions.push(Function {
+					structure: func_struct,
+					output,
+					precedence
+				});
+				
+				while i < tokens.len() {
+					match tokens[i].kind {
+						Kind::GroupOp(ref op, _, _) if op == "{" || op == ";" => break,
+						_ => i += 1
+					}
+				}
+				
+				children.borrow_mut().push(i); // Save function body index
+			},
+			
+			_ => i += 1
+		}
+	}
+	
+	/////////////// OLD CODE BELOW ///////////////
+	
+/*	let mut func = false;
 	let mut func_pos = 0;
 	let mut func_args = Vec::new();
 	let mut par_type = vec![vec![]];
@@ -320,12 +421,12 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 		}
 		
 		i += 1;
-	}
+	} */
 	
 	functions
 }
 
-fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec<Function>) {
+/* fn parse_func(tokens: &mut Vec<Token>, func: (usize, &Function), functions: &Vec<Function>) {
 	let (mut i, def) = func;
 	let start = i;
 	let mut j = 0;
@@ -818,61 +919,454 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 	}
 	
 	lowest
+} */
+
+fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)>, all_children: &mut Vec<usize>) {
+	if blueprint.len() > 1 {
+		let mut last_s = 0;
+		let mut parents = match &tokens[0].kind {
+			Kind::GroupOp(_, _, ref arr) | Kind::Op(_, _, ref arr) | Kind::Var(_, _, _, ref arr) => arr,
+			_ => unreachable!()
+		};
+		
+		for (s, section) in blueprint.iter().enumerate() {
+			match section.0 {
+				FunctionSection::ID(_) | FunctionSection::OpID(_) => {
+					let parent = &tokens[section.1];
+					match parent.kind {
+						Kind::Op(_, ref children, ref sidekicks) | Kind::Var(_, _, ref children, ref sidekicks) => {
+							if last_s == 0 {
+								parents = sidekicks;
+							}
+							
+							let mut i = section.1 - 1;
+							let mut c = 0;
+							while i > 0 && c < s - last_s {
+								match tokens[i].kind {
+									Kind::GroupOp(_,_,_) => (),
+									
+									Kind::Op(_,_,_) => {
+										while i > 0 {
+											match tokens[i].kind {
+												Kind::Op(_,_,_) => i -= 1,
+												_ => break
+											}
+										}
+										
+										i += 1;
+										
+										if !all_children.contains(&i) {
+											children.borrow_mut().push(i);
+											all_children.push(i);
+											c += 1;
+										}
+									},
+									
+									_ => if !all_children.contains(&i) {
+										children.borrow_mut().push(i);
+										all_children.push(i);
+										c += 1;
+									}
+								}
+								
+								i -= 1;
+							}
+							
+							children.borrow_mut().reverse();
+							
+							let mut s2 = s + 1;
+							while s2 < blueprint.len() {
+								match blueprint[s2].0 {
+									FunctionSection::ID(_) | FunctionSection::OpID(_) => break,
+									_ => s2 += 1
+								}
+							}
+							
+							if s2 >= blueprint.len() {
+								let mut i = section.1 + 1;
+								while i < tokens.len() {
+									match tokens[i].kind {
+										Kind::Op(_,_,_) => i += 1,
+										_ => break
+									}
+								}
+								
+								let mut s = s + 1;
+								while i < tokens.len() && s < blueprint.len() {
+									match tokens[i].kind {
+										Kind::GroupOp(_,_,_) => (),
+										
+										Kind::Op(_,_,_) => {
+											if !all_children.contains(&i) {
+												children.borrow_mut().push(i);
+												all_children.push(i);
+												s += 1;
+											}
+											
+											while i < tokens.len() {
+												match tokens[i].kind {
+													Kind::Op(_,_,_) => i += 1,
+													_ => break
+												}
+											}
+											
+											i -= 1;
+										},
+										
+										_ => if !all_children.contains(&i) {
+											children.borrow_mut().push(i);
+											all_children.push(i);
+											s += 1;
+										}
+									}
+									
+									i += 1;
+								}
+							}
+						},
+						
+						_ => unreachable!()
+					}
+					
+					if last_s != 0 {
+						parents.borrow_mut().push(section.1);
+						all_children.push(section.1);
+					}
+					
+					last_s = s + 1;
+				},
+				
+				_ => ()
+			}
+		}
+	} else {
+		match &tokens[blueprint[0].1].kind {
+			Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => {
+				children.borrow_mut().push(usize::MAX);
+			},
+			
+			_ => unreachable!()
+		}
+	}
 }
 
-fn parse_if(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
+fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
+	let mut depth = 0;
+	let mut limit = tokens.len();
 	let start = *i;
+	while *i < limit {
+		match tokens[*i].kind {
+			Kind::GroupOp(ref op, _, _) if op == ";" => if depth == 0 {
+				limit = *i;
+				break;
+			},
+			
+			Kind::GroupOp(ref op, _, _) if op == "{" => {
+				depth += 1;
+			},
+			
+			Kind::GroupOp(ref op, _, _) if op == "}" => if depth > 0 {
+				depth -= 1;
+			} else {
+				limit = *i;
+				break;
+			},
+			
+			_ => ()
+		}
+		
+		*i += 1;
+	}
+	
+	*i = start;
+	
+	limit
+}
+
+fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, pos: usize, has_children: bool) {
+	for (i, f) in functions.iter().enumerate() {
+		for (j, section) in f.structure.iter().enumerate() {
+			match section {
+				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name && !has_children => {
+					for m in matches.iter_mut().filter(|m| m.0 == i) {
+						if m.1.len() == j && pos != m.1[m.1.len() - 1].1 {
+							if let Some(_) = m.1.iter().find(|s| match s.0 {
+								FunctionSection::Arg(_,_) => false,
+								_ => true
+							}) {
+								if m.2 == depth {
+									m.1.push((section, pos));
+								}
+							} else {
+								m.1.push((section, pos));
+								m.2 = depth;
+							}
+						}
+					}
+					
+					if j == 0 {
+						matches.push((i, vec![(section, pos)], depth));
+					}
+				},
+				
+				FunctionSection::Arg(_,_) => {
+					for m in matches.iter_mut().filter(|m| m.0 == i) {
+						if m.1.len() == j && m.2 <= depth && pos != m.1[m.1.len() - 1].1 {
+							m.1.push((section, pos));
+						}
+					}
+					
+					if j == 0 {
+						matches.push((i, vec![(section, pos)], depth));
+					}
+				},
+				
+				_ => ()
+			}
+		}
+	}
+}
+
+fn cleanup_matches(matches: &mut Vec<(usize, Vec<(&FunctionSection, usize)>, usize)>, functions: &Vec<Function>) {
+	matches.retain(|m| m.1.len() == functions[m.0].structure.len());
+	
+	let mut i = 0;
+	while i < matches.len() {
+		let mut found = false;
+		for (j, m) in matches.iter().enumerate() {
+			if j != i {
+				let mut matching = true;
+				for section in &matches[i].1 {
+					match section.0 {
+						FunctionSection::ID(_) | FunctionSection::OpID(_) => if !m.1.contains(&section) {
+							matching = false;
+							break;
+						},
+						
+						_ => ()
+					}
+				}
+				
+				if matching && m.1.len() > matches[i].1.len() {
+					found = true;
+					break;
+				}
+			}
+		}
+		
+		if found {
+			matches.remove(i);
+		} else {
+			i += 1;
+		}
+	}
+}
+
+fn cleanup_matches2(matches: &mut Vec<(usize, Vec<(&FunctionSection, usize)>, usize)>, functions: &Vec<Function>, depth: usize) {
+	matches.retain(|m| m.2 <= depth || m.1.len() == functions[m.0].structure.len() || match m.1.iter().find(|s| match s.0 {
+		FunctionSection::Arg(_,_) => false,
+		_ => true
+	}) {
+		Some(_) => false,
+		None => true
+	});
+}
+
+fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &Vec<Function>) -> Option<&'a (usize, Vec<(&'a FunctionSection, usize)>, usize)> {
+	if matches.len() > 0 {
+		let mut top = &matches[0];
+		for m in matches {
+			if m.2 > top.2 || (m.2 == top.2 && functions[m.0].precedence >= functions[top.0].precedence) {
+				top = m;
+			}
+		}
+		
+		Some(top)
+	} else {
+		None
+	}
+}
+
+pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) -> Option<usize> {
+	let start = *i;
+	let limit = get_parse_limit(tokens, i);
+	let mut lowest = None;
+	
+	loop {
+		let mut matches = Vec::new();
+		let mut depth = 0;
+		let mut depth2 = 0;
+		*i = start;
+		while *i < limit {
+			match tokens[*i].kind {
+				Kind::GroupOp(ref op, _, _) if op == "(" => depth += 1,
+				Kind::GroupOp(ref op, _, _) if op == ")" => if depth > 0 {
+					depth -= 1;
+					cleanup_matches2(&mut matches, functions, depth + depth2);
+				} else {
+					panic!("{}:{} Excess ending parenthesis", tokens[*i].pos.line, tokens[*i].pos.col);
+				},
+				
+				Kind::GroupOp(ref op, _, _) if op == "{" => depth2 += 1,
+				Kind::GroupOp(ref op, _, _) if op == "}" => {
+					depth2 -= 1;
+					cleanup_matches2(&mut matches, functions, depth + depth2);
+				},
+				
+				Kind::Op(ref op, ref children, ref sidekicks) => {
+					let mut name = op.to_string();
+					let start = *i;
+					
+					*i += 1;
+					while *i < limit {
+						match tokens[*i].kind {
+							Kind::Op(ref op, _, _) => name += op,
+							_ => break
+						}
+						
+						*i += 1;
+					}
+					*i -= 1;
+					
+					if !all_children.contains(&start) {
+						update_matches(&mut matches, functions, name, depth + depth2, start, children.borrow().len() > 0 || sidekicks.borrow().len() > 0);
+					}
+				},
+				
+				Kind::Var(ref name, _, ref children, ref sidekicks) if !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, children.borrow().len() > 0 || sidekicks.borrow().len() > 0),
+				
+				_ => if !all_children.contains(i) {
+					update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false);
+				}
+			}
+			
+			*i += 1;
+		}
+		
+		cleanup_matches(&mut matches, functions);
+		
+		match get_highest(&matches, functions) {
+			Some(m) => {
+				for section in &m.1 {
+					match section.0 {
+						FunctionSection::ID(_) | FunctionSection::OpID(_) => {
+							lowest = Some(section.1);
+							break;
+						},
+						
+						_ => ()
+					}
+				}
+				
+				parse_func(tokens, &m.1, all_children);
+				
+				// DEBUG BELOW
+				match tokens[lowest.unwrap()].kind {
+					Kind::Op(_, ref children, ref sidekicks) | Kind::Var(_, _, ref children, ref sidekicks) => {
+						for section in &m.1 {
+							match section.0 {
+								FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => print!(" {}", name),
+								FunctionSection::Arg(ref arg, _) => print!(" <{}>", arg)
+							}
+						}
+						
+						print!(": (");
+						for child in children.borrow().iter() {
+							if *child != usize::MAX {
+								print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
+							}
+						}
+						print!("), {{");
+						
+						for s in sidekicks.borrow().iter() {
+							match tokens[*s].kind {
+								Kind::Op(ref name, ref children, _) | Kind::Var(ref name, _, ref children, _) => {
+									print!("{}[{}]: (", name, s);
+									for child in children.borrow().iter() {
+										if *child != usize::MAX {
+											print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
+										}
+									}
+									print!("), ");
+								},
+								
+								_ => unreachable!()
+							}
+						}
+						
+						println!("}}");
+					},
+					
+					_ => unreachable!()
+				}
+			},
+			
+			None => break
+		}
+	}
+	
+	lowest
+}
+
+/* fn parse_if(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: RefCell<Vec<usize>>) {
+//	let start = *i;
 	*i += 1;
 	
 	let next = *i;
 	if let Some(token) = parse_statement(tokens, functions, i) {
-		tokens[start].children.borrow_mut().push(token);
+//		tokens[start].children.borrow_mut().push(token);
+		children.borrow_mut().push(token);
 	} else {
-		tokens[start].children.borrow_mut().push(next);
+//		tokens[start].children.borrow_mut().push(next);
+		children.borrow_mut().push(next);
 	}
 	
-	tokens[start].children.borrow_mut().push(*i);
+//	tokens[start].children.borrow_mut().push(*i);
+	children.borrow_mut().push(*i);
 	
 	parse2(tokens, functions, i);
 	*i += 1;
 	
 	match tokens[*i].kind.clone() {
-		Kind::Reserved(ref keyword) if keyword == "else" => {
+		Kind::Reserved(ref keyword, _) if keyword == "else" => {
 			*i += 1;
-			tokens[start].children.borrow_mut().push(*i);
+//			tokens[start].children.borrow_mut().push(*i);
+			children.borrow_mut().push(*i);
 			
 			match tokens[*i].kind.clone() {
-				Kind::Reserved(ref keyword) if keyword == "if" => parse_if(tokens, functions, i),
+				Kind::Reserved(ref keyword, children) if keyword == "if" => parse_if(tokens, functions, i, children),
 				_ => parse2(tokens, functions, i)
 			}
 		},
 		
 		_ => ()
 	}
-}
+} */
 
-fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
-	let start = *i;
+fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize, children: RefCell<Vec<usize>>) {
+//	let start = *i;
 	*i += 1;
 	
 	let next = *i;
-	if let Some(token) = parse_statement(tokens, functions, i) {
-		tokens[start].children.borrow_mut().push(token);
+	if let Some(token) = parse_statement(tokens, functions, all_children, i) {
+//		tokens[start].children.borrow_mut().push(token);
+		children.borrow_mut().push(token);
 	} else {
-		tokens[start].children.borrow_mut().push(next);
+//		tokens[start].children.borrow_mut().push(next);
+		children.borrow_mut().push(next);
 	}
 }
 
-fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
+/* fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize, body: RefCell<Vec<usize>>) {
 	let start = *i + 1;
 	
 	{
-		let mut body = tokens[*i].children.borrow_mut();
+//		let mut body = tokens[*i].children.borrow_mut();
 		*i += 1;
 		
 		while *i < tokens.len() {
 			match tokens[*i].kind {
-				Kind::Op(_) => break,
+				Kind::Op(_,_,_) => break,
 				_ => *i += 1
 			}
 		}
@@ -881,24 +1375,30 @@ fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) 
 			panic!("Unexpected EOF");
 		}
 		
-		body.push(*i);
+		body.borrow_mut().push(*i);
 	}
 	
 	*i = start;
-	parse_statement(tokens, functions, i);
-}
+	parse_statement(tokens, functions, all_children, i);
+} */
 
-fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, parent: usize) {
+// fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, parent: usize) {
+/* fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: Vec<usize>) {
 	let start = *i + 1;
 	
 	{
-		let mut body = tokens[*i].children.borrow_mut();
+//		let mut body = tokens[*i].children.borrow_mut();
+		let mut body = match tokens[*i].kind {
+			Kind::Var(_, _, ref mut children) => children,
+			_ => unreachable!()
+		};
 		*i += 1;
 		
 		while *i < tokens.len() {
 			match tokens[*i].kind {
 				Kind::Op(ref op) => if op == "=" {
-					tokens[parent].children.borrow_mut().push(start - 1);
+//					tokens[parent].children.borrow_mut().push(start - 1);
+					children.push(start - 1);
 					break;
 				} else {
 					*i = start - 1;
@@ -917,24 +1417,25 @@ fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &m
 	
 	*i = start;
 	parse_statement(tokens, functions, i);
-}
+} */
 
-pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize) {
+pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) {
 	match tokens[*i].kind.clone() {
-		Kind::GroupOp(ref op) if op == "{" => {
-			let parent = *i;
+		Kind::GroupOp(ref op, ref children, _) if op == "{" => {
+//			let parent = *i;
 			let mut nests = 0;
 			*i += 1;
 			
 			while *i < tokens.len() {
 				let start = *i;
 				
-				if let Kind::GroupOp(ref op) = tokens[*i].kind.clone() {
+				if let Kind::GroupOp(ref op, _, _) = tokens[*i].kind.clone() {
 					if op == "{" {
 						nests += 1;
 						
-						{tokens[parent].children.borrow_mut().push(*i);}
-						parse2(tokens, functions, i);
+//						{tokens[parent].children.borrow_mut().push(*i);}
+						children.borrow_mut().push(*i);
+						parse2(tokens, functions, all_children, i);
 						
 						*i += 1;
 						continue;
@@ -942,36 +1443,42 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 				}
 				
 				match tokens[*i].kind.clone() {
-					Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
+					Kind::GroupOp(ref op, _, _) if op == "}" => if nests > 0 {
 						nests -= 1;
 					} else {
 						break;
 					},
 					
 					_ => match tokens[*i].kind.clone() {
-						Kind::Reserved(ref keyword) if keyword == "if" => {
-							{tokens[parent].children.borrow_mut().push(*i);}
-							parse_if(tokens, functions, i);
+/*						Kind::Reserved(ref keyword, grandchildren) if keyword == "if" => {
+//							{tokens[parent].children.borrow_mut().push(*i);}
+							children.borrow_mut().push(*i);
+							parse_if(tokens, functions, i, grandchildren);
+						}, */
+						
+						Kind::Reserved(ref keyword, ref grandchildren) if keyword == "return" => {
+//							{tokens[parent].children.borrow_mut().push(*i);}
+							children.borrow_mut().push(*i);
+							parse_ret(tokens, functions, all_children, i, grandchildren.clone());
 						},
 						
-						Kind::Reserved(ref keyword) if keyword == "return" => {
-							{tokens[parent].children.borrow_mut().push(*i);}
-							parse_ret(tokens, functions, i);
-						},
+/*						Kind::Reserved(ref keyword, grandchildren) if keyword == "let" => {
+//							{tokens[parent].children.borrow_mut().push(*i);}
+							children.borrow_mut().push(*i);
+							parse_let(tokens, functions, i, grandchildren);
+						}, */
 						
-						Kind::Reserved(ref keyword) if keyword == "let" => {
-							{tokens[parent].children.borrow_mut().push(*i);}
-							parse_let(tokens, functions, i);
-						},
+//						Kind::Type(_) => parse_type_decl(tokens, functions, i, parent),
+//						Kind::Type(_) => parse_type_decl(tokens, functions, i, children),
 						
-						Kind::Type(_) => parse_type_decl(tokens, functions, i, parent),
+						Kind::GroupOp(ref op, _, _) if op == ";" => *i += 1,
 						
-						Kind::GroupOp(ref op) if op == ";" => *i += 1,
-						
-						_ => if let Some(token) = parse_statement(tokens, functions, i) {
-							tokens[parent].children.borrow_mut().push(token);
+						_ => if let Some(token) = parse_statement(tokens, functions, all_children, i) {
+//							tokens[parent].children.borrow_mut().push(token);
+							children.borrow_mut().push(token);
 						} else {
-							tokens[parent].children.borrow_mut().push(start); // Should this really be pushing start instead of *i?
+//							tokens[parent].children.borrow_mut().push(start); // Should this really be pushing start instead of *i?
+							children.borrow_mut().push(start);
 						}
 					}
 				}
@@ -982,7 +1489,7 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize)
 	}
 }
 
-fn correct_indexes_after_del(tokens: &Vec<Token>, i: usize) {
+/* fn correct_indexes_after_del(tokens: &Vec<Token>, i: usize) {
 	for token in tokens {
 		let mut children = token.children.borrow_mut();
 		let mut c = 0;
@@ -1425,9 +1932,9 @@ fn parse_macro_func(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions:
 
 pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut Vec<Function>, i: &mut usize, depth: &mut usize, rows: &mut Vec<usize>) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
-		Kind::Var(ref name, _) => return parse_macro_func(tokens, macros, functions, i, name, 1, *depth, rows, &mut false),
+//		Kind::Var(ref name, _) => return parse_macro_func(tokens, macros, functions, i, name, 1, *depth, rows, &mut false),
 		
-		Kind::Op(ref op) if op != ":" => { // 'op != ":"' part is tmp, used to allow Rust-style importing
+		Kind::Op(ref op, _) if op != ":" => { // 'op != ":"' part is tmp, used to allow Rust-style importing
 			let mut name = op.to_string();
 			let start = *i;
 			
@@ -1437,16 +1944,16 @@ pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut 
 			*i = start;
 			
 			let mut found = false;
-			let res = parse_macro_func(tokens, macros, functions, i, &name, name.len(), *depth, rows, &mut found);
+//			let res = parse_macro_func(tokens, macros, functions, i, &name, name.len(), *depth, rows, &mut found);
 			
 			if !found {
 				*i = end;
 			}
 			
-			return res;
+//			return res;
 		},
 		
-		Kind::GroupOp(ref op) if op == "{" => {
+		Kind::GroupOp(ref op, _) if op == "{" => {
 			*depth += 1;
 			if *depth + 1 > rows.len() {
 				rows.push(0);
@@ -1455,7 +1962,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut 
 			}
 		},
 		
-		Kind::GroupOp(ref op) if op == "}" => if *depth > 0 {
+		Kind::GroupOp(ref op, _) if op == "}" => if *depth > 0 {
 			*depth -= 1;
 		} else {
 			panic!("{}:{} Excess ending bracket", tokens[*i].pos.line, tokens[*i].pos.col);
@@ -1470,7 +1977,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut 
 fn get_op_name(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, name: &mut String) {
 	*i += 1;
 	while *i < tokens.len() {
-		if let Kind::Op(ref op) = tokens[*i].kind {
+		if let Kind::Op(ref op, _) = tokens[*i].kind {
 			*name += op;
 			*i += 1;
 		} else {
@@ -1862,7 +2369,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 	let children = tokens[*i].children.borrow();
 	
 	match tokens[*i].kind {
-		Kind::Reserved(ref keyword) if keyword == "import" => {
+		Kind::Reserved(ref keyword, _) if keyword == "import" => {
 			// Using Rust-style importing for now
 			output += "use ";
 			*i += 1;
@@ -1893,7 +2400,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 			}
 		},
 		
-		Type(ref typ) if typ == &Func => {
+		Reserved(ref keyword, _) if keyword == "func" => {
 			output += "fn ";
 			
 			*i = children[0];
@@ -2029,4 +2536,4 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 		"as" => output += "@",
 		"astype" => output += "as", // TMP; will be replaced with (<type>) <variable>
 	}; */
-}
+} */
