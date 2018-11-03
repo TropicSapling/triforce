@@ -29,8 +29,8 @@ macro_rules! get_val {
 			},
 			Op(ref val, _, _) => val.to_string(),
 			Reserved(ref val, _) => val.to_string(),
-			Str1(ref val) => val.to_string(),
-			Str2(ref val) => val.to_string(),
+			Str1(ref val) => "\"".to_string() + val + "\"",
+			Str2(ref val) => "'".to_string() + val + "'",
 			Type(ref typ, _) => match typ {
 				&Array => String::from("array"),
 				&Chan => String::from("chan"),
@@ -1188,9 +1188,52 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 		
 		match get_highest(&matches, functions) {
 			Some(m) => {
-				lowest = Some(m.0);
-				println!("{:?}", m);
+				for section in &m.1 {
+					match section.0 {
+						FunctionSection::ID(_) | FunctionSection::OpID(_) => {
+							lowest = Some(section.1);
+							break;
+						},
+						
+						_ => ()
+					}
+				}
+				
 				parse_func(tokens, &m.1, all_children);
+				
+				// DEBUG BELOW
+				
+				match tokens[lowest.unwrap()].kind {
+					Kind::Op(ref name, ref children, ref sidekicks) | Kind::Var(ref name, _, ref children, ref sidekicks) => {
+						print!("{}: (", name);
+						for child in children.borrow().iter() {
+							if *child != usize::MAX {
+								print!("{}, ", get_val!(tokens[*child].kind));
+							}
+						}
+						print!("), {{");
+						
+						for s in sidekicks.borrow().iter() {
+							match tokens[lowest.unwrap()].kind {
+								Kind::Op(ref name, ref children, ref sidekicks) | Kind::Var(ref name, _, ref children, ref sidekicks) => {
+									print!("{}: (", name);
+									for child in children.borrow().iter() {
+										if *child != usize::MAX {
+											print!("{}, ", get_val!(tokens[*child].kind));
+										}
+									}
+									print!("), ");
+								},
+								
+								_ => unreachable!()
+							}
+						}
+						
+						println!("}}");
+					},
+					
+					_ => unreachable!()
+				}
 			},
 			
 			None => break
