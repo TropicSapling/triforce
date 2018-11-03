@@ -945,6 +945,23 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 								match tokens[i].kind {
 									Kind::GroupOp(_,_,_) => (),
 									
+									Kind::Op(_,_,_) => {
+										while i > 0 {
+											match tokens[i].kind {
+												Kind::Op(_,_,_) => i -= 1,
+												_ => break
+											}
+										}
+										
+										i += 1;
+										
+										if !all_children.contains(&i) {
+											children.borrow_mut().push(i);
+											all_children.push(i);
+											c += 1;
+										}
+									},
+									
 									_ => if !all_children.contains(&i) {
 										children.borrow_mut().push(i);
 										all_children.push(i);
@@ -969,6 +986,23 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 								while i < tokens.len() && s < blueprint.len() {
 									match tokens[i].kind {
 										Kind::GroupOp(_,_,_) => (),
+										
+										Kind::Op(_,_,_) => {
+											if !all_children.contains(&i) {
+												children.borrow_mut().push(i);
+												all_children.push(i);
+												c += 1;
+											}
+											
+											while i < tokens.len() {
+												match tokens[i].kind {
+													Kind::Op(_,_,_) => i += 1,
+													_ => break
+												}
+											}
+											
+											i -= 1;
+										},
 										
 										_ => if !all_children.contains(&i) {
 											children.borrow_mut().push(i);
@@ -1202,7 +1236,6 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 				parse_func(tokens, &m.1, all_children);
 				
 				// DEBUG BELOW
-				
 				match tokens[lowest.unwrap()].kind {
 					Kind::Op(ref name, ref children, ref sidekicks) | Kind::Var(ref name, _, ref children, ref sidekicks) => {
 						print!("{}: (", name);
