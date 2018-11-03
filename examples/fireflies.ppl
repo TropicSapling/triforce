@@ -7,7 +7,7 @@ macro If this code really runs {
 }
 
 macro Surprise the world as you realise it {
-	println "Lit up the world as I fell asleep.";
+	return println "Lit up the world as I fell asleep.";
 }
 
 #[allow(non_snake_case)]
