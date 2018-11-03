@@ -1081,11 +1081,11 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	limit
 }
 
-fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, pos: usize, is_op: bool) {
+fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, pos: usize, is_op: bool, has_children: bool) {
 	for (i, f) in functions.iter().enumerate() {
 		for (j, section) in f.structure.iter().enumerate() {
 			match section {
-				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name => {
+				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name && !has_children => {
 					for m in matches.iter_mut().filter(|m| m.0 == i) {
 						if m.1.len() == j && m.2 == depth && pos != m.1[m.1.len() - 1].1 {
 							m.1.push((section, pos));
@@ -1135,7 +1135,7 @@ fn cleanup_matches(matches: &mut Vec<(usize, Vec<(&FunctionSection, usize)>, usi
 					}
 				}
 				
-				if matching {
+				if matching && m.1.len() > matches[i].1.len() {
 					found = true;
 					break;
 				}
@@ -1210,15 +1210,15 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 					}
 					*i -= 1;
 					
-					if children.borrow().len() == 0 && !all_children.contains(&start) {
-						update_matches(&mut matches, functions, name, depth + depth2, start, true);
+					if !all_children.contains(&start) {
+						update_matches(&mut matches, functions, name, depth + depth2, start, true, children.borrow().len() > 0);
 					}
 				},
 				
-				Kind::Var(ref name, _, ref children, _) if children.borrow().len() == 0 && !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false),
+				Kind::Var(ref name, _, ref children, _) if !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false, children.borrow().len() > 0),
 				
 				_ => if !all_children.contains(i) {
-					update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false);
+					update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false, false);
 				}
 			}
 			
