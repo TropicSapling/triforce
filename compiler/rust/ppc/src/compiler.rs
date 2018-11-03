@@ -1050,7 +1050,7 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 	}
 }
 
-fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize) -> usize {
+fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
 	let mut depth = 0;
 	let mut limit = tokens.len();
 	let start = *i;
@@ -1083,7 +1083,7 @@ fn get_parse_limit(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	limit
 }
 
-fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, pos: usize, is_op: bool, has_children: bool) {
+fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, pos: usize, has_children: bool) {
 	for (i, f) in functions.iter().enumerate() {
 		for (j, section) in f.structure.iter().enumerate() {
 			match section {
@@ -1189,7 +1189,7 @@ fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, u
 
 pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) -> Option<usize> {
 	let start = *i;
-	let limit = get_parse_limit(tokens, functions, i);
+	let limit = get_parse_limit(tokens, i);
 	let mut lowest = None;
 	
 	loop {
@@ -1229,14 +1229,14 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 					*i -= 1;
 					
 					if !all_children.contains(&start) {
-						update_matches(&mut matches, functions, name, depth + depth2, start, true, children.borrow().len() > 0 || sidekicks.borrow().len() > 0);
+						update_matches(&mut matches, functions, name, depth + depth2, start, children.borrow().len() > 0 || sidekicks.borrow().len() > 0);
 					}
 				},
 				
-				Kind::Var(ref name, _, ref children, ref sidekicks) if !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, false, children.borrow().len() > 0 || sidekicks.borrow().len() > 0),
+				Kind::Var(ref name, _, ref children, ref sidekicks) if !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, children.borrow().len() > 0 || sidekicks.borrow().len() > 0),
 				
 				_ => if !all_children.contains(i) {
-					update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false, false);
+					update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false);
 				}
 			}
 			
@@ -1357,7 +1357,7 @@ fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &
 	}
 }
 
-fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize, body: RefCell<Vec<usize>>) {
+/* fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize, body: RefCell<Vec<usize>>) {
 	let start = *i + 1;
 	
 	{
@@ -1380,7 +1380,7 @@ fn parse_let(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &
 	
 	*i = start;
 	parse_statement(tokens, functions, all_children, i);
-}
+} */
 
 // fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, parent: usize) {
 /* fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, children: Vec<usize>) {

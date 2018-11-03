@@ -171,6 +171,10 @@ fn main() -> Result<(), std::io::Error> {
 			};
 		} */
 		
+		func if (int cond) (int body) {
+		
+		}
+		
 		func if (int cond) (int body) else (int expr) {
 		
 		}
