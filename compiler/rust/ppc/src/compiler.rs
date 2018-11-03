@@ -991,7 +991,7 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 											if !all_children.contains(&i) {
 												children.borrow_mut().push(i);
 												all_children.push(i);
-												c += 1;
+												s += 1;
 											}
 											
 											while i < tokens.len() {
