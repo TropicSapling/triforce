@@ -1297,7 +1297,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 				
 				// DEBUG BELOW
 				match tokens[lowest.unwrap()].kind {
-					Kind::Op(_, ref children, ref sidekicks) | Kind::Var(_, _, ref children, ref sidekicks) => {
+					Kind::Op(_, ref children, ref sidekicks) | Kind::Var(_, _, ref children, ref sidekicks) | Kind::GroupOp(_, ref children, ref sidekicks) => {
 						print!("\x1b[0m\x1b[1m\x1b[38;5;11m");
 						
 						for section in &m.1 {
@@ -1312,7 +1312,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 							if *child != usize::MAX {
 								print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]", get_val!(tokens[*child].kind), *child);
 								match tokens[*child].kind {
-									Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) if children.borrow().len() > 0 => {
+									Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) | Kind::GroupOp(_, ref children, _) if children.borrow().len() > 0 => {
 										print!(": (");
 										for child in children.borrow().iter() {
 											if *child != usize::MAX {
@@ -1334,13 +1334,13 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 							
 							for s in sidekicks.borrow().iter() {
 								match tokens[*s].kind {
-									Kind::Op(ref name, ref children, _) | Kind::Var(ref name, _, ref children, _) => {
+									Kind::Op(ref name, ref children, _) | Kind::Var(ref name, _, ref children, _) | Kind::GroupOp(ref name, ref children, _) => {
 										print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]: (", name, s);
 										for child in children.borrow().iter() {
 											if *child != usize::MAX {
 												print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]", get_val!(tokens[*child].kind), *child);
 												match tokens[*child].kind {
-													Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) if children.borrow().len() > 0 => {
+													Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) | Kind::GroupOp(_, ref children, _) if children.borrow().len() > 0 => {
 														print!(": (");
 														for child in children.borrow().iter() {
 															if *child != usize::MAX {
@@ -1492,8 +1492,8 @@ fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &
 
 pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) {
 	match tokens[*i].kind.clone() {
-		Kind::GroupOp(ref op, ref children, _) if op == "{" => {
-//			let parent = *i;
+		Kind::GroupOp(ref op, _, _) if op == "{" => {
+			let parent = *i;
 			let mut nests = 0;
 			*i += 1;
 			
@@ -1505,7 +1505,10 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: 
 						nests += 1;
 						
 //						{tokens[parent].children.borrow_mut().push(*i);}
-						children.borrow_mut().push(*i);
+						if let Kind::GroupOp(_, ref children, _) = tokens[parent].kind {
+							children.borrow_mut().push(*i);
+						}
+						
 						parse2(tokens, functions, all_children, i);
 						
 						*i += 1;
@@ -1529,7 +1532,10 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: 
 						
 						Kind::Reserved(ref keyword, ref grandchildren) if keyword == "return" => {
 //							{tokens[parent].children.borrow_mut().push(*i);}
-							children.borrow_mut().push(*i);
+							if let Kind::GroupOp(_, ref children, _) = tokens[parent].kind {
+								children.borrow_mut().push(*i);
+							}
+							
 							parse_ret(tokens, functions, all_children, i, grandchildren.clone());
 						},
 						
@@ -1546,10 +1552,14 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: 
 						
 						_ => if let Some(token) = parse_statement(tokens, functions, all_children, i) {
 //							tokens[parent].children.borrow_mut().push(token);
-							children.borrow_mut().push(token);
+							if let Kind::GroupOp(_, ref children, _) = tokens[parent].kind {
+								children.borrow_mut().push(token);
+							}
 						} else {
 //							tokens[parent].children.borrow_mut().push(start); // Should this really be pushing start instead of *i?
-							children.borrow_mut().push(start);
+							if let Kind::GroupOp(_, ref children, _) = tokens[parent].kind {
+								children.borrow_mut().push(start);
+							}
 						}
 					}
 				}
