@@ -30,20 +30,19 @@ macro $(int n) {
 // func (int i) print; // Commented for now because apparently Rust doesn't support this
 
 func (int i) backwards_println {
-	if true { // To test if statements
+	if true // To test if statements
 		println i;
-	};
 	
-	if 9 + 10 == 21 || 10 + 9 == 21 {
-		println false;
-	} else if 9 + 10 != 21 && 10 + 9 != 21 {
+	if 9 + 10 == 21 || 10 + 9 == 21
+		println false
+	else if 9 + 10 != 21 && 10 + 9 != 21 {
 		if true { // To test nested if statements
 			println true;
 			println true;
-		};
-	} else {
+		}
+	} else
 		println false;
-	};
+	
 	
 	println i;
 }
