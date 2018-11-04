@@ -1298,6 +1298,8 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 				// DEBUG BELOW
 				match tokens[lowest.unwrap()].kind {
 					Kind::Op(_, ref children, ref sidekicks) | Kind::Var(_, _, ref children, ref sidekicks) => {
+						print!("\x1b[0m\x1b[1m\x1b[38;5;11m");
+						
 						for section in &m.1 {
 							match section.0 {
 								FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => print!(" {}", name),
@@ -1305,55 +1307,65 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 							}
 						}
 						
-						print!(": (");
+						print!(":\x1b[0m (");
 						for child in children.borrow().iter() {
 							if *child != usize::MAX {
-								print!("{}[{}]: {{", get_val!(tokens[*child].kind), *child);
+								print!("{}[{}]", get_val!(tokens[*child].kind), *child);
 								match tokens[*child].kind {
-									Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => {
+									Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) if children.borrow().len() > 0 => {
+										print!(": (");
 										for child in children.borrow().iter() {
 											if *child != usize::MAX {
 												print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
 											}
 										}
+										print!(")");
 									},
 									
 									_ => ()
 								}
-								print!("}}, ");
+								print!(", ");
 							}
 						}
-						print!("), {{");
+						print!(")");
 						
-						for s in sidekicks.borrow().iter() {
-							match tokens[*s].kind {
-								Kind::Op(ref name, ref children, _) | Kind::Var(ref name, _, ref children, _) => {
-									print!("{}[{}]: (", name, s);
-									for child in children.borrow().iter() {
-										if *child != usize::MAX {
-											print!("{}[{}]: {{", get_val!(tokens[*child].kind), *child);
-											match tokens[*child].kind {
-												Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => {
-													for child in children.borrow().iter() {
-														if *child != usize::MAX {
-															print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
+						if sidekicks.borrow().len() > 0 {
+							print!(", {{");
+							
+							for s in sidekicks.borrow().iter() {
+								match tokens[*s].kind {
+									Kind::Op(ref name, ref children, _) | Kind::Var(ref name, _, ref children, _) => {
+										print!("{}[{}]: (", name, s);
+										for child in children.borrow().iter() {
+											if *child != usize::MAX {
+												print!("{}[{}]", get_val!(tokens[*child].kind), *child);
+												match tokens[*child].kind {
+													Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) if children.borrow().len() > 0 => {
+														print!(": (");
+														for child in children.borrow().iter() {
+															if *child != usize::MAX {
+																print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
+															}
 														}
-													}
-												},
-												
-												_ => ()
+														print!(")");
+													},
+													
+													_ => ()
+												}
+												print!(", ");
 											}
-											print!("}}, ");
 										}
-									}
-									print!("), ");
-								},
-								
-								_ => unreachable!()
+										print!("), ");
+									},
+									
+									_ => unreachable!()
+								}
 							}
+							
+							println!("}}");
+						} else {
+							println!("");
 						}
-						
-						println!("}}");
 					},
 					
 					_ => unreachable!()
