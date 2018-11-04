@@ -221,7 +221,7 @@ fn main() -> Result<(), std::io::Error> {
 //		println!("{} LEX3: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
-	functions = parse(&tokens, functions);
+	functions = parse(&mut tokens, functions);
 	
 	let mut all_children = Vec::new();
 	let mut i = 0;

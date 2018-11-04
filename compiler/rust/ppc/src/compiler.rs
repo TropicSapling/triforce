@@ -18,6 +18,7 @@ macro_rules! get_val {
 		use lib::Kind::*;
 		use lib::Type::*;
 		match $e {
+			Func(_,_) => String::from("func"),
 			GroupOp(ref val, _, _) => val.to_string(),
 			Literal(b) => if b {
 				String::from("true")
@@ -165,14 +166,16 @@ fn has_one_arg(structure: &Vec<FunctionSection>) -> bool {
 	found_arg
 }
 
-pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Function> {
+pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> Vec<Function> {
+	let mut fpos = Vec::new();
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind {
-			Kind::Reserved(ref keyword, ref children) if keyword == "func" => {
+			Kind::Func(_, ref children) => {
 				let mut func_struct = vec![];
 				let mut precedence = 1;
 				
+				fpos.push(i);
 				i += 1;
 				
 				// Parse function structure
@@ -255,6 +258,16 @@ pub fn parse<'a>(tokens: &'a Vec<Token>, mut functions: Vec<Function>) -> Vec<Fu
 			
 			_ => i += 1
 		}
+	}
+	
+	let mut id = 0;
+	for i in fpos {
+		match tokens[i].kind {
+			Kind::Func(ref mut f, _) => *f = id,
+			_ => unreachable!()
+		}
+		
+		id += 1;
 	}
 	
 	functions
@@ -1702,7 +1715,62 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 } */
 
 pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
-	// WIP
+	match tokens[*i].kind {
+		Kind::Func(f, ref children) => {
+/*			output += "fn ";
+			
+			*i = children.borrow()[0];
+			output = compile_func(tokens, functions, i, output);
+			
+			if children.borrow().len() > 1 {
+				let body = if children.borrow().len() > 2 {
+					*i = children.borrow()[1];
+					output += "->";
+					output = compile_func(tokens, functions, i, output);
+					2
+				} else {
+					1
+				};
+				
+				output += "{";
+				
+				let statements = tokens[children.borrow()[body]].children.borrow();
+				for statement in statements.iter() {
+					*i = *statement;
+					output = compile_func(tokens, functions, i, output);
+					
+					*i = *statement;
+					let mut nests = 0;
+					while *i + 1 < tokens.len() {
+						match tokens[*i + 1].kind {
+							Kind::GroupOp(ref op) if op == ";" => {
+								output += ";";
+								break;
+							},
+							
+							Kind::GroupOp(ref op) if op == "{" => nests += 1,
+							
+							Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
+								nests -= 1;
+							} else {
+								break;
+							},
+							
+							_ => ()
+						}
+						
+						*i += 1;
+					}
+				}
+				
+				output += "}";
+			} else {
+				output += ";";
+			} */
+		},
+		
+		_ => ()
+	}
 	
 	output
 }
@@ -1714,7 +1782,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 	let children = tokens[*i].children.borrow();
 	
 	match tokens[*i].kind {
-		Kind::Reserved(ref keyword, _) if keyword == "import" => {
+		Reserved(ref keyword, _) if keyword == "import" => {
 			// Using Rust-style importing for now
 			output += "use ";
 			*i += 1;
