@@ -1714,59 +1714,27 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 	output
 } */
 
+fn compile_func(tokens: &Vec<Token>, function: &Function, mut output: String) -> String {
+	// WIP
+	
+	output
+}
+
+fn compile_body(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
+	// WIP
+	
+	output
+}
+
 pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
 		Kind::Func(f, ref children) => {
-/*			output += "fn ";
+			output += "fn ";
+			
+			output = compile_func(tokens, &functions[f], output);
 			
 			*i = children.borrow()[0];
-			output = compile_func(tokens, functions, i, output);
-			
-			if children.borrow().len() > 1 {
-				let body = if children.borrow().len() > 2 {
-					*i = children.borrow()[1];
-					output += "->";
-					output = compile_func(tokens, functions, i, output);
-					2
-				} else {
-					1
-				};
-				
-				output += "{";
-				
-				let statements = tokens[children.borrow()[body]].children.borrow();
-				for statement in statements.iter() {
-					*i = *statement;
-					output = compile_func(tokens, functions, i, output);
-					
-					*i = *statement;
-					let mut nests = 0;
-					while *i + 1 < tokens.len() {
-						match tokens[*i + 1].kind {
-							Kind::GroupOp(ref op) if op == ";" => {
-								output += ";";
-								break;
-							},
-							
-							Kind::GroupOp(ref op) if op == "{" => nests += 1,
-							
-							Kind::GroupOp(ref op) if op == "}" => if nests > 0 {
-								nests -= 1;
-							} else {
-								break;
-							},
-							
-							_ => ()
-						}
-						
-						*i += 1;
-					}
-				}
-				
-				output += "}";
-			} else {
-				output += ";";
-			} */
+			output = compile_body(tokens, i, output);
 		},
 		
 		_ => ()
