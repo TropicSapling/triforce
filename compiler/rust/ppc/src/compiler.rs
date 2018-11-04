@@ -1310,13 +1310,13 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 						print!(":\x1b[0m (");
 						for child in children.borrow().iter() {
 							if *child != usize::MAX {
-								print!("{}[{}]", get_val!(tokens[*child].kind), *child);
+								print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]", get_val!(tokens[*child].kind), *child);
 								match tokens[*child].kind {
 									Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) if children.borrow().len() > 0 => {
 										print!(": (");
 										for child in children.borrow().iter() {
 											if *child != usize::MAX {
-												print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
+												print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}], ", get_val!(tokens[*child].kind), *child);
 											}
 										}
 										print!(")");
@@ -1335,16 +1335,16 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 							for s in sidekicks.borrow().iter() {
 								match tokens[*s].kind {
 									Kind::Op(ref name, ref children, _) | Kind::Var(ref name, _, ref children, _) => {
-										print!("{}[{}]: (", name, s);
+										print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]: (", name, s);
 										for child in children.borrow().iter() {
 											if *child != usize::MAX {
-												print!("{}[{}]", get_val!(tokens[*child].kind), *child);
+												print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]", get_val!(tokens[*child].kind), *child);
 												match tokens[*child].kind {
 													Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) if children.borrow().len() > 0 => {
 														print!(": (");
 														for child in children.borrow().iter() {
 															if *child != usize::MAX {
-																print!("{}[{}], ", get_val!(tokens[*child].kind), *child);
+																print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}], ", get_val!(tokens[*child].kind), *child);
 															}
 														}
 														print!(")");
