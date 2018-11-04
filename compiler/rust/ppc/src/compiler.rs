@@ -1699,9 +1699,15 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 	}
 	
 	output
-}
+} */
 
 pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
+	// WIP
+	
+	output
+}
+
+/* pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
 	use lib::Type::*;
 	use lib::Kind::*;
 	
