@@ -1818,14 +1818,18 @@ fn compile_func(tokens: &Vec<Token>, function: &Function, mut output: String) ->
 }
 
 fn compile_body(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
+	output += "{";
+	
 	// WIP
+	
+	output += "}";
 	
 	output
 }
 
 pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
-		Kind::Func(f, ref children) => {
+		Kind::Func(f, ref children) if f > 27 => {
 			output += "fn ";
 			
 			output = compile_func(tokens, &functions[f], output);
