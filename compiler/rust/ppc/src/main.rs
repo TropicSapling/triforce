@@ -24,7 +24,7 @@ use std::{
 use lib::get_io;
 use lexer::{lex, lex_ops, lex2, lex3};
 // use compiler::{def_functions, parse, parse2, parse3, compile};
-use compiler::{def_functions, parse, parse2};
+use compiler::{def_functions, parse, parse2, compile};
 
 fn count_newlines(s: &str) -> usize {
 	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
@@ -221,7 +221,7 @@ fn main() -> Result<(), std::io::Error> {
 //		println!("{} LEX3: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
-	functions = parse(&tokens, functions);
+	functions = parse(&mut tokens, functions);
 	
 	let mut all_children = Vec::new();
 	let mut i = 0;
@@ -245,7 +245,7 @@ fn main() -> Result<(), std::io::Error> {
 	let mut out_contents = String::new();
 	let mut i = 0;
 	while i < tokens.len() {
-//		out_contents = compile(&tokens, &functions, &mut i, out_contents);
+		out_contents = compile(&tokens, &functions, &mut i, out_contents);
 		i += 1;
 	}
 	
