@@ -1714,8 +1714,105 @@ fn compile_func(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, m
 	output
 } */
 
+fn compile_type(typ: &Vec<Vec<Type>>) -> String {
+	use lib::Type::*;
+	
+	let mut output = String::new();
+	let mut unsigned = false;
+	
+	for t in &typ[0] { // TMP until I've worked out how to handle multiple types
+		match t {
+			Array => (), // WIP
+			Bool => output += "bool",
+			Chan => (), // WIP
+			Char => output += "char",
+			Const => (),
+			Fraction => (), // WIP
+			Heap => (), // WIP
+			Int => if unsigned {
+				output += "usize";
+			} else {
+				output += "isize";
+			},
+			List => (), // WIP
+			Macro => (), // WIP
+			Only => (), // WIP
+			Pointer => output += "&", // NOTE: Needs changing (for example pointer*2)
+			Register => (), // WIP
+			Stack => (), // WIP
+			Unique => (), // WIP
+			Unsigned => unsigned = true,
+			Void => (), // NOTE: Needs changing to 'output += "()"' once Void is not used for none-existing parameters (use None instead)
+			Volatile => (), // WIP
+		}
+	}
+	
+	output
+}
+
 fn compile_func(tokens: &Vec<Token>, function: &Function, mut output: String) -> String {
-	// WIP
+	for section in function.structure.iter() {
+		match section {
+			FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => {
+				for c in name.chars() {
+					let ch = c.to_string();
+					output += match c {
+						'+' => "plus",
+						'-' => "minus",
+						'*' => "times",
+						'/' => "div",
+						'%' => "mod",
+						'=' => "eq",
+						'&' => "and",
+						'|' => "or",
+						'^' => "xor",
+						'<' => "larrow",
+						'>' => "rarrow",
+						'!' => "not",
+						'~' => "binnot",
+						'?' => "quest",
+						':' => "colon",
+						'.' => "dot",
+						',' => "comma",
+						'@' => "at",
+						_ => &ch
+					};
+				}
+				
+				output += "_";
+			},
+			
+			_ => ()
+		}
+	}
+	
+	output += "(";
+	
+	let mut not_first_arg = false;
+	for section in function.structure.iter() {
+		match section {
+			FunctionSection::Arg(ref name, ref typ) => {
+				if not_first_arg {
+					output += ",";
+				}
+				
+				output += name;
+				output += ":";
+				output += &compile_type(typ);
+				
+				not_first_arg = true;
+			},
+			
+			_ => ()
+		}
+	}
+	
+	output += ")";
+	
+	if function.output[0].len() > 0 {
+		output += "->";
+		output += &compile_type(&function.output);
+	}
 	
 	output
 }
