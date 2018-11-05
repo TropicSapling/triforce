@@ -1860,6 +1860,53 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 			output = compile_body(tokens, i, output);
 		},
 		
+		Kind::Reserved(ref keyword, _) if keyword == "import" => {
+			// Using Rust-style importing for now
+			output += "use ";
+			*i += 1;
+			
+			let mut success = false;
+			while *i < tokens.len() {
+				match tokens[*i].kind {
+					Kind::Reserved(ref keyword, _) if keyword == "as" => {
+						output += " as ";
+						*i += 1;
+					},
+					
+					Kind::GroupOp(ref op, _, _) if op == ";" => {
+						output += ";";
+						success = true;
+						break;
+					},
+					
+					_ => {
+						output += &get_val!(tokens[*i].kind); // Will probably be changed
+						*i += 1;
+					}
+				}
+			}
+			
+			if !success {
+				panic!("Unexpected EOF");
+			}
+		},
+		
+		Kind::Var(ref name, _, _, _) if name == "#" => {
+			while *i < tokens.len() {
+				match tokens[*i].kind {
+					Kind::GroupOp(ref op, _, _) if op == "]" => {
+						output += "]";
+						break;
+					},
+					
+					_ => {
+						output += &get_val!(tokens[*i].kind); // Will probably be changed
+						*i += 1;
+					}
+				}
+			}
+		},
+		
 		_ => ()
 	}
 	
