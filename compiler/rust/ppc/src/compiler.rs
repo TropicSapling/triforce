@@ -75,6 +75,8 @@ macro_rules! def_builtin_op {
 	})
 }
 
+const BUILTIN_FUNCS: usize = 28;
+
 macro_rules! def_builtin_funcs {
 	() => (vec![
 		// WIP; 'typ' structure needs support for multiple types ('int|fraction' for these operators)
@@ -260,7 +262,7 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> Ve
 		}
 	}
 	
-	let mut id = 0;
+	let mut id = BUILTIN_FUNCS;
 	for i in fpos {
 		match tokens[i].kind {
 			Kind::Func(ref mut f, _) => *f = id,
@@ -1751,41 +1753,61 @@ fn compile_type(typ: &Vec<Vec<Type>>) -> String {
 }
 
 fn compile_func(tokens: &Vec<Token>, function: &Function, mut output: String) -> String {
+	let mut is_init = false;
 	for section in function.structure.iter() {
 		match section {
 			FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => {
-				for c in name.chars() {
-					let ch = c.to_string();
-					output += match c {
-						'+' => "plus",
-						'-' => "minus",
-						'*' => "times",
-						'/' => "div",
-						'%' => "mod",
-						'=' => "eq",
-						'&' => "and",
-						'|' => "or",
-						'^' => "xor",
-						'<' => "larrow",
-						'>' => "rarrow",
-						'!' => "not",
-						'~' => "binnot",
-						'?' => "quest",
-						':' => "colon",
-						'.' => "dot",
-						',' => "comma",
-						'@' => "at",
-						_ => &ch
-					};
+				if name == "init" {
+					is_init = true;
+				} else {
+					is_init = false;
+					break;
 				}
-				
-				output += "_";
 			},
 			
 			_ => ()
 		}
 	}
 	
+	if is_init {
+		output += "main";
+	} else {
+		for section in function.structure.iter() {
+			match section {
+				FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => {
+					for c in name.chars() {
+						let ch = c.to_string();
+						output += match c {
+							'+' => "plus",
+							'-' => "minus",
+							'*' => "times",
+							'/' => "div",
+							'%' => "mod",
+							'=' => "eq",
+							'&' => "and",
+							'|' => "or",
+							'^' => "xor",
+							'<' => "larrow",
+							'>' => "rarrow",
+							'!' => "not",
+							'~' => "binnot",
+							'?' => "quest",
+							':' => "colon",
+							'.' => "dot",
+							',' => "comma",
+							'@' => "at",
+							_ => &ch
+						};
+					}
+					
+					output += "_";
+				},
+				
+				_ => ()
+			}
+		}
+	}
+		
 	output += "(";
 	
 	let mut not_first_arg = false;
@@ -1809,7 +1831,7 @@ fn compile_func(tokens: &Vec<Token>, function: &Function, mut output: String) ->
 	
 	output += ")";
 	
-	if function.output[0].len() > 0 {
+	if function.output.len() > 0 {
 		output += "->";
 		output += &compile_type(&function.output);
 	}
@@ -1829,7 +1851,7 @@ fn compile_body(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 
 pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
-		Kind::Func(f, ref children) if f > 27 => {
+		Kind::Func(f, ref children) => {
 			output += "fn ";
 			
 			output = compile_func(tokens, &functions[f], output);
