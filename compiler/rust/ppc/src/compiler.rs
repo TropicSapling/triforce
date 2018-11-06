@@ -1839,50 +1839,57 @@ fn compile_func(tokens: &Vec<Token>, function: &Function, mut output: String) ->
 	output
 }
 
+fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
+	match tokens[*i].kind {
+		Kind::GroupOp(_,_,_) => output = compile_body(tokens, i, output),
+		
+		Kind::Literal(b) => if b {
+			output += "true";
+		} else {
+			output += "false";
+		},
+		
+		Kind::Number(int, fraction) => {
+			output += &int.to_string();
+			if fraction != 0 {
+				output += ".";
+				output += &fraction.to_string();
+			}
+		},
+		
+		Kind::Str1(ref s) => {
+			output += "\"";
+			output += s;
+			output += "\"";
+		},
+		
+		Kind::Str2(ref s) => {
+			if s.len() == 1 || (s.len() == 2 && s.chars().next().unwrap() == '\\') { // Just a character, not an actual string
+				output += "'";
+				output += s;
+				output += "'";
+			} else {
+				panic!("{}:{} P+ style strings are not supported yet", tokens[*i].pos.line, tokens[*i].pos.col);
+			}
+		},
+		
+		Kind::Var(ref name, _, ref children, ref sidekicks) | Kind::Op(ref name, ref children, ref sidekicks) => {
+			// WIP
+		},
+		
+		_ => ()
+	}
+	
+	output
+}
+
 fn compile_body(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
 	output += "{";
 	
 	if let Kind::GroupOp(_, ref statements, _) = tokens[*i].kind {
 		for statement in statements.borrow().iter() {
-			match tokens[*statement].kind {
-				Kind::GroupOp(_,_,_) => output = compile_body(tokens, i, output),
-				
-				Kind::Literal(b) => if b {
-					output += "true";
-				} else {
-					output += "false";
-				},
-				
-				Kind::Number(int, fraction) => {
-					output += &int.to_string();
-					if fraction != 0 {
-						output += ".";
-						output += &fraction.to_string();
-					}
-				},
-				
-				Kind::Str1(ref s) => {
-					output += "\"";
-					output += s;
-					output += "\"";
-				},
-				
-				Kind::Str2(ref s) => {
-					if s.len() == 1 || (s.len() == 2 && s.chars().next().unwrap() == '\\') { // Just a character, not an actual string
-						output += "'";
-						output += s;
-						output += "'";
-					} else {
-						panic!("{}:{} P+ style strings are not supported yet", tokens[*i].pos.line, tokens[*i].pos.col);
-					}
-				},
-				
-				Kind::Var(ref name, _, ref children, ref sidekicks) | Kind::Op(ref name, ref children, ref sidekicks) => {
-					// WIP
-				},
-				
-				_ => ()
-			}
+			*i = *statement;
+			output = compile_tok(tokens, i, output);
 		}
 	}
 	
