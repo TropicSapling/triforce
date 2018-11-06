@@ -1839,6 +1839,30 @@ fn compile_func(tokens: &Vec<Token>, function: &Function, mut output: String) ->
 	output
 }
 
+fn type_full_name(tokens: &Vec<Token>, mut output: String, sidekicks: &RefCell<Vec<usize>>, name: &str) -> String {
+	output += name;
+	
+	if sidekicks.borrow().len() > 0 {
+		output += "_";
+		for s in sidekicks.borrow().iter() {
+			match tokens[*s].kind {
+				Kind::Op(ref op, _, _) => {
+					// WIP
+				},
+				
+				Kind::Var(ref name, _, _, _) => {
+					output += name;
+					output += "_";
+				},
+				
+				_ => unreachable!()
+			}
+		}
+	}
+	
+	output
+}
+
 fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
 		Kind::GroupOp(_,_,_) => output = compile_body(tokens, i, output),
@@ -1874,7 +1898,30 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 		},
 		
 		Kind::Var(ref name, _, ref children, ref sidekicks) | Kind::Op(ref name, ref children, ref sidekicks) => {
+			output = type_full_name(tokens, output, sidekicks, name);
+			
+			if children.borrow().len() > 0 {
+				output += "(";
+				
+				if children.borrow()[0] != usize::MAX {
+					for (c, child) in children.borrow().iter().enumerate() {
+						*i = *child;
+						output = compile_tok(tokens, i, output);
+						
+						if c + 1 < children.borrow().len() {
+							output += ",";
+						}
+					}
+				}
+				
+				output += ")";
+			}
+		},
+		
+		Kind::Op(ref name, ref children, ref sidekicks) => {
 			// WIP
+			
+			output = type_full_name(tokens, output, sidekicks, name);
 		},
 		
 		_ => ()
