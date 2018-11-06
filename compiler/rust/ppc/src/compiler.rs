@@ -1752,7 +1752,7 @@ fn compile_type(typ: &Vec<Vec<Type>>) -> String {
 	output
 }
 
-fn compile_func(tokens: &Vec<Token>, function: &Function, mut output: String) -> String {
+fn compile_func(function: &Function, mut output: String) -> String {
 	let mut is_init = false;
 	for section in function.structure.iter() {
 		match section {
@@ -1772,12 +1772,13 @@ fn compile_func(tokens: &Vec<Token>, function: &Function, mut output: String) ->
 	if is_init {
 		output += "main";
 	} else {
+		let mut s = String::new();
 		for section in function.structure.iter() {
 			match section {
 				FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => {
 					for c in name.chars() {
 						let ch = c.to_string();
-						output += match c {
+						s += match c {
 							'+' => "plus",
 							'-' => "minus",
 							'*' => "times",
@@ -1800,12 +1801,14 @@ fn compile_func(tokens: &Vec<Token>, function: &Function, mut output: String) ->
 						};
 					}
 					
-					output += "_";
+					s += "_";
 				},
 				
 				_ => ()
 			}
 		}
+		
+		output += &s[..s.len() - 1];
 	}
 		
 	output += "(";
@@ -1840,27 +1843,30 @@ fn compile_func(tokens: &Vec<Token>, function: &Function, mut output: String) ->
 }
 
 fn type_full_name(tokens: &Vec<Token>, mut output: String, sidekicks: &RefCell<Vec<usize>>, name: &str) -> String {
-	output += name;
-	
 	if sidekicks.borrow().len() > 0 {
-		output += "_";
-		for s in sidekicks.borrow().iter() {
-			match tokens[*s].kind {
+		let mut s = name.to_string() + "_";
+		
+		for sidekick in sidekicks.borrow().iter() {
+			match tokens[*sidekick].kind {
 				Kind::Op(ref op, _, _) => {
 					// WIP
 				},
 				
 				Kind::Var(ref name, _, _, _) => {
-					output += name;
-					output += "_";
+					s += name;
+					s += "_";
 				},
 				
 				_ => unreachable!()
 			}
 		}
+		
+		output + &s[..s.len() - 1]
+	} else if name == "println" {
+		output + "println!"
+	} else {
+		output + name
 	}
-	
-	output
 }
 
 fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
@@ -1902,6 +1908,10 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 			
 			if children.borrow().len() > 0 {
 				output += "(";
+				
+				if sidekicks.borrow().len() == 0 && name == "println" {
+					output += "\"{}\",";
+				}
 				
 				if children.borrow()[0] != usize::MAX {
 					for (c, child) in children.borrow().iter().enumerate() {
@@ -1950,7 +1960,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 		Kind::Func(f, ref children) => {
 			output += "fn ";
 			
-			output = compile_func(tokens, &functions[f], output);
+			output = compile_func(&functions[f], output);
 			
 			*i = children.borrow()[0];
 			output = compile_body(tokens, i, output);
