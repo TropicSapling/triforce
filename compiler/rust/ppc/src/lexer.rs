@@ -365,6 +365,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 
 pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<Macro>) {
 	let mut macros = Vec::new();
+	let mut pending = Vec::new();
 	let mut m_default_val = 0;
 	let mut mdv_changes = vec![0];
 	let mut full_depth = 0;
@@ -684,6 +685,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 			Kind::Type(ref typ, ref mut typs) => {
 				let mut types = vec![vec![typ.clone()]];
 				
+				let mut start = i;
 				i += 1;
 				
 				let mut t = 0;
@@ -709,7 +711,7 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 					
 					_ => {
 						i -= 1;
-						*typs = types;
+						pending.push((start, types));
 					}
 				}
 			},
@@ -718,6 +720,12 @@ pub fn lex3(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Funct
 		}
 		
 		i += 1;
+	}
+	
+	for (i, types) in pending {
+		if let Kind::Type(_, ref mut typs) = tokens[i].kind {
+			*typs = types;
+		}
 	}
 	
 	(functions, macros)
