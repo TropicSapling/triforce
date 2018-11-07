@@ -733,14 +733,14 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 	lowest
 }
 
-fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize, children: RefCell<Vec<usize>>) {
+fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) -> usize {
 	*i += 1;
 	
 	let next = *i;
 	if let Some(token) = parse_statement(tokens, functions, all_children, i) {
-		children.borrow_mut().push(token);
+		token
 	} else {
-		children.borrow_mut().push(next);
+		next
 	}
 }
 
@@ -781,6 +781,8 @@ fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &
 } */
 
 pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) {
+	let mut pending = Vec::new();
+	
 	match tokens[*i].kind.clone() {
 		Kind::GroupOp(ref op, _, _) if op == "{" => {
 			let parent = *i;
@@ -813,12 +815,12 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: 
 					},
 					
 					_ => match tokens[*i].kind.clone() {
-						Kind::Reserved(ref keyword, ref grandchildren) if keyword == "return" => {
+						Kind::Reserved(ref keyword, _) if keyword == "return" => {
 							if let Kind::GroupOp(_, ref children, _) = tokens[parent].kind {
 								children.borrow_mut().push(*i);
 							}
 							
-							parse_ret(tokens, functions, all_children, i, grandchildren.clone());
+							pending.push((*i, parse_ret(tokens, functions, all_children, i)));
 						},
 						
 //						Kind::Type(_) => parse_type_decl(tokens, functions, i, parent),
@@ -846,6 +848,12 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: 
 		},
 		
 		_ => ()
+	}
+	
+	for (i, child) in pending {
+		if let Kind::Reserved(_, ref children) = tokens[i].kind {
+			children.borrow_mut().push(child);
+		}
 	}
 }
 
@@ -1942,6 +1950,14 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 			// WIP
 			
 			output = type_full_name(tokens, output, sidekicks, name);
+		},
+		
+		Kind::Reserved(ref keyword, ref children) if keyword == "return" => if children.borrow().len() > 0 {
+			output += "return ";
+			*i = children.borrow()[0];
+			output = compile_tok(tokens, i, output);
+		} else {
+			output += "return";
 		},
 		
 		_ => ()
