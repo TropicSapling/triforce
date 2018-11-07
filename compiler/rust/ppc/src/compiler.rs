@@ -823,7 +823,13 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: 
 						
 //						Kind::Type(_) => parse_type_decl(tokens, functions, i, parent),
 						
-						Kind::GroupOp(ref op, _, _) if op == ";" => *i += 1,
+						Kind::GroupOp(ref op, _, _) if op == ";" => {
+							if let Kind::GroupOp(_, ref children, _) = tokens[parent].kind {
+								children.borrow_mut().push(*i);
+							}
+							
+							*i += 1;
+						},
 						
 						_ => if let Some(token) = parse_statement(tokens, functions, all_children, i) {
 							if let Kind::GroupOp(_, ref children, _) = tokens[parent].kind {
@@ -1871,7 +1877,11 @@ fn type_full_name(tokens: &Vec<Token>, mut output: String, sidekicks: &RefCell<V
 
 fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
 	match tokens[*i].kind {
-		Kind::GroupOp(_,_,_) => output = compile_body(tokens, i, output),
+		Kind::GroupOp(ref op, _, _) => if op == ";" {
+			output += ";";
+		} else {
+			output = compile_body(tokens, i, output);
+		},
 		
 		Kind::Literal(b) => if b {
 			output += "true";
