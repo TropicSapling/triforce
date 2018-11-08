@@ -172,12 +172,12 @@ fn main() -> Result<(), std::io::Error> {
 		} */
 		
 		#[allow(unused)]
-		func if (int cond) (int body) { // TMP; will be defined as macro later
+		func if (bool cond) (int body) { // TMP; will be defined as macro later
 		
 		}
 		
 		#[allow(unused)]
-		func if (int cond) (int body) else (int expr) { // TMP; will be defined as macro later
+		func if (bool cond) (int body) else (int expr) { // TMP; will be defined as macro later
 		
 		}
 		

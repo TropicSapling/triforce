@@ -1823,6 +1823,7 @@ fn compile_func(function: &Function, mut output: String) -> String {
 		}
 		
 		output += &s[..s.len() - 1];
+		output += "_ppl";
 	}
 		
 	output += "(";
@@ -1836,6 +1837,7 @@ fn compile_func(function: &Function, mut output: String) -> String {
 				}
 				
 				output += name;
+				output += "_ppl";
 				output += ":";
 				output += &compile_type(typ);
 				
@@ -1868,7 +1870,7 @@ fn type_full_name(tokens: &Vec<Token>, output: String, sidekicks: &RefCell<Vec<u
 				
 				Kind::Var(ref name, _, _, _) => {
 					s += name;
-					s += "_";
+					s += "_ppl_";
 				},
 				
 				_ => unreachable!()
@@ -1879,7 +1881,7 @@ fn type_full_name(tokens: &Vec<Token>, output: String, sidekicks: &RefCell<Vec<u
 	} else if name == "println" {
 		output + "println!"
 	} else {
-		output + name
+		output + name + "_ppl"
 	}
 }
 
@@ -1977,8 +1979,8 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 		},
 		
 		Kind::Var(ref name, _, ref children, ref sidekicks) => {
-			output = type_full_name(tokens, output, sidekicks, name);
-			output = type_func_call(tokens, output, i, children, sidekicks, name);
+			output = type_full_name(tokens, output, sidekicks, &name);
+			output = type_func_call(tokens, output, i, children, sidekicks, &name);
 		},
 		
 		Kind::Op(ref op, ref children, ref sidekicks) => {
