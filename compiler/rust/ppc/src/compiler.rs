@@ -2040,8 +2040,28 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 				}
 			}
 			
-			output += &new_output;
-			output = type_func_call(tokens, output, i, children, sidekicks, &name);
+			match new_output[..new_output.len() - 4].as_ref() {
+				"let_eq" => match tokens[sidekicks.borrow()[0]].kind {
+					Kind::Op(_, ref children, _) => {
+						output += "let ";
+						
+						*i = children.borrow()[0];
+						output = compile_tok(tokens, i, output);
+						
+						output += "=";
+						
+						*i = children.borrow()[1];
+						output = compile_tok(tokens, i, output);
+					},
+					
+					_ => unreachable!()
+				},
+				
+				_ => {
+					output += &new_output;
+					output = type_func_call(tokens, output, i, children, sidekicks, &name);
+				}
+			}
 		},
 		
 		Kind::Op(ref op, ref children, ref sidekicks) => {
