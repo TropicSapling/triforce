@@ -1865,19 +1865,72 @@ fn type_full_name(tokens: &Vec<Token>, output: String, sidekicks: &RefCell<Vec<u
 		for sidekick in sidekicks.borrow().iter() {
 			match tokens[*sidekick].kind {
 				Kind::Op(ref op, _, _) => {
-					// WIP
+					s += match op.as_ref() {
+						"+" => "plus",
+						"-" => "minus",
+						"*" => "times",
+						"/" => "div",
+						"%" => "mod",
+						"=" => "eq",
+						"&" => "and",
+						"|" => "or",
+						"^" => "xor",
+						"<" => "larrow",
+						">" => "rarrow",
+						"!" => "not",
+						"~" => "binnot",
+						"?" => "quest",
+						":" => "colon",
+						"." => "dot",
+						"," => "comma",
+						"@" => "at",
+						_ => op
+					};
+					
+					let mut i = *sidekick + 1;
+					while i < tokens.len() {
+						match tokens[i].kind {
+							Kind::Op(ref op, _, _) => s += match op.as_ref() {
+								"+" => "plus",
+								"-" => "minus",
+								"*" => "times",
+								"/" => "div",
+								"%" => "mod",
+								"=" => "eq",
+								"&" => "and",
+								"|" => "or",
+								"^" => "xor",
+								"<" => "larrow",
+								">" => "rarrow",
+								"!" => "not",
+								"~" => "binnot",
+								"?" => "quest",
+								":" => "colon",
+								"." => "dot",
+								"," => "comma",
+								"@" => "at",
+								_ => op
+							},
+							
+							_ => break
+						}
+						
+						i += 1;
+					}
+					
+					s += "_";
 				},
 				
 				Kind::Var(ref name, _, _, _) => {
 					s += name;
-					s += "_ppl_";
+					s += "_";
 				},
 				
 				_ => unreachable!()
 			}
 		}
 		
-		output + &s[..s.len() - 1]
+		output + &s[..s.len() - 1] + "_ppl"
 	} else if name == "println" {
 		output + "println!"
 	} else {
