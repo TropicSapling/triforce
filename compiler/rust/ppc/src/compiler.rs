@@ -1930,11 +1930,11 @@ fn type_full_name(tokens: &Vec<Token>, output: String, sidekicks: &RefCell<Vec<u
 			}
 		}
 		
-		(output + &s[..s.len() - 1] + "_ppl", s[..s.len() - 1].to_string())
+		(output, s[..s.len() - 1].to_string() + "_ppl")
 	} else if name == "println" {
-		(output + "println!", name.to_string())
+		(output, String::from("println!"))
 	} else {
-		(output + name + "_ppl", name.to_string())
+		(output, name.to_string() + "_ppl")
 	}
 }
 
@@ -2032,13 +2032,16 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 		},
 		
 		Kind::Var(ref name, _, ref children, ref sidekicks) => {
-			let updated_output = type_full_name(tokens, output, sidekicks, &name);
-			match updated_output.1 {
-				_ => {
-					output = updated_output.0;
-					output = type_func_call(tokens, output, i, children, sidekicks, &name);
+			let new_output;
+			match type_full_name(tokens, output, sidekicks, &name) {
+				(updated_output, new_output2) => {
+					output = updated_output;
+					new_output = new_output2;
 				}
 			}
+			
+			output += &new_output;
+			output = type_func_call(tokens, output, i, children, sidekicks, &name);
 		},
 		
 		Kind::Op(ref op, ref children, ref sidekicks) => {
@@ -2096,10 +2099,58 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 			}
 			*i -= 1;
 			
-			let updated_output = type_full_name(tokens, output, sidekicks, &name);
-			match updated_output.1 {
+			let new_output;
+			match type_full_name(tokens, output, sidekicks, &name) {
+				(updated_output, new_output2) => {
+					output = updated_output;
+					new_output = new_output2;
+				}
+			}
+			
+			match new_output[..new_output.len() - 4].as_ref() {
+				"plus" | "minus" | "times" | "div" | "mod" | "eq" | "eqeq" | "noteq" | "pluseq" | "and" | "andand" | "or" | "oror" | "xor" | "larrow" | "larrowlarrow" | "rarrow" | "rarrowrarrow" => {
+					*i = children.borrow()[0];
+					output = compile_tok(tokens, i, output);
+					
+					output += match new_output[..new_output.len() - 4].as_ref() {
+						"plus" => "+",
+						"minus" => "-",
+						"times" => "*",
+						"div" => "/",
+						"mod" => "%",
+						"eq" => "=",
+						"eqeq" => "==",
+						"noteq" => "!=",
+						"pluseq" => "+=",
+						"and" => "&",
+						"andand" => "&&",
+						"or" => "|",
+						"oror" => "||",
+						"xor" => "^",
+						"larrow" => "<",
+						"larrowlarrow" => "<<",
+						"rarrow" => ">",
+						"rarrowrarrow" => ">>",
+						_ => unreachable!()
+					};
+					
+					*i = children.borrow()[1];
+					output = compile_tok(tokens, i, output);
+				},
+				
+				"not" | "binnot" => {
+					output += match new_output[..new_output.len() - 4].as_ref() {
+						"not" => "!",
+						"binnot" => "~",
+						_ => unreachable!()
+					};
+					
+					*i = children.borrow()[0];
+					output = compile_tok(tokens, i, output);
+				},
+				
 				_ => {
-					output = updated_output.0;
+					output += &new_output;
 					output = type_func_call(tokens, output, i, children, sidekicks, &name);
 				}
 			}
