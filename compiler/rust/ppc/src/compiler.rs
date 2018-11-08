@@ -1924,21 +1924,51 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 		Kind::Var(ref name, _, ref children, ref sidekicks) | Kind::Op(ref name, ref children, ref sidekicks) => {
 			output = type_full_name(tokens, output, sidekicks, name);
 			
-			if children.borrow().len() > 0 {
+			let (children, sidekicks) = (children.borrow(), sidekicks.borrow());
+			
+			if children.len() > 0 || sidekicks.iter().find(|&&s| match tokens[s].kind {
+				Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => if children.borrow().len() > 0 {true} else {false},
+				_ => unreachable!()
+			}).is_some() {
 				output += "(";
 				
-				if sidekicks.borrow().len() == 0 && name == "println" {
+				if sidekicks.len() == 0 && name == "println" {
 					output += "\"{}\",";
 				}
 				
-				if children.borrow()[0] != usize::MAX {
-					for (c, child) in children.borrow().iter().enumerate() {
+				let mut has_children = false;
+				
+				if children.len() > 0 && children[0] != usize::MAX {
+					for (c, child) in children.iter().enumerate() {
 						*i = *child;
 						output = compile_tok(tokens, i, output);
 						
-						if c + 1 < children.borrow().len() {
+						if c + 1 < children.len() {
 							output += ",";
 						}
+					}
+					
+					has_children = true;
+				}
+				
+				for (s, &sidekick) in sidekicks.iter().enumerate() {
+					match tokens[sidekick].kind {
+						Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => if children.borrow().len() > 0 {
+							if s > 0 || has_children {
+								output += ",";
+							}
+							
+							for (c, child) in children.borrow().iter().enumerate() {
+								*i = *child;
+								output = compile_tok(tokens, i, output);
+								
+								if c + 1 < children.borrow().len() {
+									output += ",";
+								}
+							}
+						},
+						
+						_ => unreachable!()
 					}
 				}
 				
