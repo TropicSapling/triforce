@@ -172,13 +172,13 @@ fn main() -> Result<(), std::io::Error> {
 		} */
 		
 		#[allow(unused)]
-		func if (bool cond) (int body) { // TMP; will be defined as macro later
-		
+		func if (bool cond) (int body) -> int { // TMP; will be defined as macro later
+			123
 		}
 		
 		#[allow(unused)]
-		func if (bool cond) (int body) else (int expr) { // TMP; will be defined as macro later
-		
+		func if (bool cond) (int body) else (int expr) -> int { // TMP; will be defined as macro later
+			456
 		}
 		
 		#[allow(unused)]

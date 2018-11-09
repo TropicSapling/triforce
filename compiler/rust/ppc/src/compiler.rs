@@ -567,7 +567,7 @@ fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, u
 pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) -> Option<usize> {
 	let start = *i;
 	let limit = get_parse_limit(tokens, i);
-	let mut parsed = false;
+	let mut parsed = Vec::new();
 	let mut lowest = None;
 	
 	loop {
@@ -590,9 +590,9 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 						update_matches(&mut matches, functions, String::new(), depth + depth2, *i, true);
 					}
 					
-					if !parsed {
+					if depth2 == 0 && !parsed.contains(i) {
+						parsed.push(*i);
 						parse2(tokens, functions, all_children, i);
-						parsed = true;
 					} else {
 						depth2 += 1;
 					}
@@ -2043,7 +2043,7 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 			match new_output[..new_output.len() - 4].as_ref() {
 				"let_eq" => match tokens[sidekicks.borrow()[0]].kind {
 					Kind::Op(_, ref children, _) => {
-						output += "let ";
+						output += "let mut ";
 						
 						*i = children.borrow()[0];
 						output = compile_tok(tokens, i, output);
