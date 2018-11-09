@@ -567,7 +567,7 @@ fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, u
 pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) -> Option<usize> {
 	let start = *i;
 	let limit = get_parse_limit(tokens, i);
-	let mut parsed = false;
+	let mut parsed = Vec::new();
 	let mut lowest = None;
 	
 	loop {
@@ -590,9 +590,9 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 						update_matches(&mut matches, functions, String::new(), depth + depth2, *i, true);
 					}
 					
-					if !parsed {
+					if depth2 == 0 && !parsed.contains(i) {
+						parsed.push(*i);
 						parse2(tokens, functions, all_children, i);
-						parsed = true;
 					} else {
 						depth2 += 1;
 					}
@@ -1823,6 +1823,7 @@ fn compile_func(function: &Function, mut output: String) -> String {
 		}
 		
 		output += &s[..s.len() - 1];
+		output += "_ppl";
 	}
 		
 	output += "(";
@@ -1836,6 +1837,7 @@ fn compile_func(function: &Function, mut output: String) -> String {
 				}
 				
 				output += name;
+				output += "_ppl";
 				output += ":";
 				output += &compile_type(typ);
 				
@@ -1856,14 +1858,67 @@ fn compile_func(function: &Function, mut output: String) -> String {
 	output
 }
 
-fn type_full_name(tokens: &Vec<Token>, mut output: String, sidekicks: &RefCell<Vec<usize>>, name: &str) -> String {
+fn type_full_name(tokens: &Vec<Token>, output: String, sidekicks: &RefCell<Vec<usize>>, name: &str) -> (String, String) {
 	if sidekicks.borrow().len() > 0 {
 		let mut s = name.to_string() + "_";
 		
 		for sidekick in sidekicks.borrow().iter() {
 			match tokens[*sidekick].kind {
 				Kind::Op(ref op, _, _) => {
-					// WIP
+					s += match op.as_ref() {
+						"+" => "plus",
+						"-" => "minus",
+						"*" => "times",
+						"/" => "div",
+						"%" => "mod",
+						"=" => "eq",
+						"&" => "and",
+						"|" => "or",
+						"^" => "xor",
+						"<" => "larrow",
+						">" => "rarrow",
+						"!" => "not",
+						"~" => "binnot",
+						"?" => "quest",
+						":" => "colon",
+						"." => "dot",
+						"," => "comma",
+						"@" => "at",
+						_ => op
+					};
+					
+					let mut i = *sidekick + 1;
+					while i < tokens.len() {
+						match tokens[i].kind {
+							Kind::Op(ref op, _, _) => s += match op.as_ref() {
+								"+" => "plus",
+								"-" => "minus",
+								"*" => "times",
+								"/" => "div",
+								"%" => "mod",
+								"=" => "eq",
+								"&" => "and",
+								"|" => "or",
+								"^" => "xor",
+								"<" => "larrow",
+								">" => "rarrow",
+								"!" => "not",
+								"~" => "binnot",
+								"?" => "quest",
+								":" => "colon",
+								"." => "dot",
+								"," => "comma",
+								"@" => "at",
+								_ => op
+							},
+							
+							_ => break
+						}
+						
+						i += 1;
+					}
+					
+					s += "_";
 				},
 				
 				Kind::Var(ref name, _, _, _) => {
@@ -1875,12 +1930,67 @@ fn type_full_name(tokens: &Vec<Token>, mut output: String, sidekicks: &RefCell<V
 			}
 		}
 		
-		output + &s[..s.len() - 1]
+		(output, s[..s.len() - 1].to_string() + "_ppl")
 	} else if name == "println" {
-		output + "println!"
+		(output, String::from("println!"))
 	} else {
-		output + name
+		(output, name.to_string() + "_ppl")
 	}
+}
+
+fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, children: &RefCell<Vec<usize>>, sidekicks: &RefCell<Vec<usize>>, name: &str) -> String {
+	let (children, sidekicks) = (children.borrow(), sidekicks.borrow());
+	
+	if children.len() > 0 || sidekicks.iter().find(|&&s| match tokens[s].kind {
+		Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => if children.borrow().len() > 0 {true} else {false},
+		_ => unreachable!()
+	}).is_some() {
+		output += "(";
+		
+		if sidekicks.len() == 0 && name == "println" {
+			output += "\"{}\",";
+		}
+		
+		let mut has_children = false;
+		
+		if children.len() > 0 && children[0] != usize::MAX {
+			for (c, child) in children.iter().enumerate() {
+				*i = *child;
+				output = compile_tok(tokens, i, output);
+				
+				if c + 1 < children.len() {
+					output += ",";
+				}
+			}
+			
+			has_children = true;
+		}
+		
+		for (s, &sidekick) in sidekicks.iter().enumerate() {
+			match tokens[sidekick].kind {
+				Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => if children.borrow().len() > 0 {
+					if s > 0 || has_children {
+						output += ",";
+					}
+					
+					for (c, child) in children.borrow().iter().enumerate() {
+						*i = *child;
+						output = compile_tok(tokens, i, output);
+						
+						if c + 1 < children.borrow().len() {
+							output += ",";
+						}
+					}
+				},
+				
+				_ => unreachable!()
+			}
+		}
+		
+		output += ")";
+	}
+	
+	output
 }
 
 fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
@@ -1921,35 +2031,149 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 			}
 		},
 		
-		Kind::Var(ref name, _, ref children, ref sidekicks) | Kind::Op(ref name, ref children, ref sidekicks) => {
-			output = type_full_name(tokens, output, sidekicks, name);
-			
-			if children.borrow().len() > 0 {
-				output += "(";
-				
-				if sidekicks.borrow().len() == 0 && name == "println" {
-					output += "\"{}\",";
+		Kind::Var(ref name, _, ref children, ref sidekicks) => {
+			let new_output;
+			match type_full_name(tokens, output, sidekicks, &name) {
+				(updated_output, new_output2) => {
+					output = updated_output;
+					new_output = new_output2;
 				}
-				
-				if children.borrow()[0] != usize::MAX {
-					for (c, child) in children.borrow().iter().enumerate() {
-						*i = *child;
+			}
+			
+			match new_output[..new_output.len() - 4].as_ref() {
+				"let_eq" => match tokens[sidekicks.borrow()[0]].kind {
+					Kind::Op(_, ref children, _) => {
+						output += "let mut ";
+						
+						*i = children.borrow()[0];
 						output = compile_tok(tokens, i, output);
 						
-						if c + 1 < children.borrow().len() {
-							output += ",";
-						}
-					}
-				}
+						output += "=";
+						
+						*i = children.borrow()[1];
+						output = compile_tok(tokens, i, output);
+					},
+					
+					_ => unreachable!()
+				},
 				
-				output += ")";
+				_ => {
+					output += &new_output;
+					output = type_func_call(tokens, output, i, children, sidekicks, &name);
+				}
 			}
 		},
 		
-		Kind::Op(ref name, ref children, ref sidekicks) => {
-			// WIP
+		Kind::Op(ref op, ref children, ref sidekicks) => {
+			let mut name = match op.as_ref() {
+				"+" => "plus",
+				"-" => "minus",
+				"*" => "times",
+				"/" => "div",
+				"%" => "mod",
+				"=" => "eq",
+				"&" => "and",
+				"|" => "or",
+				"^" => "xor",
+				"<" => "larrow",
+				">" => "rarrow",
+				"!" => "not",
+				"~" => "binnot",
+				"?" => "quest",
+				":" => "colon",
+				"." => "dot",
+				"," => "comma",
+				"@" => "at",
+				_ => op
+			}.to_string();
 			
-			output = type_full_name(tokens, output, sidekicks, name);
+			*i += 1;
+			while *i < tokens.len() {
+				match tokens[*i].kind {
+					Kind::Op(ref op, _, _) => name += match op.as_ref() {
+						"+" => "plus",
+						"-" => "minus",
+						"*" => "times",
+						"/" => "div",
+						"%" => "mod",
+						"=" => "eq",
+						"&" => "and",
+						"|" => "or",
+						"^" => "xor",
+						"<" => "larrow",
+						">" => "rarrow",
+						"!" => "not",
+						"~" => "binnot",
+						"?" => "quest",
+						":" => "colon",
+						"." => "dot",
+						"," => "comma",
+						"@" => "at",
+						_ => op
+					},
+					
+					_ => break
+				}
+				
+				*i += 1;
+			}
+			*i -= 1;
+			
+			let new_output;
+			match type_full_name(tokens, output, sidekicks, &name) {
+				(updated_output, new_output2) => {
+					output = updated_output;
+					new_output = new_output2;
+				}
+			}
+			
+			match new_output[..new_output.len() - 4].as_ref() {
+				"plus" | "minus" | "times" | "div" | "mod" | "eq" | "eqeq" | "noteq" | "pluseq" | "and" | "andand" | "or" | "oror" | "xor" | "larrow" | "larrowlarrow" | "rarrow" | "rarrowrarrow" => {
+					*i = children.borrow()[0];
+					output = compile_tok(tokens, i, output);
+					
+					output += match new_output[..new_output.len() - 4].as_ref() {
+						"plus" => "+",
+						"minus" => "-",
+						"times" => "*",
+						"div" => "/",
+						"mod" => "%",
+						"eq" => "=",
+						"eqeq" => "==",
+						"noteq" => "!=",
+						"pluseq" => "+=",
+						"and" => "&",
+						"andand" => "&&",
+						"or" => "|",
+						"oror" => "||",
+						"xor" => "^",
+						"larrow" => "<",
+						"larrowlarrow" => "<<",
+						"rarrow" => ">",
+						"rarrowrarrow" => ">>",
+						_ => unreachable!()
+					};
+					
+					*i = children.borrow()[1];
+					output = compile_tok(tokens, i, output);
+				},
+				
+				"not" | "binnot" => {
+					output += match new_output[..new_output.len() - 4].as_ref() {
+						"not" => "!",
+						"binnot" => "~",
+						_ => unreachable!()
+					};
+					
+					*i = children.borrow()[0];
+					output = compile_tok(tokens, i, output);
+				},
+				
+				_ => {
+					output += &new_output;
+					output = type_func_call(tokens, output, i, children, sidekicks, &name);
+				}
+			}
 		},
 		
 		Kind::Reserved(ref keyword, ref children) if keyword == "return" => if children.borrow().len() > 0 {
