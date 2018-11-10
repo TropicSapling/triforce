@@ -22,9 +22,8 @@ use std::{
 };
 
 use lib::get_io;
-use lexer::{lex, lex_ops, lex2, lex3};
-// use compiler::{def_functions, parse, parse2, parse3, compile};
-use compiler::{def_functions, parse, parse2, compile};
+use lexer::{lex, lex_ops, lex2, lex3, lex4};
+use compiler::{def_functions, parse, parse2, parse3, compile};
 
 fn count_newlines(s: &str) -> usize {
 	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
@@ -216,9 +215,15 @@ fn main() -> Result<(), std::io::Error> {
 //		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
+	lex3(&mut tokens);
+	
+	if debugging {
+//		println!("{} LEX3: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
+	}
+	
 	let mut functions = def_functions();
 	let mut macros;
-	match lex3(&mut tokens, functions) {
+	match lex4(&mut tokens, functions) {
 		(f, m) => {
 			functions = f;
 			macros = m;
@@ -226,7 +231,7 @@ fn main() -> Result<(), std::io::Error> {
 	}
 	
 	if debugging {
-//		println!("{} LEX3: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
+//		println!("{} LEX4: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
 	functions = parse(&mut tokens, functions);
@@ -242,7 +247,7 @@ fn main() -> Result<(), std::io::Error> {
 	let mut rows = vec![0];
 	let mut i = 0;
 	while i < tokens.len() {
-//		parse3(&mut tokens, &mut macros, &mut functions, &mut i, &mut depth, &mut rows)?;
+		parse3(&mut tokens, &mut macros, &mut functions, &mut i, &mut depth, &mut rows)?;
 		i += 1;
 	}
 	

@@ -1360,6 +1360,10 @@ fn get_op_name(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, na
 	}
 } */
 
+pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut Vec<Function>, i: &mut usize, depth: &mut usize, rows: &mut Vec<usize>) -> Result<(), Error> {
+	Ok(()) // WIP
+}
+
 fn compile_type(typ: &Vec<Vec<Type>>) -> String {
 	use lib::Type::*;
 	
