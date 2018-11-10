@@ -2,8 +2,8 @@ use std::{path::PathBuf, cell::RefCell};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
-	Func(usize, RefCell<Vec<usize>>),
-	GroupOp(String, RefCell<Vec<usize>>, RefCell<Vec<usize>>), // does GroupOp really need that last RefCell? is it used for anything?
+	Func(FuncType, RefCell<usize>),
+	GroupOp(String, RefCell<Vec<usize>>),
 	Literal(bool),
 	Number(usize, usize),
 	Op(String, RefCell<Vec<usize>>, RefCell<Vec<usize>>),
@@ -12,6 +12,12 @@ pub enum Kind {
 	Str2(String),
 	Type(Type, Vec<Vec<Type>>),
 	Var(String, Vec<Vec<Type>>, RefCell<Vec<usize>>, RefCell<Vec<usize>>)
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum FuncType {
+	Func(usize),
+	Macro(usize, usize)
 }
 
 #[derive(Clone, PartialEq, Debug)]

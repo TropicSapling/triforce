@@ -1,5 +1,5 @@
 use std::{usize, cell::RefCell};
-use lib::{Token, Kind, Type, FilePos, Macro, Function};
+use lib::{Token, Kind, FuncType, Type, FilePos, Macro, Function};
 
 fn is_var(c: char) -> bool {
 	c != '{' && c != '}' && c != '[' && c != ']' && c != '(' && c != ')' && c != ';' && c != '"' && c != '\'' && c != '/' && c != '*' && c != '\\' && !c.is_whitespace()
@@ -304,8 +304,9 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 					num_pos = 1;
 				} else {
 					string.kind = match item {
-						"func" => Kind::Func(0, RefCell::new(Vec::new())),
-						"{" | "}" | "[" | "]" | "(" | ")" | ";" => Kind::GroupOp(item.to_string(), RefCell::new(Vec::new()), RefCell::new(Vec::new())),
+						"func" => Kind::Func(FuncType::Func(0), RefCell::new(0)),
+						"macro" => Kind::Func(FuncType::Macro(0, 0), RefCell::new(0)),
+						"{" | "}" | "[" | "]" | "(" | ")" | ";" => Kind::GroupOp(item.to_string(), RefCell::new(Vec::new())),
 						"array" => Kind::Type(Type::Array, Vec::new()),
 						"bool" => Kind::Type(Type::Bool, Vec::new()),
 						"chan" => Kind::Type(Type::Chan, Vec::new()),
@@ -315,7 +316,6 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 						"heap" => Kind::Type(Type::Heap, Vec::new()),
 						"int" => Kind::Type(Type::Int, Vec::new()),
 						"list" => Kind::Type(Type::List, Vec::new()),
-						"macro" => Kind::Type(Type::Macro, Vec::new()),
 						"only" => Kind::Type(Type::Only, Vec::new()),
 						"pointer" => Kind::Type(Type::Pointer, Vec::new()),
 						"register" => Kind::Type(Type::Register, Vec::new()),
@@ -372,7 +372,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind.clone() {
-			Kind::GroupOp(ref op, _, _) if op == "{" => {
+			Kind::GroupOp(ref op, _) if op == "{" => {
 				full_depth += 1;
 				
 				if full_depth + 1 > rows.len() {
@@ -388,7 +388,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				}
 			},
 			
-			Kind::GroupOp(ref op, _, _) if op == "}" => if full_depth > 0 {
+			Kind::GroupOp(ref op, _) if op == "}" => if full_depth > 0 {
 				m_default_val -= mdv_changes[full_depth];
 				full_depth -= 1;
 			} else {
@@ -726,12 +726,4 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 			*typs = types;
 		}
 	}
-}
-
-pub fn lex4(tokens: &mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<Macro>) {
-	let mut macros = Vec::new();
-	
-	// WIP
-	
-	(functions, macros)
 }

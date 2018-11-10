@@ -22,7 +22,7 @@ use std::{
 };
 
 use lib::get_io;
-use lexer::{lex, lex_ops, lex2, lex3, lex4};
+use lexer::{lex, lex_ops, lex2, lex3};
 use compiler::{def_functions, parse, parse2, parse3, compile};
 
 fn count_newlines(s: &str) -> usize {
@@ -223,18 +223,12 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let mut functions = def_functions();
 	let mut macros;
-	match lex4(&mut tokens, functions) {
+	match parse(&mut tokens, functions) {
 		(f, m) => {
 			functions = f;
 			macros = m;
 		}
 	}
-	
-	if debugging {
-//		println!("{} LEX4: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
-	}
-	
-	functions = parse(&mut tokens, functions);
 	
 	let mut all_children = Vec::new();
 	let mut i = 0;
