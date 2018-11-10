@@ -75,7 +75,7 @@ macro_rules! def_builtin_op {
 	})
 }
 
-const BUILTIN_FUNCS: usize = 29;
+const BUILTIN_FUNCS: usize = 30;
 
 macro_rules! def_builtin_funcs {
 	() => (vec![
@@ -118,6 +118,17 @@ macro_rules! def_builtin_funcs {
 				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]), // WIP; No support for any types yet
 				FunctionSection::OpID(String::from("=")),
 				FunctionSection::Arg(String::from("b"), vec![vec![Type::Int]]), // WIP; No support for any types yet
+			],
+			
+			output: vec![],
+			
+			precedence: 0
+		},
+		
+		Function {
+			structure: vec![
+				FunctionSection::ID(String::from("return")),
+				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]), // WIP; No support for any types yet
 			],
 			
 			output: vec![],
@@ -744,17 +755,6 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_c
 	lowest
 }
 
-fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) -> usize {
-	*i += 1;
-	
-	let next = *i;
-	if let Some(token) = parse_statement(tokens, functions, all_children, i) {
-		token
-	} else {
-		next
-	}
-}
-
 /* fn parse_type_decl<'a>(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, parent: usize) {
 	let start = *i + 1;
 	
@@ -792,8 +792,6 @@ fn parse_ret(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &
 } */
 
 pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: &mut Vec<usize>, i: &mut usize) {
-	let mut pending = Vec::new();
-	
 	match tokens[*i].kind.clone() {
 		Kind::GroupOp(ref op, _, _) if op == "{" => {
 			let parent = *i;
@@ -826,14 +824,6 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: 
 					},
 					
 					_ => match tokens[*i].kind.clone() {
-						Kind::Reserved(ref keyword, _) if keyword == "return" => {
-							if let Kind::GroupOp(_, ref children, _) = tokens[parent].kind {
-								children.borrow_mut().push(*i);
-							}
-							
-							pending.push((*i, parse_ret(tokens, functions, all_children, i)));
-						},
-						
 //						Kind::Type(_) => parse_type_decl(tokens, functions, i, parent),
 						
 						Kind::GroupOp(ref op, _, _) if op == ";" => {
@@ -859,12 +849,6 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, all_children: 
 		},
 		
 		_ => ()
-	}
-	
-	for (i, child) in pending {
-		if let Kind::Reserved(_, ref children) = tokens[i].kind {
-			children.borrow_mut().push(child);
-		}
 	}
 }
 
@@ -1958,7 +1942,7 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 		Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => if children.borrow().len() > 0 {true} else {false},
 		_ => unreachable!()
 	}).is_some() {
-		if sidekicks.len() > 0 || name != "unsafe" {
+		if sidekicks.len() > 0 || (name != "unsafe" && name != "return") {
 			output += "(";
 		}
 		
@@ -2002,7 +1986,7 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 			}
 		}
 		
-		if sidekicks.len() > 0 || name != "unsafe" {
+		if sidekicks.len() > 0 || (name != "unsafe" && name != "return") {
 			output += ")";
 		}
 	}
@@ -2072,6 +2056,11 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 					},
 					
 					_ => unreachable!()
+				},
+				
+				"return" => {
+					output += "return ";
+					output = type_func_call(tokens, output, i, children, sidekicks, &name);
 				},
 				
 				"unsafe" => {
