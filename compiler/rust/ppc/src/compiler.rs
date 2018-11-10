@@ -75,7 +75,7 @@ macro_rules! def_builtin_op {
 	})
 }
 
-const BUILTIN_FUNCS: usize = 28;
+const BUILTIN_FUNCS: usize = 29;
 
 macro_rules! def_builtin_funcs {
 	() => (vec![
@@ -121,6 +121,17 @@ macro_rules! def_builtin_funcs {
 			],
 			
 			output: vec![],
+			
+			precedence: 0
+		},
+		
+		Function {
+			structure: vec![
+				FunctionSection::ID(String::from("unsafe")),
+				FunctionSection::Arg(String::from("e"), vec![vec![Type::Int]]), // WIP; No support for any types yet
+			],
+			
+			output: vec![vec![Type::Int]], // WIP; No support for any types yet
 			
 			precedence: 0
 		},
@@ -1933,6 +1944,8 @@ fn type_full_name(tokens: &Vec<Token>, output: String, sidekicks: &RefCell<Vec<u
 		(output, s[..s.len() - 1].to_string() + "_ppl")
 	} else if name == "println" {
 		(output, String::from("println!"))
+	} else if name == "__uninit__" {
+		(output, String::from("std::mem::uninitialized()"))
 	} else {
 		(output, name.to_string() + "_ppl")
 	}
@@ -1945,7 +1958,9 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 		Kind::Op(_, ref children, _) | Kind::Var(_, _, ref children, _) => if children.borrow().len() > 0 {true} else {false},
 		_ => unreachable!()
 	}).is_some() {
-		output += "(";
+		if sidekicks.len() > 0 || name != "unsafe" {
+			output += "(";
+		}
 		
 		if sidekicks.len() == 0 && name == "println" {
 			output += "\"{}\",";
@@ -1987,7 +2002,9 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 			}
 		}
 		
-		output += ")";
+		if sidekicks.len() > 0 || name != "unsafe" {
+			output += ")";
+		}
 	}
 	
 	output
@@ -2055,6 +2072,11 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 					},
 					
 					_ => unreachable!()
+				},
+				
+				"unsafe" => {
+					output += "unsafe ";
+					output = type_func_call(tokens, output, i, children, sidekicks, &name);
 				},
 				
 				_ => {
@@ -2128,7 +2150,7 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 			}
 			
 			match new_output[..new_output.len() - 4].as_ref() {
-				"plus" | "minus" | "times" | "div" | "mod" | "eq" | "eqeq" | "noteq" | "pluseq" | "and" | "andand" | "or" | "oror" | "xor" | "larrow" | "larrowlarrow" | "rarrow" | "rarrowrarrow" => {
+				"plus" | "minus" | "times" | "div" | "mod" | "eqeq" | "noteq" | "and" | "andand" | "or" | "oror" | "xor" | "larrow" | "larrowlarrow" | "rarrow" | "rarrowrarrow" => {
 					*i = children.borrow()[0];
 					output = compile_tok(tokens, i, output);
 					
@@ -2156,6 +2178,31 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 					
 					*i = children.borrow()[1];
 					output = compile_tok(tokens, i, output);
+				},
+				
+				"eq" | "pluseq" | "minuseq" | "timeseq" | "diveq" | "modeq" | "larrowlarroweq" | "rarrowrarroweq" | "xoreq" => {
+					output += "{";
+					
+					*i = children.borrow()[0];
+					output = compile_tok(tokens, i, output);
+					
+					output += match new_output[..new_output.len() - 4].as_ref() {
+						"eq" => "=",
+						"pluseq" => "+=",
+						"minuseq" => "-=",
+						"timeseq" => "*=",
+						"diveq" => "/=",
+						"modeq" => "%=",
+						"larrowlarroweq" => "<<=",
+						"rarrowrarroweq" => ">>=",
+						"xoreq" => "^=",
+						_ => unreachable!()
+					};
+					
+					*i = children.borrow()[1];
+					output = compile_tok(tokens, i, output);
+					
+					output += ";true}";
 				},
 				
 				"not" | "binnot" => {
