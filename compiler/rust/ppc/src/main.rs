@@ -126,20 +126,18 @@ fn main() -> Result<(), std::io::Error> {
 		operator @;
 		
 /*		macro if (cond) (body) {
-			return {
-/*				let res;
-				cond && res = body;
-				res */
-				cond && body
+			return unsafe {
+				let res = __uninit__;
+				cond && (res = body);
+				res
 			};
 		}
 		
 		macro if (cond) (body) else (expr) {
-			return {
-/*				let res;
-				(cond && res = body) || res = expr;
-				res */
-				(cond && body) || expr
+			return unsafe {
+				let res = __uninit__;
+				cond && (res = body) || (res = expr);
+				res
 			};
 		}
 		
@@ -173,12 +171,20 @@ fn main() -> Result<(), std::io::Error> {
 		
 		#[allow(unused)]
 		func if (bool cond) (int body) -> int { // TMP; will be defined as macro later
-			123
+			unsafe {
+				let res = __uninit__;
+				cond && (res = body);
+				res
+			}
 		}
 		
 		#[allow(unused)]
 		func if (bool cond) (int body) else (int expr) -> int { // TMP; will be defined as macro later
-			456
+			unsafe {
+				let res = __uninit__;
+				cond && (res = body) || (res = expr);
+				res
+			}
 		}
 		
 		#[allow(unused)]
