@@ -17,7 +17,7 @@ pub enum Kind {
 #[derive(Clone, PartialEq, Debug)]
 pub enum FuncType {
 	Func(usize),
-	Macro(usize, usize)
+	Macro
 }
 
 #[derive(Clone, PartialEq, Debug)]

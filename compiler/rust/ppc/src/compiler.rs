@@ -76,7 +76,6 @@ macro_rules! def_builtin_op {
 }
 
 const BUILTIN_FUNCS: usize = 30;
-const BUILTIN_MACROS: usize = 0;
 
 macro_rules! def_builtin_funcs {
 	() => (vec![
@@ -194,7 +193,6 @@ fn has_one_arg(structure: &Vec<FunctionSection>) -> bool {
 pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<Macro>) {
 	let mut macros = Vec::new();
 	let mut fpos = Vec::new();
-	let mut mpos = Vec::new();
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind {
@@ -203,9 +201,6 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 				let mut precedence = 1;
 				
 				fpos.push(i);
-				if let FuncType::Macro(_,_) = typ {
-					mpos.push(i);
-				}
 				
 				i += 1;
 				
@@ -290,7 +285,7 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 				
 				body.replace(i); // Save function body index
 				
-				if let FuncType::Macro(_,_) = typ {
+				if typ == &FuncType::Macro {
 					let mut ret_points = Vec::new();
 					i += 1;
 					
@@ -323,21 +318,8 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 	let mut id = BUILTIN_FUNCS;
 	for i in fpos {
 		match tokens[i].kind {
-			Kind::Func(ref mut f, _) => match f {
-				FuncType::Func(ref mut f) | FuncType::Macro(ref mut f, _) => *f = id,
-			},
-			
-			_ => unreachable!()
-		}
-		
-		id += 1;
-	}
-	
-	let mut id = BUILTIN_MACROS;
-	for i in mpos {
-		match tokens[i].kind {
-			Kind::Func(ref mut f, _) => if let FuncType::Macro(_, ref mut m) = f {
-				*m = id;
+			Kind::Func(ref mut f, _) => if let FuncType::Func(ref mut f) = f {
+				*f = id;
 			},
 			
 			_ => unreachable!()
@@ -1409,8 +1391,266 @@ fn get_op_name(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, na
 	}
 } */
 
+fn parse_macro_tok(tokens: &Vec<Token>, i: &mut usize) -> Result<(), Error> {
+/*	match tokens[*i].kind {
+		Kind::GroupOp(ref op, _) => if op == ";" {
+			output += ";";
+		} else {
+			output = compile_body(tokens, i, output);
+		},
+		
+		Kind::Literal(b) => if b {
+			output += "true";
+		} else {
+			output += "false";
+		},
+		
+		Kind::Number(int, fraction) => {
+			output += &int.to_string();
+			if fraction != 0 {
+				output += ".";
+				output += &fraction.to_string();
+			}
+		},
+		
+		Kind::Str1(ref s) => {
+			output += "\"";
+			output += s;
+			output += "\"";
+		},
+		
+		Kind::Str2(ref s) => {
+			if s.len() == 1 || (s.len() == 2 && s.chars().next().unwrap() == '\\') { // Just a character, not an actual string
+				output += "'";
+				output += s;
+				output += "'";
+			} else {
+				panic!("{}:{} P+ style strings are not supported yet", tokens[*i].pos.line, tokens[*i].pos.col);
+			}
+		},
+		
+		Kind::Var(ref name, _, ref children, ref sidekicks) => {
+			let new_output;
+			match type_full_name(tokens, output, sidekicks, &name) {
+				(updated_output, new_output2) => {
+					output = updated_output;
+					new_output = new_output2;
+				}
+			}
+			
+			match new_output[..new_output.len() - 4].as_ref() {
+				"let_eq" => match tokens[sidekicks.borrow()[0]].kind {
+					Kind::Op(_, ref children, _) => {
+						output += "let mut ";
+						
+						*i = children.borrow()[0];
+						output = compile_tok(tokens, i, output);
+						
+						output += "=";
+						
+						*i = children.borrow()[1];
+						output = compile_tok(tokens, i, output);
+					},
+					
+					_ => unreachable!()
+				},
+				
+				"return" => {
+					output += "return ";
+					output = type_func_call(tokens, output, i, children, sidekicks, &name);
+				},
+				
+				"unsafe" => {
+					output += "unsafe ";
+					output = type_func_call(tokens, output, i, children, sidekicks, &name);
+				},
+				
+				_ => {
+					output += &new_output;
+					output = type_func_call(tokens, output, i, children, sidekicks, &name);
+				}
+			}
+		},
+		
+		Kind::Op(ref op, ref children, ref sidekicks) => {
+			let mut name = match op.as_ref() {
+				"+" => "plus",
+				"-" => "minus",
+				"*" => "times",
+				"/" => "div",
+				"%" => "mod",
+				"=" => "eq",
+				"&" => "and",
+				"|" => "or",
+				"^" => "xor",
+				"<" => "larrow",
+				">" => "rarrow",
+				"!" => "not",
+				"~" => "binnot",
+				"?" => "quest",
+				":" => "colon",
+				"." => "dot",
+				"," => "comma",
+				"@" => "at",
+				_ => op
+			}.to_string();
+			
+			*i += 1;
+			while *i < tokens.len() {
+				match tokens[*i].kind {
+					Kind::Op(ref op, _, _) => name += match op.as_ref() {
+						"+" => "plus",
+						"-" => "minus",
+						"*" => "times",
+						"/" => "div",
+						"%" => "mod",
+						"=" => "eq",
+						"&" => "and",
+						"|" => "or",
+						"^" => "xor",
+						"<" => "larrow",
+						">" => "rarrow",
+						"!" => "not",
+						"~" => "binnot",
+						"?" => "quest",
+						":" => "colon",
+						"." => "dot",
+						"," => "comma",
+						"@" => "at",
+						_ => op
+					},
+					
+					_ => break
+				}
+				
+				*i += 1;
+			}
+			*i -= 1;
+			
+			let new_output;
+			match type_full_name(tokens, output, sidekicks, &name) {
+				(updated_output, new_output2) => {
+					output = updated_output;
+					new_output = new_output2;
+				}
+			}
+			
+			match new_output[..new_output.len() - 4].as_ref() {
+				"plus" | "minus" | "times" | "div" | "mod" | "eqeq" | "noteq" | "and" | "andand" | "or" | "oror" | "xor" | "larrow" | "larrowlarrow" | "rarrow" | "rarrowrarrow" => {
+					*i = children.borrow()[0];
+					output = compile_tok(tokens, i, output);
+					
+					output += match new_output[..new_output.len() - 4].as_ref() {
+						"plus" => "+",
+						"minus" => "-",
+						"times" => "*",
+						"div" => "/",
+						"mod" => "%",
+						"eq" => "=",
+						"eqeq" => "==",
+						"noteq" => "!=",
+						"pluseq" => "+=",
+						"and" => "&",
+						"andand" => "&&",
+						"or" => "|",
+						"oror" => "||",
+						"xor" => "^",
+						"larrow" => "<",
+						"larrowlarrow" => "<<",
+						"rarrow" => ">",
+						"rarrowrarrow" => ">>",
+						_ => unreachable!()
+					};
+					
+					*i = children.borrow()[1];
+					output = compile_tok(tokens, i, output);
+				},
+				
+				"eq" | "pluseq" | "minuseq" | "timeseq" | "diveq" | "modeq" | "larrowlarroweq" | "rarrowrarroweq" | "xoreq" => {
+					output += "{";
+					
+					*i = children.borrow()[0];
+					output = compile_tok(tokens, i, output);
+					
+					output += match new_output[..new_output.len() - 4].as_ref() {
+						"eq" => "=",
+						"pluseq" => "+=",
+						"minuseq" => "-=",
+						"timeseq" => "*=",
+						"diveq" => "/=",
+						"modeq" => "%=",
+						"larrowlarroweq" => "<<=",
+						"rarrowrarroweq" => ">>=",
+						"xoreq" => "^=",
+						_ => unreachable!()
+					};
+					
+					*i = children.borrow()[1];
+					output = compile_tok(tokens, i, output);
+					
+					output += ";true}";
+				},
+				
+				"not" | "binnot" => {
+					output += match new_output[..new_output.len() - 4].as_ref() {
+						"not" => "!",
+						"binnot" => "~",
+						_ => unreachable!()
+					};
+					
+					*i = children.borrow()[0];
+					output = compile_tok(tokens, i, output);
+				},
+				
+				_ => {
+					output += &new_output;
+					output = type_func_call(tokens, output, i, children, sidekicks, &name);
+				}
+			}
+		},
+		
+		Kind::Reserved(ref keyword, ref children) if keyword == "return" => if children.borrow().len() > 0 {
+			output += "return ";
+			*i = children.borrow()[0];
+			output = compile_tok(tokens, i, output);
+		} else {
+			output += "return";
+		},
+		
+		_ => ()
+	} */
+	
+	Ok(())
+}
+
+fn parse_macro_body(tokens: &Vec<Token>, i: &mut usize) -> Result<(), Error> {
+/*	if let Kind::GroupOp(_, ref statements) = tokens[*i].kind {
+		for statement in statements.borrow().iter() {
+			*i = *statement;
+			parse_macro_tok(tokens, i, output);
+		}
+	} */
+	
+	Ok(())
+}
+
+fn del_macro_call(tokens: &Vec<Token>, i: &mut usize, f: &Function) -> Result<(), Error> {
+	Ok(())
+}
+
 pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut Vec<Function>, i: &mut usize, depth: &mut usize, rows: &mut Vec<usize>) -> Result<(), Error> {
-	Ok(()) // WIP
+	match tokens[*i].kind {
+		Kind::Func(ref f, ref body) => if let FuncType::Func(f) = *f {
+			del_macro_call(tokens, i, &functions[f])?;
+			
+			*i = *body.borrow();
+			parse_macro_body(tokens, i)
+		} else {
+			Ok(())
+		},
+		
+		_ => Ok(())
+	}
 }
 
 fn compile_type(typ: &Vec<Vec<Type>>) -> String {

@@ -305,7 +305,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 				} else {
 					string.kind = match item {
 						"func" => Kind::Func(FuncType::Func(0), RefCell::new(0)),
-						"macro" => Kind::Func(FuncType::Macro(0, 0), RefCell::new(0)),
+						"macro" => Kind::Func(FuncType::Macro, RefCell::new(0)),
 						"{" | "}" | "[" | "]" | "(" | ")" | ";" => Kind::GroupOp(item.to_string(), RefCell::new(Vec::new())),
 						"array" => Kind::Type(Type::Array, Vec::new()),
 						"bool" => Kind::Type(Type::Bool, Vec::new()),
