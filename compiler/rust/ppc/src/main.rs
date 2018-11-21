@@ -215,7 +215,7 @@ fn main() -> Result<(), std::io::Error> {
 	let mut all_children = Vec::new();
 	let mut i = 0;
 	while i < tokens.len() {
-		parse2(&mut tokens, &functions, &mut all_children, &mut i);
+		parse2(&mut tokens, &functions, &macros, &mut all_children, &mut i);
 		i += 1;
 	}
 	

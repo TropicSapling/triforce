@@ -6,12 +6,12 @@ pub enum Kind {
 	GroupOp(String, RefCell<Vec<usize>>),
 	Literal(bool),
 	Number(usize, usize),
-	Op(String, RefCell<Vec<usize>>, RefCell<Vec<usize>>),
+	Op(String, RefCell<Vec<usize>>, RefCell<Vec<usize>>, RefCell<bool>),
 	Reserved(String, RefCell<Vec<usize>>),
 	Str1(String),
 	Str2(String),
 	Type(Type, Vec<Vec<Type>>),
-	Var(String, Vec<Vec<Type>>, RefCell<Vec<usize>>, RefCell<Vec<usize>>)
+	Var(String, Vec<Vec<Type>>, RefCell<Vec<usize>>, RefCell<Vec<usize>>, RefCell<bool>)
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -61,7 +61,7 @@ pub struct FilePos {
     pub col: usize
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Function {
 	pub structure: Vec<FunctionSection>,
 	pub output: Vec<Vec<Type>>,
