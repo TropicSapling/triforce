@@ -240,6 +240,8 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 								
 								func_struct.push(FunctionSection::OpID(name));
 							}
+							
+							i -= 1;
 						},
 						
 						Kind::Var(ref name, ref typ, _, _) => if typ[0].len() > 0 {
@@ -289,7 +291,7 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 				body.replace(i); // Save function body index
 				
 				if let FuncType::Macro(_,_) = typ {
-					let ret_points = Vec::new();
+					let mut ret_points = Vec::new();
 					i += 1;
 					
 					let mut depth = 0;
@@ -301,6 +303,8 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 							} else {
 								break;
 							},
+							
+							Kind::Var(ref name, _, _, _) if name == "return" => ret_points.push(i),
 							
 							_ => ()
 						}

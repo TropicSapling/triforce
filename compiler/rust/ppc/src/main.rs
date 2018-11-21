@@ -124,7 +124,7 @@ fn main() -> Result<(), std::io::Error> {
 		operator ,;
 		operator @;
 		
-/*		macro if (cond) (body) {
+		macro if (bool cond) (int body) {
 			return unsafe {
 				let res = __uninit__; // '__uninit__' won't be necessary in the future
 				cond && (res = body);
@@ -132,7 +132,7 @@ fn main() -> Result<(), std::io::Error> {
 			};
 		}
 		
-		macro if (cond) (body) else (expr) {
+		macro if (bool cond) (int body) else (int expr) {
 			return unsafe {
 				let res = __uninit__; // '__uninit__' won't be necessary in the future
 				cond && (res = body) || (res = expr);
@@ -166,24 +166,6 @@ fn main() -> Result<(), std::io::Error> {
 				a -= 1;
 				a
 			};
-		} */
-		
-		#[allow(unused)]
-		func if (bool cond) (int body) -> int { // TMP; will be defined as macro later
-			unsafe {
-				let res = __uninit__; // '__uninit__' won't be necessary in the future
-				cond && (res = body);
-				res
-			}
-		}
-		
-		#[allow(unused)]
-		func if (bool cond) (int body) else (int expr) -> int { // TMP; will be defined as macro later
-			unsafe {
-				let res = __uninit__; // '__uninit__' won't be necessary in the future
-				cond && (res = body) || (res = expr);
-				res
-			}
 		}
 		
 		#[allow(unused)]
