@@ -1392,22 +1392,16 @@ fn get_op_name(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, na
 } */
 
 fn parse_macro_tok(tokens: &Vec<Token>, i: &mut usize) -> Result<(), Error> {
-/*	match tokens[*i].kind {
+	match tokens[*i].kind {
 		Kind::GroupOp(ref op, _) => if op != ";" {
-			output = compile_body(tokens, i, output);
+//			output = compile_body(tokens, i, output);
+			Ok(())
+		} else {
+			Ok(())
 		},
 		
 		Kind::Var(ref name, _, ref children, ref sidekicks) => {
-			let new_output;
-			match type_full_name(tokens, output, sidekicks, &name) {
-				(updated_output, new_output2) => {
-					output = updated_output;
-					new_output = new_output2;
-				}
-			}
-			
-			output += &new_output;
-			output = type_func_call(tokens, output, i, children, sidekicks, &name);
+			del_macro_call(tokens, i, children, sidekicks)
 		},
 		
 		Kind::Op(ref op, ref children, ref sidekicks) => {
@@ -1424,24 +1418,11 @@ fn parse_macro_tok(tokens: &Vec<Token>, i: &mut usize) -> Result<(), Error> {
 			}
 			*i -= 1;
 			
-			let new_output;
-			match type_full_name(tokens, output, sidekicks, &name) {
-				(updated_output, new_output2) => {
-					output = updated_output;
-					new_output = new_output2;
-				}
-			}
-			
-			output += &new_output;
-			output = type_func_call(tokens, output, i, children, sidekicks, &name);
+			del_macro_call(tokens, i, children, sidekicks)
 		},
 		
-		_ => ()
-	} */
-	
-	// del_macro_call(tokens, i, &functions[f])? // place somewhere else
-	
-	Ok(())
+		_ => Ok(())
+	}
 }
 
 fn parse_macro_body(tokens: &Vec<Token>, i: &mut usize) -> Result<(), Error> {
@@ -1455,7 +1436,9 @@ fn parse_macro_body(tokens: &Vec<Token>, i: &mut usize) -> Result<(), Error> {
 	Ok(())
 }
 
-fn del_macro_call(tokens: &Vec<Token>, i: &mut usize, f: &Function) -> Result<(), Error> {
+fn del_macro_call(tokens: &Vec<Token>, i: &mut usize, children: &RefCell<Vec<usize>>, sidekicks: &RefCell<Vec<usize>>) -> Result<(), Error> {
+	// WIP
+	
 	Ok(())
 }
 
