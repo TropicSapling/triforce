@@ -76,6 +76,7 @@ macro_rules! def_builtin_op {
 }
 
 const BUILTIN_FUNCS: usize = 30;
+const BUILTIN_MACROS: usize = 0;
 
 macro_rules! def_builtin_funcs {
 	() => (vec![
@@ -193,14 +194,19 @@ fn has_one_arg(structure: &Vec<FunctionSection>) -> bool {
 pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<Macro>) {
 	let mut macros = Vec::new();
 	let mut fpos = Vec::new();
+	let mut mpos = Vec::new();
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind {
-			Kind::Func(_, ref body) => {
+			Kind::Func(ref typ, ref body) => {
 				let mut func_struct = vec![];
 				let mut precedence = 1;
 				
 				fpos.push(i);
+				if let FuncType::Macro(_,_) = typ {
+					mpos.push(i);
+				}
+				
 				i += 1;
 				
 				// Parse function structure
@@ -265,11 +271,13 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 					Vec::new()
 				};
 				
-				functions.push(Function {
+				let f = Function {
 					structure: func_struct,
 					output,
 					precedence
-				});
+				};
+				
+				functions.push(f.clone());
 				
 				while i < tokens.len() {
 					match tokens[i].kind {
@@ -279,6 +287,29 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 				}
 				
 				body.replace(i); // Save function body index
+				
+				if let FuncType::Macro(_,_) = typ {
+					let ret_points = Vec::new();
+					i += 1;
+					
+					let mut depth = 0;
+					while i < tokens.len() {
+						match tokens[i].kind {
+							Kind::GroupOp(ref op, _) if op == "{" => depth += 1,
+							Kind::GroupOp(ref op, _) if op == "}" => if depth > 0 {
+								depth -= 1;
+							} else {
+								break;
+							},
+							
+							_ => ()
+						}
+						
+						i += 1;
+					}
+					
+					macros.push(Macro {func: f, ret_points});
+				}
 			},
 			
 			_ => i += 1
@@ -290,6 +321,19 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 		match tokens[i].kind {
 			Kind::Func(ref mut f, _) => match f {
 				FuncType::Func(ref mut f) | FuncType::Macro(ref mut f, _) => *f = id,
+			},
+			
+			_ => unreachable!()
+		}
+		
+		id += 1;
+	}
+	
+	let mut id = BUILTIN_MACROS;
+	for i in mpos {
+		match tokens[i].kind {
+			Kind::Func(ref mut f, _) => if let FuncType::Macro(_, ref mut m) = f {
+				*m = id;
 			},
 			
 			_ => unreachable!()

@@ -71,10 +71,9 @@ pub struct Function {
 #[derive(Debug)]
 pub struct Macro {
 	pub func: Function,
-	pub code: Vec<Token>,
-	pub returns: Vec<Vec<Token>>,
-	pub depth: usize,
-	pub row: usize
+	pub ret_points: Vec<usize>
+//	pub depth: usize,
+//	pub row: usize
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
