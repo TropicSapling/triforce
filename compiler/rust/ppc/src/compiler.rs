@@ -1391,6 +1391,12 @@ fn get_op_name(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, na
 	}
 } */
 
+fn expand_macro(tokens: &Vec<Token>, i: &mut usize) -> Result<(), Error> {
+	// WIP
+	
+	Ok(())
+}
+
 fn parse_macro_tok(tokens: &Vec<Token>, i: &mut usize) -> Result<(), Error> {
 	match tokens[*i].kind {
 		Kind::GroupOp(ref op, _) => if op != ";" {
@@ -1401,7 +1407,8 @@ fn parse_macro_tok(tokens: &Vec<Token>, i: &mut usize) -> Result<(), Error> {
 		},
 		
 		Kind::Var(ref name, _, ref children, ref sidekicks) => {
-			del_macro_call(tokens, i, children, sidekicks)
+			del_macro_call(tokens, i, children, sidekicks)?;
+			expand_macro(tokens, i)
 		},
 		
 		Kind::Op(ref op, ref children, ref sidekicks) => {
@@ -1418,7 +1425,8 @@ fn parse_macro_tok(tokens: &Vec<Token>, i: &mut usize) -> Result<(), Error> {
 			}
 			*i -= 1;
 			
-			del_macro_call(tokens, i, children, sidekicks)
+			del_macro_call(tokens, i, children, sidekicks)?;
+			expand_macro(tokens, i)
 		},
 		
 		_ => Ok(())
