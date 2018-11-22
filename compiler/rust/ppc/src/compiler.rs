@@ -1422,7 +1422,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
 		},
 		
 		Kind::Var(ref name, _, ref children, ref sidekicks, ref is_macro) if *is_macro.borrow() => {
-			del_macro_call(tokens, i, children, sidekicks);
+//			del_macro_call(tokens, i, children, sidekicks);
 			expand_macro(tokens, i)
 		},
 		
@@ -1440,7 +1440,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
 			}
 			*i -= 1;
 			
-			del_macro_call(tokens, i, children, sidekicks);
+//			del_macro_call(tokens, i, children, sidekicks);
 			expand_macro(tokens, i)
 		},
 		
@@ -1459,9 +1459,51 @@ fn parse3_body(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
 	Ok(())
 }
 
-fn del_macro_call(tokens: &mut Vec<Token>, i: &mut usize, children: &RefCell<Vec<usize>>, sidekicks: &RefCell<Vec<usize>>) {
+fn shift_tokens_right(tokens: &mut Vec<Token>, pos: usize, shifts: usize) {
+	let mut i = 0;
+	while i < tokens.len() {
+		match tokens[i].kind {
+			Kind::Func(_, ref body) => {
+				let val = *body.borrow();
+				if val > pos {
+					body.replace(val + shifts);
+				}
+			},
+			
+			Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) => {
+				let mut children = children.borrow_mut();
+				for child in children.iter_mut() {
+					if *child != usize::MAX {
+						*child = *child + shifts;
+					}
+				}
+			},
+			
+			Kind::Op(_, ref children, ref sidekicks, _) | Kind::Var(_, _, ref children, ref sidekicks, _) => {
+				let mut children = children.borrow_mut();
+				for child in children.iter_mut() {
+					if *child != usize::MAX {
+						*child = *child + shifts;
+					}
+				}
+				
+				let mut sidekicks = sidekicks.borrow_mut();
+				for sidekick in sidekicks.iter_mut() {
+					*sidekick = *sidekick + shifts;
+				}
+			},
+			
+			_ => ()
+		}
+		
+		i += 1;
+	}
+}
+
+/* fn del_macro_call(tokens: &mut Vec<Token>, i: &mut usize, children: &RefCell<Vec<usize>>, sidekicks: &RefCell<Vec<usize>>) {
 	let (children, sidekicks) = (children.borrow(), sidekicks.borrow());
 	let mut trash = vec![*i];
+	let mut highest = *i;
 	
 	if children.len() > 0 || sidekicks.iter().find(|&&s| match tokens[s].kind {
 		Kind::Op(_, ref children, _, _) | Kind::Var(_, _, ref children, _, _) => if children.borrow().len() > 0 {true} else {false},
@@ -1470,14 +1512,22 @@ fn del_macro_call(tokens: &mut Vec<Token>, i: &mut usize, children: &RefCell<Vec
 		if children.len() > 0 && children[0] != usize::MAX {
 			for (c, child) in children.iter().enumerate() {
 				trash.push(*child);
+				if *child > highest {
+					highest = *child;
+				}
 			}
 		}
 		
 		for (s, &sidekick) in sidekicks.iter().enumerate() {
+			trash.push(sidekick);
+			
 			match tokens[sidekick].kind {
 				Kind::Op(_, ref children, _, _) | Kind::Var(_, _, ref children, _, _) => if children.borrow().len() > 0 {
 					for (c, child) in children.borrow().iter().enumerate() {
 						trash.push(*child);
+						if *child > highest {
+							highest = *child;
+						}
 					}
 				},
 				
@@ -1499,9 +1549,11 @@ fn del_macro_call(tokens: &mut Vec<Token>, i: &mut usize, children: &RefCell<Vec
 			j += 1;
 		}
 		
-		trash.remove(i);
+		i += 1;
 	}
-}
+	
+	shift_tokens(tokens, highest, trash.len(), true);
+} */
 
 pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut Vec<Function>, i: &mut usize, depth: &mut usize, rows: &mut Vec<usize>) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
