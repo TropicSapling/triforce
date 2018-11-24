@@ -1404,15 +1404,47 @@ fn get_op_name(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, na
 	}
 } */
 
-fn expand_macro(tokens: &mut Vec<Token>, i: &mut usize, m: &Macro) -> Result<(), Error> {
+fn insert_macro(tokens: &mut Vec<Token>, i: &mut usize, m: &Macro, parent: usize, args: &RefCell<Vec<usize>>, sidekicks: &RefCell<Vec<usize>>) {
+	// Get input
+	let mut input = args.borrow().clone();
+	for &sidekick in sidekicks.borrow().iter() {
+		match tokens[sidekick].kind {
+			Kind::Op(_, ref children, _, _) | Kind::Var(_, _, ref children, _, _) => {
+				for child in children.borrow().iter() {
+					input.push(*child);
+				}
+			},
+			
+			_ => unreachable!()
+		}
+	}
+	
+	// Insert macro
+	// WIP
+}
+
+fn expand_macro(tokens: &mut Vec<Token>, i: &mut usize, m: &Macro, args: &RefCell<Vec<usize>>, sidekicks: &RefCell<Vec<usize>>) -> Result<(), Error> {
 	// TODO: Create new file and run macro
 	
-	tokens.insert(*i, Token {
-		kind: Kind::Str1(String::from("DUYADGY837JDWEH238RFIFCK238HENFJDSSHDF78DSFFDSUSDF")), // Just for testing obviously, replacing this with real code later
-		pos: FilePos {line: 0, col: 0}
-	});
-	
-	shift_tokens_right(tokens, *i, 1);
+	if m.ret_points.len() > 0 {
+		if let Kind::Var(_, _, ref children, _, _) = tokens[m.ret_points[0]].kind.clone() { // TMP; will choose correct return point in the future
+			insert_macro(tokens, i, m, children.borrow()[0], args, sidekicks);
+		}
+	} else {
+		let pos = tokens[*i].pos.clone();
+		
+		tokens.insert(*i, Token {
+			kind: Kind::GroupOp(String::from(")"), RefCell::new(Vec::new())),
+			pos: pos.clone()
+		});
+		
+		tokens.insert(*i, Token {
+			kind: Kind::GroupOp(String::from("("), RefCell::new(Vec::new())),
+			pos: pos.clone()
+		});
+		
+		shift_tokens_right(tokens, *i, 2);
+	}
 	
 	Ok(())
 }
@@ -1426,20 +1458,18 @@ fn parse3_tok(tokens: &mut Vec<Token>, i: &mut usize, macros: &Vec<Macro>) -> Re
 			Ok(())
 		},
 		
-		Kind::Var(ref name, _, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
+		Kind::Var(_, _, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
 //			del_macro_call(tokens, i, children, sidekicks);
-			expand_macro(tokens, i, &macros[id])
+			expand_macro(tokens, i, &macros[id], children, sidekicks)
 		} else {
 			Ok(())
 		},
 		
-		Kind::Op(ref op, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
-			let mut name = op.to_string();
-			
+		Kind::Op(_, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
 			*i += 1;
 			while *i < tokens.len() {
 				match tokens[*i].kind {
-					Kind::Op(ref op, _, _, _) => name += op,
+					Kind::Op(ref op, _, _, _) => (),
 					_ => break
 				}
 				
@@ -1448,7 +1478,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, i: &mut usize, macros: &Vec<Macro>) -> Re
 			*i -= 1;
 			
 //			del_macro_call(tokens, i, children, sidekicks);
-			expand_macro(tokens, i, &macros[id])
+			expand_macro(tokens, i, &macros[id], children, sidekicks)
 		} else {
 			Ok(())
 		},
