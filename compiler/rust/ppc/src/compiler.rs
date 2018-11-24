@@ -511,11 +511,12 @@ fn get_parse_limit(tokens: &Vec<Token>, i: &mut usize) -> usize {
 	limit
 }
 
-fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &'a Vec<Function>, name: String, depth: usize, pos: usize, has_children: bool) {
+fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)>, usize)>, functions: &'a Vec<Function>, name: &String, depth: usize, pos: usize, has_children: bool) -> bool {
+	let mut new_match = false;
 	for (i, f) in functions.iter().enumerate() {
 		for (j, section) in f.structure.iter().enumerate() {
 			match section {
-				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == &name && !has_children => {
+				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == name && !has_children => {
 					for m in matches.iter_mut().filter(|m| m.0 == i) {
 						if m.1.len() == j && pos != m.1[m.1.len() - 1].1 {
 							if let Some(_) = m.1.iter().find(|s| match s.0 {
@@ -524,16 +525,19 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 							}) {
 								if m.2 == depth {
 									m.1.push((section, pos));
+									new_match = true;
 								}
 							} else {
 								m.1.push((section, pos));
 								m.2 = depth;
+								new_match = true;
 							}
 						}
 					}
 					
 					if j == 0 {
 						matches.push((i, vec![(section, pos)], depth));
+						new_match = true;
 					}
 				},
 				
@@ -541,11 +545,13 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 					for m in matches.iter_mut().filter(|m| m.0 == i) {
 						if m.1.len() == j && m.2 <= depth && pos != m.1[m.1.len() - 1].1 {
 							m.1.push((section, pos));
+							new_match = true;
 						}
 					}
 					
 					if j == 0 {
 						matches.push((i, vec![(section, pos)], depth));
+						new_match = true;
 					}
 				},
 				
@@ -553,6 +559,8 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 			}
 		}
 	}
+	
+	new_match
 }
 
 fn cleanup_matches(matches: &mut Vec<(usize, Vec<(&FunctionSection, usize)>, usize)>, functions: &Vec<Function>) {
@@ -638,7 +646,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 				
 				Kind::GroupOp(ref op, _) if op == "{" => {
 					if !all_children.contains(i) {
-						update_matches(&mut matches, functions, String::new(), depth + depth2, *i, true);
+						update_matches(&mut matches, functions, &String::new(), depth + depth2, *i, true);
 					}
 					
 					if depth2 == 0 && !parsed.contains(i) {
@@ -654,29 +662,55 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 				},
 				
 				Kind::Op(ref op, ref children, ref sidekicks, _) if depth2 == 0 => {
-					let mut name = op.to_string();
 					let start = *i;
-					
-					*i += 1;
-					while *i < limit {
-						match tokens[*i].kind {
-							Kind::Op(ref op, _, _, _) => name += op,
-							_ => break
-						}
-						
-						*i += 1;
-					}
-					*i -= 1;
+					let mut name = op.to_string();
 					
 					if !all_children.contains(&start) {
-						update_matches(&mut matches, functions, name, depth + depth2, start, children.borrow().len() > 0 || sidekicks.borrow().len() > 0);
+						if sidekicks.borrow().len() > 0 {
+							for &op in sidekicks.borrow().iter() {
+								name += match tokens[op].kind {
+									Kind::Op(ref op, _, _, _) => {
+										*i += 1;
+										op
+									},
+									
+									_ => unreachable!()
+								};
+							}
+							
+							update_matches(&mut matches, functions, &name, depth + depth2, start, children.borrow().len() > 0);
+						} else {
+							*i += 1;
+							while *i < limit {
+								match tokens[*i].kind {
+									Kind::Op(ref op, _, _, _) => name += op,
+									_ => break
+								}
+								
+								*i += 1;
+							}
+							*i -= 1;
+							
+							while name.len() > 0 && !update_matches(&mut matches, functions, &name, depth + depth2, start, children.borrow().len() > 0) {
+								name.pop();
+								*i -= 1;
+							}
+							
+							let mut j = start + 1;
+							while j < tokens.len() && j < *i + 1 {
+								sidekicks.borrow_mut().push(j);
+								j += 1;
+							}
+						}
 					}
 				},
 				
-				Kind::Var(ref name, _, ref children, ref sidekicks, _) if depth2 == 0 && !all_children.contains(i) => update_matches(&mut matches, functions, name.to_string(), depth + depth2, *i, children.borrow().len() > 0 || sidekicks.borrow().len() > 0),
+				Kind::Var(ref name, _, ref children, ref sidekicks, _) if depth2 == 0 && !all_children.contains(i) => {
+					update_matches(&mut matches, functions, name, depth + depth2, *i, children.borrow().len() > 0 );
+				},
 				
 				_ => if depth2 == 0 && !all_children.contains(i) {
-					update_matches(&mut matches, functions, String::new(), depth + depth2, *i, false);
+					update_matches(&mut matches, functions, &String::new(), depth + depth2, *i, false);
 				}
 			}
 			
@@ -1529,7 +1563,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize,
 		},
 		
 		Kind::Op(_, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
-			*i += 1;
+/*			*i += 1;
 			while *i < tokens.len() {
 				match tokens[*i].kind {
 					Kind::Op(ref op, _, _, _) => (),
@@ -1538,7 +1572,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize,
 				
 				*i += 1;
 			}
-			*i -= 1;
+			*i -= 1; */
 			
 //			del_macro_call(tokens, i, children, sidekicks);
 			expand_macro(tokens, functions, macros, i, id, children, sidekicks)
