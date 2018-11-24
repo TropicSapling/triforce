@@ -1404,10 +1404,10 @@ fn get_op_name(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, na
 	}
 } */
 
-fn insert_macro2(tokens: &mut Vec<Token>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, token: Token, children: &RefCell<Vec<usize>>) {
+fn insert_macro2(tokens: &mut Vec<Token>, i: &mut usize, pars: &Vec<FunctionSection>, args: &mut Vec<usize>, token: Token, children: &RefCell<Vec<usize>>) {
 	let parent = *i;
 	tokens.insert(*i, token);
-	shift_tokens_right(tokens, *i, 1);
+	shift_tokens_right(tokens, args, *i, 1);
 	*i += 1;
 	
 	let mut new_children = Vec::new();
@@ -1425,21 +1425,42 @@ fn insert_macro2(tokens: &mut Vec<Token>, i: &mut usize, pars: &Vec<FunctionSect
 	}
 }
 
-fn insert_macro(tokens: &mut Vec<Token>, i: &mut usize, pars: &Vec<FunctionSection>, parent: usize, args: &Vec<usize>) {
+fn insert_macro(tokens: &mut Vec<Token>, i: &mut usize, pars: &Vec<FunctionSection>, parent: usize, args: &mut Vec<usize>) {
 	let token = tokens[parent].clone();
 	
 	match token.kind {
-		Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) => {
+		Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, ref children, _, _) => {
 			insert_macro2(tokens, i, pars, args, token.clone(), children);
 		},
 		
-		Kind::Op(ref name, ref children, _, _) | Kind::Var(ref name, _, ref children, _, _) => {
-			insert_macro2(tokens, i, pars, args, token.clone(), children);
+		Kind::Var(ref name, _, ref children, _, _) => {
+			let mut matching = false;
+			let mut p = 0;
+			for par in pars {
+				if let FunctionSection::Arg(ref par_name, _) = par {
+					if name == par_name {
+						matching = true;
+						
+						let token = tokens[args[p]].clone();
+						tokens.insert(*i, token);
+						shift_tokens_right(tokens, args, *i, 1);
+						*i += 1;
+						
+						break;
+					}
+					
+					p += 1;
+				}
+			}
+			
+			if !matching {
+				insert_macro2(tokens, i, pars, args, token.clone(), children);
+			}
 		},
 		
 		_ => {
 			tokens.insert(*i, token.clone());
-			shift_tokens_right(tokens, *i, 1);
+			shift_tokens_right(tokens, args, *i, 1);
 			*i += 1;
 		}
 	}
@@ -1464,7 +1485,7 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usiz
 				}
 			}
 			
-			insert_macro(tokens, i, &functions[m.func].structure, children.borrow()[0], &input);
+			insert_macro(tokens, i, &functions[m.func].structure, children.borrow()[0], &mut input);
 		}
 	} else {
 		let pos = tokens[*i].pos.clone();
@@ -1479,7 +1500,7 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usiz
 			pos: pos.clone()
 		});
 		
-		shift_tokens_right(tokens, *i, 2);
+		shift_tokens_right(tokens, &mut Vec::new(), *i, 2);
 	}
 	
 	Ok(())
@@ -1541,7 +1562,7 @@ fn parse3_body(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	Ok(())
 }
 
-fn shift_tokens_right(tokens: &mut Vec<Token>, pos: usize, shifts: usize) {
+fn shift_tokens_right(tokens: &mut Vec<Token>, args: &mut Vec<usize>, pos: usize, shifts: usize) {
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind {
@@ -1581,6 +1602,12 @@ fn shift_tokens_right(tokens: &mut Vec<Token>, pos: usize, shifts: usize) {
 		}
 		
 		i += 1;
+	}
+	
+	for arg in args.iter_mut() {
+		if *arg > pos {
+			*arg += shifts;
+		}
 	}
 }
 
