@@ -6,12 +6,12 @@ pub enum Kind {
 	GroupOp(String, RefCell<Vec<usize>>),
 	Literal(bool),
 	Number(usize, usize),
-	Op(String, RefCell<Vec<usize>>, RefCell<Vec<usize>>, RefCell<bool>),
+	Op(String, RefCell<Vec<usize>>, RefCell<Vec<usize>>, RefCell<Option<usize>>),
 	Reserved(String, RefCell<Vec<usize>>),
 	Str1(String),
 	Str2(String),
 	Type(Type, Vec<Vec<Type>>),
-	Var(String, Vec<Vec<Type>>, RefCell<Vec<usize>>, RefCell<Vec<usize>>, RefCell<bool>)
+	Var(String, Vec<Vec<Type>>, RefCell<Vec<usize>>, RefCell<Vec<usize>>, RefCell<Option<usize>>)
 }
 
 #[derive(Clone, PartialEq, Debug)]

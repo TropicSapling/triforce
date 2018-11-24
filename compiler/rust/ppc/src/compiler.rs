@@ -697,8 +697,8 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 							for (i, mac) in macros.iter().enumerate() {
 								if mac.func == functions[m.0] {
 									match tokens[section.1].kind {
-										Kind::Var(_, _, _, _, ref is_macro) | Kind::Op(_, _, _, ref is_macro) => {
-											is_macro.replace(true);
+										Kind::Var(_, _, _, _, ref macro_id) | Kind::Op(_, _, _, ref macro_id) => {
+											macro_id.replace(Some(i));
 										},
 										
 										_ => unreachable!()
@@ -1406,8 +1406,8 @@ fn get_op_name(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, na
 	}
 } */
 
-fn expand_macro(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
-	// WIP
+fn expand_macro(tokens: &mut Vec<Token>, i: &mut usize, m: &Macro) -> Result<(), Error> {
+	// TODO: Create new file and run macro
 	
 	tokens.insert(*i, Token {
 		kind: Kind::Str1(String::from("DUYADGY837JDWEH238RFIFCK238HENFJDSSHDF78DSFFDSUSDF")), // Just for testing obviously, replacing this with real code later
@@ -1428,12 +1428,14 @@ fn parse3_tok(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
 			Ok(())
 		},
 		
-		Kind::Var(ref name, _, ref children, ref sidekicks, ref is_macro) if *is_macro.borrow() => {
+		Kind::Var(ref name, _, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
 //			del_macro_call(tokens, i, children, sidekicks);
 			expand_macro(tokens, i)
+		} else {
+			Ok(())
 		},
 		
-		Kind::Op(ref op, ref children, ref sidekicks, ref is_macro) if *is_macro.borrow() => {
+		Kind::Op(ref op, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
 			let mut name = op.to_string();
 			
 			*i += 1;
@@ -1449,6 +1451,8 @@ fn parse3_tok(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
 			
 //			del_macro_call(tokens, i, children, sidekicks);
 			expand_macro(tokens, i)
+		} else {
+			Ok(())
 		},
 		
 		_ => Ok(())
