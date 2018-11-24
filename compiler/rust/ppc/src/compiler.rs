@@ -268,13 +268,11 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 					Vec::new()
 				};
 				
-				let f = Function {
+				functions.push(Function {
 					structure: func_struct,
 					output,
 					precedence
-				};
-				
-				functions.push(f.clone());
+				});
 				
 				while i < tokens.len() {
 					match tokens[i].kind {
@@ -307,7 +305,7 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 						i += 1;
 					}
 					
-					macros.push(Macro {func: f, ret_points});
+					macros.push(Macro {func: functions.len() - 1, ret_points});
 				}
 			},
 			
@@ -695,7 +693,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 							lowest = Some(section.1);
 							
 							for (i, mac) in macros.iter().enumerate() {
-								if mac.func == functions[m.0] {
+								if mac.func == m.0 {
 									match tokens[section.1].kind {
 										Kind::Var(_, _, _, _, ref macro_id) | Kind::Op(_, _, _, ref macro_id) => {
 											macro_id.replace(Some(i));
@@ -1419,7 +1417,7 @@ fn expand_macro(tokens: &mut Vec<Token>, i: &mut usize, m: &Macro) -> Result<(),
 	Ok(())
 }
 
-fn parse3_tok(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
+fn parse3_tok(tokens: &mut Vec<Token>, i: &mut usize, macros: &Vec<Macro>) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
 		Kind::GroupOp(ref op, _) => if op != ";" {
 //			output = compile_body(tokens, i, output);
@@ -1430,7 +1428,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
 		
 		Kind::Var(ref name, _, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
 //			del_macro_call(tokens, i, children, sidekicks);
-			expand_macro(tokens, i)
+			expand_macro(tokens, i, &macros[id])
 		} else {
 			Ok(())
 		},
@@ -1450,7 +1448,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
 			*i -= 1;
 			
 //			del_macro_call(tokens, i, children, sidekicks);
-			expand_macro(tokens, i)
+			expand_macro(tokens, i, &macros[id])
 		} else {
 			Ok(())
 		},
@@ -1459,7 +1457,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
 	}
 }
 
-fn parse3_body(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
+fn parse3_body(tokens: &mut Vec<Token>, i: &mut usize, macros: &Vec<Macro>) -> Result<(), Error> {
 	let start = *i;
 	
 	if let Kind::GroupOp(_, ref statements) = tokens[start].kind.clone() {
@@ -1467,7 +1465,7 @@ fn parse3_body(tokens: &mut Vec<Token>, i: &mut usize) -> Result<(), Error> {
 		while statement < statements.borrow().len() {
 			if let Kind::GroupOp(_, ref statements) = tokens[start].kind.clone() {
 				*i = statements.borrow()[statement];
-				parse3_tok(tokens, i)?;
+				parse3_tok(tokens, i, macros)?;
 			}
 			
 			statement += 1;
@@ -1575,11 +1573,11 @@ fn shift_tokens_right(tokens: &mut Vec<Token>, pos: usize, shifts: usize) {
 	shift_tokens(tokens, highest, trash.len(), true);
 } */
 
-pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut Vec<Function>, i: &mut usize, depth: &mut usize, rows: &mut Vec<usize>) -> Result<(), Error> {
+pub fn parse3(tokens: &mut Vec<Token>, macros: &Vec<Macro>, functions: &mut Vec<Function>, i: &mut usize, depth: &mut usize, rows: &mut Vec<usize>) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
 		Kind::Func(ref f, ref body) => if let FuncType::Func(f) = *f {
 			*i = *body.borrow();
-			parse3_body(tokens, i)
+			parse3_body(tokens, i, macros)
 		} else {
 			Ok(())
 		},

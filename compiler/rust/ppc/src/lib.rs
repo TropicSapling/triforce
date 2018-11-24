@@ -61,7 +61,7 @@ pub struct FilePos {
     pub col: usize
 }
 
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Debug)]
 pub struct Function {
 	pub structure: Vec<FunctionSection>,
 	pub output: Vec<Vec<Type>>,
@@ -70,7 +70,7 @@ pub struct Function {
 
 #[derive(Debug)]
 pub struct Macro {
-	pub func: Function,
+	pub func: usize,
 	pub ret_points: Vec<usize>
 //	pub depth: usize,
 //	pub row: usize
