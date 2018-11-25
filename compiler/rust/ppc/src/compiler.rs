@@ -349,10 +349,10 @@ fn parse_func(tokens: &mut Vec<Token>, functions: &Vec<Function>, blueprint: &Ve
 						if ops.len() > 0 {
 							ops[ops.len() - 1] + 1
 						} else {
-							section.1
+							section.1 + 1
 						}
 					} else {
-						section.1
+						section.1 + 1
 					};
 					
 					match parent.kind {
