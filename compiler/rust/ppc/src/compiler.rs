@@ -727,8 +727,8 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 					let start = *i;
 					let mut name = op.to_string();
 					
-					if !all_children.contains(&start) {
-						if let Kind::Op(_, _, ref sidekicks, _) = tokens[*i].kind {
+					if let Kind::Op(_, _, ref sidekicks, _) = tokens[*i].kind {
+						if !all_children.contains(&start) {
 							if sidekicks.borrow().len() > 0 {
 								for &s in sidekicks.borrow().iter() {
 									name += match tokens[s].kind {
@@ -763,6 +763,19 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 								while j < tokens.len() && j < *i + 1 {
 									sidekicks.borrow_mut().push(j);
 									j += 1;
+								}
+							}
+						} else {
+							if sidekicks.borrow().len() > 0 {
+								for &s in sidekicks.borrow().iter() {
+									name += match tokens[s].kind {
+										Kind::Op(ref op, _, _, _) => {
+											*i = s;
+											op
+										},
+										
+										_ => unreachable!()
+									};
 								}
 							}
 						}
