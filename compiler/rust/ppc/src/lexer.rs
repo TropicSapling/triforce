@@ -199,7 +199,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 				} else {
 					possible_comment = false;
 					
-					string.kind = Kind::Op(String::from("/"), RefCell::new(Vec::new()), RefCell::new(Vec::new()), RefCell::new(None));
+					string.kind = Kind::Op(String::from("/"), RefCell::new(Vec::new()), RefCell::new(Vec::new()), RefCell::new(Vec::new()), RefCell::new(None));
 					string.pos = if line > line_offset {
 						FilePos {line: line - line_offset, col}
 					} else {
@@ -340,7 +340,7 @@ pub fn lex2(tokens: Vec<&str>, line_offset: usize, ops: &Vec<char>) -> Vec<Token
 						},
 						
 						_ => if ops.contains(&item.chars().next().unwrap()) {
-							Kind::Op(item.to_string(), RefCell::new(Vec::new()), RefCell::new(Vec::new()), RefCell::new(None))
+							Kind::Op(item.to_string(), RefCell::new(Vec::new()), RefCell::new(Vec::new()), RefCell::new(Vec::new()), RefCell::new(None))
 						} else {
 							Kind::Var(item.to_string(), vec![Vec::new()], RefCell::new(Vec::new()), RefCell::new(Vec::new()), RefCell::new(None))
 						}
@@ -691,7 +691,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				while i < tokens.len() {
 					match tokens[i].kind {
 						Kind::Type(ref typ, _) => types[t].push(typ.clone()),
-						Kind::Op(ref op, _, _, _) if op == "|" => {
+						Kind::Op(ref op, _, _, _, _) if op == "|" => {
 							types.push(Vec::new());
 							t += 1;
 						},

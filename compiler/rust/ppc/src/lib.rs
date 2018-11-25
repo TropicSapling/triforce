@@ -1,17 +1,23 @@
 use std::{path::PathBuf, cell::RefCell};
 
+type NodeList = RefCell<Vec<usize>>;
+type OpList = RefCell<Vec<usize>>;
+type FuncBodyPos = RefCell<usize>;
+type MacroID = RefCell<Option<usize>>;
+type TypeList = Vec<Vec<Type>>;
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
-	Func(FuncType, RefCell<usize>),
-	GroupOp(String, RefCell<Vec<usize>>),
+	Func(FuncType, FuncBodyPos),
+	GroupOp(String, NodeList),
 	Literal(bool),
 	Number(usize, usize),
-	Op(String, RefCell<Vec<usize>>, RefCell<Vec<usize>>, RefCell<Option<usize>>),
-	Reserved(String, RefCell<Vec<usize>>),
+	Op(String, OpList, NodeList, NodeList, MacroID),
+	Reserved(String, NodeList),
 	Str1(String),
 	Str2(String),
-	Type(Type, Vec<Vec<Type>>),
-	Var(String, Vec<Vec<Type>>, RefCell<Vec<usize>>, RefCell<Vec<usize>>, RefCell<Option<usize>>)
+	Type(Type, TypeList),
+	Var(String, TypeList, NodeList, NodeList, MacroID)
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -46,7 +52,7 @@ pub enum Type {
 pub enum FunctionSection {
 	ID(String),
 	OpID(String),
-	Arg(String, Vec<Vec<Type>>)
+	Arg(String, TypeList)
 }
 
 #[derive(Clone, Debug)]
@@ -64,7 +70,7 @@ pub struct FilePos {
 #[derive(Clone, Debug)]
 pub struct Function {
 	pub structure: Vec<FunctionSection>,
-	pub output: Vec<Vec<Type>>,
+	pub output: TypeList,
 	pub precedence: u8
 }
 
