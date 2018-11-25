@@ -23,8 +23,7 @@ use std::{
 
 use lib::get_io;
 use lexer::{lex, lex_ops, lex2, lex3};
-// use compiler::{def_functions, parse, parse2, parse3, compile};
-use compiler::{def_functions, parse, parse2, compile};
+use compiler::{def_functions, parse, parse2, parse3, compile};
 
 fn count_newlines(s: &str) -> usize {
 	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
@@ -125,17 +124,17 @@ fn main() -> Result<(), std::io::Error> {
 		operator ,;
 		operator @;
 		
-/*		macro if (cond) (body) {
+		macro if (bool cond) (int body) {
 			return unsafe {
-				let res = __uninit__;
+				let res = __uninit__; // '__uninit__' won't be necessary in the future
 				cond && (res = body);
 				res
 			};
 		}
 		
-		macro if (cond) (body) else (expr) {
+		macro if (bool cond) (int body) else (int expr) {
 			return unsafe {
-				let res = __uninit__;
+				let res = __uninit__; // '__uninit__' won't be necessary in the future
 				cond && (res = body) || (res = expr);
 				res
 			};
@@ -167,24 +166,6 @@ fn main() -> Result<(), std::io::Error> {
 				a -= 1;
 				a
 			};
-		} */
-		
-		#[allow(unused)]
-		func if (bool cond) (int body) -> int { // TMP; will be defined as macro later
-			unsafe {
-				let res = __uninit__;
-				cond && (res = body);
-				res
-			}
-		}
-		
-		#[allow(unused)]
-		func if (bool cond) (int body) else (int expr) -> int { // TMP; will be defined as macro later
-			unsafe {
-				let res = __uninit__;
-				cond && (res = body) || (res = expr);
-				res
-			}
 		}
 		
 		#[allow(unused)]
@@ -216,25 +197,25 @@ fn main() -> Result<(), std::io::Error> {
 //		println!("{} LEX2: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
+	lex3(&mut tokens);
+	
+	if debugging {
+//		println!("{} LEX3: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
+	}
+	
 	let mut functions = def_functions();
 	let mut macros;
-	match lex3(&mut tokens, functions) {
+	match parse(&mut tokens, functions) {
 		(f, m) => {
 			functions = f;
 			macros = m;
 		}
 	}
 	
-	if debugging {
-//		println!("{} LEX3: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
-	}
-	
-	functions = parse(&mut tokens, functions);
-	
 	let mut all_children = Vec::new();
 	let mut i = 0;
 	while i < tokens.len() {
-		parse2(&mut tokens, &functions, &mut all_children, &mut i);
+		parse2(&mut tokens, &functions, &macros, &mut all_children, &mut i);
 		i += 1;
 	}
 	
@@ -242,7 +223,7 @@ fn main() -> Result<(), std::io::Error> {
 	let mut rows = vec![0];
 	let mut i = 0;
 	while i < tokens.len() {
-//		parse3(&mut tokens, &mut macros, &mut functions, &mut i, &mut depth, &mut rows)?;
+		parse3(&mut tokens, &mut macros, &functions, &mut i, &mut depth, &mut rows)?;
 		i += 1;
 	}
 	

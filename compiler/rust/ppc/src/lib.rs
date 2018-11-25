@@ -1,17 +1,29 @@
 use std::{path::PathBuf, cell::RefCell};
 
+type NodeList = RefCell<Vec<usize>>;
+type OpList = RefCell<Vec<usize>>;
+type FuncBodyPos = RefCell<usize>;
+type MacroID = RefCell<Option<usize>>;
+type TypeList = Vec<Vec<Type>>;
+
 #[derive(Clone, PartialEq, Debug)]
 pub enum Kind {
-	Func(usize, RefCell<Vec<usize>>),
-	GroupOp(String, RefCell<Vec<usize>>, RefCell<Vec<usize>>), // does GroupOp really need that last RefCell? is it used for anything?
+	Func(FuncType, FuncBodyPos),
+	GroupOp(String, NodeList),
 	Literal(bool),
 	Number(usize, usize),
-	Op(String, RefCell<Vec<usize>>, RefCell<Vec<usize>>),
-	Reserved(String, RefCell<Vec<usize>>),
+	Op(String, OpList, NodeList, NodeList, MacroID),
+	Reserved(String, NodeList),
 	Str1(String),
 	Str2(String),
-	Type(Type, Vec<Vec<Type>>),
-	Var(String, Vec<Vec<Type>>, RefCell<Vec<usize>>, RefCell<Vec<usize>>)
+	Type(Type, TypeList),
+	Var(String, TypeList, NodeList, NodeList, MacroID)
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum FuncType {
+	Func(usize),
+	Macro
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -40,7 +52,7 @@ pub enum Type {
 pub enum FunctionSection {
 	ID(String),
 	OpID(String),
-	Arg(String, Vec<Vec<Type>>)
+	Arg(String, TypeList)
 }
 
 #[derive(Clone, Debug)]
@@ -58,17 +70,16 @@ pub struct FilePos {
 #[derive(Clone, Debug)]
 pub struct Function {
 	pub structure: Vec<FunctionSection>,
-	pub output: Vec<Vec<Type>>,
+	pub output: TypeList,
 	pub precedence: u8
 }
 
 #[derive(Debug)]
 pub struct Macro {
-	pub func: Function,
-	pub code: Vec<Token>,
-	pub returns: Vec<Vec<Token>>,
-	pub depth: usize,
-	pub row: usize
+	pub func: usize,
+	pub ret_points: Vec<usize>
+//	pub depth: usize,
+//	pub row: usize
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
