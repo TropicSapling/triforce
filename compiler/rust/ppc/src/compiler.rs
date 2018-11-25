@@ -1631,8 +1631,7 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, macros: &mut Vec<Macro>) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
 		Kind::GroupOp(ref op, _) => if op != ";" {
-//			output = compile_body(tokens, i, output);
-			Ok(())
+			parse3_body(tokens, functions, i, macros)
 		} else {
 			Ok(())
 		},
