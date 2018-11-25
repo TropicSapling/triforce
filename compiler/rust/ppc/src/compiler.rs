@@ -329,7 +329,11 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 	(functions, macros)
 }
 
-fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)>, all_children: &mut Vec<usize>) {
+fn remove_first(s: &str) -> &str {
+    s.chars().next().map(|c| &s[c.len_utf8()..]).unwrap()
+}
+
+fn parse_func(tokens: &mut Vec<Token>, functions: &Vec<Function>, blueprint: &Vec<(&FunctionSection, usize)>, all_children: &mut Vec<usize>) {
 	if blueprint.len() > 1 {
 		let mut last_s = 0;
 		let mut parents = &RefCell::new(Vec::new());
@@ -361,15 +365,44 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 									
 									Kind::GroupOp(_,_) => (),
 									
-									Kind::Op(_,_,_,_) if depth == 0 => {
+									Kind::Op(ref op, _, _, _) if depth == 0 => {
+										let mut name = op.to_string();
+										
+										i -= 1;
 										while i > 0 {
 											match tokens[i].kind {
-												Kind::Op(_,_,_,_) => i -= 1,
+												Kind::Op(ref op, _, _, _) => {
+													name += op;
+													i -= 1;
+												},
+												
 												_ => break
 											}
 										}
-										
 										i += 1;
+										
+										name = name.chars().rev().collect();
+										
+										while !functions.iter().find(|f| {
+											let mut m = false;
+											for section in &f.structure {
+												match section {
+													FunctionSection::OpID(ref op) => if op == &name {
+														m = true;
+														break;
+													},
+													
+													FunctionSection::ID(_) => break,
+													
+													_ => ()
+												}
+											}
+											
+											m
+										}).is_some() {
+											name = remove_first(&name).to_string();
+											i += 1;
+										}
 										
 										if !all_children.contains(&i) {
 											children.borrow_mut().push(i);
@@ -399,13 +432,15 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 							}
 							
 							if s2 >= blueprint.len() {
-								let mut i = section.1 + 1;
-								while i < tokens.len() {
-									match tokens[i].kind {
-										Kind::Op(_,_,_,_) => i += 1,
-										_ => break
+								let mut i = {
+									let sidekicks = sidekicks.borrow();
+									
+									if sidekicks.len() > 0 {
+										sidekicks[sidekicks.len() - 1] + 1
+									} else {
+										section.1
 									}
-								}
+								};
 								
 								let mut s = s + 1;
 								let mut depth = 0;
@@ -424,21 +459,48 @@ fn parse_func(tokens: &mut Vec<Token>, blueprint: &Vec<(&FunctionSection, usize)
 										
 										Kind::GroupOp(_,_) => (),
 										
-										Kind::Op(_,_,_,_) if depth == 0 => {
+										Kind::Op(ref op, _, _, _) if depth == 0 => {
 											if !all_children.contains(&i) {
 												children.borrow_mut().push(i);
 												all_children.push(i);
 												s += 1;
 											}
 											
+											let mut name = op.to_string();
+											
+											i += 1;
 											while i < tokens.len() {
 												match tokens[i].kind {
-													Kind::Op(_,_,_,_) => i += 1,
+													Kind::Op(ref op, _, _, _) => {
+														name += op;
+														i += 1;
+													},
+													
 													_ => break
 												}
 											}
-											
 											i -= 1;
+											
+											while !functions.iter().find(|f| {
+												let mut m = false;
+												for section in &f.structure {
+													match section {
+														FunctionSection::OpID(ref op) => if op == &name {
+															m = true;
+															break;
+														},
+														
+														FunctionSection::ID(_) => break,
+														
+														_ => ()
+													}
+												}
+												
+												m
+											}).is_some() {
+												name.pop();
+												i -= 1;
+											}
 										},
 										
 										_ => if depth == 0 && !all_children.contains(&i) {
@@ -661,51 +723,53 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 					depth2 -= 1;
 				},
 				
-				Kind::Op(ref op, ref children, ref sidekicks, _) if depth2 == 0 => {
+				Kind::Op(ref op, ref children, _, _) if depth2 == 0 => {
 					let start = *i;
 					let mut name = op.to_string();
 					
 					if !all_children.contains(&start) {
-						if sidekicks.borrow().len() > 0 {
-							for &op in sidekicks.borrow().iter() {
-								name += match tokens[op].kind {
-									Kind::Op(ref op, _, _, _) => {
-										*i += 1;
-										op
-									},
-									
-									_ => unreachable!()
-								};
-							}
-							
-							update_matches(&mut matches, functions, &name, depth + depth2, start, children.borrow().len() > 0);
-						} else {
-							*i += 1;
-							while *i < limit {
-								match tokens[*i].kind {
-									Kind::Op(ref op, _, _, _) => name += op,
-									_ => break
+						if let Kind::Op(_, _, ref sidekicks, _) = tokens[*i].kind {
+							if sidekicks.borrow().len() > 0 {
+								for &s in sidekicks.borrow().iter() {
+									name += match tokens[s].kind {
+										Kind::Op(ref op, _, _, _) => {
+											*i = s;
+											op
+										},
+										
+										_ => unreachable!()
+									};
 								}
 								
+								update_matches(&mut matches, functions, &name, depth + depth2, start, children.borrow().len() > 0);
+							} else {
 								*i += 1;
-							}
-							*i -= 1;
-							
-							while name.len() > 0 && !update_matches(&mut matches, functions, &name, depth + depth2, start, children.borrow().len() > 0) {
-								name.pop();
+								while *i < limit {
+									match tokens[*i].kind {
+										Kind::Op(ref op, _, _, _) => name += op,
+										_ => break
+									}
+									
+									*i += 1;
+								}
 								*i -= 1;
-							}
-							
-							let mut j = start + 1;
-							while j < tokens.len() && j < *i + 1 {
-								sidekicks.borrow_mut().push(j);
-								j += 1;
+								
+								while name.len() > 0 && !update_matches(&mut matches, functions, &name, depth + depth2, start, children.borrow().len() > 0) {
+									name.pop();
+									*i -= 1;
+								}
+								
+								let mut j = start + 1;
+								while j < tokens.len() && j < *i + 1 {
+									sidekicks.borrow_mut().push(j);
+									j += 1;
+								}
 							}
 						}
 					}
 				},
 				
-				Kind::Var(ref name, _, ref children, ref sidekicks, _) if depth2 == 0 && !all_children.contains(i) => {
+				Kind::Var(ref name, _, ref children, _, _) if depth2 == 0 && !all_children.contains(i) => {
 					update_matches(&mut matches, functions, name, depth + depth2, *i, children.borrow().len() > 0 );
 				},
 				
@@ -747,7 +811,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 					}
 				}
 				
-				parse_func(tokens, &m.1, all_children);
+				parse_func(tokens, functions, &m.1, all_children);
 				
 				// DEBUG BELOW
 				match tokens[lowest.unwrap()].kind {
