@@ -1643,6 +1643,8 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 			// Nothing to replace; just add token and its children directly
 			
 			tokens.push(token);
+			
+			*i = tokens.len() - 1;
 			insert_macro(tokens, functions, macros, i, pars, args, children)?;
 		},
 		
@@ -1659,7 +1661,11 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 						let arg = tokens[args[p]].clone();
 						tokens.push(arg);
 						
-						parse3_tok(tokens, functions, macros, i)?;
+						*i = tokens.len() - 1;
+						if children.borrow().len() > 0 {
+							insert_macro(tokens, functions, macros, i, pars, args, children)?;
+//							parse3_tok(tokens, functions, macros, i)?;
+						}
 						
 						break;
 					}
@@ -1672,6 +1678,8 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 				// Variable should not be replaced; just insert the variable and its children directly instead
 				
 				tokens.push(token);
+				
+				*i = tokens.len() - 1;
 				insert_macro(tokens, functions, macros, i, pars, args, children)?;
 			}
 		},
