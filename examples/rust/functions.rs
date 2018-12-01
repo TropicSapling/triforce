@@ -6,13 +6,20 @@ fn timestimes_ppl(base_ppl: isize, exp_ppl: usize) -> isize {
             res_ppl = 1;
             true
         } || {
-            res_ppl = if_else_ppl(
-                exp_ppl % 2 == 0,
-                timestimes_ppl(base_ppl, exp_ppl / 2) * timestimes_ppl(base_ppl, exp_ppl / 2),
-                base_ppl
-                    * timestimes_ppl(base_ppl, exp_ppl / 2)
-                    * timestimes_ppl(base_ppl, exp_ppl / 2),
-            );
+            res_ppl = unsafe {
+                let mut res_ppl = std::mem::uninitialized();
+                exp_ppl % 2 == 0 && {
+                    res_ppl = timestimes_ppl(base_ppl, exp_ppl / 2)
+                        * timestimes_ppl(base_ppl, exp_ppl / 2);
+                    true
+                } || {
+                    res_ppl = base_ppl
+                        * timestimes_ppl(base_ppl, exp_ppl / 2)
+                        * timestimes_ppl(base_ppl, exp_ppl / 2);
+                    true
+                };
+                res_ppl
+            };
             true
         };
         res_ppl
@@ -41,18 +48,31 @@ fn backwards_println_ppl(i_ppl: isize) {
                 true
             }
             || {
-                res_ppl = if_else_ppl(
-                    9 + 10 != 21 && 10 + 9 != 21,
-                    {
-                        if_ppl(true, {
-                            println!("{}", true);
-                            println!("{}", true);
-                        });
-                    },
-                    {
-                        println!("{}", false);
-                    },
-                );
+                res_ppl = unsafe {
+                    let mut res_ppl = std::mem::uninitialized();
+                    9 + 10 != 21 && 10 + 9 != 21 && {
+                        res_ppl = {
+                            unsafe {
+                                let mut res_ppl = std::mem::uninitialized();
+                                true && {
+                                    res_ppl = {
+                                        println!("{}", true);
+                                        println!("{}", true);
+                                    };
+                                    true
+                                };
+                                res_ppl
+                            };
+                        };
+                        true
+                    } || {
+                        res_ppl = {
+                            println!("{}", false);
+                        };
+                        true
+                    };
+                    res_ppl
+                };
                 true
             };
         res_ppl

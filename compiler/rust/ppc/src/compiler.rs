@@ -1661,11 +1661,8 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 						let arg = tokens[args[p]].clone();
 						tokens.push(arg);
 						
-						if children.borrow().len() > 0 {
-							let mut i = tokens.len() - 1;
-//							insert_macro(tokens, functions, macros, i, pars, args, children)?;
-							parse3_tok(tokens, functions, macros, &mut i)?;
-						}
+						let mut i = tokens.len() - 1;
+						parse3_tok(tokens, functions, macros, &mut i)?;
 						
 						break;
 					}
