@@ -1762,7 +1762,7 @@ fn shift_tokens_right(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, args: &m
 				let mut children = children.borrow_mut();
 				for child in children.iter_mut() {
 					if *child != usize::MAX && *child > pos {
-						*child = *child + shifts;
+						*child += shifts;
 					}
 				}
 			},
@@ -1771,21 +1771,21 @@ fn shift_tokens_right(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, args: &m
 				let mut children = children.borrow_mut();
 				for child in children.iter_mut() {
 					if *child != usize::MAX && *child > pos {
-						*child = *child + shifts;
+						*child += shifts;
 					}
 				}
 				
 				let mut sidekicks = sidekicks.borrow_mut();
 				for sidekick in sidekicks.iter_mut() {
 					if *sidekick > pos {
-						*sidekick = *sidekick + shifts;
+						*sidekick += shifts;
 					}
 				}
 				
 				let mut ops = ops.borrow_mut();
 				for op in ops.iter_mut() {
 					if *op > pos {
-						*op = *op + shifts;
+						*op += shifts;
 					}
 				}
 			},
@@ -1794,14 +1794,14 @@ fn shift_tokens_right(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, args: &m
 				let mut children = children.borrow_mut();
 				for child in children.iter_mut() {
 					if *child != usize::MAX && *child > pos {
-						*child = *child + shifts;
+						*child += shifts;
 					}
 				}
 				
 				let mut sidekicks = sidekicks.borrow_mut();
 				for sidekick in sidekicks.iter_mut() {
 					if *sidekick > pos {
-						*sidekick = *sidekick + shifts;
+						*sidekick += shifts;
 					}
 				}
 			},
