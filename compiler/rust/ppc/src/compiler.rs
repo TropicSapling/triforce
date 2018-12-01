@@ -1500,20 +1500,29 @@ pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut 
 	Ok(())
 } */
 
-fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>, ret_parentstack: &mut Vec<usize>, token: Token, children: &RefCell<Vec<usize>>) -> Result<(), Error> {
+fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>, token: Token, children: &RefCell<Vec<usize>>) -> Result<(), Error> {
 	let parent = *i;
+	
+	// Insert parent token
 	tokens.insert(*i, token);
-	shift_tokens_right(tokens, macros, args, headstack, parentstack, ret_parentstack, *i, 1);
+	shift_tokens_right(tokens, macros, args, headstack, parentstack, *i, 1);
 	*i += 1;
 	
+	// Get new children positions
 	let mut new_children = Vec::new();
 	for child in children.borrow().iter() {
 		new_children.push(*i);
-		insert_macro(tokens, functions, macros, i, pars, *child, args, headstack, parentstack)?;
+		
+		insert_macro(tokens, functions, macros, i, pars, if *child > parent {
+			*child + 1
+		} else {
+			*child
+		}, args, headstack, parentstack)?;
 	}
 	
 	match tokens[parent].kind {
 		Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) | Kind::Var(_, _, ref children, _, _) => {
+			// Replace old positions with new
 			children.replace(new_children);
 		},
 		
@@ -1523,30 +1532,30 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 	Ok(())
 }
 
-fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, ret_parentstack: &mut Vec<usize>, args: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>) -> Result<(), Error> {
-	let token = tokens[last!(ret_parentstack)].clone();
+fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, parent: usize, args: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>) -> Result<(), Error> {
+	let token = tokens[parent].clone();
 	
 	match token.kind {
 		Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
 			// Nothing to replace; just insert token and its children directly
-			insert_macro2(tokens, functions, macros, i, pars, args, headstack, parentstack, ret_parentstack, token.clone(), children)?;
+			insert_macro2(tokens, functions, macros, i, pars, args, headstack, parentstack, token.clone(), children)?;
 		},
 		
-		Kind::Var(ref name, _, _, _, _) => {
+		Kind::Var(ref name, _, ref children, _, _) => {
 			let mut matching = false;
 			let mut p = 0;
 			for par in pars {
 				if let FunctionSection::Arg(ref par_name, _) = par {
 					if name == par_name {
-						// Found variable to replace with input code
+						// Found variable to replace with input code; insert replacement
 						
 						matching = true;
 						
 						let arg = tokens[last!(args)[p]].clone();
 						tokens.insert(*i, arg);
-						shift_tokens_right(tokens, macros, args, headstack, parentstack, ret_parentstack, *i, 1);
+						shift_tokens_right(tokens, macros, args, headstack, parentstack, *i, 1);
 						
-						parse3_tok(tokens, functions, i, macros, args, headstack, parentstack, ret_parentstack)?;
+						parse3_tok(tokens, functions, i, macros, args, headstack, parentstack)?;
 						*i += 1;
 						
 						break;
@@ -1558,10 +1567,7 @@ fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 			
 			if !matching {
 				// Variable should not be replaced; just insert the variable and its children directly instead
-				
-				if let Kind::Var(_, _, ref children, _, _) = tokens[last!(ret_parentstack)].kind {
-					insert_macro2(tokens, functions, macros, i, pars, args, headstack, parentstack, ret_parentstack, token.clone(), children)?;
-				}
+				insert_macro2(tokens, functions, macros, i, pars, args, headstack, parentstack, token.clone(), children)?;
 			}
 		},
 		
@@ -1569,7 +1575,7 @@ fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 			// No children; just insert token directly
 			
 			tokens.insert(*i, token.clone());
-			shift_tokens_right(tokens, macros, args, headstack, parentstack, ret_parentstack, *i, 1);
+			shift_tokens_right(tokens, macros, args, headstack, parentstack, *i, 1);
 			*i += 1;
 		}
 	}
@@ -1577,7 +1583,7 @@ fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 	Ok(())
 }
 
-fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, m: usize, args: &RefCell<Vec<usize>>, sidekicks: &RefCell<Vec<usize>>, args2: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>, ret_parentstack: &mut Vec<usize>) -> Result<(), Error> {
+fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, m: usize, args: &RefCell<Vec<usize>>, sidekicks: &RefCell<Vec<usize>>, args2: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>) -> Result<(), Error> {
 	// TODO: Create new file and run macro
 	
 	if macros[m].ret_points.len() > 0 {
@@ -1599,13 +1605,11 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 			}
 			
 			args2.push(input);
-			ret_parentstack.push(children.borrow()[0]);
 			
 			let func = macros[m].func;
-			insert_macro(tokens, functions, macros, i, &functions[func].structure, ret_parentstack, args2, headstack, parentstack)?;
+			insert_macro(tokens, functions, macros, i, &functions[func].structure, children.borrow()[0], args2, headstack, parentstack)?;
 			
 			args2.pop();
-			ret_parentstack.pop();
 		}
 	} else {
 		// Macros not returning any code
@@ -1622,21 +1626,21 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 			pos: pos.clone()
 		});
 		
-		shift_tokens_right(tokens, macros, args2, headstack, parentstack, ret_parentstack, *i, 2);
+		shift_tokens_right(tokens, macros, args2, headstack, parentstack, *i, 2);
 	}
 	
 	Ok(())
 }
 
-fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, macros: &mut Vec<Macro>, args: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>, ret_parentstack: &mut Vec<usize>) -> Result<(), Error> {
+fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, macros: &mut Vec<Macro>, args: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
 		Kind::GroupOp(ref op, _) => if op != ";" {
-			parse3_body(tokens, functions, i, macros, args, headstack, parentstack, ret_parentstack)?;
+			parse3_body(tokens, functions, i, macros, args, headstack, parentstack)?;
 		},
 		
 		Kind::Var(_, _, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
 			// Found macro; expand
-			expand_macro(tokens, functions, macros, i, id, children, sidekicks, args, headstack, parentstack, ret_parentstack)?;
+			expand_macro(tokens, functions, macros, i, id, children, sidekicks, args, headstack, parentstack)?;
 		} else {
 			// Not a macro; go through children looking for macros there instead
 			
@@ -1647,7 +1651,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize,
 				if let Kind::Var(_, _, ref children, _, _) = tokens[last!(parentstack)].kind.clone() {
 					*i = children.borrow()[child];
 					if *i != usize::MAX {
-						parse3_tok(tokens, functions, i, macros, args, headstack, parentstack, ret_parentstack)?;
+						parse3_tok(tokens, functions, i, macros, args, headstack, parentstack)?;
 					}
 				}
 				
@@ -1659,7 +1663,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize,
 				if let Kind::Var(_, _, _, ref sidekicks, _) = tokens[last!(parentstack)].kind.clone() {
 					*i = sidekicks.borrow()[sidekick];
 					if *i != usize::MAX {
-						parse3_tok(tokens, functions, i, macros, args, headstack, parentstack, ret_parentstack)?;
+						parse3_tok(tokens, functions, i, macros, args, headstack, parentstack)?;
 					}
 				}
 				
@@ -1672,7 +1676,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize,
 		Kind::Op(_, ref ops, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
 			// Found macro; expand
 			
-			expand_macro(tokens, functions, macros, i, id, children, sidekicks, args, headstack, parentstack, ret_parentstack)?;
+			expand_macro(tokens, functions, macros, i, id, children, sidekicks, args, headstack, parentstack)?;
 			
 			let ops = ops.borrow();
 			if ops.len() > 0 {
@@ -1688,7 +1692,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize,
 				if let Kind::Var(_, _, ref children, _, _) = tokens[last!(parentstack)].kind.clone() {
 					*i = children.borrow()[child];
 					if *i != usize::MAX {
-						parse3_tok(tokens, functions, i, macros, args, headstack, parentstack, ret_parentstack)?;
+						parse3_tok(tokens, functions, i, macros, args, headstack, parentstack)?;
 					}
 				}
 				
@@ -1700,7 +1704,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize,
 				if let Kind::Var(_, _, _, ref sidekicks, _) = tokens[last!(parentstack)].kind.clone() {
 					*i = sidekicks.borrow()[sidekick];
 					if *i != usize::MAX {
-						parse3_tok(tokens, functions, i, macros, args, headstack, parentstack, ret_parentstack)?;
+						parse3_tok(tokens, functions, i, macros, args, headstack, parentstack)?;
 					}
 				}
 				
@@ -1721,7 +1725,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize,
 	Ok(())
 }
 
-fn parse3_body(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, macros: &mut Vec<Macro>, args: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>, ret_parentstack: &mut Vec<usize>) -> Result<(), Error> {
+fn parse3_body(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize, macros: &mut Vec<Macro>, args: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>) -> Result<(), Error> {
 	headstack.push(*i);
 	
 	if let Kind::GroupOp(_, ref statements) = tokens[last!(headstack)].kind.clone() {
@@ -1731,7 +1735,7 @@ fn parse3_body(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize
 		while statement < statements.borrow().len() {
 			if let Kind::GroupOp(_, ref statements) = tokens[last!(headstack)].kind.clone() {
 				*i = statements.borrow()[statement];
-				parse3_tok(tokens, functions, i, macros, args, headstack, parentstack, ret_parentstack)?;
+				parse3_tok(tokens, functions, i, macros, args, headstack, parentstack)?;
 			}
 			
 			statement += 1;
@@ -1743,7 +1747,7 @@ fn parse3_body(tokens: &mut Vec<Token>, functions: &Vec<Function>, i: &mut usize
 	Ok(())
 }
 
-fn shift_tokens_right(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, args: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>, ret_parentstack: &mut Vec<usize>, pos: usize, shifts: usize) {
+fn shift_tokens_right(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, args: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>, pos: usize, shifts: usize) {
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind {
@@ -1835,19 +1839,13 @@ fn shift_tokens_right(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, args: &m
 			*parent += shifts;
 		}
 	}
-	
-	for parent in ret_parentstack.iter_mut() {
-		if *parent > pos {
-			*parent += shifts;
-		}
-	}
 }
 
 pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &Vec<Function>, i: &mut usize, depth: &mut usize, rows: &mut Vec<usize>) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
 		Kind::Func(ref f, ref body) => if let FuncType::Func(f) = *f {
 			*i = *body.borrow();
-			parse3_body(tokens, functions, i, macros, &mut Vec::new(), &mut Vec::new(), &mut Vec::new(), &mut Vec::new())
+			parse3_body(tokens, functions, i, macros, &mut Vec::new(), &mut Vec::new(), &mut Vec::new())
 		} else {
 			Ok(())
 		},
