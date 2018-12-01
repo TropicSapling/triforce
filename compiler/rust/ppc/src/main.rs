@@ -223,7 +223,7 @@ fn main() -> Result<(), std::io::Error> {
 	let mut rows = vec![0];
 	let mut i = 0;
 	while i < tokens.len() {
-		parse3(&mut tokens, &mut macros, &functions, &mut i, &mut depth, &mut rows)?;
+		parse3(&mut tokens, &mut macros, &functions, &mut i)?;
 		i += 1;
 	}
 	
