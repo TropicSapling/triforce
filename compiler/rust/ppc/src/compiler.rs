@@ -1644,8 +1644,8 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 			
 			tokens.push(token);
 			
-			*i = tokens.len() - 1;
-			insert_macro(tokens, functions, macros, i, pars, args, children)?;
+			let mut i = tokens.len() - 1;
+			insert_macro(tokens, functions, macros, &mut i, pars, args, children)?;
 		},
 		
 		Kind::Var(ref name, _, ref children, _, _) => {
@@ -1661,10 +1661,10 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 						let arg = tokens[args[p]].clone();
 						tokens.push(arg);
 						
-						*i = tokens.len() - 1;
 						if children.borrow().len() > 0 {
-							insert_macro(tokens, functions, macros, i, pars, args, children)?;
-//							parse3_tok(tokens, functions, macros, i)?;
+							let mut i = tokens.len() - 1;
+//							insert_macro(tokens, functions, macros, i, pars, args, children)?;
+							parse3_tok(tokens, functions, macros, &mut i)?;
 						}
 						
 						break;
@@ -1679,8 +1679,8 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 				
 				tokens.push(token);
 				
-				*i = tokens.len() - 1;
-				insert_macro(tokens, functions, macros, i, pars, args, children)?;
+				let mut i = tokens.len() - 1;
+				insert_macro(tokens, functions, macros, &mut i, pars, args, children)?;
 			}
 		},
 		
@@ -1819,6 +1819,8 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 			pos: pos.clone()
 		});
 	}
+	
+	*i += 1;
 	
 	Ok(())
 }
@@ -2651,10 +2653,11 @@ fn compile_body(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> Strin
 	
 	if let Kind::GroupOp(_, ref statements) = tokens[*i].kind {
 		for statement in statements.borrow().iter() {
-			*i = *statement;
-			output = compile_tok(tokens, i, output);
+			output = compile_tok(tokens, &mut statement.clone(), output);
 		}
 	}
+	
+	*i += 1;
 	
 	output += "}";
 	
