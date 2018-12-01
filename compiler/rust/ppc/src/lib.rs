@@ -37,7 +37,6 @@ pub enum Type {
 	Heap,
 	Int,
 	List,
-	Macro,
 	Only,
 	Pointer,
 	Register,
