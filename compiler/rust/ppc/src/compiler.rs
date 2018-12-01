@@ -1753,11 +1753,12 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 				}
 			}
 			
-			match tokens[children.borrow()[0]].kind {
+			let ret_child = children.borrow()[0];
+			match tokens[ret_child].kind {
 				Kind::Func(_, ref children) | Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
 					// Nothing to replace; just insert token and its children directly
 					let func = macros[m].func;
-					insert_macro(tokens, functions, macros, i, &functions[func].structure, tokens[children.borrow()[0]].clone(), input)?;
+					insert_macro(tokens, functions, macros, i, &functions[func].structure, tokens[ret_child].clone(), input)?;
 				},
 				
 				Kind::Var(ref name, _, ref children, _, _) => {
@@ -1783,11 +1784,11 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 					if !matching {
 						// Variable should not be replaced; just insert the variable and its children directly instead
 						let func = macros[m].func;
-						insert_macro(tokens, functions, macros, i, &functions[func].structure, tokens[children.borrow()[0]].clone(), input)?;
+						insert_macro(tokens, functions, macros, i, &functions[func].structure, tokens[ret_child].clone(), input)?;
 					}
 				},
 				
-				_ => mem::replace(&tokens[*i], tokens[children.borrow()[0]].clone()); // No children; replace macro call with return point
+				_ => mem::replace(&tokens[*i], tokens[ret_child].clone()); // No children; replace macro call with return point
 			}
 		}
 	} else {
