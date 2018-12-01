@@ -1641,13 +1641,11 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 	Ok(())
 } */
 
-fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, parent: usize, args: &Vec<usize>) -> Result<(), Error> {
-	let token = tokens[parent].clone();
-	
-	match token.kind {
+fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, blueprint_parent: Token, args: &Vec<usize>) -> Result<(), Error> {
+	match blueprint_parent.kind {
 		Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
 			// Nothing to replace; just insert token and its children directly
-			insert_macro2(tokens, functions, macros, i, pars, args, headstack, parentstack, token.clone(), children)?;
+			insert_macro2(tokens, functions, macros, i, pars, args, headstack, parentstack, blueprint_parent, children)?;
 		},
 		
 		Kind::Var(ref name, _, ref children, _, _) => {
@@ -1663,7 +1661,7 @@ fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 						let arg = tokens[args[p]].clone();
 						tokens.push(arg);
 						
-						parse3_tok(tokens, functions, i, macros, args, headstack, parentstack)?;
+						parse3_tok(tokens, functions, i, macros, args)?;
 						
 						break;
 					}
@@ -1674,11 +1672,11 @@ fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 			
 			if !matching {
 				// Variable should not be replaced; just insert the variable and its children directly instead
-				insert_macro2(tokens, functions, macros, i, pars, args, headstack, parentstack, token.clone(), children)?;
+				insert_macro2(tokens, functions, macros, i, pars, args, headstack, parentstack, blueprint_parent, children)?;
 			}
 		},
 		
-		_ => tokens.push(token.clone()) // No children; just add token directly
+		_ => tokens.push(blueprint_parent) // No children; just add token directly
 	}
 	
 	Ok(())
@@ -1755,10 +1753,42 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 				}
 			}
 			
-			mem::replace(&tokens[*i], tokens[children.borrow()[0]].clone()); // Replace macro call with return point
-			
-			let func = macros[m].func;
-			insert_macro(tokens, functions, macros, i, &functions[func].structure, children.borrow()[0], input)?;
+			match tokens[children.borrow()[0]].kind {
+				Kind::Func(_, ref children) | Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
+					// Nothing to replace; just insert token and its children directly
+					let func = macros[m].func;
+					insert_macro(tokens, functions, macros, i, &functions[func].structure, tokens[children.borrow()[0]].clone(), input)?;
+				},
+				
+				Kind::Var(ref name, _, ref children, _, _) => {
+					let mut matching = false;
+					let mut p = 0;
+					for par in input {
+						if let FunctionSection::Arg(ref par_name, _) = par {
+							if name == par_name {
+								// Found variable to replace with input code; replace
+								
+								matching = true;
+								
+								let arg = tokens[args[p]].clone();
+								mem::replace(&tokens[*i], arg);
+								
+								break;
+							}
+							
+							p += 1;
+						}
+					}
+					
+					if !matching {
+						// Variable should not be replaced; just insert the variable and its children directly instead
+						let func = macros[m].func;
+						insert_macro(tokens, functions, macros, i, &functions[func].structure, tokens[children.borrow()[0]].clone(), input)?;
+					}
+				},
+				
+				_ => mem::replace(&tokens[*i], tokens[children.borrow()[0]].clone()); // No children; replace macro call with return point
+			}
 		}
 	} else {
 		// Macros not returning any code
