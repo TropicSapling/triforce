@@ -1564,20 +1564,15 @@ pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut 
 	Ok(())
 } */
 
-fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &mut Vec<Vec<usize>>, headstack: &mut Vec<usize>, parentstack: &mut Vec<usize>, token: Token, children: &RefCell<Vec<usize>>) -> Result<(), Error> {
-	let parent = *i;
-	
-	// Add parent token
-	tokens.push(token);
-
+fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, children: &RefCell<Vec<usize>>) -> Result<(), Error> {
 	// Get new children positions
 	let mut new_children = Vec::new();
 	for child in children.borrow().iter() {
-		insert_macro(tokens, functions, macros, i, pars, *child, args, headstack, parentstack)?;
-		new_children.push(tokens.len() - 1);
+		new_children.push(tokens.len());
+		insert_macro2(tokens, functions, macros, &mut child.clone(), pars, args)?;
 	}
 	
-	match tokens[parent].kind {
+	match tokens[*i].kind {
 		Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) | Kind::Var(_, _, ref children, _, _) => {
 			// Replace old positions with new
 			children.replace(new_children);
@@ -1641,11 +1636,14 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 	Ok(())
 } */
 
-fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, blueprint_parent: Token, args: &Vec<usize>) -> Result<(), Error> {
-	match blueprint_parent.kind {
+fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>) -> Result<(), Error> {
+	let token = tokens[*i].clone();
+	match token.kind.clone() {
 		Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
-			// Nothing to replace; just insert token and its children directly
-			insert_macro2(tokens, functions, macros, i, pars, args, headstack, parentstack, blueprint_parent, children)?;
+			// Nothing to replace; just add token and its children directly
+			
+			tokens.push(token);
+			insert_macro(tokens, functions, macros, i, pars, args, children)?;
 		},
 		
 		Kind::Var(ref name, _, ref children, _, _) => {
@@ -1661,7 +1659,7 @@ fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 						let arg = tokens[args[p]].clone();
 						tokens.push(arg);
 						
-						parse3_tok(tokens, functions, i, macros, args)?;
+						parse3_tok(tokens, functions, macros, i)?;
 						
 						break;
 					}
@@ -1672,11 +1670,13 @@ fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 			
 			if !matching {
 				// Variable should not be replaced; just insert the variable and its children directly instead
-				insert_macro2(tokens, functions, macros, i, pars, args, headstack, parentstack, blueprint_parent, children)?;
+				
+				tokens.push(token);
+				insert_macro(tokens, functions, macros, i, pars, args, children)?;
 			}
 		},
 		
-		_ => tokens.push(blueprint_parent) // No children; just add token directly
+		_ => tokens.push(token) // No children; just add token directly
 	}
 	
 	Ok(())
@@ -1754,25 +1754,30 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 			}
 			
 			let ret_child = children.borrow()[0];
-			match tokens[ret_child].kind {
-				Kind::Func(_, ref children) | Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
+			let func = macros[m].func;
+			match tokens[ret_child].kind.clone() {
+				Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
 					// Nothing to replace; just insert token and its children directly
-					let func = macros[m].func;
-					insert_macro(tokens, functions, macros, i, &functions[func].structure, tokens[ret_child].clone(), input)?;
+					
+					// Replace macro call with return point
+					let ret_child = tokens[ret_child].clone();
+					mem::replace(&mut tokens[*i], ret_child);
+					
+					insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children)?;
 				},
 				
 				Kind::Var(ref name, _, ref children, _, _) => {
 					let mut matching = false;
 					let mut p = 0;
-					for par in input {
+					for par in &functions[func].structure {
 						if let FunctionSection::Arg(ref par_name, _) = par {
 							if name == par_name {
 								// Found variable to replace with input code; replace
 								
 								matching = true;
 								
-								let arg = tokens[args[p]].clone();
-								mem::replace(&tokens[*i], arg);
+								let arg = tokens[input[p]].clone();
+								mem::replace(&mut tokens[*i], arg);
 								
 								break;
 							}
@@ -1782,20 +1787,26 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 					}
 					
 					if !matching {
-						// Variable should not be replaced; just insert the variable and its children directly instead
-						let func = macros[m].func;
-						insert_macro(tokens, functions, macros, i, &functions[func].structure, tokens[ret_child].clone(), input)?;
+						// Replace macro call with return point
+						let ret_child = tokens[ret_child].clone();
+						mem::replace(&mut tokens[*i], ret_child);
 					}
+					
+					insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children)?;
 				},
 				
-				_ => mem::replace(&tokens[*i], tokens[ret_child].clone()); // No children; replace macro call with return point
+				_ => {
+					// No children; replace macro call with return point
+					let ret_child = tokens[ret_child].clone();
+					mem::replace(&mut tokens[*i], ret_child);
+				}
 			}
 		}
 	} else {
 		// Macros not returning any code
 		
 		let pos = tokens[*i].pos.clone();
-		mem::replace(&tokens[*i], Token {
+		mem::replace(&mut tokens[*i], Token {
 			kind: Kind::GroupOp(String::from(")"), RefCell::new(Vec::new())),
 			pos: pos.clone()
 		});
