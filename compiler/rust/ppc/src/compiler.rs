@@ -1578,7 +1578,7 @@ fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 			children.replace(new_children);
 		},
 		
-		_ => unreachable!()
+		_ => ()
 	}
 	
 	Ok(())
@@ -1784,6 +1784,9 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 								let arg = tokens[input[p]].clone();
 								mem::replace(&mut tokens[*i], arg);
 								
+								let mut i = *i;
+								parse3_tok(tokens, functions, macros, &mut i)?;
+								
 								break;
 							}
 							
@@ -1795,9 +1798,9 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 						// Replace macro call with return point
 						let ret_child = tokens[ret_child].clone();
 						mem::replace(&mut tokens[*i], ret_child);
+						
+						insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children)?;
 					}
-					
-					insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children)?;
 				},
 				
 				_ => {
