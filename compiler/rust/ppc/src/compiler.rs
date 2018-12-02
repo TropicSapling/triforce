@@ -1777,11 +1777,9 @@ fn parse3_body(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut 
 
 pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &Vec<Function>, i: &mut usize, sof: usize) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
-		Kind::Func(ref f, ref body) => if let FuncType::Func(_) = *f {
+		Kind::Func(_, ref body) => {
 			*i = *body.borrow();
 			parse3_body(tokens, functions, macros, i, sof)
-		} else {
-			Ok(())
 		},
 		
 		_ => Ok(())
