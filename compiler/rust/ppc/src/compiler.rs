@@ -284,6 +284,8 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 				body.replace(i); // Save function body index
 				
 				if typ == &FuncType::Macro {
+					let body = i; // Save function body index for macro
+					
 					let mut ret_points = Vec::new();
 					i += 1;
 					
@@ -305,7 +307,7 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 						i += 1;
 					}
 					
-					macros.push(Macro {func: functions.len() - 1, ret_points});
+					macros.push(Macro {func: functions.len() - 1, ret_points, body});
 				}
 			},
 			
@@ -1496,12 +1498,12 @@ pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut 
 	Ok(())
 } */
 
-fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, children: &RefCell<Vec<usize>>, sof: usize, ignore_ret_points: bool) -> Result<(), Error> {
+fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, children: &RefCell<Vec<usize>>, sof: usize, ret_points: usize) -> Result<(), Error> {
 	// Get new children positions
 	let mut new_children = Vec::new();
 	for child in children.borrow().iter() {
 		new_children.push(tokens.len());
-		insert_macro2(tokens, functions, macros, &mut child.clone(), pars, args, sof, ignore_ret_points)?;
+		insert_macro2(tokens, functions, macros, &mut child.clone(), pars, args, sof, ret_points)?;
 	}
 	
 	match tokens[*i].kind {
@@ -1516,7 +1518,7 @@ fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 	Ok(())
 }
 
-fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, sof: usize, ignore_ret_points: bool) -> Result<(), Error> {
+fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, sof: usize, mut ret_points: usize) -> Result<(), Error> {
 	let token = tokens[*i].clone();
 	match token.kind.clone() {
 		Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
@@ -1525,13 +1527,13 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 			tokens.push(token);
 			
 			let mut i = tokens.len() - 1;
-			insert_macro(tokens, functions, macros, &mut i, pars, args, children, sof, ignore_ret_points)?;
+			insert_macro(tokens, functions, macros, &mut i, pars, args, children, sof, ret_points)?;
 		},
 		
-		Kind::Var(ref name, _, _, _, _) if ignore_ret_points && name == "return" => {
-			tokens.push(token);
+		Kind::Var(ref name, _, _, _, _) if ret_points > 0 && name == "return" => {
+			tokens.push(token.clone());
 			tokens.push(Token {
-				kind: Kind::Number(ret_points, 0)
+				kind: Kind::Number(ret_points - 1, 0),
 				pos: token.pos.clone()
 			});
 			
@@ -1571,7 +1573,7 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 				tokens.push(token);
 				
 				let mut i = tokens.len() - 1;
-				insert_macro(tokens, functions, macros, &mut i, pars, args, children, sof, ignore_ret_points)?;
+				insert_macro(tokens, functions, macros, &mut i, pars, args, children, sof, ret_points)?;
 			}
 		},
 		
@@ -1596,15 +1598,41 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 		}
 	}
 	
-	// TODO: Create new file and run macro
-	insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children, sof, true)?;
+	let func = macros[m].func;
+	
+	// Create new file and run macro
+	let start = tokens.len();
+	
+	tokens.push(Token {
+		kind: Kind::Func(FuncType::Func(0), RefCell::new(2)),
+		pos: FilePos {line: 0, col: 0}
+	});
+	
+	tokens.push(Token {
+		kind: Kind::Var(String::from("init"), Vec::new(), RefCell::new(Vec::new()), RefCell::new(Vec::new()), RefCell::new(None)),
+		pos: FilePos {line: 0, col: 0}
+	});
+	
+	let body = tokens[macros[m].body].clone();
+	tokens.push(body.clone());
+	
+	if let Kind::GroupOp(_, ref children) = body.kind.clone() {
+		let mut i = *i;
+		insert_macro(tokens, functions, macros, &mut i, &functions[func].structure, &input, children, sof, 1)?;
+	}
+	
+	tokens.push(Token {
+		kind: Kind::GroupOp(String::from("}"), RefCell::new(Vec::new())),
+		pos: FilePos {line: 0, col: 0}
+	});
+	
+	println!("{:#?}", &tokens[start..]);
 	
 	if macros[m].ret_points.len() > 0 {
 		// Macros returning code
 		
 		if let Kind::Var(_, _, ref children, _, _) = tokens[macros[m].ret_points[0]].kind.clone() { // TMP; will choose correct return point in the future
 			let ret_child = children.borrow()[0];
-			let func = macros[m].func;
 			match tokens[ret_child].kind.clone() {
 				Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
 					// Nothing to replace; just insert token and its children directly
@@ -1613,7 +1641,7 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 					let ret_child = tokens[ret_child].clone();
 					mem::replace(&mut tokens[*i], ret_child);
 					
-					insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children, sof, false)?;
+					insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children, sof, 0)?;
 				},
 				
 				Kind::Var(ref name, _, ref children, _, _) => {
@@ -1644,7 +1672,7 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 						let ret_child = tokens[ret_child].clone();
 						mem::replace(&mut tokens[*i], ret_child);
 						
-						insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children, sof, false)?;
+						insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children, sof, 0)?;
 					}
 				},
 				
