@@ -1601,10 +1601,10 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 	let func = macros[m].func;
 	
 	// Create new file and run macro
-	let start = tokens.len();
+	let mut j = tokens.len();
 	
 	tokens.push(Token {
-		kind: Kind::Func(FuncType::Func(0), RefCell::new(2)),
+		kind: Kind::Func(FuncType::Func(0), RefCell::new(j + 2)),
 		pos: FilePos {line: 0, col: 0}
 	});
 	
@@ -1626,7 +1626,13 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 		pos: FilePos {line: 0, col: 0}
 	});
 	
-	println!("{:#?}", &tokens[start..]);
+	let mut out_contents = String::new();
+	while j < tokens.len() {
+		out_contents = compile(&tokens, &functions, &mut j, out_contents);
+		j += 1;
+	}
+	
+	println!("{}", out_contents);
 	
 	if macros[m].ret_points.len() > 0 {
 		// Macros returning code
