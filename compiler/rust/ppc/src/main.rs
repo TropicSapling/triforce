@@ -232,11 +232,12 @@ fn main() -> Result<(), std::io::Error> {
 		i += 1;
 	}
 	
+	let tokens_len = tokens.len();
 	let tok_offset = get_tok_offset(&tokens, line_offset);
 	let mut depth = 0;
 	let mut rows = vec![0];
 	let mut i = 0;
-	while i < tokens.len() {
+	while i < tokens_len {
 		parse3(&mut tokens, &mut macros, &functions, &mut i, tok_offset)?;
 		i += 1;
 	}
@@ -247,7 +248,7 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let mut out_contents = String::new();
 	let mut i = 0;
-	while i < tokens.len() {
+	while i < tokens_len {
 		out_contents = compile(&tokens, &functions, &mut i, out_contents);
 		i += 1;
 	}
