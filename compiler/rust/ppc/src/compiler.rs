@@ -1537,8 +1537,8 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 				pos: token.pos.clone()
 			});
 			
-			if let Kind::Var(_, _, ref children, _, _) = tokens[tokens.len() - 1].kind {
-				children.replace(vec![tokens.len()]);
+			if let Kind::Var(_, _, ref children, _, _) = tokens[tokens.len() - 2].kind {
+				children.replace(vec![tokens.len() - 1]);
 			}
 			
 			ret_points += 1;
@@ -1617,7 +1617,7 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 	tokens.push(body.clone());
 	
 	if let Kind::GroupOp(_, ref children) = body.kind.clone() {
-		let mut i = *i;
+		let mut i = tokens.len() - 1;
 		insert_macro(tokens, functions, macros, &mut i, &functions[func].structure, &input, children, sof, 1)?;
 	}
 	
