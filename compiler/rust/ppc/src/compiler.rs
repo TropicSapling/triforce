@@ -75,7 +75,7 @@ macro_rules! def_builtin_op {
 	})
 }
 
-const BUILTIN_FUNCS: usize = 30;
+const BUILTIN_FUNCS: usize = 31;
 
 macro_rules! def_builtin_funcs {
 	() => (vec![
@@ -1662,6 +1662,10 @@ fn run_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Ve
 		j += 1;
 	}
 	
+	if out_contents == "fn main(){return Err(0);}" {
+		return Ok(0); // No macro code to run except useless return; save some time by skipping file creation & running
+	}
+	
 	out_contents.insert_str(9, "->Result<(),usize>");
 	
 	if !returning {
@@ -2338,7 +2342,7 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 			}
 			
 			match new_output[..new_output.len() - 4].as_ref() {
-				"plus" | "minus" | "times" | "div" | "mod" | "eqeq" | "noteq" | "and" | "andand" | "or" | "oror" | "xor" | "larrow" | "larrowlarrow" | "rarrow" | "rarrowrarrow" => {
+				"plus" | "minus" | "times" | "div" | "mod" | "eqeq" | "noteq" | "and" | "andand" | "or" | "oror" | "xor" | "larrow" | "larrowlarrow" | "rarrow" | "rarrowrarrow" | "larroweq" | "rarroweq" => {
 					*i = children.borrow()[0];
 					output = compile_tok(tokens, i, output);
 					
@@ -2361,6 +2365,8 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 						"larrowlarrow" => "<<",
 						"rarrow" => ">",
 						"rarrowrarrow" => ">>",
+						"larroweq" => "<=",
+						"rarroweq" => ">=",
 						_ => unreachable!()
 					};
 					
