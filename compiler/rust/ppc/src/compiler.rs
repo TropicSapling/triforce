@@ -1670,7 +1670,7 @@ fn run_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Ve
 	
 	if !returning {
 		let out_len = out_contents.len();
-		out_contents.insert_str(out_len - 1, ";Ok(())");
+		out_contents.insert_str(out_len - 1, "Ok(())");
 	}
 	
 	//////// CREATE RUST OUTPUT ////////
