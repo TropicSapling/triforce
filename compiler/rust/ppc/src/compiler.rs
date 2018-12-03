@@ -149,6 +149,17 @@ macro_rules! def_builtin_funcs {
 		
 		Function {
 			structure: vec![
+				FunctionSection::ID(String::from("Err")),
+				FunctionSection::Arg(String::from("e"), vec![vec![Type::Int]]),
+			],
+			
+			output: vec![vec![Type::Int]], // WIP; No support for whatever type this actually returns
+			
+			precedence: 2
+		},
+		
+		Function {
+			structure: vec![
 				FunctionSection::ID(String::from("println")),
 				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]) // WIP; No support for strings yet
 			],
@@ -1498,7 +1509,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut 
 	Ok(())
 } */
 
-fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, children: &RefCell<Vec<usize>>, sof: usize, ret_points: usize) -> Result<(), Error> {
+fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, children: &RefCell<Vec<usize>>, sof: usize, ret_points: &mut usize) -> Result<(), Error> {
 	// Get new children positions
 	let mut new_children = Vec::new();
 	for child in children.borrow().iter() {
@@ -1518,7 +1529,7 @@ fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 	Ok(())
 }
 
-fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, sof: usize, mut ret_points: usize) -> Result<(), Error> {
+fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, sof: usize, ret_points: &mut usize) -> Result<(), Error> {
 	let token = tokens[*i].clone();
 	match token.kind.clone() {
 		Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
@@ -1530,10 +1541,20 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 			insert_macro(tokens, functions, macros, &mut i, pars, args, children, sof, ret_points)?;
 		},
 		
-		Kind::Var(ref name, _, _, _, _) if ret_points > 0 && name == "return" => {
+		Kind::Var(ref name, _, _, _, _) if *ret_points > 0 && name == "return" => {
 			tokens.push(token.clone());
+			if let Kind::Var(_, _, ref children, _, _) = tokens[tokens.len() - 1].kind {
+				children.replace(vec![tokens.len()]);
+			}
+			
+			let pos = tokens.len() + 1;
 			tokens.push(Token {
-				kind: Kind::Number(ret_points - 1, 0),
+				kind: Kind::Var(String::from("Err"), Vec::new(), RefCell::new(vec![pos]), RefCell::new(Vec::new()), RefCell::new(None)),
+				pos: token.pos.clone()
+			});
+			
+			tokens.push(Token {
+				kind: Kind::Number(*ret_points - 1, 0),
 				pos: token.pos.clone()
 			});
 			
@@ -1541,7 +1562,7 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 				children.replace(vec![tokens.len() - 1]);
 			}
 			
-			ret_points += 1;
+			*ret_points += 1;
 		},
 		
 		Kind::Var(ref name, _, ref children, _, _) => {
@@ -1583,6 +1604,152 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 	Ok(())
 }
 
+fn run_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, m: usize, sof: usize, func: usize, input: &Vec<usize>, returning: bool) -> Result<usize, Error> {
+	// Get init function pos
+	let mut init_id = 0;
+	for (f, function) in functions.iter().enumerate() {
+		let mut is_init = false;
+		for section in function.structure.iter() {
+			match section {
+				FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => {
+					if name == "init" {
+						is_init = true;
+					} else {
+						is_init = false;
+						break;
+					}
+				},
+				
+				_ => ()
+			}
+		}
+		
+		if is_init {
+			init_id = f;
+		}
+	}
+	
+	//////// COMPILE MACRO ////////
+	
+	let mut j = tokens.len();
+	
+	tokens.push(Token {
+		kind: Kind::Func(FuncType::Func(init_id), RefCell::new(j + 2)),
+		pos: FilePos {line: 0, col: 0}
+	});
+	
+	tokens.push(Token {
+		kind: Kind::Var(String::from("init"), Vec::new(), RefCell::new(Vec::new()), RefCell::new(Vec::new()), RefCell::new(None)),
+		pos: FilePos {line: 0, col: 0}
+	});
+	
+	let body = tokens[macros[m].body].clone();
+	tokens.push(body.clone());
+	
+	if let Kind::GroupOp(_, ref children) = body.kind.clone() {
+		let mut i = tokens.len() - 1;
+		insert_macro(tokens, functions, macros, &mut i, &functions[func].structure, &input, children, sof, &mut 1)?;
+	}
+	
+	tokens.push(Token {
+		kind: Kind::GroupOp(String::from("}"), RefCell::new(Vec::new())),
+		pos: FilePos {line: 0, col: 0}
+	});
+	
+	let mut out_contents = String::new();
+	while j < tokens.len() {
+		out_contents = compile(&tokens, &functions, &mut j, out_contents);
+		j += 1;
+	}
+	
+	out_contents.insert_str(9, "->Result<(),usize>");
+	
+	if !returning {
+		let out_len = out_contents.len();
+		out_contents.insert_str(out_len - 1, ";Ok(())");
+	}
+	
+	//////// CREATE RUST OUTPUT ////////
+	
+	fs::create_dir_all("macros")?;
+	
+	let mut out_file = File::create("macros\\macro.rs")?;
+	out_file.write_all(out_contents.as_bytes())?;
+	
+	Command::new("rustfmt").arg("macros\\macro.rs").output().expect("failed to format Rust code");
+	
+	//////// CREATE BINARY OUTPUT ////////
+	
+	let mut error = false;
+	
+	let out = Command::new("rustc")
+			.args(&["--color", "always", "--out-dir", "macros", "macros\\macro.rs"])
+			.output()
+			.expect("failed to compile Rust code");
+	
+	if out.stdout.len() > 0 {
+		println!("{}", str::from_utf8(&out.stdout).unwrap());
+	}
+	
+	if out.stderr.len() > 0 {
+		println!("{}", str::from_utf8(&out.stderr).unwrap());
+		
+		if !out.stderr.starts_with(b"\x1b[0m\x1b[1m\x1b[38;5;11mwarning") {
+			error = true;
+		}
+	}
+	
+	//////// RUN COMPILED BINARY ////////
+	
+	let mut ret_point = 0;
+	
+	if !error {
+		let out = if cfg!(target_os = "windows") {
+			Command::new("macros\\macro.exe")
+				.output()
+				.expect("failed to execute process")
+		} else {
+			Command::new("./macros/macro.exe")
+				.output()
+				.expect("failed to execute process")
+		};
+		
+		if out.stdout.len() > 0 {
+			println!("{}", str::from_utf8(&out.stdout).unwrap());
+			io::stdout().flush()?;
+		}
+		
+		if out.stderr.len() > 0 {
+			if out.stderr.starts_with(b"Error: ") {
+				// Replace macro function call with results
+				
+				let point = str::from_utf8(&out.stderr).unwrap()[7..out.stderr.len() - 1].parse::<usize>();
+				
+				if let Ok(point) = point {
+					ret_point = point;
+				}
+			} else {
+				println!("{}", str::from_utf8(&out.stderr).unwrap());
+			}
+		}
+	}
+	
+	//////// DELETE CREATED FILES ////////
+	
+	fs::remove_file("macros\\macro.rs")?;
+	
+	if !error {
+		fs::remove_file("macros\\macro.exe")?;
+		fs::remove_file("macros\\macro.pdb")?;
+	} else {
+		return Err(Error::new(ErrorKind::Other, "compilation of macro failed"));
+	}
+	
+//	fs::remove_dir("macros")?; // Doesn't work (on Windows) for some reason?
+	
+	Ok(ret_point)
+}
+
 fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, m: usize, args: &RefCell<Vec<usize>>, sidekicks: &RefCell<Vec<usize>>, sof: usize) -> Result<(), Error> {
 	// Get input
 	let mut input = args.borrow().clone();
@@ -1599,45 +1766,13 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 	}
 	
 	let func = macros[m].func;
+	let returning = macros[m].ret_points.len() > 0;
+	let ret_point = run_macro(tokens, functions, macros, m, sof, func, &input, returning)?;
 	
-	// Create new file and run macro
-	let mut j = tokens.len();
-	
-	tokens.push(Token {
-		kind: Kind::Func(FuncType::Func(0), RefCell::new(j + 2)),
-		pos: FilePos {line: 0, col: 0}
-	});
-	
-	tokens.push(Token {
-		kind: Kind::Var(String::from("init"), Vec::new(), RefCell::new(Vec::new()), RefCell::new(Vec::new()), RefCell::new(None)),
-		pos: FilePos {line: 0, col: 0}
-	});
-	
-	let body = tokens[macros[m].body].clone();
-	tokens.push(body.clone());
-	
-	if let Kind::GroupOp(_, ref children) = body.kind.clone() {
-		let mut i = tokens.len() - 1;
-		insert_macro(tokens, functions, macros, &mut i, &functions[func].structure, &input, children, sof, 1)?;
-	}
-	
-	tokens.push(Token {
-		kind: Kind::GroupOp(String::from("}"), RefCell::new(Vec::new())),
-		pos: FilePos {line: 0, col: 0}
-	});
-	
-	let mut out_contents = String::new();
-	while j < tokens.len() {
-		out_contents = compile(&tokens, &functions, &mut j, out_contents);
-		j += 1;
-	}
-	
-	println!("{}", out_contents);
-	
-	if macros[m].ret_points.len() > 0 {
+	if returning {
 		// Macros returning code
 		
-		if let Kind::Var(_, _, ref children, _, _) = tokens[macros[m].ret_points[0]].kind.clone() { // TMP; will choose correct return point in the future
+		if let Kind::Var(_, _, ref children, _, _) = tokens[macros[m].ret_points[ret_point]].kind.clone() {
 			let ret_child = children.borrow()[0];
 			match tokens[ret_child].kind.clone() {
 				Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
@@ -1647,7 +1782,7 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 					let ret_child = tokens[ret_child].clone();
 					mem::replace(&mut tokens[*i], ret_child);
 					
-					insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children, sof, 0)?;
+					insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children, sof, &mut 0)?;
 				},
 				
 				Kind::Var(ref name, _, ref children, _, _) => {
@@ -1678,7 +1813,7 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 						let ret_child = tokens[ret_child].clone();
 						mem::replace(&mut tokens[*i], ret_child);
 						
-						insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children, sof, 0)?;
+						insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children, sof, &mut 0)?;
 					}
 				},
 				
@@ -1987,6 +2122,8 @@ fn type_full_name(tokens: &Vec<Token>, output: String, sidekicks: &RefCell<Vec<u
 		}
 		
 		(output, s[..s.len() - 1].to_string() + "_ppl")
+	} else if name == "print" {
+		(output, String::from("print!"))
 	} else if name == "println" {
 		(output, String::from("println!"))
 	} else if name == "__uninit__" {
@@ -2007,7 +2144,7 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 			output += "(";
 		}
 		
-		if sidekicks.len() == 0 && name == "println" {
+		if sidekicks.len() == 0 && (name == "print" || name == "println") {
 			output += "\"{}\",";
 		}
 		
@@ -2126,6 +2263,11 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 				
 				"unsafe" => {
 					output += "unsafe ";
+					output = type_func_call(tokens, output, i, children, sidekicks, &name);
+				},
+				
+				"Err" => {
+					output += "Err";
 					output = type_func_call(tokens, output, i, children, sidekicks, &name);
 				},
 				
