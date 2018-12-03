@@ -75,7 +75,7 @@ macro_rules! def_builtin_op {
 	})
 }
 
-const BUILTIN_FUNCS: usize = 32;
+const BUILTIN_FUNCS: usize = 21;
 
 macro_rules! def_builtin_funcs {
 	() => (vec![
@@ -88,11 +88,8 @@ macro_rules! def_builtin_funcs {
 		
 		// WIP; 'typ' structure needs support for multiple types (all types for these operators)
 		def_builtin_op!(String::from("a"), String::from("b"), "==", Type::Int, Type::Int, Type::Bool, 242),
-		def_builtin_op!(String::from("a"), String::from("b"), "!=", Type::Int, Type::Int, Type::Bool, 242),
 		def_builtin_op!(String::from("a"), String::from("b"), "<", Type::Int, Type::Int, Type::Bool, 243),
-		def_builtin_op!(String::from("a"), String::from("b"), "<=", Type::Int, Type::Int, Type::Bool, 243),
 		def_builtin_op!(String::from("a"), String::from("b"), ">", Type::Int, Type::Int, Type::Bool, 243),
-		def_builtin_op!(String::from("a"), String::from("b"), ">=", Type::Int, Type::Int, Type::Bool, 243),
 		
 		def_builtin_op!(String::from("a"), String::from("b"), "&&", Type::Bool, Type::Bool, Type::Bool, 238),
 		def_builtin_op!(String::from("a"), String::from("b"), "||", Type::Bool, Type::Bool, Type::Bool, 237),
@@ -103,14 +100,6 @@ macro_rules! def_builtin_funcs {
 		
 		// WIP; 'macro' types are not yet implemented [EDIT: aren't they now?]
 		def_builtin_op!(String::from("a"), String::from("b"), "=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "+=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "-=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "*=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "/=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "%=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), ">>=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "<<=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "^=", Type::Int, Type::Int, Type::Void, 0),
 		
 		Function {
 			structure: vec![
