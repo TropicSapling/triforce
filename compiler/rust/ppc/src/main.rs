@@ -21,12 +21,25 @@ use std::{
 	str
 };
 
-use lib::get_io;
+use lib::{get_io, Token};
 use lexer::{lex, lex_ops, lex2, lex3};
 use compiler::{def_functions, parse, parse2, parse3, compile};
 
 fn count_newlines(s: &str) -> usize {
 	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
+}
+
+fn get_tok_offset(tokens: &Vec<Token>, line_offset: usize) -> usize {
+	let mut i = 0;
+	while i < tokens.len() {
+		if tokens[i].pos.line > line_offset {
+			break;
+		}
+		
+		i += 1;
+	}
+	
+	i
 }
 
 fn main() -> Result<(), std::io::Error> {
@@ -219,11 +232,13 @@ fn main() -> Result<(), std::io::Error> {
 		i += 1;
 	}
 	
+	let tokens_len = tokens.len();
+	let tok_offset = get_tok_offset(&tokens, line_offset);
 	let mut depth = 0;
 	let mut rows = vec![0];
 	let mut i = 0;
-	while i < tokens.len() {
-		parse3(&mut tokens, &mut macros, &functions, &mut i)?;
+	while i < tokens_len {
+		parse3(&mut tokens, &mut macros, &functions, &mut i, tok_offset)?;
 		i += 1;
 	}
 	
@@ -233,7 +248,7 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let mut out_contents = String::new();
 	let mut i = 0;
-	while i < tokens.len() {
+	while i < tokens_len {
 		out_contents = compile(&tokens, &functions, &mut i, out_contents);
 		i += 1;
 	}

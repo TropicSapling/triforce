@@ -75,7 +75,7 @@ macro_rules! def_builtin_op {
 	})
 }
 
-const BUILTIN_FUNCS: usize = 30;
+const BUILTIN_FUNCS: usize = 31;
 
 macro_rules! def_builtin_funcs {
 	() => (vec![
@@ -145,6 +145,17 @@ macro_rules! def_builtin_funcs {
 			output: vec![vec![Type::Int]], // WIP; No support for any types yet
 			
 			precedence: 0
+		},
+		
+		Function {
+			structure: vec![
+				FunctionSection::ID(String::from("Err")),
+				FunctionSection::Arg(String::from("e"), vec![vec![Type::Int]]),
+			],
+			
+			output: vec![vec![Type::Int]], // WIP; No support for whatever type this actually returns
+			
+			precedence: 2
 		},
 		
 		Function {
@@ -284,6 +295,8 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 				body.replace(i); // Save function body index
 				
 				if typ == &FuncType::Macro {
+					let body = i; // Save function body index for macro
+					
 					let mut ret_points = Vec::new();
 					i += 1;
 					
@@ -305,7 +318,7 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 						i += 1;
 					}
 					
-					macros.push(Macro {func: functions.len() - 1, ret_points});
+					macros.push(Macro {func: functions.len() - 1, ret_points, body});
 				}
 			},
 			
@@ -1496,12 +1509,12 @@ pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &mut 
 	Ok(())
 } */
 
-fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, children: &RefCell<Vec<usize>>) -> Result<(), Error> {
+fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, children: &RefCell<Vec<usize>>, sof: usize, ret_points: &mut usize) -> Result<(), Error> {
 	// Get new children positions
 	let mut new_children = Vec::new();
 	for child in children.borrow().iter() {
 		new_children.push(tokens.len());
-		insert_macro2(tokens, functions, macros, &mut child.clone(), pars, args)?;
+		insert_macro2(tokens, functions, macros, &mut child.clone(), pars, args, sof, ret_points)?;
 	}
 	
 	match tokens[*i].kind {
@@ -1516,7 +1529,7 @@ fn insert_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 	Ok(())
 }
 
-fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>) -> Result<(), Error> {
+fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, pars: &Vec<FunctionSection>, args: &Vec<usize>, sof: usize, ret_points: &mut usize) -> Result<(), Error> {
 	let token = tokens[*i].clone();
 	match token.kind.clone() {
 		Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
@@ -1525,7 +1538,31 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 			tokens.push(token);
 			
 			let mut i = tokens.len() - 1;
-			insert_macro(tokens, functions, macros, &mut i, pars, args, children)?;
+			insert_macro(tokens, functions, macros, &mut i, pars, args, children, sof, ret_points)?;
+		},
+		
+		Kind::Var(ref name, _, _, _, _) if *ret_points > 0 && name == "return" => {
+			tokens.push(token.clone());
+			if let Kind::Var(_, _, ref children, _, _) = tokens[tokens.len() - 1].kind {
+				children.replace(vec![tokens.len()]);
+			}
+			
+			let pos = tokens.len() + 1;
+			tokens.push(Token {
+				kind: Kind::Var(String::from("Err"), Vec::new(), RefCell::new(vec![pos]), RefCell::new(Vec::new()), RefCell::new(None)),
+				pos: token.pos.clone()
+			});
+			
+			tokens.push(Token {
+				kind: Kind::Number(*ret_points - 1, 0),
+				pos: token.pos.clone()
+			});
+			
+			if let Kind::Var(_, _, ref children, _, _) = tokens[tokens.len() - 2].kind {
+				children.replace(vec![tokens.len() - 1]);
+			}
+			
+			*ret_points += 1;
 		},
 		
 		Kind::Var(ref name, _, ref children, _, _) => {
@@ -1542,7 +1579,7 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 						tokens.push(arg);
 						
 						let mut i = tokens.len() - 1;
-						parse3_tok(tokens, functions, macros, &mut i)?;
+						parse3_tok(tokens, functions, macros, &mut i, sof)?;
 						
 						break;
 					}
@@ -1557,7 +1594,7 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 				tokens.push(token);
 				
 				let mut i = tokens.len() - 1;
-				insert_macro(tokens, functions, macros, &mut i, pars, args, children)?;
+				insert_macro(tokens, functions, macros, &mut i, pars, args, children, sof, ret_points)?;
 			}
 		},
 		
@@ -1567,29 +1604,180 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 	Ok(())
 }
 
-fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, m: usize, args: &RefCell<Vec<usize>>, sidekicks: &RefCell<Vec<usize>>) -> Result<(), Error> {
-	// TODO: Create new file and run macro
+fn run_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, m: usize, sof: usize, func: usize, input: &Vec<usize>, returning: bool) -> Result<usize, Error> {
+	// Get init function pos
+	let mut init_id = 0;
+	for (f, function) in functions.iter().enumerate() {
+		let mut is_init = false;
+		for section in function.structure.iter() {
+			match section {
+				FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => {
+					if name == "init" {
+						is_init = true;
+					} else {
+						is_init = false;
+						break;
+					}
+				},
+				
+				_ => ()
+			}
+		}
+		
+		if is_init {
+			init_id = f;
+		}
+	}
 	
-	if macros[m].ret_points.len() > 0 {
+	//////// COMPILE MACRO ////////
+	
+	let mut j = tokens.len();
+	
+	tokens.push(Token {
+		kind: Kind::Func(FuncType::Func(init_id), RefCell::new(j + 2)),
+		pos: FilePos {line: 0, col: 0}
+	});
+	
+	tokens.push(Token {
+		kind: Kind::Var(String::from("init"), Vec::new(), RefCell::new(Vec::new()), RefCell::new(Vec::new()), RefCell::new(None)),
+		pos: FilePos {line: 0, col: 0}
+	});
+	
+	let body = tokens[macros[m].body].clone();
+	tokens.push(body.clone());
+	
+	if let Kind::GroupOp(_, ref children) = body.kind.clone() {
+		let mut i = tokens.len() - 1;
+		insert_macro(tokens, functions, macros, &mut i, &functions[func].structure, &input, children, sof, &mut 1)?;
+	}
+	
+	tokens.push(Token {
+		kind: Kind::GroupOp(String::from("}"), RefCell::new(Vec::new())),
+		pos: FilePos {line: 0, col: 0}
+	});
+	
+	let mut out_contents = String::new();
+	while j < tokens.len() {
+		out_contents = compile(&tokens, &functions, &mut j, out_contents);
+		j += 1;
+	}
+	
+	if out_contents == "fn main(){return Err(0);}" {
+		return Ok(0); // No macro code to run except useless return; save some time by skipping file creation & running
+	}
+	
+	out_contents.insert_str(9, "->Result<(),usize>");
+	
+	if !returning {
+		let out_len = out_contents.len();
+		out_contents.insert_str(out_len - 1, ";Ok(())");
+	}
+	
+	//////// CREATE RUST OUTPUT ////////
+	
+	fs::create_dir_all("macros")?;
+	
+	let mut out_file = File::create("macros\\macro.rs")?;
+	out_file.write_all(out_contents.as_bytes())?;
+	
+	Command::new("rustfmt").arg("macros\\macro.rs").output().expect("failed to format Rust code");
+	
+	//////// CREATE BINARY OUTPUT ////////
+	
+	let mut error = false;
+	
+	let out = Command::new("rustc")
+			.args(&["--color", "always", "--out-dir", "macros", "macros\\macro.rs"])
+			.output()
+			.expect("failed to compile Rust code");
+	
+	if out.stdout.len() > 0 {
+		println!("{}", str::from_utf8(&out.stdout).unwrap());
+	}
+	
+	if out.stderr.len() > 0 {
+		println!("{}", str::from_utf8(&out.stderr).unwrap());
+		
+		if !out.stderr.starts_with(b"\x1b[0m\x1b[1m\x1b[38;5;11mwarning") {
+			error = true;
+		}
+	}
+	
+	//////// RUN COMPILED BINARY ////////
+	
+	let mut ret_point = 0;
+	
+	if !error {
+		let out = if cfg!(target_os = "windows") {
+			Command::new("macros\\macro.exe")
+				.output()
+				.expect("failed to execute process")
+		} else {
+			Command::new("./macros/macro.exe")
+				.output()
+				.expect("failed to execute process")
+		};
+		
+		if out.stdout.len() > 0 {
+			println!("{}", str::from_utf8(&out.stdout).unwrap());
+			io::stdout().flush()?;
+		}
+		
+		if out.stderr.len() > 0 {
+			if out.stderr.starts_with(b"Error: ") {
+				// Replace macro function call with results
+				
+				let point = str::from_utf8(&out.stderr).unwrap()[7..out.stderr.len() - 1].parse::<usize>();
+				
+				if let Ok(point) = point {
+					ret_point = point;
+				}
+			} else {
+				println!("{}", str::from_utf8(&out.stderr).unwrap());
+			}
+		}
+	}
+	
+	//////// DELETE CREATED FILES ////////
+	
+	fs::remove_file("macros\\macro.rs")?;
+	
+	if !error {
+		fs::remove_file("macros\\macro.exe")?;
+		fs::remove_file("macros\\macro.pdb")?;
+	} else {
+		return Err(Error::new(ErrorKind::Other, "compilation of macro failed"));
+	}
+	
+//	fs::remove_dir("macros")?; // Doesn't work (on Windows) for some reason?
+	
+	Ok(ret_point)
+}
+
+fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, m: usize, args: &RefCell<Vec<usize>>, sidekicks: &RefCell<Vec<usize>>, sof: usize) -> Result<(), Error> {
+	// Get input
+	let mut input = args.borrow().clone();
+	for &sidekick in sidekicks.borrow().iter() {
+		match tokens[sidekick].kind {
+			Kind::Op(_, _, ref children, _, _) | Kind::Var(_, _, ref children, _, _) => {
+				for child in children.borrow().iter() {
+					input.push(*child);
+				}
+			},
+			
+			_ => unreachable!()
+		}
+	}
+	
+	let func = macros[m].func;
+	let returning = macros[m].ret_points.len() > 0;
+	let ret_point = run_macro(tokens, functions, macros, m, sof, func, &input, returning)?;
+	
+	if returning {
 		// Macros returning code
 		
-		if let Kind::Var(_, _, ref children, _, _) = tokens[macros[m].ret_points[0]].kind.clone() { // TMP; will choose correct return point in the future
-			// Get input
-			let mut input = args.borrow().clone();
-			for &sidekick in sidekicks.borrow().iter() {
-				match tokens[sidekick].kind {
-					Kind::Op(_, _, ref children, _, _) | Kind::Var(_, _, ref children, _, _) => {
-						for child in children.borrow().iter() {
-							input.push(*child);
-						}
-					},
-					
-					_ => unreachable!()
-				}
-			}
-			
+		if let Kind::Var(_, _, ref children, _, _) = tokens[macros[m].ret_points[ret_point]].kind.clone() {
 			let ret_child = children.borrow()[0];
-			let func = macros[m].func;
 			match tokens[ret_child].kind.clone() {
 				Kind::GroupOp(_, ref children) | Kind::Reserved(_, ref children) | Kind::Op(_, _, ref children, _, _) => {
 					// Nothing to replace; just insert token and its children directly
@@ -1598,7 +1786,7 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 					let ret_child = tokens[ret_child].clone();
 					mem::replace(&mut tokens[*i], ret_child);
 					
-					insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children)?;
+					insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children, sof, &mut 0)?;
 				},
 				
 				Kind::Var(ref name, _, ref children, _, _) => {
@@ -1615,7 +1803,7 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 								mem::replace(&mut tokens[*i], arg);
 								
 								let mut i = *i;
-								parse3_tok(tokens, functions, macros, &mut i)?;
+								parse3_tok(tokens, functions, macros, &mut i, sof)?;
 								
 								break;
 							}
@@ -1629,7 +1817,7 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 						let ret_child = tokens[ret_child].clone();
 						mem::replace(&mut tokens[*i], ret_child);
 						
-						insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children)?;
+						insert_macro(tokens, functions, macros, i, &functions[func].structure, &input, children, sof, &mut 0)?;
 					}
 				},
 				
@@ -1655,22 +1843,22 @@ fn expand_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut
 	Ok(())
 }
 
-fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize) -> Result<(), Error> {
+fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, sof: usize) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
 		Kind::GroupOp(ref op, _) => if op != ";" {
-			parse3_body(tokens, functions, macros, i)?;
+			parse3_body(tokens, functions, macros, i, sof)?;
 		},
 		
 		Kind::Var(_, _, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
 			// Found macro; expand
-			expand_macro(tokens, functions, macros, i, id, children, sidekicks)?;
+			expand_macro(tokens, functions, macros, i, id, children, sidekicks, sof)?;
 		} else {
 			// Not a macro; go through children looking for macros there instead
 			
 			for child in children.borrow().iter() {
 				*i = *child;
 				if *i != usize::MAX {
-					parse3_tok(tokens, functions, macros, i)?;
+					parse3_tok(tokens, functions, macros, i, sof)?;
 				}
 			}
 			
@@ -1685,7 +1873,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut V
 		Kind::Op(_, ref ops, ref children, ref sidekicks, ref macro_id) => if let Some(id) = *macro_id.borrow() {
 			// Found macro; expand
 			
-			expand_macro(tokens, functions, macros, i, id, children, sidekicks)?;
+			expand_macro(tokens, functions, macros, i, id, children, sidekicks, sof)?;
 			
 			let ops = ops.borrow();
 			if ops.len() > 0 {
@@ -1697,7 +1885,7 @@ fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut V
 			for child in children.borrow().iter() {
 				*i = *child;
 				if *i != usize::MAX {
-					parse3_tok(tokens, functions, macros, i)?;
+					parse3_tok(tokens, functions, macros, i, sof)?;
 				}
 			}
 			
@@ -1720,25 +1908,23 @@ fn parse3_tok(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut V
 	Ok(())
 }
 
-fn parse3_body(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize) -> Result<(), Error> {
+fn parse3_body(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Vec<Macro>, i: &mut usize, sof: usize) -> Result<(), Error> {
 	if let Kind::GroupOp(_, ref statements) = tokens[*i].kind.clone() {
 		// Parse each statement in body
 		for statement in statements.borrow().iter() {
 			*i = *statement;
-			parse3_tok(tokens, functions, macros, i)?;
+			parse3_tok(tokens, functions, macros, i, sof)?;
 		}
 	}
 	
 	Ok(())
 }
 
-pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &Vec<Function>, i: &mut usize) -> Result<(), Error> {
+pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &Vec<Function>, i: &mut usize, sof: usize) -> Result<(), Error> {
 	match tokens[*i].kind.clone() {
-		Kind::Func(ref f, ref body) => if let FuncType::Func(_) = *f {
+		Kind::Func(_, ref body) => {
 			*i = *body.borrow();
-			parse3_body(tokens, functions, macros, i)
-		} else {
-			Ok(())
+			parse3_body(tokens, functions, macros, i, sof)
 		},
 		
 		_ => Ok(())
@@ -1940,6 +2126,8 @@ fn type_full_name(tokens: &Vec<Token>, output: String, sidekicks: &RefCell<Vec<u
 		}
 		
 		(output, s[..s.len() - 1].to_string() + "_ppl")
+	} else if name == "print" {
+		(output, String::from("print!"))
 	} else if name == "println" {
 		(output, String::from("println!"))
 	} else if name == "__uninit__" {
@@ -1960,7 +2148,7 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 			output += "(";
 		}
 		
-		if sidekicks.len() == 0 && name == "println" {
+		if sidekicks.len() == 0 && (name == "print" || name == "println") {
 			output += "\"{}\",";
 		}
 		
@@ -1969,7 +2157,7 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 		if children.len() > 0 && children[0] != usize::MAX {
 			for (c, child) in children.iter().enumerate() {
 				*i = *child;
-				output = compile_tok(tokens, i, output);
+				output = compile_tok(tokens, i, output, name == "unsafe");
 				
 				if c + 1 < children.len() {
 					output += ",";
@@ -1988,7 +2176,7 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 					
 					for (c, child) in children.borrow().iter().enumerate() {
 						*i = *child;
-						output = compile_tok(tokens, i, output);
+						output = compile_tok(tokens, i, output, name == "unsafe");
 						
 						if c + 1 < children.borrow().len() {
 							output += ",";
@@ -2008,12 +2196,12 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 	output
 }
 
-fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
+fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String, is_exceptional: bool) -> String {
 	match tokens[*i].kind {
 		Kind::GroupOp(ref op, _) => if op == ";" {
 			output += ";";
 		} else {
-			output = compile_body(tokens, i, output);
+			output = compile_body(tokens, i, output, !is_exceptional);
 		},
 		
 		Kind::Literal(b) => if b {
@@ -2061,12 +2249,12 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 						output += "let mut ";
 						
 						*i = children.borrow()[0];
-						output = compile_tok(tokens, i, output);
+						output = compile_tok(tokens, i, output, false);
 						
 						output += "=";
 						
 						*i = children.borrow()[1];
-						output = compile_tok(tokens, i, output);
+						output = compile_tok(tokens, i, output, false);
 					},
 					
 					_ => unreachable!()
@@ -2079,6 +2267,11 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 				
 				"unsafe" => {
 					output += "unsafe ";
+					output = type_func_call(tokens, output, i, children, sidekicks, &name);
+				},
+				
+				"Err" => {
+					output += "Err";
 					output = type_func_call(tokens, output, i, children, sidekicks, &name);
 				},
 				
@@ -2149,9 +2342,9 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 			}
 			
 			match new_output[..new_output.len() - 4].as_ref() {
-				"plus" | "minus" | "times" | "div" | "mod" | "eqeq" | "noteq" | "and" | "andand" | "or" | "oror" | "xor" | "larrow" | "larrowlarrow" | "rarrow" | "rarrowrarrow" => {
+				"plus" | "minus" | "times" | "div" | "mod" | "eqeq" | "noteq" | "and" | "andand" | "or" | "oror" | "xor" | "larrow" | "larrowlarrow" | "rarrow" | "rarrowrarrow" | "larroweq" | "rarroweq" => {
 					*i = children.borrow()[0];
-					output = compile_tok(tokens, i, output);
+					output = compile_tok(tokens, i, output, false);
 					
 					output += match new_output[..new_output.len() - 4].as_ref() {
 						"plus" => "+",
@@ -2172,18 +2365,20 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 						"larrowlarrow" => "<<",
 						"rarrow" => ">",
 						"rarrowrarrow" => ">>",
+						"larroweq" => "<=",
+						"rarroweq" => ">=",
 						_ => unreachable!()
 					};
 					
 					*i = children.borrow()[1];
-					output = compile_tok(tokens, i, output);
+					output = compile_tok(tokens, i, output, false);
 				},
 				
 				"eq" | "pluseq" | "minuseq" | "timeseq" | "diveq" | "modeq" | "larrowlarroweq" | "rarrowrarroweq" | "xoreq" => {
 					output += "{";
 					
 					*i = children.borrow()[0];
-					output = compile_tok(tokens, i, output);
+					output = compile_tok(tokens, i, output, false);
 					
 					output += match new_output[..new_output.len() - 4].as_ref() {
 						"eq" => "=",
@@ -2199,7 +2394,7 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 					};
 					
 					*i = children.borrow()[1];
-					output = compile_tok(tokens, i, output);
+					output = compile_tok(tokens, i, output, false);
 					
 					output += ";true}";
 				},
@@ -2212,7 +2407,7 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 					};
 					
 					*i = children.borrow()[0];
-					output = compile_tok(tokens, i, output);
+					output = compile_tok(tokens, i, output, false);
 				},
 				
 				_ => {
@@ -2228,18 +2423,26 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 	output
 }
 
-fn compile_body(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
+fn compile_body(tokens: &Vec<Token>, i: &mut usize, mut output: String, in_expr: bool) -> String {
+	if in_expr {
+		output += "(";
+	}
+	
 	output += "{";
 	
 	if let Kind::GroupOp(_, ref statements) = tokens[*i].kind {
 		for statement in statements.borrow().iter() {
-			output = compile_tok(tokens, &mut statement.clone(), output);
+			output = compile_tok(tokens, &mut statement.clone(), output, false);
 		}
 	}
 	
 	*i += 1;
 	
 	output += "}";
+	
+	if in_expr {
+		output += ")";
+	}
 	
 	output
 }
@@ -2252,7 +2455,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 			output = compile_func(&functions[f], output);
 			
 			*i = *body.borrow();
-			output = compile_body(tokens, i, output);
+			output = compile_body(tokens, i, output, false);
 		},
 		
 		Kind::Reserved(ref keyword, _) if keyword == "import" => {

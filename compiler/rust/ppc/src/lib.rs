@@ -76,6 +76,7 @@ pub struct Function {
 #[derive(Debug)]
 pub struct Macro {
 	pub func: usize,
+	pub body: usize,
 	pub ret_points: Vec<usize>
 //	pub depth: usize,
 //	pub row: usize
