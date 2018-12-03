@@ -75,7 +75,7 @@ macro_rules! def_builtin_op {
 	})
 }
 
-const BUILTIN_FUNCS: usize = 31;
+const BUILTIN_FUNCS: usize = 21;
 
 macro_rules! def_builtin_funcs {
 	() => (vec![
@@ -88,11 +88,8 @@ macro_rules! def_builtin_funcs {
 		
 		// WIP; 'typ' structure needs support for multiple types (all types for these operators)
 		def_builtin_op!(String::from("a"), String::from("b"), "==", Type::Int, Type::Int, Type::Bool, 242),
-		def_builtin_op!(String::from("a"), String::from("b"), "!=", Type::Int, Type::Int, Type::Bool, 242),
 		def_builtin_op!(String::from("a"), String::from("b"), "<", Type::Int, Type::Int, Type::Bool, 243),
-		def_builtin_op!(String::from("a"), String::from("b"), "<=", Type::Int, Type::Int, Type::Bool, 243),
 		def_builtin_op!(String::from("a"), String::from("b"), ">", Type::Int, Type::Int, Type::Bool, 243),
-		def_builtin_op!(String::from("a"), String::from("b"), ">=", Type::Int, Type::Int, Type::Bool, 243),
 		
 		def_builtin_op!(String::from("a"), String::from("b"), "&&", Type::Bool, Type::Bool, Type::Bool, 238),
 		def_builtin_op!(String::from("a"), String::from("b"), "||", Type::Bool, Type::Bool, Type::Bool, 237),
@@ -103,21 +100,24 @@ macro_rules! def_builtin_funcs {
 		
 		// WIP; 'macro' types are not yet implemented [EDIT: aren't they now?]
 		def_builtin_op!(String::from("a"), String::from("b"), "=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "+=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "-=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "*=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "/=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "%=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), ">>=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "<<=", Type::Int, Type::Int, Type::Void, 0),
-		def_builtin_op!(String::from("a"), String::from("b"), "^=", Type::Int, Type::Int, Type::Void, 0),
+		
+		Function {
+			structure: vec![
+				FunctionSection::OpID(String::from("!")),
+				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]])
+			],
+			
+			output: vec![vec![Type::Int]],
+			
+			precedence: 255
+		},
 		
 		Function {
 			structure: vec![
 				FunctionSection::ID(String::from("let")),
 				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]), // WIP; No support for any types yet
 				FunctionSection::OpID(String::from("=")),
-				FunctionSection::Arg(String::from("b"), vec![vec![Type::Int]]), // WIP; No support for any types yet
+				FunctionSection::Arg(String::from("b"), vec![vec![Type::Int]]) // WIP; No support for any types yet
 			],
 			
 			output: vec![],
@@ -128,7 +128,7 @@ macro_rules! def_builtin_funcs {
 		Function {
 			structure: vec![
 				FunctionSection::ID(String::from("return")),
-				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]), // WIP; No support for any types yet
+				FunctionSection::Arg(String::from("a"), vec![vec![Type::Int]]) // WIP; No support for any types yet
 			],
 			
 			output: vec![],
@@ -139,7 +139,7 @@ macro_rules! def_builtin_funcs {
 		Function {
 			structure: vec![
 				FunctionSection::ID(String::from("unsafe")),
-				FunctionSection::Arg(String::from("e"), vec![vec![Type::Int]]), // WIP; No support for any types yet
+				FunctionSection::Arg(String::from("e"), vec![vec![Type::Int]]) // WIP; No support for any types yet
 			],
 			
 			output: vec![vec![Type::Int]], // WIP; No support for any types yet
@@ -150,7 +150,7 @@ macro_rules! def_builtin_funcs {
 		Function {
 			structure: vec![
 				FunctionSection::ID(String::from("Err")),
-				FunctionSection::Arg(String::from("e"), vec![vec![Type::Int]]),
+				FunctionSection::Arg(String::from("e"), vec![vec![Type::Int]])
 			],
 			
 			output: vec![vec![Type::Int]], // WIP; No support for whatever type this actually returns
@@ -595,42 +595,41 @@ fn update_matches<'a>(matches: &mut Vec<(usize, Vec<(&'a FunctionSection, usize)
 	for (i, f) in functions.iter().enumerate() {
 		for (j, section) in f.structure.iter().enumerate() {
 			match section {
-				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == name && !has_children => {
-					for m in matches.iter_mut().filter(|m| m.0 == i) {
-						if m.1.len() == j && pos != m.1[m.1.len() - 1].1 {
-							if let Some(_) = m.1.iter().find(|s| match s.0 {
-								FunctionSection::Arg(_,_) => false,
-								_ => true
-							}) {
-								if m.2 == depth {
+				FunctionSection::ID(ref s) | FunctionSection::OpID(ref s) if s == name => {
+					if !has_children {
+						for m in matches.iter_mut().filter(|m| m.0 == i) {
+							if m.1.len() == j && pos != m.1[m.1.len() - 1].1 {
+								if let Some(_) = m.1.iter().find(|s| match s.0 {
+									FunctionSection::Arg(_,_) => false,
+									_ => true
+								}) {
+									if m.2 == depth {
+										m.1.push((section, pos));
+									}
+								} else {
 									m.1.push((section, pos));
-									new_match = true;
+									m.2 = depth;
 								}
-							} else {
-								m.1.push((section, pos));
-								m.2 = depth;
-								new_match = true;
 							}
+						}
+						
+						if j == 0 {
+							matches.push((i, vec![(section, pos)], depth));
 						}
 					}
 					
-					if j == 0 {
-						matches.push((i, vec![(section, pos)], depth));
-						new_match = true;
-					}
+					new_match = true;
 				},
 				
 				FunctionSection::Arg(_,_) => {
 					for m in matches.iter_mut().filter(|m| m.0 == i) {
 						if m.1.len() == j && m.2 <= depth && pos != m.1[m.1.len() - 1].1 {
 							m.1.push((section, pos));
-							new_match = true;
 						}
 					}
 					
 					if j == 0 {
 						matches.push((i, vec![(section, pos)], depth));
-						new_match = true;
 					}
 				},
 				
@@ -785,10 +784,9 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 						} else {
 							if ops.borrow().len() > 0 {
 								for &s in ops.borrow().iter() {
-									name += match tokens[s].kind {
+									match tokens[s].kind {
 										Kind::Op(ref op, _, _, _, _) => {
 											*i = s;
-											op
 										},
 										
 										_ => unreachable!()
@@ -1670,7 +1668,7 @@ fn run_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Ve
 	
 	if !returning {
 		let out_len = out_contents.len();
-		out_contents.insert_str(out_len - 1, ";Ok(())");
+		out_contents.insert_str(out_len - 1, "Ok(())");
 	}
 	
 	//////// CREATE RUST OUTPUT ////////
@@ -2399,15 +2397,13 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String, is_except
 					output += ";true}";
 				},
 				
-				"not" | "binnot" => {
-					output += match new_output[..new_output.len() - 4].as_ref() {
-						"not" => "!",
-						"binnot" => "~",
-						_ => unreachable!()
-					};
+				"not" => {
+					output += "!(";
 					
 					*i = children.borrow()[0];
 					output = compile_tok(tokens, i, output, false);
+					
+					output += ")";
 				},
 				
 				_ => {

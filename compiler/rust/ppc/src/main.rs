@@ -137,20 +137,48 @@ fn main() -> Result<(), std::io::Error> {
 		operator ,;
 		operator @;
 		
-		macro if (bool cond) (int body) {
-			return unsafe {
-				let res = __uninit__; // '__uninit__' won't be necessary in the future
-				cond && (res = body);
-				res
-			};
+		macro (int a) != (int b) {
+			return !(a == b);
 		}
 		
-		macro if (bool cond) (int body) else (int expr) {
-			return unsafe {
-				let res = __uninit__; // '__uninit__' won't be necessary in the future
-				cond && (res = body) || (res = expr);
-				res
-			};
+		macro (int a) <= (int b) {
+			return a < b || a == b;
+		}
+		
+		macro (int a) >= (int b) {
+			return a > b || a == b;
+		}
+		
+		macro (int var) += (int n) {
+			return var = var + n;
+		}
+		
+		macro (int var) -= (int n) {
+			return var = var - n;
+		}
+		
+		macro (int var) *= (int n) {
+			return var = var * n;
+		}
+		
+		macro (int var) /= (int n) {
+			return var = var / n;
+		}
+		
+		macro (int var) %= (int n) {
+			return var = var % n;
+		}
+		
+		macro (int var) >>= (int n) {
+			return var = var >> n;
+		}
+		
+		macro (int var) <<= (int n) {
+			return var = var << n;
+		}
+		
+		macro (int var) ^= (int n) {
+			return var = var ^ n;
 		}
 		
 		macro (int a)++ {
@@ -178,6 +206,22 @@ fn main() -> Result<(), std::io::Error> {
 			return {
 				a -= 1;
 				a
+			};
+		}
+		
+		macro if (bool cond) (int body) {
+			return unsafe {
+				let res = __uninit__; // '__uninit__' won't be necessary in the future
+				cond && (res = body);
+				res
+			};
+		}
+		
+		macro if (bool cond) (int body) else (int expr) {
+			return unsafe {
+				let res = __uninit__; // '__uninit__' won't be necessary in the future
+				cond && (res = body) || (res = expr);
+				res
 			};
 		}
 		
