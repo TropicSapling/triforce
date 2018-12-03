@@ -2157,7 +2157,7 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 		if children.len() > 0 && children[0] != usize::MAX {
 			for (c, child) in children.iter().enumerate() {
 				*i = *child;
-				output = compile_tok(tokens, i, output);
+				output = compile_tok(tokens, i, output, name == "unsafe");
 				
 				if c + 1 < children.len() {
 					output += ",";
@@ -2176,7 +2176,7 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 					
 					for (c, child) in children.borrow().iter().enumerate() {
 						*i = *child;
-						output = compile_tok(tokens, i, output);
+						output = compile_tok(tokens, i, output, name == "unsafe");
 						
 						if c + 1 < children.borrow().len() {
 							output += ",";
@@ -2196,12 +2196,12 @@ fn type_func_call(tokens: &Vec<Token>, mut output: String, i: &mut usize, childr
 	output
 }
 
-fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
+fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String, is_exceptional: bool) -> String {
 	match tokens[*i].kind {
 		Kind::GroupOp(ref op, _) => if op == ";" {
 			output += ";";
 		} else {
-			output = compile_body(tokens, i, output);
+			output = compile_body(tokens, i, output, !is_exceptional);
 		},
 		
 		Kind::Literal(b) => if b {
@@ -2249,12 +2249,12 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 						output += "let mut ";
 						
 						*i = children.borrow()[0];
-						output = compile_tok(tokens, i, output);
+						output = compile_tok(tokens, i, output, false);
 						
 						output += "=";
 						
 						*i = children.borrow()[1];
-						output = compile_tok(tokens, i, output);
+						output = compile_tok(tokens, i, output, false);
 					},
 					
 					_ => unreachable!()
@@ -2344,7 +2344,7 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 			match new_output[..new_output.len() - 4].as_ref() {
 				"plus" | "minus" | "times" | "div" | "mod" | "eqeq" | "noteq" | "and" | "andand" | "or" | "oror" | "xor" | "larrow" | "larrowlarrow" | "rarrow" | "rarrowrarrow" | "larroweq" | "rarroweq" => {
 					*i = children.borrow()[0];
-					output = compile_tok(tokens, i, output);
+					output = compile_tok(tokens, i, output, false);
 					
 					output += match new_output[..new_output.len() - 4].as_ref() {
 						"plus" => "+",
@@ -2371,14 +2371,14 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 					};
 					
 					*i = children.borrow()[1];
-					output = compile_tok(tokens, i, output);
+					output = compile_tok(tokens, i, output, false);
 				},
 				
 				"eq" | "pluseq" | "minuseq" | "timeseq" | "diveq" | "modeq" | "larrowlarroweq" | "rarrowrarroweq" | "xoreq" => {
 					output += "{";
 					
 					*i = children.borrow()[0];
-					output = compile_tok(tokens, i, output);
+					output = compile_tok(tokens, i, output, false);
 					
 					output += match new_output[..new_output.len() - 4].as_ref() {
 						"eq" => "=",
@@ -2394,7 +2394,7 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 					};
 					
 					*i = children.borrow()[1];
-					output = compile_tok(tokens, i, output);
+					output = compile_tok(tokens, i, output, false);
 					
 					output += ";true}";
 				},
@@ -2407,7 +2407,7 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 					};
 					
 					*i = children.borrow()[0];
-					output = compile_tok(tokens, i, output);
+					output = compile_tok(tokens, i, output, false);
 				},
 				
 				_ => {
@@ -2423,18 +2423,26 @@ fn compile_tok(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String
 	output
 }
 
-fn compile_body(tokens: &Vec<Token>, i: &mut usize, mut output: String) -> String {
+fn compile_body(tokens: &Vec<Token>, i: &mut usize, mut output: String, in_expr: bool) -> String {
+	if in_expr {
+		output += "(";
+	}
+	
 	output += "{";
 	
 	if let Kind::GroupOp(_, ref statements) = tokens[*i].kind {
 		for statement in statements.borrow().iter() {
-			output = compile_tok(tokens, &mut statement.clone(), output);
+			output = compile_tok(tokens, &mut statement.clone(), output, false);
 		}
 	}
 	
 	*i += 1;
 	
 	output += "}";
+	
+	if in_expr {
+		output += ")";
+	}
 	
 	output
 }
@@ -2447,7 +2455,7 @@ pub fn compile(tokens: &Vec<Token>, functions: &Vec<Function>, i: &mut usize, mu
 			output = compile_func(&functions[f], output);
 			
 			*i = *body.borrow();
-			output = compile_body(tokens, i, output);
+			output = compile_body(tokens, i, output, false);
 		},
 		
 		Kind::Reserved(ref keyword, _) if keyword == "import" => {
