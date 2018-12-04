@@ -137,46 +137,57 @@ fn main() -> Result<(), std::io::Error> {
 		operator ,;
 		operator @;
 		
+		#precedence 242
 		macro (int a) != (int b) {
 			return !(a == b);
 		}
 		
+		#precedence 243
 		macro (int a) <= (int b) {
 			return a < b || a == b;
 		}
 		
+		#precedence 243
 		macro (int a) >= (int b) {
 			return a > b || a == b;
 		}
 		
+		#precedence 0
 		macro (int var) += (int n) {
 			return var = var + n;
 		}
 		
+		#precedence 0
 		macro (int var) -= (int n) {
 			return var = var - n;
 		}
 		
+		#precedence 0
 		macro (int var) *= (int n) {
 			return var = var * n;
 		}
 		
+		#precedence 0
 		macro (int var) /= (int n) {
 			return var = var / n;
 		}
 		
+		#precedence 0
 		macro (int var) %= (int n) {
 			return var = var % n;
 		}
 		
+		#precedence 0
 		macro (int var) >>= (int n) {
 			return var = var >> n;
 		}
 		
+		#precedence 0
 		macro (int var) <<= (int n) {
 			return var = var << n;
 		}
 		
+		#precedence 0
 		macro (int var) ^= (int n) {
 			return var = var ^ n;
 		}
@@ -226,6 +237,7 @@ fn main() -> Result<(), std::io::Error> {
 		}
 		
 		#[allow(unused)]
+		#precedence 247
 		func (int base) ** (unsigned int exp) -> int {
 			if exp == 0
 				1
