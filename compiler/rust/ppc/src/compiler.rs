@@ -248,11 +248,6 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 								break; // End of function structure
 							} else {
 								// Function name
-								
-								if name == "**" {
-									precedence = 247;
-								}
-								
 								func_struct.push(FunctionSection::OpID(name));
 							}
 							
@@ -803,7 +798,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 							if ops.borrow().len() > 0 {
 								for &s in ops.borrow().iter() {
 									match tokens[s].kind {
-										Kind::Op(ref op, _, _, _, _) => {
+										Kind::Op(_, _, _, _, _) => {
 											*i = s;
 										},
 										
