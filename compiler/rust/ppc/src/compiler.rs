@@ -204,9 +204,18 @@ fn has_one_arg(structure: &Vec<FunctionSection>) -> bool {
 pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (Vec<Function>, Vec<Macro>) {
 	let mut macros = Vec::new();
 	let mut fpos = Vec::new();
+	let mut custom_precedence = None;
 	let mut i = 0;
 	while i < tokens.len() {
 		match tokens[i].kind {
+			Kind::Var(ref name, _, _, _, _) if name == "#precedence" => {
+				i += 1;
+				if let Kind::Number(n, _) = tokens[i].kind {
+					custom_precedence = Some(n);
+					i += 1;
+				}
+			},
+			
 			Kind::Func(ref typ, ref body) => {
 				let mut func_struct = vec![];
 				let mut precedence = 1;
@@ -282,7 +291,11 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 				functions.push(Function {
 					structure: func_struct,
 					output,
-					precedence
+					precedence: if let Some(n) = custom_precedence {
+						n as u8
+					} else {
+						precedence
+					}
 				});
 				
 				while i < tokens.len() {
@@ -320,9 +333,14 @@ pub fn parse<'a>(tokens: &'a mut Vec<Token>, mut functions: Vec<Function>) -> (V
 					
 					macros.push(Macro {func: functions.len() - 1, ret_points, body});
 				}
+				
+				custom_precedence = None;
 			},
 			
-			_ => i += 1
+			_ => {
+				custom_precedence = None;
+				i += 1;
+			}
 		}
 	}
 	
