@@ -714,7 +714,7 @@ fn get_highest<'a>(matches: &'a Vec<(usize, Vec<(&'a FunctionSection, usize)>, u
 	}
 }
 
-pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &Vec<Macro>, all_children: &mut Vec<usize>, i: &mut usize) -> Option<usize> {
+pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &Vec<Macro>, all_children: &mut Vec<usize>, i: &mut usize, debugging: bool) -> Option<usize> {
 	let start = *i;
 	let limit = get_parse_limit(tokens, i);
 	let mut parsed = Vec::new();
@@ -742,7 +742,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 					
 					if depth2 == 0 && !parsed.contains(i) {
 						parsed.push(*i);
-						parse2(tokens, functions, macros, all_children, i);
+						parse2(tokens, functions, macros, all_children, i, debugging);
 					} else {
 						depth2 += 1;
 					}
@@ -855,79 +855,81 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 				parse_func(tokens, functions, &m.1, all_children);
 				
 				// DEBUG BELOW
-				match tokens[lowest.unwrap()].kind {
-					Kind::Op(_, _, ref children, ref sidekicks, _) | Kind::Var(_, _, ref children, ref sidekicks, _) => {
-						print!("\x1b[0m\x1b[1m\x1b[38;5;11m");
-						
-						for section in &m.1 {
-							match section.0 {
-								FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => print!(" {}", name),
-								FunctionSection::Arg(ref arg, _) => print!(" <{}>", arg)
-							}
-						}
-						
-						print!(":\x1b[0m (");
-						for child in children.borrow().iter() {
-							if *child != usize::MAX {
-								print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]", get_val!(tokens[*child].kind), *child);
-								match tokens[*child].kind {
-									Kind::Op(_, _, ref children, _, _) | Kind::Var(_, _, ref children, _, _) | Kind::GroupOp(_, ref children) if children.borrow().len() > 0 => {
-										print!(": (");
-										for child in children.borrow().iter() {
-											if *child != usize::MAX {
-												print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}], ", get_val!(tokens[*child].kind), *child);
-											}
-										}
-										print!(")");
-									},
-									
-									_ => ()
-								}
-								print!(", ");
-							}
-						}
-						print!(")");
-						
-						if sidekicks.borrow().len() > 0 {
-							print!(", {{");
+				if debugging {
+					match tokens[lowest.unwrap()].kind {
+						Kind::Op(_, _, ref children, ref sidekicks, _) | Kind::Var(_, _, ref children, ref sidekicks, _) => {
+							print!("\x1b[0m\x1b[1m\x1b[38;5;11m");
 							
-							for s in sidekicks.borrow().iter() {
-								match tokens[*s].kind {
-									Kind::Op(ref name, _, ref children, _, _) | Kind::Var(ref name, _, ref children, _, _) | Kind::GroupOp(ref name, ref children) => {
-										print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]: (", name, s);
-										for child in children.borrow().iter() {
-											if *child != usize::MAX {
-												print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]", get_val!(tokens[*child].kind), *child);
-												match tokens[*child].kind {
-													Kind::Op(_, _, ref children, _, _) | Kind::Var(_, _, ref children, _, _) | Kind::GroupOp(_, ref children) if children.borrow().len() > 0 => {
-														print!(": (");
-														for child in children.borrow().iter() {
-															if *child != usize::MAX {
-																print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}], ", get_val!(tokens[*child].kind), *child);
-															}
-														}
-														print!(")");
-													},
-													
-													_ => ()
+							for section in &m.1 {
+								match section.0 {
+									FunctionSection::ID(ref name) | FunctionSection::OpID(ref name) => print!(" {}", name),
+									FunctionSection::Arg(ref arg, _) => print!(" <{}>", arg)
+								}
+							}
+							
+							print!(":\x1b[0m (");
+							for child in children.borrow().iter() {
+								if *child != usize::MAX {
+									print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]", get_val!(tokens[*child].kind), *child);
+									match tokens[*child].kind {
+										Kind::Op(_, _, ref children, _, _) | Kind::Var(_, _, ref children, _, _) | Kind::GroupOp(_, ref children) if children.borrow().len() > 0 => {
+											print!(": (");
+											for child in children.borrow().iter() {
+												if *child != usize::MAX {
+													print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}], ", get_val!(tokens[*child].kind), *child);
 												}
-												print!(", ");
 											}
-										}
-										print!("), ");
-									},
-									
-									_ => unreachable!()
+											print!(")");
+										},
+										
+										_ => ()
+									}
+									print!(", ");
 								}
 							}
+							print!(")");
 							
-							println!("}}");
-						} else {
-							println!("");
-						}
-					},
-					
-					_ => unreachable!()
+							if sidekicks.borrow().len() > 0 {
+								print!(", {{");
+								
+								for s in sidekicks.borrow().iter() {
+									match tokens[*s].kind {
+										Kind::Op(ref name, _, ref children, _, _) | Kind::Var(ref name, _, ref children, _, _) | Kind::GroupOp(ref name, ref children) => {
+											print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]: (", name, s);
+											for child in children.borrow().iter() {
+												if *child != usize::MAX {
+													print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}]", get_val!(tokens[*child].kind), *child);
+													match tokens[*child].kind {
+														Kind::Op(_, _, ref children, _, _) | Kind::Var(_, _, ref children, _, _) | Kind::GroupOp(_, ref children) if children.borrow().len() > 0 => {
+															print!(": (");
+															for child in children.borrow().iter() {
+																if *child != usize::MAX {
+																	print!("\x1b[0m\x1b[1m\x1b[38;5;10m{}\x1b[0m[{}], ", get_val!(tokens[*child].kind), *child);
+																}
+															}
+															print!(")");
+														},
+														
+														_ => ()
+													}
+													print!(", ");
+												}
+											}
+											print!("), ");
+										},
+										
+										_ => unreachable!()
+									}
+								}
+								
+								println!("}}");
+							} else {
+								println!("");
+							}
+						},
+						
+						_ => unreachable!()
+					}
 				}
 			},
 			
@@ -974,7 +976,7 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 	parse_statement(tokens, functions, i);
 } */
 
-pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &Vec<Macro>, all_children: &mut Vec<usize>, i: &mut usize) {
+pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &Vec<Macro>, all_children: &mut Vec<usize>, i: &mut usize, debugging: bool) {
 	match tokens[*i].kind.clone() {
 		Kind::GroupOp(ref op, _) if op == "{" => {
 			let parent = *i;
@@ -992,7 +994,7 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &Vec<M
 							children.borrow_mut().push(*i);
 						}
 						
-						parse2(tokens, functions, macros, all_children, i);
+						parse2(tokens, functions, macros, all_children, i, debugging);
 						
 						*i += 1;
 						continue;
@@ -1017,7 +1019,7 @@ pub fn parse2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &Vec<M
 							*i += 1;
 						},
 						
-						_ => if let Some(token) = parse_statement(tokens, functions, macros, all_children, i) {
+						_ => if let Some(token) = parse_statement(tokens, functions, macros, all_children, i, debugging) {
 							if let Kind::GroupOp(_, ref children) = tokens[parent].kind {
 								children.borrow_mut().push(token);
 							}
@@ -1257,7 +1259,7 @@ fn run_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Ve
 	let mut error = false;
 	
 	let out = Command::new("rustc")
-			.args(&["--color", "always", "--out-dir", "macros", "macros\\macro.rs"])
+			.args(&["--color", "always", "-A", "unused_parens", "-A", "unused_must_use", "-A", "unused_unsafe", "-A", "unreachable_code", "-A", "unused_mut", "--out-dir", "macros", "macros\\macro.rs"])
 			.output()
 			.expect("failed to compile Rust code");
 	

@@ -284,7 +284,7 @@ fn main() -> Result<(), std::io::Error> {
 	let mut all_children = Vec::new();
 	let mut i = 0;
 	while i < tokens.len() {
-		parse2(&mut tokens, &functions, &macros, &mut all_children, &mut i);
+		parse2(&mut tokens, &functions, &macros, &mut all_children, &mut i, debugging);
 		i += 1;
 	}
 	
@@ -299,7 +299,7 @@ fn main() -> Result<(), std::io::Error> {
 	}
 	
 	if debugging {
-		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
+//		println!("{} PARSE: {:#?}\n", BrightYellow.paint("[DEBUG]"), tokens);
 	}
 	
 	let mut out_contents = String::new();
@@ -337,12 +337,12 @@ fn main() -> Result<(), std::io::Error> {
 		
 		let out = if matches.is_present("optimise") {
 			Command::new("rustc")
-				.args(&["-O", "--color", "always", "--out-dir", &final_output_dir, &output])
+				.args(&["-O", "--color", "always", "-A", "unused_parens", "-A", "unused_must_use", "-A", "unused_unsafe", "-A", "unreachable_code", "-A", "unused_mut", "--out-dir", &final_output_dir, &output])
 				.output()
 				.expect("failed to compile Rust code")
 		} else {
 			Command::new("rustc")
-				.args(&["-g", "--color", "always", "--out-dir", &final_output_dir, &output])
+				.args(&["-g", "--color", "always", "-A", "unused_parens", "-A", "unused_must_use", "-A", "unused_unsafe", "-A", "unreachable_code", "-A", "unused_mut", "--out-dir", &final_output_dir, &output])
 				.output()
 				.expect("failed to compile Rust code")
 		};
