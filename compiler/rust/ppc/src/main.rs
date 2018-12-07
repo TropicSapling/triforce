@@ -21,9 +21,9 @@ use std::{
 	str
 };
 
-use library::{get_io, Token};
-use lexer::{lex, lex_ops, lex2, lex3};
-use compiler::{def_functions, parse, parse2, parse3, compile};
+use crate::library::{get_io, Token};
+use crate::lexer::{lex, lex_ops, lex2, lex3};
+use crate::compiler::{def_functions, parse, parse2, parse3, compile};
 
 fn count_newlines(s: &str) -> usize {
 	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
