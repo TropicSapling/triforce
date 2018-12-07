@@ -1,5 +1,5 @@
 use std::{usize, cell::RefCell};
-use lib::{Token, Kind, FuncType, Type, FilePos, Macro, Function};
+use library::{Token, Kind, FuncType, Type, FilePos, Macro, Function};
 
 fn is_var(c: char) -> bool {
 	c != '{' && c != '}' && c != '[' && c != ']' && c != '(' && c != ')' && c != ';' && c != '"' && c != '\'' && c != '/' && c != '*' && c != '\\' && !c.is_whitespace()

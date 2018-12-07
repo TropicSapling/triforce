@@ -12,12 +12,12 @@ use std::{
 	mem
 };
 
-use lib::{Token, Kind, FuncType, Type, FilePos, Function, FunctionSection, Macro};
+use library::{Token, Kind, FuncType, Type, FilePos, Function, FunctionSection, Macro};
 
 macro_rules! get_val {
 	($e:expr) => ({
-		use lib::Kind::*;
-		use lib::Type::*;
+		use library::Kind::*;
+		use library::Type::*;
 		match $e {
 			Func(_,_) => String::from("func"),
 			GroupOp(ref val, _) => val.to_string(),
@@ -1500,7 +1500,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &Vec<
 }
 
 fn compile_type(typ: &Vec<Vec<Type>>) -> String {
-	use lib::Type::*;
+	use library::Type::*;
 	
 	let mut output = String::new();
 	let mut unsigned = false;
