@@ -4,7 +4,7 @@ extern crate term_painter;
 #[cfg(windows)] extern crate winapi;
 #[cfg(windows)] extern crate kernel32;
 
-mod lib;
+mod library;
 mod lexer;
 mod compiler;
 
@@ -21,9 +21,9 @@ use std::{
 	str
 };
 
-use lib::{get_io, Token};
-use lexer::{lex, lex_ops, lex2, lex3};
-use compiler::{def_functions, parse, parse2, parse3, compile};
+use crate::library::{get_io, Token};
+use crate::lexer::{lex, lex_ops, lex2, lex3};
+use crate::compiler::{def_functions, parse, parse2, parse3, compile};
 
 fn count_newlines(s: &str) -> usize {
 	s.as_bytes().iter().filter(|&&c| c == b'\n').count()
@@ -290,8 +290,8 @@ fn main() -> Result<(), std::io::Error> {
 	
 	let tokens_len = tokens.len();
 	let tok_offset = get_tok_offset(&tokens, line_offset);
-	let mut depth = 0;
-	let mut rows = vec![0];
+//	let mut depth = 0;
+//	let mut rows = vec![0];
 	let mut i = 0;
 	while i < tokens_len {
 		parse3(&mut tokens, &mut macros, &functions, &mut i, tok_offset)?;

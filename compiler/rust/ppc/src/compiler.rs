@@ -12,12 +12,12 @@ use std::{
 	mem
 };
 
-use lib::{Token, Kind, FuncType, Type, FilePos, Function, FunctionSection, Macro};
+use crate::library::{Token, Kind, FuncType, Type, FilePos, Function, FunctionSection, Macro};
 
 macro_rules! get_val {
 	($e:expr) => ({
-		use lib::Kind::*;
-		use lib::Type::*;
+		use crate::library::Kind::*;
+		use crate::library::Type::*;
 		match $e {
 			Func(_,_) => String::from("func"),
 			GroupOp(ref val, _) => val.to_string(),
@@ -1119,9 +1119,8 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 				children.replace(vec![tokens.len()]);
 			}
 			
-			let pos = tokens.len() + 1;
 			tokens.push(Token {
-				kind: Kind::Var(String::from("Err"), Vec::new(), RefCell::new(vec![pos]), RefCell::new(Vec::new()), RefCell::new(None)),
+				kind: Kind::Var(String::from("Err"), Vec::new(), RefCell::new(vec![tokens.len() + 1]), RefCell::new(Vec::new()), RefCell::new(None)),
 				pos: token.pos.clone()
 			});
 			
@@ -1147,11 +1146,8 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 						
 						matching = true;
 						
-						let arg = tokens[args[p]].clone();
-						tokens.push(arg);
-						
-						let mut i = tokens.len() - 1;
-						parse3_tok(tokens, functions, macros, &mut i, sof)?;
+						tokens.push(tokens[args[p]].clone());
+						parse3_tok(tokens, functions, macros, &mut (tokens.len() - 1), sof)?;
 						
 						break;
 					}
@@ -1164,9 +1160,7 @@ fn insert_macro2(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mu
 				// Variable should not be replaced; just insert the variable and its children directly instead
 				
 				tokens.push(token);
-				
-				let mut i = tokens.len() - 1;
-				insert_macro(tokens, functions, macros, &mut i, pars, args, children, sof, ret_points)?;
+				insert_macro(tokens, functions, macros, &mut (tokens.len() - 1), pars, args, children, sof, ret_points)?;
 			}
 		},
 		
@@ -1219,8 +1213,7 @@ fn run_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Ve
 	tokens.push(body.clone());
 	
 	if let Kind::GroupOp(_, ref children) = body.kind.clone() {
-		let mut i = tokens.len() - 1;
-		insert_macro(tokens, functions, macros, &mut i, &functions[func].structure, &input, children, sof, &mut 1)?;
+		insert_macro(tokens, functions, macros, &mut (tokens.len() - 1), &functions[func].structure, &input, children, sof, &mut 1)?;
 	}
 	
 	tokens.push(Token {
@@ -1241,8 +1234,7 @@ fn run_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Ve
 	out_contents.insert_str(9, "->Result<(),usize>");
 	
 	if !returning {
-		let out_len = out_contents.len();
-		out_contents.insert_str(out_len - 1, "Ok(())");
+		out_contents.insert_str(out_contents.len() - 1, "Ok(())");
 	}
 	
 	//////// CREATE RUST OUTPUT ////////
@@ -1500,7 +1492,7 @@ pub fn parse3(tokens: &mut Vec<Token>, macros: &mut Vec<Macro>, functions: &Vec<
 }
 
 fn compile_type(typ: &Vec<Vec<Type>>) -> String {
-	use lib::Type::*;
+	use crate::library::Type::*;
 	
 	let mut output = String::new();
 	let mut unsigned = false;
