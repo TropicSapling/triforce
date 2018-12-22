@@ -1,1 +1,1 @@
-rustup component add rustfmt-preview
+rustup component add rustfmt
