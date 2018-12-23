@@ -44,7 +44,7 @@ fn get_tok_offset(tokens: &Vec<Token>, line_offset: usize) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.9.0-alpha")
+		.version("0.9.1-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
@@ -70,6 +70,9 @@ fn main() -> Result<(), std::io::Error> {
 		.arg(Arg::with_name("optimise")
 			.short("O")
 			.help("Optimises executable"))
+		.arg(Arg::with_name("no-prelude")
+			.long("no-prelude")
+			.help("Excludes the standard prelude"))
 		.get_matches();
 	
 	let debugging = matches.is_present("debug");
@@ -117,136 +120,11 @@ fn main() -> Result<(), std::io::Error> {
 		Ok(t) => t
 	};
 	
-	let mut in_contents = String::from("();
-		operator +;
-		operator -;
-		operator *;
-		operator /;
-		operator %;
-		operator =;
-		operator &;
-		operator |;
-		operator ^;
-		operator <;
-		operator >;
-		operator !;
-		operator ~;
-		operator ?;
-		operator :;
-		operator .;
-		operator ,;
-		operator @;
-		
-		#precedence 242
-		macro (int a) != (int b) {
-			return !(a == b);
-		}
-		
-		#precedence 243
-		macro (int a) <= (int b) {
-			return a < b || a == b;
-		}
-		
-		#precedence 243
-		macro (int a) >= (int b) {
-			return a > b || a == b;
-		}
-		
-		#precedence 0
-		macro (int var) += (int n) {
-			return var = var + n;
-		}
-		
-		#precedence 0
-		macro (int var) -= (int n) {
-			return var = var - n;
-		}
-		
-		#precedence 0
-		macro (int var) *= (int n) {
-			return var = var * n;
-		}
-		
-		#precedence 0
-		macro (int var) /= (int n) {
-			return var = var / n;
-		}
-		
-		#precedence 0
-		macro (int var) %= (int n) {
-			return var = var % n;
-		}
-		
-		#precedence 0
-		macro (int var) >>= (int n) {
-			return var = var >> n;
-		}
-		
-		#precedence 0
-		macro (int var) <<= (int n) {
-			return var = var << n;
-		}
-		
-		#precedence 0
-		macro (int var) ^= (int n) {
-			return var = var ^ n;
-		}
-		
-		macro (int a)++ {
-			return {
-				a += 1;
-				a - 1
-			};
-		}
-		
-		macro ++(int a) {
-			return {
-				a += 1;
-				a
-			};
-		}
-		
-		macro (int a)-- {
-			return {
-				a -= 1;
-				a + 1
-			};
-		}
-		
-		macro --(int a) {
-			return {
-				a -= 1;
-				a
-			};
-		}
-		
-		macro if (bool cond) (int body) {
-			return unsafe {
-				let res = __uninit__; // '__uninit__' won't be necessary in the future
-				cond && (res = body);
-				res
-			};
-		}
-		
-		macro if (bool cond) (int body) else (int expr) {
-			return unsafe {
-				let res = __uninit__; // '__uninit__' won't be necessary in the future
-				cond && (res = body) || (res = expr);
-				res
-			};
-		}
-		
-		#[allow(unused)]
-		#precedence 247
-		func (int base) ** (unsigned int exp) -> int {
-			if exp == 0
-				1
-			else if exp % 2 == 0
-				base ** (exp / 2) * base ** (exp / 2)
-			else
-				base * base ** (exp / 2) * base ** (exp / 2)
-		}
-	");
+	let mut in_contents = if matches.is_present("no-prelude") {
+		String::new()
+	} else {
+		String::from(include_str!("prelude.ppl"))
+	};
 	
 	let line_offset = count_newlines(&in_contents);
 	
