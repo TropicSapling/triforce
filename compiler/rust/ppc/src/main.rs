@@ -44,7 +44,7 @@ fn get_tok_offset(tokens: &Vec<Token>, line_offset: usize) -> usize {
 
 fn main() -> Result<(), std::io::Error> {
 	let matches = App::new("ppc")
-		.version("0.9.0-alpha")
+		.version("0.9.1-alpha")
 		.about("P+ compiler written in Rust.")
 		.author("TropicSapling")
 		.arg(Arg::with_name("input")
