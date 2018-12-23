@@ -70,6 +70,9 @@ fn main() -> Result<(), std::io::Error> {
 		.arg(Arg::with_name("optimise")
 			.short("O")
 			.help("Optimises executable"))
+		.arg(Arg::with_name("no-prelude")
+			.long("no-prelude")
+			.help("Excludes the standard prelude"))
 		.get_matches();
 	
 	let debugging = matches.is_present("debug");
@@ -117,7 +120,12 @@ fn main() -> Result<(), std::io::Error> {
 		Ok(t) => t
 	};
 	
-	let mut in_contents = String::from(include_str!("prelude.ppl"));
+	let mut in_contents = if matches.is_present("no-prelude") {
+		String::new()
+	} else {
+		String::from(include_str!("prelude.ppl"))
+	};
+	
 	let line_offset = count_newlines(&in_contents);
 	
 	in_file.read_to_string(&mut in_contents)?;
