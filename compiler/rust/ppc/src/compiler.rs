@@ -822,6 +822,10 @@ pub fn parse_statement(tokens: &mut Vec<Token>, functions: &Vec<Function>, macro
 			*i += 1;
 		}
 		
+		if depth > 0 {
+			panic!("Unclosed parenthesis on line {}", tokens[start].pos.line);
+		}
+		
 		cleanup_matches(&mut matches, functions);
 		
 		match get_highest(&matches, functions) {

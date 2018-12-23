@@ -1,5 +1,5 @@
 use std::{usize, cell::RefCell};
-use crate::library::{Token, Kind, FuncType, Type, FilePos, Macro, Function};
+use crate::library::{Token, Kind, FuncType, Type, FilePos};
 
 fn is_var(c: char) -> bool {
 	c != '{' && c != '}' && c != '[' && c != ']' && c != '(' && c != ')' && c != ';' && c != '"' && c != '\'' && c != '/' && c != '*' && c != '\\' && !c.is_whitespace()
@@ -37,12 +37,12 @@ pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 	
 	let mut i = 0;
 	while i < tokens.len() {
+		let mut push = true;
+		
 		if ignoring {
 			if tokens[i] == "\n" {
 				ignoring = false;
 			}
-			
-			new_tokens.push(tokens[i]);
 		} else if ignoring2 > 0 {
 			if tokens[i] == "*" && tokens[i + 1] == "/" {
 				ignoring2 -= 1;
@@ -53,22 +53,17 @@ pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 				new_tokens.push(tokens[i]);
 				i += 1;
 			}
-			
-			new_tokens.push(tokens[i]);
 		} else if tokens[i] == "/" && tokens[i + 1] == "/" {
 			ignoring = true;
 			
 			new_tokens.push(tokens[i]);
 			i += 1;
-			new_tokens.push(tokens[i]);
 		} else if tokens[i] == "/" && tokens[i + 1] == "*" {
 			ignoring2 = 1;
 			
 			new_tokens.push(tokens[i]);
 			i += 1;
-			new_tokens.push(tokens[i]);
 		} else if escaping {
-			new_tokens.push(tokens[i]);
 			escaping = false;
 		} else if in_str {
 			if tokens[i] == "\"" {
@@ -76,26 +71,22 @@ pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 			} else if tokens[i] == "\\" {
 				escaping = true;
 			}
-			
-			new_tokens.push(tokens[i]);
 		} else if in_str2 {
 			if tokens[i] == "'" {
 				in_str2 = false;
 			} else if tokens[i] == "\\" {
 				escaping = true;
 			}
-			
-			new_tokens.push(tokens[i]);
 		} else if tokens[i] == "\"" {
 			in_str = true;
-			new_tokens.push(tokens[i]);
 		} else if tokens[i] == "'" {
 			in_str2 = true;
-			new_tokens.push(tokens[i]);
 		} else if tokens[i] == "operator" {
 			i += 2;
 			ops.push(tokens[i].chars().next().unwrap());
 			i += 1;
+			
+			push = false;
 		} else {
 			let mut indexes = Vec::new();
 			for (i, c) in tokens[i].chars().enumerate() {
@@ -123,6 +114,12 @@ pub fn lex_ops<'a>(tokens: Vec<&'a str>) -> (Vec<&'a str>, Vec<char>) {
 			if indexes.len() == 0 {
 				new_tokens.push(tokens[i]);
 			}
+			
+			push = false;
+		}
+		
+		if push {
+			new_tokens.push(tokens[i]);
 		}
 		
 		i += 1;
@@ -719,6 +716,10 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 		}
 		
 		i += 1;
+	}
+	
+	if full_depth > 0 {
+		panic!("Unclosed curly bracket");
 	}
 	
 	for (i, types) in pending {
