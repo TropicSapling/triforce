@@ -1255,7 +1255,7 @@ fn run_macro(tokens: &mut Vec<Token>, functions: &Vec<Function>, macros: &mut Ve
 	let mut error = false;
 	
 	let out = Command::new("rustc")
-			.args(&["--color", "always", "-A", "unused_parens", "-A", "unused_must_use", "-A", "unused_unsafe", "-A", "unreachable_code", "-A", "unused_mut", "--out-dir", "macros", "macros\\macro.rs"])
+			.args(&["--edition=2018", "--color", "always", "-A", "unused_parens", "-A", "unused_must_use", "-A", "unused_unsafe", "-A", "unreachable_code", "-A", "unused_mut", "--out-dir", "macros", "macros\\macro.rs", "-C", "incremental=macros"])
 			.output()
 			.expect("failed to compile Rust code");
 	
