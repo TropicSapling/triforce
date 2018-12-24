@@ -144,7 +144,7 @@ fn main() -> Result<(), std::io::Error> {
 		false
 	};
 	
-	if !input_unchanged {
+	if !input_unchanged || !matches.is_present("run") {
 		let mut in_contents = if matches.is_present("no-prelude") {
 			String::new()
 		} else {
