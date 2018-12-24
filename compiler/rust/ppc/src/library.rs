@@ -71,6 +71,8 @@ pub struct Function {
 	pub structure: Vec<FunctionSection>,
 	pub output: TypeList,
 	pub precedence: u8
+//	pub depth: usize,
+//	pub row: usize
 }
 
 #[derive(Debug)]
@@ -78,8 +80,6 @@ pub struct Macro {
 	pub func: usize,
 	pub body: usize,
 	pub ret_points: Vec<usize>
-//	pub depth: usize,
-//	pub row: usize
 }
 
 pub fn get_io(input: &PathBuf) -> (PathBuf, PathBuf, PathBuf, PathBuf) {
