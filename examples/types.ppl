@@ -1,0 +1,139 @@
+// NUMBERS
+type Nat Zero | (Suc Nat (n));
+
+Macro Zero = Nat Zero;
+Macro Suc = Nat Suc;
+
+macro pred Suc (n) {
+    return n;
+}
+
+macro (Nat n) + (Nat m) {
+    if n == Zero
+        return m
+    else if m == Zero
+        return n
+    else
+        return Suc ((pred n) + m)
+}
+
+macro (Nat n) * (Nat m) {
+    if n == Zero || m == Zero
+        return Zero
+    else
+        return n + (pred n) * m;
+}
+
+macro intify (Nat n) {
+    let i = 0;
+    while n != Zero {
+        n = pred n;
+        i++;
+    }
+    
+    return i;
+}
+
+// RANGES
+type Range Int Int; // Range <start> <end>
+
+macro (Int start)..(Int end) {
+	return Range start end;
+}
+
+macro (Unsigned Int start)..(Unsigned Int end) {
+	return Unsigned Range start end;
+}
+
+// ARRAYS
+type Array Nat Nat Nat; // Array <element size> <size> <length>
+
+func (typ)[] {
+	Array (typ size) Zero Zero
+}
+
+func [(typ item) {
+    let addr = malloc (item size);
+    @addr = item;
+    Array (typ) (Suc Zero) addr
+}
+
+func Array (typ len addr), (typ item) {
+    let addr = realloc addr (len + Suc Zero) * esize;
+    @(addr + intify len * esize) = item;
+    Array esize (len + Suc Zero) addr
+}
+
+Macro ] = ;
+
+macro Array (_ len _) length {
+    return len;
+}
+
+macro Array (esize _ addr)[(Unsigned Int i)] {
+    return @(addr + (intify esize) * i);
+}
+
+func (Array arr)[Unsigned Range (start end)] {
+	let res = [arr[start]];
+	let i = start + 1;
+	while i < end {
+		res += arr[i];
+		i++;
+	}
+	
+	res
+}
+
+macro (Array arr) + (item) {
+	return arr, item;
+}
+
+macro for (item) in (Array arr) (body) {
+    return {
+        let i = 0;
+        while i < arr length {
+            let item = arr[i];
+            body;
+            i++;
+        };
+    }
+}
+
+func insert (item) at (Unsigned Int pos) into (Array arr) {
+	let i = pos;
+	while i < arr length {
+		let old_item = arr[pos];
+		
+		arr[pos] = item;
+		item = old_item;
+		
+		i++;
+	}
+	
+	arr += item;
+}
+
+// EXAMPLE EXTENSION
+type Safe Array;
+
+macro Safe (Array arr)[Unsigned Int i] {
+    if i >= arr length
+        println "Index is out of bounds" to StdErr
+    else
+        return arr[i];
+}
+
+// EXAMPLE USAGE
+func init {
+    let numbers = Safe [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    
+    for n in numbers {
+        println n;
+    }
+	
+	println numbers[10]; // "Index is out of bounds"
+	
+	insert 1337 at 7 into numbers;
+	println numbers[6..8];
+}
