@@ -2,7 +2,8 @@ Zero = Nat Zero;
 Suc = Nat Suc;
 
 {
-	(n)|(m) = Nat n|m;
+	n = Nat n;
+	m = Nat m;
 	
 	Zero + (n) = n;
 	(n) + Zero = n;
@@ -13,7 +14,8 @@ Suc = Nat Suc;
 (a) += (b) = (a = a + b);
 
 {
-	True|False = Bool True|False;
+	True = Bool True;
+	False = Bool False;
 	
 	!True = False;
 	!False = True;
