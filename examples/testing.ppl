@@ -1,9 +1,13 @@
-Zero|Suc = Nat Zero|Suc;
+Zero = Nat Zero;
+Suc = Nat Suc;
 
 {
 	(n)|(m) = Nat n|m;
-	Zero + (n) = n + Zero = n;
-	Suc (n) + (m) = n + Suc m = Suc (n + m);
+	
+	Zero + (n) = n;
+	(n) + Zero = n;
+	Suc (n) + (m) = Suc (n + m);
+	(n) + Suc (m) = Suc (n + m);
 };
 
 (a) += (b) = (a = a + b);
@@ -18,15 +22,18 @@ Zero|Suc = Nat Zero|Suc;
 	(a) != (b) = !(a == b);
 	
 	False || False = False;
+	False || True = True;
+	True || False = True;
 	True || True = True;
-	True || False = False || True = True;
 	
 	False && False = False;
+	False && True = False;
+	True && False = False;
 	True && True = True;
-	False && True = True && False = False;
 	
-	if True (body) = if True (body) else (expr) = body;
-	if False (body) = ;
+	if True (body) = body;
+	if True (body) else (expr) = body;
+	if False (body) = Void;
 	if False (body) else (expr) = expr;
 };
 
@@ -69,7 +76,7 @@ Array (typ (len = 1|2|...) addr), (typ item) = {
     Array typ (len + 1) addr
 };
 
-] = ;
+] = Void;
 
 Array (arr) + (item) = arr, item;
 Array (_ len _) length = len;
