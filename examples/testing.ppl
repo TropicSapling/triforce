@@ -1,109 +1,62 @@
 type Nat Zero|(Suc Nat);
 type Bool True|False;
 
-func Nat + Nat -> Nat {
-	Zero + n => n
-	n + Zero => n
-	
-	Suc Nat n + m => Suc (Nat n + Nat m)
-	n + Suc Nat m => Suc (Nat n + Nat m)
-}
+let Zero = Nat Zero;
+let Suc = Nat Suc;
+let True = Bool True;
+let False = Bool False;
 
-func _ += _ -> _ {
-	(a) += (b) => a = a + b
-}
+let n = Nat n;
+let m = Nat m;
 
-func !Bool -> Bool {
-	!True => False
-	!False => True
-}
+// _+_
+Zero + n => n;
+n + Zero => n;
 
-func _ == _ -> Bool {
-	(a) == (b) => True|False
-}
+Suc n + m => Suc (n + m);
+n + Suc m => Suc (n + m);
 
-func _ != _ -> _ {
-	(a) != (b) => !(a == b)
-}
+// _+=_
+a += b => a = a + b;
 
-func Bool || Bool -> Bool {
-	False || False => False
-	False || True  => True
-	True  || False => True
-	True  || True  => True
-}
+// !_
+!True => False;
+!False => True;
 
-func Bool && Bool -> Bool {
-	False && False => False
-	False && True  => False
-	True  && False => False
-	True  && True  => True
-}
+// _==_
+a == b => True|False;
 
-func if Bool _ -> _ {
-	if True body => body
-	if False body => Nothing
-}
+// _!=_
+a != b => !(a == b);
 
-func if Bool _ else _ -> _ {
-	if True body else expr => body
-	if False body else expr => expr
-}
+// _||_
+False || False => False;
+True  || False => True;
+False || True  => True;
+True  || True  => True;
 
-// ALT.
-/*
-func Nat + Nat -> Nat {
-	Zero + n => n
-	n + Zero => n
-	
-	Suc Nat n + m => Suc (Nat n + Nat m)
-	n + Suc Nat m => Suc (Nat n + Nat m)
-}
+// _&&_
+False && False => False;
+True  && False => False;
+False && True  => False;
+True  && True  => True;
 
-func (Nat n) + (Nat m) -> Nat {
-	n = Zero => n
-	m = Zero => m
-	
-	Suc Nat ...
-}
+// if__
+if True body => body;
+if False body => Nothing;
 
-func (Bool a) || (Bool b) -> Bool {
-	a = True => True
-	b = True => True
-	_ => False
-}
+// if__else_
+if True body else expr => body;
+if False body else expr => expr;
 
-func (Bool a) && (Bool b) -> Bool {
-	a = True => {
-		b = True => True
-		_ => False
-	}
-	
-	_ => False
-}
+// rand__
+rand (Nat start) (Nat end) => Nat start|(Suc Nat start)|...end SYS_RAND start end;
 
-func if (Bool cond) -> body|Nothing {
-	cond = True => body
-	_ => Nothing
-}
+// println_
+println _ => Void;
 
-func if (Bool cond) (body) else (expr) -> body|expr {
-	cond = True => body,
-	_ => expr
-}
-*/
-// END ALT.
-
-func rand Nat Nat -> Nat {
-	rand start end => start|(Suc Nat start)|...end SYS_RAND start end
-}
-
-func println _ -> Void;
-
-let n = Suc Zero; // same as 1
-n += rand Zero (Suc Zero); // n = Suc (Zero|(Suc Zero)) which is the same as 1|2
-
-(n = 2|3|...) backwards_println => {
+// _backwards println
+(n = 2|3|...) backwards println => {
 	if True println n; // To test single-line if statements
 	
 	if 9 + 10 == 21 || 10 + 9 == 21
@@ -119,35 +72,50 @@ n += rand Zero (Suc Zero); // n = Suc (Zero|(Suc Zero)) which is the same as 1|2
 	println n;
 };
 
-backwards_println n; // Won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2
+// _[]
+typ [] => Array typ 0 Void;
 
-(typ) [] => Array typ 0 Void;
-
+// [_
 [(typ item) => {
 	let addr = malloc (item size);
     @addr = item;
     Array typ 1 addr
 };
 
+// _,_
 Array (typ (len = 1|2|...) addr), (typ item) => {
 	let addr = realloc addr (len + 1) * (typ size);
     @(addr + len * (typ size)) = item;
     Array typ (len + 1) addr
 };
 
+// ]
 ] => Void;
 
-Array (arr) + (item) => arr, item;
+// _+_
+Array arr + item => arr, item;
+
+// _length
 Array (_ len _) length => len;
+
+// _[_]
 Array (typ) 1|2|... (addr)[Nat (i)] => @(addr + (typ size) * i);
 
-let numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+// init
+init => {
+	let n = Suc Zero; // same as 1
+	n += rand Zero (Suc Zero); // n = Suc (Zero|(Suc Zero)) which is the same as 1|2
+	
+	backwards_println n; // Won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2
+	
+	let numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-println numbers[4]; // 4
+	println numbers[4]; // 4
 
-if rand 0 1 == 1
-	numbers += 10;
+	if rand 0 1 == 1
+		numbers += 10;
 
-// numbers = Array Nat 10|11 <addr>
+	// numbers = Array Nat 10|11 <addr>
 
-println numbers length; // will print either 10 or 11
+	println numbers length; // will print either 10 or 11
+};
