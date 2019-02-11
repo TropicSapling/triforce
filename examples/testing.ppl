@@ -75,15 +75,18 @@ println _ => Void;
 // _[]
 typ [] => Array typ 0 Void;
 
-// [_
-[(typ item) => {
+// _[_
+typ [item => {
 	let addr = malloc (item size);
     @addr = item;
     Array typ 1 addr
 };
 
+// [_
+[item => (detype item) [item;
+
 // _,_
-Array (typ (len = 1|2|...) addr), (typ item) => {
+(Array typ (len = 1|2|...) addr), (typ = detype item) => {
 	let addr = realloc addr (len + 1) * (typ size);
     @(addr + len * (typ size)) = item;
     Array typ (len + 1) addr
@@ -99,7 +102,10 @@ Array arr + item => arr, item;
 Array (_ len _) length => len;
 
 // _[_]
-Array (typ) 1|2|... (addr)[Nat (i)] => @(addr + (typ size) * i);
+(Array typ 1|2|... addr)[Nat i] => @(addr + (typ size) * i);
+
+// detype__
+detype typ _ => typ; // i.e. Nat Suc Zero => Nat
 
 // init
 init => {
