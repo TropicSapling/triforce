@@ -131,4 +131,29 @@ init => {
 	println numbers length; // will print either 10 or 11
 	
 	let num = numbers; // won't compile, since 'numbers' is unique and can't be referenced multiple times
+	
+	let le_intersect = (0|1|...8)&(4|5|...16); // => 4|5|...8
 };
+
+// List (struct-ish) testing below
+let var = val => [var, val];
+
+search in Array arr using func f => {
+	let i = 0;
+	while i < arr length {
+		if f arr[i] break i;
+		i++;
+	}
+};
+
+Array list.property => list[search in Array list using (func item => item[0] == property)][1]; // might separate from Array in the future
+
+// struct is instead a function returning a list
+new Person first middle last => [
+	let first_name = first,
+	let middle_name = middle,
+	let last_name = last
+];
+
+let person = new Person "Tropical" "TP" "Productions";
+println person.middle_name; // "TP"
