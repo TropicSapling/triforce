@@ -157,3 +157,5 @@ new Person first middle last => [
 
 let person = new Person "Tropical" "TP" "Productions";
 println person.middle_name; // "TP"
+
+// TODO: Machine types (sizes & stuff)
