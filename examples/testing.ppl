@@ -1,5 +1,7 @@
 type Nat Zero|(Suc Nat);
 type Bool True|False;
+type Array _ Nat Nat;
+type Unique _; // or just 'Unique' and then do Unique&Array when using?
 
 let Zero = Nat Zero;
 let Suc = Nat Suc;
@@ -96,25 +98,28 @@ typ [item => {
 ] => Void;
 
 // _+_
-Array arr + item => arr, item;
+Array arr + item => Array arr, item;
 
 // _length
-Array (_ len _) length => len;
+Array _ len length => len;
 
 // _[_]
 (Array typ 1|2|... addr)[Nat i] => @(addr + (typ size) * i);
 
-// detype__
+// detype_
 detype typ _ => typ; // i.e. Nat Suc Zero => Nat
+
+// _=_
+_ = Unique _ => prerun panic "Cannot reassign unique value";
 
 // init
 init => {
 	let n = Suc Zero; // same as 1
 	n += rand Zero (Suc Zero); // n = Suc (Zero|(Suc Zero)) which is the same as 1|2
 	
-	backwards_println n; // Won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2
+	backwards_println n; // won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2 (EDIT: or perhaps make it compile but fail at runtime 50/50?)
 	
-	let numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+	let numbers = Unique [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 	println numbers[4]; // 4
 
@@ -124,4 +129,6 @@ init => {
 	// numbers = Array Nat 10|11 <addr>
 
 	println numbers length; // will print either 10 or 11
+	
+	let num = numbers; // won't compile, since 'numbers' is unique and can't be referenced multiple times
 };
