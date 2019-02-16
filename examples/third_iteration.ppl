@@ -1,12 +1,15 @@
+// Natural numbers
 val Zero;
-val Suc;
+val Suc holds Zero|Suc;
 
-let Nat = Zero|(Suc Zero)|...;
+let Nat = Zero|Suc;
 
 Zero + (n = Nat) => n;
 (n = Nat) + Zero => n;
 
-Suc (n = Nat) + (m = Nat) => Suc (n + m);
-(n = Nat) + Suc (m = Nat) => Suc (n + m);
+Suc n + (m = Nat) => Suc (n + m); // no need for (n = Nat) since Suc always holds Nat
+(n = Nat) + Suc m => Suc (n + m);
 
 a += b => a = a + b;
+
+rand (start = Nat) (end = Nat) => start|(Suc start)|...end;
