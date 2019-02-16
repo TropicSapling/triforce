@@ -209,3 +209,5 @@ f (Byte {
 	seven = m,
 	eight = Zero
 }) => n + m;
+
+f (Byte One Zero One Zero n Zero m Zero) => n + m; // non-struct form
