@@ -1,0 +1,119 @@
+// Maybe
+type Maybe typ = typ|Nothing;
+
+// Natural numbers
+type Nat = Zero|(Suc Nat);
+
+func Nat + Nat -> Nat {
+	Zero + n => n,
+	n + Zero => n,
+
+	Suc n + m => Suc (n + m),
+	n + Suc m => Suc (n + m)
+}
+
+func _ += _ -> _ {
+	a += b => a = a + b
+}
+
+func rand Nat Nat -> Nat {
+	rand start end => start|(Suc start)|...end
+}
+
+// Bits & bytes
+type Bit = 0|1;
+type Byte = Bit Bit Bit Bit Bit Bit Bit Bit;
+type Int = Byte Byte Byte Byte Byte Byte Byte Byte;
+
+func Int + Int -> Int {
+	n + m => MAGIC // TODO
+}
+
+// Booleans
+type Bool = True|False;
+
+func !Bool -> Bool {
+	!True => False,
+	!False => True
+}
+
+func _ == _ -> Bool {
+	val == val => True,
+	_ => False
+}
+
+func _ != _ -> Bool {
+	a != b => !(a == b)
+}
+
+func Bool || Bool -> Bool {
+	False || False => False,
+	_ => True
+}
+
+func Bool && Bool -> Bool {
+	True && True => True,
+	_ => False
+}
+
+func if Bool typ -> Maybe typ {
+	if True body => body,
+	_ => Nothing
+}
+
+func if Bool typ else typ2 -> typ|typ2 {
+	if True body else expr => body,
+	_ => expr
+}
+
+// Printing
+func println _ -> Nothing {
+	_ => Nothing
+}
+
+func Int backwards println -> Nothing {
+	(n = 2|3|...) backwards println => {
+		if True println n; // To test single-line if statements
+		
+		if 9 + 10 == 21 || 10 + 9 == 21
+			println False
+		else if 9 + 10 != 21 && !(10 + 9 == 21)
+			if True { // To test nested if statements
+				println True;
+				println True;
+			}
+		else
+			println False;
+		
+		println n;
+		
+		Nothing
+	}
+}
+
+// Arrays
+type Array typ = {
+	typ = typ,
+	len = Nat,
+	addr = Nat
+};
+
+func _ [] -> Array _ {
+	item_type [] => {typ = item_type, len = 0, addr = 0}
+}
+
+func _ [_ -> Array _ {
+	typ [item => {
+		let addr = malloc (item size);
+		@addr = item;
+		{typ = typ, len = 1, addr = addr}
+	}
+}
+
+func [_ -> Array _ {
+	[item => (detype item) [item;
+}
+
+func ] -> Nothing {
+	Nothing
+}
