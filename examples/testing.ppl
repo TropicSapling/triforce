@@ -198,3 +198,14 @@ type Byte {
 	Bit seven,
 	Bit eight
 }
+
+f (Byte {
+	one = One,
+	two = Zero,
+	three = One,
+	four = Zero,
+	five = n,
+	six = Zero,
+	seven = m,
+	eight = Zero
+}) => n + m;
