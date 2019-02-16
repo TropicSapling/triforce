@@ -1,0 +1,12 @@
+val Zero;
+val Suc;
+
+let Nat = Zero|(Suc Zero)|...;
+
+Zero + (n = Nat) => n;
+(n = Nat) + Zero => n;
+
+Suc (n = Nat) + (m = Nat) => Suc (n + m);
+(n = Nat) + Suc (m = Nat) => Suc (n + m);
+
+a += b => a = a + b;
