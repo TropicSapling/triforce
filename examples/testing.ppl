@@ -1,6 +1,6 @@
 type Nat Zero|(Suc Nat);
 type Bool True|False;
-type Array _ Nat Nat;
+type Array _ Nat Nat; // alt. type Array typ = typ Nat Nat?
 type Unique _; // or just 'Unique' and then do Unique&Array when using?
 
 let Zero = Nat Zero;
@@ -158,4 +158,31 @@ new Person first middle last => [
 let person = new Person "Tropical" "TP" "Productions";
 println person.middle_name; // "TP"
 
-// TODO: Machine types (sizes & stuff)
+// Testing machines types (sizes & stuff) below
+
+abs(Nat n) => n; // takes 0|1|...
+abs(Neg n) => -n; // takes -1|-2|...
+
+f(Nat|Neg n) => n;
+
+// 2 bytes required for the storage, 1 bit required to determine if + or -
+let n = if rand 0 1 == 0
+			rand 0 2**8-1
+		else
+			rand -1 -2**16;
+
+println abs n; // takes in 2 bytes & 1 bit
+f n; // takes in 2 bytes => if above line were to be commented, sizeof n = 2 bytes instead of 2 bytes & 1 bit (solve this using 'fixed' keyword or something like that?)
+
+let n = rand 0 2**8-1; // 1 byte
+let m = rand -1 -2**16; // 2 bytes
+
+println abs n; // takes in 1 byte
+println abs m; // takes in 2 bytes
+
+// More machine type testing
+type Bit = Zero|One; // btw, you might as well rename 'type' to 'val' since it's the same thing anyway in P+
+type Byte = Bit Bit Bit Bit Bit Bit Bit Bit;
+type Int = Byte Byte Byte Byte Byte Byte Byte Byte;
+
+let n = 0b10101010; // 170
