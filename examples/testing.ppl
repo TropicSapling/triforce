@@ -186,3 +186,15 @@ type Byte = Bit Bit Bit Bit Bit Bit Bit Bit;
 type Int = Byte Byte Byte Byte Byte Byte Byte Byte;
 
 let n = 0b10101010; // 170
+
+// Struct-style definitions?
+type Byte {
+	Bit one,
+	Bit two,
+	Bit three,
+	Bit four,
+	Bit five,
+	Bit six,
+	Bit seven,
+	Bit eight
+}
