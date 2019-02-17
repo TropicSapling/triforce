@@ -1,15 +1,38 @@
 // Natural numbers
 val Zero;
-val Suc holds Zero|Suc;
+val Suc holds Zero|Nat;
+val Nat holds Zero|Suc;
 
-let Nat = Zero|Suc;
+//use Nat, Suc; // no need for this, since it's done automatically in the scope where they are defined
 
-Zero + (n = Nat) => n;
-(n = Nat) + Zero => n;
+(Zero) + (n = Nat) => n;
+(n = Nat) + (Zero) => n;
 
-Suc n + (m = Nat) => Suc (n + m); // no need for (n = Nat) since Suc always holds Nat
-(n = Nat) + Suc m => Suc (n + m);
+(Suc n) + (m = Nat) => Suc (n + m); // no need for (n = Nat) since Suc always holds Nat
+(n = Nat) + (Suc m) => Suc (n + m);
 
-a += b => a = a + b;
+(a) += (b) => a = a + b;
 
 rand (start = Nat) (end = Nat) => start|(Suc start)|...end;
+
+// Bits & bytes
+val Bit holds 0|1;
+val Byte holds Bit, Bit, Bit, Bit, Bit, Bit, Bit, Bit;
+val Int holds Byte, Byte, Byte, Byte, Byte, Byte, Byte, Byte;
+
+// Booleans
+val Bool holds True|False;
+
+!(True) => False;
+!(False) => True;
+
+(value) == (value) => True;
+_ == _ => False;
+
+(a) != (b) => !(a == b);
+
+(False) || (False) => False;
+(Bool _) || (Bool _) => True;
+
+(True) && (True) => True;
+(Bool _) && (Bool _) => False;
