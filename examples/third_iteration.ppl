@@ -27,7 +27,7 @@ val Bool holds True|False;
 !(False) => True;
 
 (value) == (value) => True;
-_ == _ => False;
+(_) == (_) => False;
 
 (a) != (b) => !(a == b);
 
