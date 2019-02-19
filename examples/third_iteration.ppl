@@ -69,6 +69,8 @@ val Array holds {
 	addr = Nat
 };
 
+val Array holds (type = _) (len = Nat) (addr = Nat);
+
 (type) [] => Array {type = type, len = 0, addr = 0};
 (type) [(item) => {
 	let addr = malloc (item size);
@@ -114,5 +116,5 @@ init => {
 	
 	let num = numbers; // won't compile, since 'numbers' is unique and can't be referenced multiple times
 	
-	let le_intersect = (0|1|...8)&(4|5|...16); // => 4|5|...8
+	let le_intersect = (0|1|...|8)&(4|5|...|16); // => 4|5|...|8
 };
