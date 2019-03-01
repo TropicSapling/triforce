@@ -1,0 +1,17 @@
+// Natural numbers
+box Zero; // btw, might as well make this equivalent to 'box Zero contains Nothing' by making 'Nothing' built-in
+box PlusOne contains Zero|Nat;
+box Nat contains Zero|PlusOne;
+
+//use Nat, Suc; // no need for this, since it's done automatically in the scope where they are defined
+
+(n) + (m) => if fulfilling n == Nat && OUTPUT == Nat {
+	checked n + m
+}
+
+(m) + (n) => n + m;
+
+checked (Zero) + (n) => n;
+checked (PlusOne n) + (m) => PlusOne (n + m);
+
+(a) += (b) => a = a + b;
