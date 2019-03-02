@@ -9,9 +9,47 @@ box Nat contains Zero|PlusOne;
 	checked n + m
 }
 
-(m) + (n) => n + m;
-
 checked (Zero) + (n) => n;
 checked (PlusOne n) + (m) => PlusOne (n + m);
 
+// Digital numbers
+box Bit contains Zero|One;
+box Byte contains Bit Bit Bit Bit Bit Bit Bit Bit;
+
+box Signed;
+box Unsigned;
+box Int contains Signed|Unsigned Byte Byte Byte Byte Byte Byte Byte Byte;
+
+// Unique boxes
+discardable box Unique contains _;
+
+(_) = (Unique _) => prerun panic "Cannot reassign unique value";
+
+// Macros
+(m) + (n) => n + m;
 (a) += (b) => a = a + b;
+
+// Misc.
+unbox (b _) => b;
+
+init => {
+	let n = PlusOne Zero; // representing 1
+	n += rand Zero (PlusOne Zero); // n = Nat (PlusOne (Nat (Zero|PlusOne (Nat Zero)))) a.k.a. 1 or 2
+	
+	backwards_println n; // won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2 (EDIT: or perhaps make it compile but fail at runtime 50/50?)
+	
+	let numbers = Unique [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+	println numbers[4]; // 4
+
+	if rand 0 1 == 1
+		numbers += 10;
+
+	// numbers = Array {type = Nat, len = 10|11, addr}
+
+	println numbers length; // will print either 10 or 11
+	
+	let num = numbers; // won't compile, since 'numbers' is unique and can't be referenced multiple times
+	
+	let le_intersect = (0|1|...|8)&(4|5|...|16); // => 4|5|...|8
+};
