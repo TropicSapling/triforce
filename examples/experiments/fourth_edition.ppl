@@ -1,14 +1,10 @@
 // Natural numbers
 box Zero; // btw, might as well make this equivalent to 'box Zero contains Nothing' by making 'Nothing' built-in
-box PlusOne contains Zero|Nat;
+box PlusOne contains Nat;
 box Nat contains Zero|PlusOne;
 
-(n) + (m) => if fulfilling n == Nat && OUTPUT == Nat {
-	checked n + m
-}
-
-checked (Zero) + (n) => n;
-checked (PlusOne n) + (m) => PlusOne (n + m);
+(Nat Zero) + (Nat n) => Nat n;
+(Nat (PlusOne n)) + (Nat m) => Nat (PlusOne (n + Nat m));
 
 // Bits & bytes
 box Bit contains Zero|One;
