@@ -20,9 +20,11 @@ box Signed;
 box Unsigned;
 box Int contains Signed|Unsigned Byte Byte Byte Byte Byte Byte Byte Byte;
 
-// Unique boxes
+// Constant & unique boxes
+transparent box Const contains _;
 transparent box Unique contains _;
 
+(Const _) = (_) => prerun panic "Cannot modify constant value";
 (_) = (Unique _) => prerun panic "Cannot reassign unique value";
 
 // Macros
