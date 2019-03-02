@@ -83,7 +83,7 @@ box Array contains (func<1> _) Int Int Int; // Array (condf esize len addr)
 (Array (_ _ _ addr)) address => addr;
 
 (Array (_ esize len addr))[i] => if fulfilling len == 1|2|... && i == Int {
-	@(addr + esize * i);
+	@(addr + esize * i)
 };
 
 // Misc.
@@ -97,7 +97,7 @@ println (_) => ;
 transparent box Safe contains Array;
 
 (Safe arr)[i] => if fulfilling len == 1|2|... && i == 0|1|...|(arr length - 1) {
-	@((arr address) + (arr item size) * i);
+	@((arr address) + (arr item size) * i)
 };
 
 // Example usage
