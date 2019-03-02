@@ -21,7 +21,7 @@ box Unsigned;
 box Int contains Signed|Unsigned Byte Byte Byte Byte Byte Byte Byte Byte;
 
 // Constant & unique boxes
-transparent box Const contains _;
+transparent box Const contains _; // or 'jelly box'? actually a bit more fitting xD
 transparent box Unique contains _;
 
 (Const _) = (_) => prerun panic "Cannot modify constant value";
