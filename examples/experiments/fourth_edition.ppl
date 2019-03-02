@@ -21,7 +21,7 @@ box Unsigned;
 box Int contains Signed|Unsigned Byte Byte Byte Byte Byte Byte Byte Byte;
 
 // Unique boxes
-discardable box Unique contains _;
+transparent box Unique contains _;
 
 (_) = (Unique _) => prerun panic "Cannot reassign unique value";
 
