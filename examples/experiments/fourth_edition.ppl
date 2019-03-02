@@ -37,9 +37,9 @@ let False = Bool False;
 (a) != (b) => !(a == b);
 
 if (True) (body) => body;
-if (False) (body) => ;
-if (True) (body) else (expr) => body;
-if (False) (body) else (expr) => expr;
+if (False) (_) => ;
+if (True) (body) else (_) => body;
+if (False) (_) else (expr) => expr;
 
 // Constant & unique boxes
 transparent box Const contains _; // or 'jelly box'? actually a bit more fitting xD
