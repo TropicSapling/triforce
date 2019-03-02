@@ -7,6 +7,8 @@ box Nat contains Zero|PlusOne;
 (Nat (PlusOne n)) + (Nat m) => Nat (PlusOne (n + Nat m));
 
 // Bits & bytes
+box Zero;
+box One;
 box Bit contains Zero|One;
 box Byte contains Bit Bit Bit Bit Bit Bit Bit Bit;
 
@@ -56,6 +58,24 @@ box Nothing;
 unbox (b _) => b;
 
 println (_) => Nothing;
+
+(n) backwards_println => if fulfilling n == 2|3|... {
+	if True println n; // To test single-line if statements
+	
+	if 9 + 10 == 21 || 10 + 9 == 21
+		println False
+	else if 9 + 10 != 21 && !(10 + 9 == 21)
+		if True { // To test nested if statements
+			println True;
+			println True;
+		}
+	else
+		println False;
+	
+	println n;
+	
+	Nothing
+}
 
 init => {
 	let n = PlusOne Zero; // representing 1
