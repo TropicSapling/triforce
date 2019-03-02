@@ -76,7 +76,11 @@ box Array contains (func<1> _) Int Int Int; // Array (condf esize len addr)
 ] => ;
 
 (arr) + (item) => arr, item;
+
+(Array (condf _ _ _)) item contract => condf;
+(Array (_ esize _ _)) item size => esize;
 (Array (_ _ len _)) length => len;
+(Array (_ _ _ addr)) address => addr;
 
 (Array (_ esize len addr))[i] => if fulfilling len == 1|2|... && i == Int {
 	@(addr + esize * i);
@@ -93,7 +97,7 @@ println (_) => ;
 transparent box Safe contains Array;
 
 (Safe arr)[i] => if fulfilling len == 1|2|... && i == 0|1|...|(arr length - 1) {
-	@(addr + esize * i);
+	@((arr address) + (arr item size) * i);
 };
 
 // Example usage
