@@ -3,8 +3,6 @@ box Zero; // btw, might as well make this equivalent to 'box Zero contains Nothi
 box PlusOne contains Zero|Nat;
 box Nat contains Zero|PlusOne;
 
-//use Nat, Suc; // no need for this, since it's done automatically in the scope where they are defined
-
 (n) + (m) => if fulfilling n == Nat && OUTPUT == Nat {
 	checked n + m
 }
@@ -12,13 +10,38 @@ box Nat contains Zero|PlusOne;
 checked (Zero) + (n) => n;
 checked (PlusOne n) + (m) => PlusOne (n + m);
 
-// Digital numbers
+// Bits & bytes
 box Bit contains Zero|One;
 box Byte contains Bit Bit Bit Bit Bit Bit Bit Bit;
 
 box Signed;
 box Unsigned;
 box Int contains Signed|Unsigned Byte Byte Byte Byte Byte Byte Byte Byte;
+
+// Booleans
+box Bool contains True|False;
+
+let True = Bool True;
+let False = Bool False;
+
+!(True) => False;
+!(False) => True;
+
+(False) || (False) => False;
+(Bool _) || (Bool _) => True;
+
+(True) && (True) => True;
+(Bool _) && (Bool _) => False;
+
+(val) == (val) => True;
+(_) == (_) => False;
+
+(a) != (b) => !(a == b);
+
+if (True) (body) => body;
+if (False) (body) => Nothing;
+if (True) (body) else (expr) => body;
+if (False) (body) else (expr) => expr;
 
 // Constant & unique boxes
 transparent box Const contains _; // or 'jelly box'? actually a bit more fitting xD
@@ -32,7 +55,11 @@ transparent box Unique contains _;
 (a) += (b) => a = a + b;
 
 // Misc.
+box Nothing;
+
 unbox (b _) => b;
+
+println (_) => Nothing;
 
 init => {
 	let n = PlusOne Zero; // representing 1
