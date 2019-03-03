@@ -1,0 +1,15 @@
+type Int;
+type Real extends Int;
+type Complex extends Real;
+
+func (Int a) + (Int b) -> Int {
+    ...
+}
+
+func (Real a) / (Real b) -> Real {
+    ...
+}
+
+func real_part_of (Complex a) -> Real {
+    ...
+}

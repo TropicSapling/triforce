@@ -1,0 +1,11 @@
+contract => len == 1|2|... && i == Nat; // needs 'freeze' or 'macro' or something probably though for this to work, alt. lazy eval
+
+(arr)[i] => where
+    type = arr type,
+    len = arr length,
+    addr = arr address
+fulfilling
+    contract
+{
+        @(addr + (type size) * i);
+};

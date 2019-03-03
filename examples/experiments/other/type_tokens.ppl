@@ -1,0 +1,14 @@
+func f (some compile time tokens n) {
+    println "runs";
+}
+
+func init {
+    let my_var = some compile time tokens 123;
+    let my_second_var = some other compile time tokens 123;
+    
+    println my_var; // prints '123', nothing special
+    println my_second_var; // prints '123', nothing special
+    
+    f my_var; // prints 'runs'
+    f my_second_var; // compile-time error
+}

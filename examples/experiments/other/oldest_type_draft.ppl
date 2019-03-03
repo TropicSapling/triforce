@@ -1,0 +1,48 @@
+type $Cylinder;
+type $Chips;
+type $Pringles;
+
+Macro Cylinder = List $Cylinder;
+Macro Chips = List $Chips;
+Macro Pringles = List $Pringles;
+
+macro Cylinder List (c) {
+    if List c has radius && List c has height
+        return Cylinder c
+    else
+        panic "Not a cylinder"
+}
+
+macro Chips List (c) {
+    if List c has radius && List c has height && List c has count
+        return Chips c
+    else
+        panic "Not a chips can"
+}
+
+macro Pringles List (c) {
+    if List c has radius && List c has height && List c has count && List c has price
+        return Pringles c
+    else
+        panic "Not a Pringles can"
+}
+
+Cylinder (c) volume -> Volume
+Cylinder (c) radius -> Radius
+Chips (c) chips count -> ChipsCount
+Pringles (c) price -> Price
+
+let c = Cylinder [radius: 123, height: 456];
+c volume;
+c radius;
+
+let c = Chips c + [count: 12];
+c volume;
+c radius;
+c chips count;
+
+let c = Pringles c + [price: 3];
+c volume;
+c radius;
+c chips count;
+c price;
