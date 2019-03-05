@@ -1,7 +1,7 @@
 // "Strings"
 // "mapped to built-in string literals by default"
-// "btw, as you can see, it's possible to use a function before it's been defined,
-	as long as it's not defined in another scope"
+// "btw, as you can see, it's possible to use functions or boxes before they are defined,
+	as long as they're not defined in another scope (obviously)"
 
 box String;
 
