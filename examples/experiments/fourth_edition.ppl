@@ -1,4 +1,13 @@
-// Natural numbers
+// "Strings"
+// "mapped to built-in string literals by default"
+// "btw, as you can see, it's possible to use a function before it's been defined,
+	as long as it's not defined in another scope"
+
+box String;
+
+// (String str) => ; // "when you realise you can define commenting as a function O_o"
+
+// "Natural numbers"
 box Zero;
 box PlusOne contains Nat;
 box Nat contains Zero|PlusOne;
@@ -6,7 +15,7 @@ box Nat contains Zero|PlusOne;
 (Nat Zero) + (Nat n) => Nat n;
 (Nat (PlusOne n)) + (Nat m) => Nat (PlusOne (n + Nat m));
 
-// Bits & bytes
+// "Bits & bytes"
 box Zero;
 box One;
 box Bit contains Zero|One;
@@ -16,7 +25,7 @@ box Signed;
 box Unsigned;
 box Int contains Signed|Unsigned Byte Byte Byte Byte Byte Byte Byte Byte;
 
-// Booleans
+// "Booleans"
 box Bool contains True|False;
 
 let True = Bool True;
@@ -41,8 +50,8 @@ if (False) (_) => ;
 if (True) (body) else (_) => body;
 if (False) (_) else (expr) => expr;
 
-// Constant & unique boxes
-transparent box Const contains _; // or 'jelly box'? actually a bit more fitting xD
+// "Constant & unique boxes"
+transparent box Const contains _; // "or 'jelly box'? actually a bit more fitting xD"
 transparent box Unique contains _;
 
 (Const _) = (_) => prerun panic "Cannot modify constant value";
@@ -51,12 +60,12 @@ transparent box Unique contains _;
 category of (Const b) => Const (category of b);
 category of (Unique b) => Unique (category of b);
 
-// Macros
+// "Macros"
 (m) + (n) => n + m;
 (a) += (b) => a = a + b;
 
-// Arrays
-box Array contains (func<1> _) Int Int Int; // Array (condf esize len addr)
+// "Arrays"
+box Array contains (func<1> _) Int Int Int; // "Array (condf esize len addr)"
 
 [] where each element is of size (esize) and fulfills (func<1> condf) => Array (condf esize 0 0);
 (Array (_ esize n m)) fulfills (func<1> condf) => Array (condf esize n m);
@@ -86,23 +95,23 @@ box Array contains (func<1> _) Int Int Int; // Array (condf esize len addr)
 	@(addr + esize * i)
 };
 
-// Misc.
+// "Misc."
 box Nothing;
 
 category of (b _) => b; // default behavior, can be overriden (as done above)
 unbox (_ b) => b;
 println (_) => ;
 
-// Example extension
+// "Example extension"
 transparent box Safe contains Array;
 
 (Safe arr)[i] => if fulfilling len == 1|2|... && i == 0|1|...|(arr length - 1) {
 	@((arr address) + (arr item size) * i)
 };
 
-// Example usage
-(n) backwards_println => if fulfilling n == only 2|3|... { // 'only' keyword makes sure 1|2 isn't allowed; it must be possible to guarantee at compile time that this check won't fail
-	if True println n; // To test single-line if statements
+// "Example usage"
+(n) backwards_println => if fulfilling n == only 2|3|... { // "'only' keyword makes sure 1|2 isn't allowed; it must be possible to guarantee at compile time that this check won't fail"
+	if True println n; // "To test single-line if statements"
 	
 	if 9 + 10 == 21 || 10 + 9 == 21
 		println False
@@ -118,25 +127,25 @@ transparent box Safe contains Array;
 }
 
 init => {
-	let n = PlusOne Zero; // representing 1
-	n += rand Zero (PlusOne Zero); // n = Nat (PlusOne (Nat (Zero|PlusOne (Nat Zero)))) a.k.a. 1 or 2
+	let n = PlusOne Zero; // "representing 1"
+	n += rand Zero (PlusOne Zero); // "n = Nat (PlusOne (Nat (Zero|PlusOne (Nat Zero)))) a.k.a. 1 or 2"
 	
-//	backwards_println n; // won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2
+//	"backwards_println n; // won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2"
 	
 	let numbers = Unique (Safe [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-	println numbers[4]; // 4
+	println numbers[4]; // "4"
 
 	if rand 0 1 == 1
 		numbers += 10;
 
-	// numbers = Unique (Safe (Array (((i) => (i == Int)) 10|11 addr)))
+	// "numbers = Unique (Safe (Array (((i) => (i == Int)) 10|11 addr)))"
 
-	println numbers length; // will print either 10 or 11
+	println numbers length; // "will print either 10 or 11"
 	
-//	let num = numbers; // won't compile, since 'numbers' is unique and can't be referenced multiple times
-//	let num = numbers[12]; // neither will this because it's a Safe Array and index is out of bounds
-//	let num = numbers[11]; // this would however compile, because it might be inside bounds and would panic during runtime if not
+//	"let num = numbers; // won't compile, since 'numbers' is unique and can't be referenced multiple times
+	let num = numbers[12]; // neither will this because it's a Safe Array and index is out of bounds
+	let num = numbers[11]; // this would however compile, because it might be inside bounds and would panic during runtime if not"
 	
-	let le_intersect = (0|1|...|8)&(4|5|...|16); // => 4|5|...|8
+	let le_intersect = (0|1|...|8)&(4|5|...|16); // "=> 4|5|...|8"
 };
