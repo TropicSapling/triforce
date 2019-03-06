@@ -1,3 +1,5 @@
+// 2019-02-19
+
 contract => len == 1|2|... && i == Nat; // needs 'freeze' or 'macro' or something probably though for this to work, alt. lazy eval
 
 (arr)[i] => where

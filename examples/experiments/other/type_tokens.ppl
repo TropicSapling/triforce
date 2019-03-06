@@ -1,3 +1,5 @@
+// 2018-12-18
+
 func f (some compile time tokens n) {
     println "runs";
 }
