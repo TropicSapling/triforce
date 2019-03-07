@@ -12,7 +12,7 @@ box Zero;
 box PlusOne contains Nat;
 box Nat contains Zero|PlusOne;
 
-(Nat Zero) + (Nat n) => Nat n;
+(Nat (Zero)) + (Nat n) => Nat n;
 (Nat (PlusOne n)) + (Nat m) => Nat (PlusOne (n + Nat m));
 
 (m) + (n) => n + m;
@@ -31,8 +31,8 @@ box Int contains Signed|Unsigned Byte Byte Byte Byte Byte Byte Byte Byte;
 // "Booleans"
 box Bool contains True|False;
 
-let True = Bool True;
-let False = Bool False;
+let True = Bool (True);
+let False = Bool (False);
 
 !(True) => False;
 !(False) => True;
@@ -113,9 +113,13 @@ box LinkedList contains (_ LinkedList)|Nothing;
 // "Misc."
 box Nothing;
 
-category of (b _) => b; // default behavior, can be overriden (as done above)
+category of (b _) => b; // "default behavior, can be overriden (as done above)"
 unbox (_ b) => b;
 println (_) => ;
+
+rand between (start) and (end) => if fulfilling start == Nat && end == Nat {
+	start|(Nat (PlusOne start))|...|end
+};
 
 // "Example extension"
 transparent box Safe contains Array;
@@ -131,7 +135,7 @@ transparent box Safe contains Array;
 	if 9 + 10 == 21 || 10 + 9 == 21
 		println False
 	else if 9 + 10 != 21 && !(10 + 9 == 21)
-		if True { // To test nested if statements
+		if True { // "To test nested if statements"
 			println True;
 			println True;
 		}
@@ -142,16 +146,16 @@ transparent box Safe contains Array;
 }
 
 init => {
-	let n = PlusOne Zero; // "representing 1"
-	n += rand Zero (PlusOne Zero); // "n = Nat (PlusOne (Nat (Zero|PlusOne (Nat Zero)))) a.k.a. 1 or 2"
+	let n = PlusOne (Zero); // "representing 1"
+	n += rand between Zero and PlusOne (Zero); // "n = Nat (PlusOne (Nat (Zero|(PlusOne (Nat (Zero)))))) a.k.a. 1 or 2"
 	
 //	"backwards_println n; // won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2"
 	
-	let numbers = Unique (Safe [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+	let numbers = Unique (Safe ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
 
 	println numbers[4]; // "4"
 
-	if rand 0 1 == 1
+	if rand between 0 and 1 == 1
 		numbers += 10;
 
 	// "numbers = Unique (Safe (Array (((i) => (i == Int)) 10|11 addr)))"
