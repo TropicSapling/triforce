@@ -15,6 +15,9 @@ box Nat contains Zero|PlusOne;
 (Nat Zero) + (Nat n) => Nat n;
 (Nat (PlusOne n)) + (Nat m) => Nat (PlusOne (n + Nat m));
 
+(m) + (n) => n + m;
+(a) += (b) => a = a + b;
+
 // "Bits & bytes"
 box Zero;
 box One;
@@ -60,10 +63,6 @@ transparent box Unique contains _;
 category of (Const b) => Const (category of b);
 category of (Unique b) => Unique (category of b);
 
-// "Macros"
-(m) + (n) => n + m;
-(a) += (b) => a = a + b;
-
 // "Arrays"
 box Array contains (func<1> _) Int Int Int; // "Array (condf esize len addr)"
 
@@ -84,7 +83,7 @@ box Array contains (func<1> _) Int Int Int; // "Array (condf esize len addr)"
 
 ] => ;
 
-(arr) + (item) => arr, item;
+(Array arr) + (item) => Array arr, item;
 
 (Array (condf _ _ _)) item contract => condf;
 (Array (_ esize _ _)) item size => esize;
@@ -94,6 +93,22 @@ box Array contains (func<1> _) Int Int Int; // "Array (condf esize len addr)"
 (Array (_ esize len addr))[i] => if fulfilling len == 1|2|... && i == Int {
 	@(addr + esize * i)
 };
+
+// "Linked lists"
+box LinkedList contains (_ LinkedList)|Nothing;
+
+-[] => LinkedList (Nothing);
+-[(item) => LinkedList (item LinkedList (Nothing));
+
+(LinkedList (item LinkedList (Nothing))), (new_item) => LinkedList (item LinkedList (new_item LinkedList (Nothing)));
+(LinkedList (item next)), (new_item) => LinkedList (item (next, new_item));
+
+(LinkedList list) + (item) => LinkedList list, item;
+
+(LinkedList (Nothing)) length => 0;
+(LinkedList (_ next)) length => next length + 1;
+
+]- => ;
 
 // "Misc."
 box Nothing;
