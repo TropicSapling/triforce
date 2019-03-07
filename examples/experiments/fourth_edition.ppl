@@ -12,7 +12,7 @@ box Zero;
 box PlusOne contains Nat;
 box Nat contains Zero|PlusOne;
 
-(Nat (Zero)) + (Nat n) => Nat n; // "n = (Zero|(PlusOne (m))); notice how the outer parentheses are a part of n"
+(Nat (Zero)) + (Nat n) => Nat n; // "n = (Zero|(PlusOne m)); notice how the outer parentheses are a part of n"
 (Nat (PlusOne n)) + (Nat m) => Nat (PlusOne (n + Nat m));
 
 (m) + (n) => n + m;
