@@ -2,7 +2,6 @@
 // "mapped to built-in string literals by default"
 // "btw, as you can see, it's possible to use functions or boxes before they are defined,
 	as long as they're not defined in another scope (obviously)"
-
 box String;
 
 // (String str) => ; // "when you realise you can define commenting as a function O_o"
@@ -10,7 +9,7 @@ box String;
 // "Natural numbers"
 box Zero;
 box PlusOne contains Nat;
-box Nat contains Zero|PlusOne;
+box Nat contains Zero|PlusOne; // "8*n bytes mem"
 
 (Nat (Zero)) + (Nat n) => Nat n; // "n = (Zero|(PlusOne m)); notice how the outer parentheses are a part of n"
 (Nat (PlusOne n)) + (Nat m) => Nat (PlusOne (n + Nat m));
@@ -22,14 +21,20 @@ box Nat contains Zero|PlusOne;
 box Zero;
 box One;
 box Bit contains Zero|One;
-box Byte contains Bit Bit Bit Bit Bit Bit Bit Bit;
+box Byte contains Bit Bit Bit Bit Bit Bit Bit Bit; // "1 byte mem"
+box SignByte contains Byte;
 
-box Signed;
-box Unsigned;
-box Int contains Signed|Unsigned Byte Byte Byte Byte Byte Byte Byte Byte;
+box Int contains SignByte Byte Byte Byte Byte Byte Byte Byte; // "8 bytes mem"
+box UnsignedInt contains Byte Byte Byte Byte Byte Byte Byte Byte;
+
+// "Int arithmetic will be defined here at some point or be built-in"
+
+(i) - (n) => if fulfilling i == UnsignedInt && n <= i {
+	i - n
+} else report "Attempt to subtract with overflow"; // "example of custom errors (if not provided there will be a default error instead)"
 
 // "Booleans"
-box Bool contains True|False;
+box Bool contains True|False; // "1 byte mem"
 
 let True = Bool (True);
 let False = Bool (False);
