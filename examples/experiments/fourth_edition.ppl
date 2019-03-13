@@ -35,6 +35,8 @@ box UnsignedInt contains Byte Byte Byte Byte Byte Byte Byte Byte;
 
 // "Booleans"
 box Bool contains True|False; // "1 byte mem"
+box True;
+box False;
 
 let True = Bool (True);
 let False = Bool (False);
