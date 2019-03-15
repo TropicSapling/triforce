@@ -152,6 +152,11 @@ transparent box Safe contains Array;
 	println n;
 }
 
+if fulfilling (True) (body) => body;
+if fulfilling (False) (_) => frozen {
+	continue or alt prerun panic (format "ERROR: {}:{}:{} Failed to fulfill condition '{}'" [__debug]);
+};
+
 init => {
 	let n = PlusOne (Zero); // "representing 1"
 	n += rand between Zero and PlusOne (Zero); // "n = Nat (PlusOne (Nat (Zero|(PlusOne (Nat (Zero)))))) a.k.a. 1 or 2"
