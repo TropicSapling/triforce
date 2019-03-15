@@ -136,7 +136,7 @@ transparent box Safe contains Array;
 };
 
 // "Example usage"
-(n) backwards_println => if fulfilling n == only 2|3|... { // "'only' keyword makes sure 1|2 isn't allowed; it must be possible to guarantee at compile time that this check won't fail"
+(n) backwards_println => if fulfilling prerun n == 2|3|... { // "'prerun' keyword makes sure the check is always done at compilation time, meaning 1|2 wouldn't be allowed as input for example because it can't be determined before runtime if it's 1 or 2"
 	if True println n; // "To test single-line if statements"
 	
 	if 9 + 10 == 21 || 10 + 9 == 21
