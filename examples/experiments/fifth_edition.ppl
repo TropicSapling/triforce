@@ -152,6 +152,10 @@ box LinkedList contains (_ LinkedList)|Nothing
 
 ]- =>
 
+// "Dependent++"
+box ArrayLenPair contains len Array (_ _ len _) // "First value of pair is equal to the Array's length"
+box ArrayDoubleLenPair contains (len * 2) Array (_ _ len _) // "Functions can be used pretty much everywhere, even here"
+
 // "Misc."
 box Nothing
 
