@@ -120,6 +120,18 @@ box LinkedList contains (_ LinkedList)|Nothing;
 // "Misc."
 box Nothing;
 
+format_err (String msg) => format "ERROR: {}:{}:{} {}" [__debug file, __debug line, __debug col, String msg];
+
+if fulfilling (True) (body) => body;
+if fulfilling (frozen Bool cond) (_) => frozen {
+	continue or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify cond]));
+};
+
+if fulfilling (True) (body) else report (_) => body;
+if fulfilling (False) (_) else report (String msg) => frozen {
+	continue or alt prerun panic (format_err (String msg));
+}
+
 category of (b _) => b; // "default behavior, can be overriden (as done above)"
 unbox (_ b) => b;
 println (_) => ;
@@ -129,7 +141,7 @@ rand between (start) and (end) => if fulfilling start == Nat && end == Nat {
 };
 
 // "Example extension"
-transparent box Safe contains Array;
+transparent box Safe contains Array; // "TODO: figure out how to deal with transparent boxes containing multiple boxes"
 
 (Safe arr)[i] => if fulfilling len == 1|2|... && i == 0|1|...|(arr length - 1) {
 	@((arr address) + (arr item size) * i)
@@ -151,11 +163,6 @@ transparent box Safe contains Array;
 	
 	println n;
 }
-
-if fulfilling (True) (body) => body;
-if fulfilling (False) (_) => frozen {
-	continue or alt prerun panic (format "ERROR: {}:{}:{} Failed to fulfill condition '{}'" [__debug]);
-};
 
 init => {
 	let n = PlusOne (Zero); // "representing 1"
