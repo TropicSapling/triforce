@@ -1,0 +1,222 @@
+// "Operators"
+operator ;
+operator +
+operator -
+operator *
+operator /
+operator %
+operator =
+operator &
+operator |
+operator ^
+operator <
+operator >
+operator !
+operator ~
+operator ?
+operator ,
+operator @
+
+// "The legendary semicolon"
+// "Has the very lowest precedence and returns nothing, thereby discards everything before it like in Rust"
+// "May be necessary to have some sort of flag for this to prevent code before it getting optimised away"
+#precedence 0
+(_); =>
+
+// "Strings"
+// "mapped to built-in string literals by default"
+// "btw, as you can see, it's possible to use functions or boxes before they are defined,
+	as long as they're not defined in another scope (obviously)"
+box String
+
+// "when you realise you can define commenting as a function O_o"
+// (String str) =>
+
+// "Natural numbers"
+box Zero
+box PlusOne contains Nat
+box Nat contains Zero|PlusOne // "8*n bytes mem"
+
+#precedence 245
+(Nat (Zero)) + (Nat n) => Nat n // "n = (Zero|(PlusOne m)); notice how the outer parentheses are a part of n"
+(Nat (PlusOne n)) + (Nat m) => Nat (PlusOne (n + Nat m))
+
+(m) + (n) => n + m
+
+#precedence 1
+(a) += (b) => a = a + b
+
+// "Bits & bytes"
+box Zero
+box One
+box Bit contains Zero|One
+box Byte contains Bit Bit Bit Bit Bit Bit Bit Bit // "1 byte mem"
+box SignByte contains Byte
+
+box Int contains SignByte Byte Byte Byte Byte Byte Byte Byte // "8 bytes mem"
+box UnsignedInt contains Byte Byte Byte Byte Byte Byte Byte Byte
+
+// "Int arithmetic will be defined here at some point or be built-in"
+
+#precedence 245
+(i) - (n) => if fulfilling i == UnsignedInt && n <= i {
+	i - n
+} else report "Attempt to subtract with overflow" // "example of custom errors (if not provided there will be a default error instead)"
+
+// "Booleans"
+box Bool contains True|False // "1 byte mem"
+box True
+box False
+
+let True = Bool (True);
+let False = Bool (False);
+
+// "Has implicit precedence of 255"
+!(True) => False
+!(False) => True
+
+#precedence 237
+(False) || (False) => False
+(Bool _) || (Bool _) => True
+
+#precedence 238
+(True) && (True) => True
+(Bool _) && (Bool _) => False
+
+#precedence 242
+(val) == (val) => True
+(_) == (_) => False
+
+#precedence 242
+(a) != (b) => !(a == b)
+
+if (True) (body) => body
+if (False) (_) =>
+if (True) (body) else (_) => body
+if (False) (_) else (expr) => expr
+
+// "Constant & unique boxes"
+transparent box Const contains _ // "or 'jelly box'? actually a bit more fitting xD"
+transparent box Unique contains _
+
+(Const _) = (_) => prerun panic "Cannot modify constant value";
+(_) = (Unique _) => prerun panic "Cannot reassign unique value";
+
+category of (Const b) => Const (category of b)
+category of (Unique b) => Unique (category of b)
+
+// "Arrays"
+box Array contains (func<1> _) Int Int Int // "Array (condf esize len addr)"
+
+[] where each element is of size (esize) and fulfills (func<1> condf) => Array (condf esize 0 0)
+(Array (_ esize n m)) fulfills (func<1> condf) => Array (condf esize n m)
+
+[(item) => {
+	let addr = malloc (item size);
+	@addr = item;
+	Array (((i) => (i == category of item)) (item size) 1 addr)
+}
+
+(Array (condf esize len addr)), (item) => if fulfilling condf item {
+	let addr = realloc addr (len + 1) * esize;
+    @(addr + len * esize) = item;
+    Array (condf esize (len + 1) addr)
+}
+
+] =>
+
+(Array arr) + (item) => Array arr, item
+
+(Array (condf _ _ _)) item contract => condf
+(Array (_ esize _ _)) item size => esize
+(Array (_ _ len _)) length => len
+(Array (_ _ _ addr)) address => addr
+
+(Array (_ esize len addr))[i] => if fulfilling len == 1|2|... && i == Int {
+	@(addr + esize * i)
+}
+
+// "Linked lists"
+box LinkedList contains (_ LinkedList)|Nothing
+
+-[] => LinkedList (Nothing)
+-[(item) => LinkedList (item LinkedList (Nothing))
+
+(LinkedList (item LinkedList (Nothing))), (new_item) => LinkedList (item LinkedList (new_item LinkedList (Nothing)))
+(LinkedList (item next)), (new_item) => LinkedList (item (next, new_item))
+
+(LinkedList list) + (item) => LinkedList list, item
+
+(LinkedList (Nothing)) length => 0
+(LinkedList (_ next)) length => next length + 1
+
+]- =>
+
+// "Misc."
+box Nothing
+
+format_err (String msg) => format "ERROR: {}:{}:{} {}" [__debug file, __debug line, __debug col, String msg]
+
+if fulfilling (True) (body) => body
+if fulfilling (frozen Bool cond) (_) => frozen {
+	continue or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify cond]));
+}
+
+if fulfilling (True) (body) else report (_) => body
+if fulfilling (False) (_) else report (String msg) => frozen {
+	continue or alt prerun panic (format_err (String msg));
+}
+
+category of (b _) => b // "default behavior, can be overriden (as done above)"
+unbox (_ b) => b
+println (_) =>
+
+rand between (start) and (end) => if fulfilling start == Nat && end == Nat {
+	start|(Nat (PlusOne start))|...|end
+}
+
+// "Example extension"
+transparent box Safe contains Array // "TODO: figure out how to deal with transparent boxes containing multiple boxes"
+
+(Safe arr)[i] => if fulfilling len == 1|2|... && i == 0|1|...|(arr length - 1) {
+	@((arr address) + (arr item size) * i)
+}
+
+// "Example usage"
+(n) backwards_println => if fulfilling prerun n == 2|3|... { // "'prerun' keyword makes sure the check is always done at compilation time, meaning 1|2 wouldn't be allowed as input for example because it can't be determined before runtime if it's 1 or 2"
+	if True println n; // "To test single-line if statements"
+	
+	if 9 + 10 == 21 || 10 + 9 == 21
+		println False
+	else if 9 + 10 != 21 && !(10 + 9 == 21)
+		if True { // "To test nested if statements"
+			println True;
+			println True;
+		}
+	else
+		println False;
+	
+	println n;
+}
+
+let n = PlusOne (Zero); // "representing 1"
+n += rand between Zero and PlusOne (Zero); // "n = Nat (PlusOne (Nat (Zero|(PlusOne (Nat (Zero)))))) a.k.a. 1 or 2"
+
+//	"backwards_println n; // won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2"
+
+let numbers = Unique (Safe ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
+
+println numbers[4]; // "4"
+
+if rand between 0 and 1 == 1
+	numbers += 10;
+
+// "numbers = Unique (Safe (Array (((i) => (i == Int)) 10|11 addr)))"
+
+println numbers length; // "will print either 10 or 11"
+
+//	"let num = numbers; // won't compile, since 'numbers' is unique and can't be referenced multiple times
+let num = numbers[12]; // neither will this because it's a Safe Array and index is out of bounds
+let num = numbers[11]; // this would however compile, because it might be inside bounds and would panic during runtime if not"
+
+let le_intersect = (0|1|...|8)&(4|5|...|16); // "=> 4|5|...|8"

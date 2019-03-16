@@ -130,7 +130,7 @@ if fulfilling (frozen Bool cond) (_) => frozen {
 if fulfilling (True) (body) else report (_) => body;
 if fulfilling (False) (_) else report (String msg) => frozen {
 	continue or alt prerun panic (format_err (String msg));
-}
+};
 
 category of (b _) => b; // "default behavior, can be overriden (as done above)"
 unbox (_ b) => b;
@@ -162,7 +162,7 @@ transparent box Safe contains Array; // "TODO: figure out how to deal with trans
 		println False;
 	
 	println n;
-}
+};
 
 init => {
 	let n = PlusOne (Zero); // "representing 1"
