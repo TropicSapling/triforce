@@ -21,11 +21,12 @@ operator @
 // "Has the very lowest precedence and returns nothing, thereby discards everything before it like in Rust"
 // "May be necessary to have some sort of flag for this to prevent code before it getting optimised away"
 #precedence 0
+(VarDecl decl); => VarDecl decl // "Makes sure variable declarations aren't affected by semicolons"
 (_); =>
 
 // "The almost-as-legendary variable declaration"
-// "May be required to surround 'let' declarations with parentheses in some cases"
-let (var) = (val) => ((var) => scope) val // "'scope' is a reserved variable equal to the part of the scope coming after the function call"
+transparent box VarDecl contains _
+let (var) = (val) => VarDecl (((var) => scope) val) // "'scope' is a reserved variable equal to the part of the scope coming after the function call"
 
 // "Strings"
 // "mapped to built-in string literals by default"
@@ -72,8 +73,8 @@ box Bool contains True|False // "1 byte mem"
 box True
 box False
 
-let True = Bool (True)
-let False = Bool (False)
+let True = Bool (True);
+let False = Bool (False);
 
 // "Has implicit precedence of 255"
 !(True) => False
@@ -116,13 +117,13 @@ box Array contains (func<1> _) Int Int Int // "Array (condf esize len addr)"
 (Array (_ esize n m)) fulfills (func<1> condf) => Array (condf esize n m)
 
 [(item) => {
-	let addr = malloc (item size)
+	let addr = malloc (item size);
 	@addr = item;
 	Array (((i) => (i == category of item)) (item size) 1 addr)
 }
 
 (Array (condf esize len addr)), (item) => if fulfilling condf item {
-	let addr = realloc addr (len + 1) * esize
+	let addr = realloc addr (len + 1) * esize;
     @(addr + len * esize) = item;
     Array (condf esize (len + 1) addr)
 }
@@ -207,12 +208,12 @@ transparent box Safe contains Array // "TODO: figure out how to deal with transp
 	println n;
 }
 
-let n = PlusOne (Zero) // "representing 1"
+let n = PlusOne (Zero); // "representing 1"
 n += rand between Zero and PlusOne (Zero); // "n = Nat (PlusOne (Nat (Zero|(PlusOne (Nat (Zero)))))) a.k.a. 1 or 2"
 
 //	"backwards_println n; // won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2"
 
-let numbers = Unique (Safe ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]))
+let numbers = Unique (Safe ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
 
 println numbers[4]; // "4"
 
@@ -227,4 +228,4 @@ println numbers length; // "will print either 10 or 11"
 let num = numbers[12]; // neither will this because it's a Safe Array and index is out of bounds
 let num = numbers[11]; // this would however compile, because it might be inside bounds and would panic during runtime if not"
 
-let le_intersect = (0|1|...|8)&(4|5|...|16) // "=> 4|5|...|8"
+let le_intersect = (0|1|...|8)&(4|5|...|16); // "=> 4|5|...|8"
