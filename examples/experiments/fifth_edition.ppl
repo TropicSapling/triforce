@@ -41,7 +41,7 @@ box Nat contains Zero|PlusOne // "8*n bytes mem"
 (Nat (Zero)) + (Nat n) => Nat n // "n = (Zero|(PlusOne m)); notice how the outer parentheses are a part of n"
 (Nat (PlusOne n)) + (Nat m) => Nat (PlusOne (n + Nat m))
 
-(m) + (n) <=> n + m // "<=> reads as 'is equivalent to', in this case making the function commutative"
+(m) + (n) => n + m // "makes the function commutative"
 
 #precedence 1
 (a) += (b) => a = a + b
@@ -68,8 +68,8 @@ box Bool contains True|False // "1 byte mem"
 box True
 box False
 
-True <=> Bool (True)
-False <=> Bool (False)
+let True = Bool (True);
+let False = Bool (False);
 
 // "Has implicit precedence of 255"
 !(True) => False
