@@ -26,7 +26,7 @@ operator @
 
 // "The almost-as-legendary variable declaration"
 transparent box VarDecl contains _
-let (var) = (val) => VarDecl (((var) => scope) val) // "'scope' is a reserved variable equal to the part of the scope coming after the function call"
+let (var) = (val) => VarDecl [((var) => scope) val] // "'scope' is a reserved variable equal to the part of the scope coming after the function call"
 
 // "Strings"
 // "mapped to built-in string literals by default"
@@ -43,8 +43,8 @@ box PlusOne contains Nat
 box Nat contains Zero|PlusOne // "8*n bytes mem"
 
 #precedence 245
-(Nat (Zero)) + (Nat n) => Nat n // "n = (Zero|(PlusOne m)); notice how the outer parentheses are a part of n"
-(Nat (PlusOne n)) + (Nat m) => Nat (PlusOne (n + Nat m))
+(Nat [Zero]) + (Nat n) => Nat n // "n = [Zero|(PlusOne m)]; notice how the outer parentheses are a part of n"
+(Nat [PlusOne n]) + (Nat m) => Nat [PlusOne [n + Nat m]]
 
 (m) + (n) => n + m // "makes the function commutative"
 
@@ -64,17 +64,17 @@ box UnsignedInt contains Byte Byte Byte Byte Byte Byte Byte Byte
 // "Int arithmetic will be defined here at some point or be built-in"
 
 #precedence 245
-(i) - (n) => if fulfilling i == UnsignedInt && n <= i {
+(i) - (n) => if fulfilling i == UnsignedInt && n <= i (
 	i - n
-} else report "Attempt to subtract with overflow" // "example of custom errors (if not provided there will be a default error instead)"
+) else report "Attempt to subtract with overflow" // "example of custom errors (if not provided there will be a default error instead)"
 
 // "Booleans"
 box Bool contains True|False // "1 byte mem"
 box True
 box False
 
-let True = Bool (True);
-let False = Bool (False);
+let True = Bool [True];
+let False = Bool [False];
 
 // "Has implicit precedence of 255"
 !(True) => False
@@ -111,55 +111,55 @@ category of (Const b) => Const (category of b)
 category of (Unique b) => Unique (category of b)
 
 // "Arrays"
-box Array contains (func<1> _) Int Int Int // "Array (condf esize len addr)"
+box Array contains (func<1> _) Int Int Int // "Array [condf esize len addr]"
 
-[] where each element is of size (esize) and fulfills (func<1> condf) => Array (condf esize 0 0)
-(Array (_ esize n m)) fulfills (func<1> condf) => Array (condf esize n m)
+{} where each element is of size (esize) and fulfills (func<1> condf) => Array [condf esize 0 0]
+(Array [_ esize n m]) fulfills (func<1> condf) => Array [condf esize n m]
 
-[(item) => {
+{(item) => (
 	let addr = malloc (item size);
 	@addr = item;
-	Array (((i) => (i == category of item)) (item size) 1 addr)
-}
+	Array [((i) => (i == category of item)) (item size) 1 addr]
+)
 
-(Array (condf esize len addr)), (item) => if fulfilling condf item {
+(Array [condf esize len addr]), (item) => if fulfilling condf item (
 	let addr = realloc addr (len + 1) * esize;
     @(addr + len * esize) = item;
-    Array (condf esize (len + 1) addr)
-}
+    Array [condf esize (len + 1) addr]
+)
 
-] =>
+} =>
 
 (Array arr) + (item) => Array arr, item
 
-(Array (condf _ _ _)) item contract => condf
-(Array (_ esize _ _)) item size => esize
-(Array (_ _ len _)) length => len
-(Array (_ _ _ addr)) address => addr
+(Array [condf _ _ _]) item contract => condf
+(Array [_ esize _ _]) item size => esize
+(Array [_ _ len _]) length => len
+(Array [_ _ _ addr]) address => addr
 
-(Array (_ esize len addr))[i] => if fulfilling len == 1|2|... && i == Int {
+(Array [_ esize len addr])[i] => if fulfilling len == 1|2|... && i == Int (
 	@(addr + esize * i)
-}
+)
 
 // "Linked lists"
 box LinkedList contains (_ LinkedList)|Nothing
 
--[] => LinkedList (Nothing)
--[(item) => LinkedList (item LinkedList (Nothing))
+-[] => LinkedList [Nothing]
+-[(item) => LinkedList [item LinkedList [Nothing]]
 
-(LinkedList (item LinkedList (Nothing))), (new_item) => LinkedList (item LinkedList (new_item LinkedList (Nothing)))
-(LinkedList (item next)), (new_item) => LinkedList (item (next, new_item))
+(LinkedList [item LinkedList [Nothing]]), (new_item) => LinkedList [item LinkedList [new_item LinkedList [Nothing]]]
+(LinkedList [item next]), (new_item) => LinkedList [item (next, new_item)]
 
 (LinkedList list) + (item) => LinkedList list, item
 
-(LinkedList (Nothing)) length => 0
-(LinkedList (_ next)) length => next length + 1
+(LinkedList [Nothing]) length => 0
+(LinkedList [_ next]) length => next length + 1
 
 ]- =>
 
 // "Dependent++"
-box ArrayLenPair contains len Array (_ _ len _) // "First value of pair is equal to the Array's length"
-box ArrayDoubleLenPair contains (len * 2) Array (_ _ len _) // "Functions can be used pretty much everywhere, even here"
+box ArrayLenPair contains len Array [_ _ len _] // "First value of pair is equal to the Array's length"
+box ArrayDoubleLenPair contains (len * 2) Array [_ _ len _] // "Functions can be used pretty much everywhere, even here"
 
 // "Misc."
 box Nothing
@@ -167,32 +167,32 @@ box Nothing
 format_err (String msg) => format "ERROR: {}:{}:{} {}" [__debug file, __debug line, __debug col, String msg]
 
 if fulfilling (True) (body) => body
-if fulfilling (frozen Bool cond) (_) => frozen {
+if fulfilling (frozen Bool cond) (_) => frozen (
 	continue or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify cond]));
-}
+)
 
 if fulfilling (True) (body) else report (_) => body
-if fulfilling (False) (_) else report (String msg) => frozen {
+if fulfilling (False) (_) else report (String msg) => frozen (
 	continue or alt prerun panic (format_err (String msg));
-}
+)
 
 category of (b _) => b // "default behavior, can be overriden (as done above)"
 unbox (_ b) => b
 println (_) =>
 
-rand between (start) and (end) => if fulfilling start == Nat && end == Nat {
-	start|(Nat (PlusOne start))|...|end
-}
+rand between (start) and (end) => if fulfilling start == Nat && end == Nat (
+	start|(Nat [PlusOne start])|...|end
+)
 
 // "Example extension"
 transparent box Safe contains Array // "TODO: figure out how to deal with transparent boxes containing multiple boxes"
 
-(Safe arr)[i] => if fulfilling len == 1|2|... && i == 0|1|...|(arr length - 1) {
+(Safe arr)[i] => if fulfilling len == 1|2|... && i == 0|1|...|(arr length - 1) (
 	@((arr address) + (arr item size) * i)
-}
+)
 
 // "Example usage"
-(n) backwards_println => if fulfilling prerun n == 2|3|... { // "'prerun' keyword makes sure the check is always done at compilation time, meaning 1|2 wouldn't be allowed as input for example because it can't be determined before runtime if it's 1 or 2"
+(n) backwards_println => if fulfilling prerun n == 2|3|... ( // "'prerun' keyword makes sure the check is always done at compilation time, meaning 1|2 wouldn't be allowed as input for example because it can't be determined before runtime if it's 1 or 2"
 	if True println n; // "To test single-line if statements"
 	
 	if 9 + 10 == 21 || 10 + 9 == 21
@@ -206,21 +206,21 @@ transparent box Safe contains Array // "TODO: figure out how to deal with transp
 		println False;
 	
 	println n;
-}
+)
 
-let n = PlusOne (Zero); // "representing 1"
-n += rand between Zero and PlusOne (Zero); // "n = Nat (PlusOne (Nat (Zero|(PlusOne (Nat (Zero)))))) a.k.a. 1 or 2"
+let n = PlusOne [Zero]; // "representing 1"
+n += rand between Zero and PlusOne [Zero]; // "n = Nat [PlusOne [Nat [Zero|(PlusOne [Nat [Zero]])]]] a.k.a. 1 or 2"
 
 //	"backwards_println n; // won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2"
 
-let numbers = Unique (Safe ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
+let numbers = Unique [Safe [{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}]];
 
 println numbers[4]; // "4"
 
 if rand between 0 and 1 == 1
 	numbers += 10;
 
-// "numbers = Unique (Safe (Array (((i) => (i == Int)) 10|11 addr)))"
+// "numbers = Unique [Safe [Array [((i) => (i == Int)) 10|11 addr]]]"
 
 println numbers length; // "will print either 10 or 11"
 
