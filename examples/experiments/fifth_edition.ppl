@@ -198,10 +198,10 @@ transparent box Safe contains Array // "TODO: figure out how to deal with transp
 	if 9 + 10 == 21 || 10 + 9 == 21
 		println False
 	else if 9 + 10 != 21 && !(10 + 9 == 21)
-		if True { // "To test nested if statements"
+		if True ( // "To test nested if statements"
 			println True;
 			println True;
-		}
+		)
 	else
 		println False;
 	
