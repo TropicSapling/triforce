@@ -195,7 +195,7 @@ transparent box Safe contains Array // "TODO: figure out how to deal with transp
 (n) backwards_println => if fulfilling prerun n == 2|3|... ( // "'prerun' keyword makes sure the check is always done at compilation time, meaning 1|2 wouldn't be allowed as input for example because it can't be determined before runtime if it's 1 or 2"
 	if True println n; // "To test single-line if statements"
 	
-	if 9 + 10 == 21 || 10 + 9 == 21
+	if run (9 + 10 == 21 || 10 + 9 == 21) // "'run' forces check to always be done at runtime"
 		println False
 	else if 9 + 10 != 21 && !(10 + 9 == 21)
 		if True ( // "To test nested if statements"
