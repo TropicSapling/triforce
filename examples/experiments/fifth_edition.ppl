@@ -215,7 +215,7 @@ n += rand between Zero and PlusOne {Zero}; // "n = Nat {PlusOne {Nat {Zero|(Plus
 
 let numbers = Unique {Safe {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]}};
 
-println numbers{4}; // "4"
+println numbers[4]; // "4"
 
 if rand between 0 and 1 == 1
 	numbers += 10;
