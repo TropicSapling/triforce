@@ -17,7 +17,7 @@ let (var) = (Heap val) => VarDecl {
 		let expr = scope;
 		free ->var;
 		expr
-	) val
+	) Heap val
 }
 
 let (var) = (val) => VarDecl {((var) => scope) val}
