@@ -12,3 +12,12 @@ This experiment aims to solve these issues.
 "
 
 // "Use after free: solved by auto free at end of scope"
+let (var) = (Heap val) => VarDecl {
+	((var) =>
+		let expr = scope;
+		free ->var;
+		expr
+	) val
+}
+
+let (var) = (val) => VarDecl {((var) => scope) val}
