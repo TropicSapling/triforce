@@ -1,0 +1,14 @@
+//
+"
+ISSUES
+------
+* Use after free
+* Null pointer dereference
+* Using uninit mem
+* Double free
+* Buffer overflow
+------
+This experiment aims to solve these issues.
+"
+
+// "Use after free: solved by auto free at end of scope"
