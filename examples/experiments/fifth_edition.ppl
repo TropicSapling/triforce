@@ -35,7 +35,7 @@ let (var) = (val) => VarDecl {((var) => scope) val} // "'scope' is a reserved va
 box String
 
 // "when you realise you can define commenting as a function O_o"
-// (String str) =>
+// (String _) =>
 
 // "Natural numbers"
 box Zero
