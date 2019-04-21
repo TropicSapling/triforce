@@ -13,7 +13,7 @@ This experiment aims to solve these issues.
 "
 
 // "Use after free: solved by auto free at end of scope"
-let (var) = (Heap val) => VarDecl {
+let (frozen var) = (Heap val) => VarDecl {
 	((var) =>
 		let expr = scope;
 		free ->var;
@@ -21,4 +21,17 @@ let (var) = (Heap val) => VarDecl {
 	) Heap val
 }
 
-let (var) = (val) => VarDecl {((var) => scope) val}
+let (frozen var) = (val) => VarDecl {((var) => scope) val}
+
+// "Null pointer dereference: solved by forcing compile-time pointer checks"
+transparent box Pointer contains _
+
+@(Pointer ptr) => if fulfilling prerun ptr != 0 (
+	...
+)
+
+// "Using unit mem: TMP solved by not allowing unit mem creation"
+
+// "Double free: solved by ???"
+
+// "Buffer overflow: solved by ???"
