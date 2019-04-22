@@ -12,6 +12,20 @@ ISSUES
 This experiment aims to solve these issues.
 "
 
+// "The stack and the heap"
+box GrainsOfSand contains Nothing|Grain|(Grain Grain)|
+box Grain
+
+box SupermassiveBlackHole contains TonsOfMatter
+box TonsOfMatter contains Nothing|TonsOfMatter
+
+// "2 grains of sand are small, so they fit well on the stack"
+let grains_of_sand = GrainsOfSand { Grain Grain };
+
+// "A supermassive black hole is way too big, and it keeps growing, so it's better to put it on the heap"
+// "If we didn't use malloc, it would try to put this on the stack anyway"
+let M87_black_hole = malloc SupermassiveBlackHole { TonsOfMatter {TonsOfMatter {TonsOfMatter {...}}}} with access size 4;
+
 // "Use after free: solved by auto free at end of scope"
 let (frozen var) = (Heap val) => VarDecl {
 	((var) =>
