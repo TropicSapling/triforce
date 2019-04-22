@@ -16,7 +16,7 @@ This experiment aims to solve these issues.
 box GrainsOfSand contains Nothing|Grain|(Grain Grain)
 box Grain
 
-box SupermassiveBlackHole contains TonsOfMatter
+box SupermassiveBlackHole contains TonsOfMatter|(Pointer {TonsOfMatter})
 box TonsOfMatter contains Nothing|TonsOfMatter
 
 // "2 grains of sand are small, so they fit well on the stack"
@@ -27,11 +27,13 @@ grains_of_sand // "=> GrainsOfSand {Grain Grain}"
 
 // "A supermassive black hole is way too big, and it keeps growing, so it's better to put it on the heap"
 // "If we didn't use malloc, it would try to put this on the stack anyway"
-let M87_black_hole = malloc SupermassiveBlackHole {TonsOfMatter {TonsOfMatter {TonsOfMatter {...}}}} with access size 2; // "we can't @ptr without specifying how many bytes we want"
+let M87_black_hole = SupermassiveBlackHole {malloc TonsOfMatter {TonsOfMatter {TonsOfMatter {...}}} with access size 2}; // "we can't @ptr without specifying how many bytes we want"
 
 // "Get first 2 bytes of M87_black_hole (as per the access size specified above)"
 // "TODO: Figure out what exactly the first 2 bytes will contain"
-@M87_black_hole
+@(unbox M87_black_hole)
+
+f (Pointer {TonsOfMatter m}) => m // "m moved from heap to stack suddenly??? TODO: figure out how to fix this"
 
 // "Use after free: solved by auto free at end of scope"
 let (frozen var) = (Heap val) => VarDecl {
