@@ -13,7 +13,7 @@ This experiment aims to solve these issues.
 "
 
 // "The stack and the heap"
-box GrainsOfSand contains Nothing|Grain|(Grain Grain)|
+box GrainsOfSand contains Nothing|Grain|(Grain Grain)
 box Grain
 
 box SupermassiveBlackHole contains TonsOfMatter
