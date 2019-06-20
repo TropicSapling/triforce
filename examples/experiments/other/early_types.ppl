@@ -1,0 +1,31 @@
+// 2019-01-05 (earlier)
+
+type Int;
+type Char;
+type Array;
+
+macro new Array -> Array Int Zero {
+    return Array Int Zero malloc;
+}
+
+func Array (typ len arrp) += (typ i) {
+    @(arrp + len * Eight) = i;
+    Array typ len arrp = Array typ len++ arrp;
+}
+
+func double Array (typ len arrp) {
+    let arr = Array typ len arrp;
+    for i in arr {
+        arr += i;
+    }
+}
+
+func init {
+    let arr = new Array;
+    
+    arr += 123;
+    arr += 456; // => arr = Array Int Two arrp
+//  arr += 'c'; // won't compile
+    
+    double arr; // => arr = Array Int Four arrp
+}

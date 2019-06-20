@@ -1,0 +1,47 @@
+// 2019-01-05 (even earlier)
+
+type $Frog;
+
+Macro Frog = List $Frog;
+
+macro name Frog (frog) String (name) {
+    return (Frog frog).name = name
+}
+
+macro set Frog (frog) age to Int (age) {
+    if Int age < 50 {
+        return (Frog frog).age = age;
+    } else {
+        println "[ERROR] Frogs cannot live for 50 years or more!";
+    }
+}
+
+macro set Frog (frog) info to String (name) and Int (age) {
+    return {
+        name Frog frog String name;
+        set Frog frog age to Int age;
+    }
+}
+
+macro new Frog -> Frog {
+    return [
+        String name,
+        Int age,
+        macro getName -> String {
+            return name;
+        },
+        macro getAge -> Int {
+            return age;
+        }
+    ] $Frog;
+}
+
+func init {
+    let frog1 = new Frog;
+    
+    name frog1 "Bertie";
+//  frog1.setAge 52; // this would return an error, because frogs cannot reasonably live for that long
+    set frog1 age to 1;
+    
+    println frog1.getName;
+}

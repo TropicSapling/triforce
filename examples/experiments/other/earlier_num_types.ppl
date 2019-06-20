@@ -1,0 +1,33 @@
+// 2018-12-19 (earlier)
+
+type Nat;
+type Zero;
+type Suc;
+
+type List;
+type Array;
+
+Macro Zero = Nat Zero;
+Macro Suc = Nat Suc;
+
+Macro Array = List Array;
+
+macro (Suc a)-- {
+    return a;
+}
+
+macro (Nat a) + (Nat b) {
+    let a = Nat a;
+    let b = Nat b;
+    
+    if a == Zero
+        return b
+    else if b == Zero
+        return a
+    else
+        return Suc (a-- + b)
+}
+
+func (Array a_len a) += (Array b_len b) -> Array (a_len + b_len) {
+    ...
+}

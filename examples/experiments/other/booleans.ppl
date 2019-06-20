@@ -1,0 +1,43 @@
+// 2019-02-05
+
+macro false || (Bool b) {
+    return b;
+}
+
+macro true || (Bool _) {
+    return true;
+}
+
+macro false && (Bool _) {
+    return false;
+}
+
+macro true && false {
+    return false;
+}
+
+macro true && true {
+    return true;
+}
+
+macro if true (body) {
+    return body;
+}
+
+macro if false (body) {
+    return;
+}
+
+macro if true (body) else (expr) {
+    return body;
+}
+
+macro if false (body) else (expr) {
+    return expr;
+}
+
+// OR
+
+macro if (cond) (body) else (expr) {
+    return (cond && body) || expr; // assuming lazy evaluation is on if args are specified as '_'
+}

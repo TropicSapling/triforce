@@ -490,190 +490,14 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 						// Macro functions
 						
 						macros.push(Macro {
-							func: Function {
-								name: String::from(""),
-								pos: 0,
-								args: vec![],
-								precedence: 2,
-								output: vec![]
-							},
-							
-							code: vec![
-								Token {
-									kind: Kind::Type(Type::Func, Vec::new()),
-									pos: FilePos {line: 0, col: 0}, // Obviously wrong but the pos is irrelevant anyway
-									children: RefCell::new(Vec::new())
-								},
-								
-								Token {
-									kind: Kind::Var(String::from("init"), Vec::new()),
-									pos: FilePos {line: 0, col: 0},
-									children: RefCell::new(Vec::new())
-								},
-								
-								Token {
-									kind: Kind::GroupOp(String::from("{")),
-									pos: FilePos {line: 0, col: 0},
-									children: RefCell::new(Vec::new())
-								}
-							],
-							
+							func: ...,
+							code: ...,
 							returns: vec![],
 							depth: full_depth,
 							row: rows[full_depth]
 						});
 						
-						let mut last_item = macros.len();
-						if last_item != 0 {
-							last_item -= 1;
-						}
-						
-						let mut par_type = vec![vec![]];
-						
-						let mut last_token_kind = tokens[i - 1].kind.clone();
-						while i < tokens.len() {
-							match tokens[i].kind.clone() {
-								Kind::Type(_,_) => match tokens[i + 1].kind {
-									Kind::GroupOp(ref op) if op == "{" => {
-										let end = i;
-										let mut t = 0;
-										while i > 0 {
-											match tokens[i].kind {
-												Kind::Type(ref typ, _) => par_type[t].push(typ.clone()),
-												Kind::Op(ref op) if op == "|" => {
-													par_type.push(Vec::new());
-													t += 1;
-												},
-												_ => break
-											}
-											
-											i -= 1;
-										}
-										
-										par_type.reverse();
-										for section in par_type.iter_mut() {
-											section.reverse();
-										}
-										
-										i = end;
-									},
-									
-									_ => ()
-								},
-								
-								Kind::Var(ref name, _) => if let Kind::Type(_,_) = last_token_kind { // Function args
-									macros[last_item].func.args.push(FunctionArg {name: name.clone(), typ: Vec::new()}); // Arg types for macro functions are WIP; TODO: replace 'Vec::new()' with actual type
-								} else { // Function name
-									macros[last_item].func.name += name;
-									macros[last_item].func.pos = macros[last_item].func.args.len();
-								},
-								
-								Kind::Op(ref op) => if op == "-" {
-									match tokens[i + 1].kind {
-										Kind::Op(ref op) if op == ">" => i += 1,
-										_ => { // Operator (function) name
-											macros[last_item].func.name += op;
-											macros[last_item].func.pos = macros[last_item].func.args.len();
-										}
-									}
-								} else if op != "|" { // Operator (function) name
-									macros[last_item].func.name += op;
-									macros[last_item].func.pos = macros[last_item].func.args.len();
-								},
-								
-								Kind::GroupOp(ref op) => if op == "{" { // Function body
-									macros[last_item].func.output = par_type.clone();
-									if macros[last_item].func.name == "**" {
-										macros[last_item].func.precedence = 247;
-									} else if par_type[0].len() > 0 {
-										if macros[last_item].func.args.len() == 1 {
-											macros[last_item].func.precedence = 255;
-										}
-									}
-									
-									tokens.remove(i);
-									break;
-								} else if op == ";" { // End of function declaration
-									panic!("{}:{} Macro functions must have a body", tokens[i].pos.line, tokens[i].pos.col);
-								},
-								
-								_ => ()
-							}
-							
-							last_token_kind = tokens[i].kind.clone();
-							tokens.remove(i);
-						}
-						
-						let mut point = 0;
-						let mut depth = 0;
-						while i < tokens.len() {
-							match tokens[i].kind.clone() {
-								Kind::GroupOp(ref op) if op == "{" => depth += 1,
-								Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
-									depth -= 1;
-								} else {
-									break;
-								},
-								
-								Kind::Reserved(ref keyword) if keyword == "return" => {
-									macros[last_item].returns.push(vec![Token {
-										kind: Kind::GroupOp(String::from(";")),
-										pos: FilePos {line: 0, col: 0},
-										children: RefCell::new(Vec::new())
-									}]);
-									
-									macros[last_item].code.push(tokens[i].clone());
-									macros[last_item].code.push(Token {
-										kind: Kind::Number(point, 0),
-										pos: FilePos {line: 0, col: 0},
-										children: RefCell::new(Vec::new())
-									});
-									
-									tokens.remove(i);
-									
-									let mut depth = 0;
-									while i < tokens.len() {
-										match tokens[i].kind.clone() {
-											Kind::GroupOp(ref op) if op == "{" => depth += 1,
-											Kind::GroupOp(ref op) if op == "}" => if depth > 0 {
-												depth -= 1;
-											} else {
-												panic!("{}:{} Excess ending bracket", tokens[i].pos.line, tokens[i].pos.col);
-											},
-											
-											Kind::GroupOp(ref op) if op == ";" && depth == 0 => break,
-											_ => ()
-										}
-										
-										macros[last_item].returns[point].push(tokens[i].clone());
-										tokens.remove(i);
-									}
-									
-									macros[last_item].returns[point].push(Token {
-										kind: Kind::GroupOp(String::from(";")),
-										pos: FilePos {line: 0, col: 0},
-										children: RefCell::new(Vec::new())
-									});
-									
-									point += 1;
-								},
-								
-								_ => ()
-							}
-							
-							macros[last_item].code.push(tokens[i].clone());
-							tokens.remove(i);
-						}
-						
-						macros[last_item].code.push(tokens[i].clone());
-						tokens.remove(i);
-						i -= 1;
-						
-						functions.push(macros[last_item].func.clone());
-						
-						match lex3(&mut macros[last_item].code, functions) {
-							(f, _) => functions = f
-						}
+						...
 					}
 				}
 			}, */
@@ -703,7 +527,7 @@ pub fn lex3(tokens: &mut Vec<Token>) {
 				}
 				
 				match tokens[i].kind {
-					Kind::Var(_, ref mut typ, _, _, _) => *typ = types, // This should probably be changed because it's not really good for performance to copy a vector like this...
+					Kind::Var(_, ref mut typ, _, _, _) => *typ = types, // This should probably be changed because it's not really good for performance to copy a vector like this... [EDIT: does this actually copy the whole vector?]
 					
 					_ => {
 						i -= 1;

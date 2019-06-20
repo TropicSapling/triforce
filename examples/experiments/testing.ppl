@@ -1,0 +1,213 @@
+type Nat Zero|(Suc Nat);
+type Bool True|False;
+type Array _ Nat Nat; // alt. type Array typ = typ Nat Nat?
+type Unique _; // or just 'Unique' and then do Unique&Array when using?
+
+let Zero = Nat Zero;
+let Suc = Nat Suc;
+let True = Bool True;
+let False = Bool False;
+
+let n = Nat n;
+let m = Nat m;
+
+// _+_
+Zero + n => n;
+n + Zero => n;
+
+Suc n + m => Suc (n + m);
+n + Suc m => Suc (n + m);
+
+// _+=_
+a += b => a = a + b;
+
+// !_
+!True => False;
+!False => True;
+
+// _==_
+a == b => True|False;
+
+// _!=_
+a != b => !(a == b);
+
+// _||_
+False || False => False;
+True  || False => True;
+False || True  => True;
+True  || True  => True;
+
+// _&&_
+False && False => False;
+True  && False => False;
+False && True  => False;
+True  && True  => True;
+
+// if__
+if True body => body;
+if False body => Nothing;
+
+// if__else_
+if True body else expr => body;
+if False body else expr => expr;
+
+// rand__
+rand (Nat start) (Nat end) => Nat start|(Suc Nat start)|...end SYS_RAND start end;
+
+// println_
+println _ => Void;
+
+// _backwards println
+(n = 2|3|...) backwards println => {
+	if True println n; // To test single-line if statements
+	
+	if 9 + 10 == 21 || 10 + 9 == 21
+		println False
+	else if 9 + 10 != 21 && !(10 + 9 == 21)
+		if True { // To test nested if statements
+			println True;
+			println True;
+		}
+	else
+		println False;
+	
+	println n;
+};
+
+// _[]
+typ [] => Array typ 0 Void;
+
+// _[_
+typ [item => {
+	let addr = malloc (item size);
+    @addr = item;
+    Array typ 1 addr
+};
+
+// [_
+[item => (detype item) [item;
+
+// _,_
+(Array typ (len = 1|2|...) addr), (typ = detype item) => {
+	let addr = realloc addr (len + 1) * (typ size);
+    @(addr + len * (typ size)) = item;
+    Array typ (len + 1) addr
+};
+
+// ]
+] => Void;
+
+// _+_
+Array arr + item => Array arr, item;
+
+// _length
+Array _ len length => len;
+
+// _[_]
+(Array typ 1|2|... addr)[Nat i] => @(addr + (typ size) * i);
+
+// detype_
+detype typ _ => typ; // i.e. Nat Suc Zero => Nat
+
+// _=_
+_ = Unique _ => prerun panic "Cannot reassign unique value";
+
+// init
+init => {
+	let n = Suc Zero; // same as 1
+	n += rand Zero (Suc Zero); // n = Suc (Zero|(Suc Zero)) which is the same as 1|2
+	
+	backwards_println n; // won't compile, since n must be 2 or more but that can't be guaranteed; n could be either 1 or 2 (EDIT: or perhaps make it compile but fail at runtime 50/50?)
+	
+	let numbers = Unique [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+	println numbers[4]; // 4
+
+	if rand 0 1 == 1
+		numbers += 10;
+
+	// numbers = Array Nat 10|11 <addr>
+
+	println numbers length; // will print either 10 or 11
+	
+	let num = numbers; // won't compile, since 'numbers' is unique and can't be referenced multiple times
+	
+	let le_intersect = (0|1|...8)&(4|5|...16); // => 4|5|...8
+};
+
+// List (struct-ish) testing below
+let var = val => [var, val];
+
+search in Array arr using func f => {
+	let i = 0;
+	while i < arr length {
+		if f arr[i] break i;
+		i++;
+	}
+};
+
+Array list.property => list[search in Array list using (func item => item[0] == property)][1]; // might separate from Array in the future
+
+// struct is instead a function returning a list
+new Person first middle last => [
+	let first_name = first,
+	let middle_name = middle,
+	let last_name = last
+];
+
+let person = new Person "Tropical" "TP" "Productions";
+println person.middle_name; // "TP"
+
+// Testing machines types (sizes & stuff) below
+
+abs(Nat n) => n; // takes 0|1|...
+abs(Neg n) => -n; // takes -1|-2|...
+
+f(Nat|Neg n) => n;
+
+// 2 bytes required for the storage, 1 bit required to determine if + or -
+let n = if rand 0 1 == 0
+			rand 0 2**8-1
+		else
+			rand -1 -2**16;
+
+println abs n; // takes in 2 bytes & 1 bit
+f n; // takes in 2 bytes => if above line were to be commented, sizeof n = 2 bytes instead of 2 bytes & 1 bit (solve this using 'fixed' keyword or something like that?)
+
+let n = rand 0 2**8-1; // 1 byte
+let m = rand -1 -2**16; // 2 bytes
+
+println abs n; // takes in 1 byte
+println abs m; // takes in 2 bytes
+
+// More machine type testing
+type Bit = Zero|One; // btw, you might as well rename 'type' to 'val' since it's the same thing anyway in P+
+type Byte = Bit Bit Bit Bit Bit Bit Bit Bit;
+type Int = Byte Byte Byte Byte Byte Byte Byte Byte;
+
+let n = 0b10101010; // 170
+
+// Struct-style definitions?
+type Byte {
+	Bit one,
+	Bit two,
+	Bit three,
+	Bit four,
+	Bit five,
+	Bit six,
+	Bit seven,
+	Bit eight
+}
+
+f (Byte {
+	one = One,
+	two = Zero,
+	three = One,
+	four = Zero,
+	five = n,
+	six = Zero,
+	seven = m,
+	eight = Zero
+}) => n + m;
+
+f (Byte One Zero One Zero n Zero m Zero) => n + m; // non-struct form
