@@ -1,5 +1,13 @@
 //
 "
+MEM LAYOUT
+----------
+4-8 bytes BoxID
+...
+"
+
+//
+"
 ISSUES
 ------
 * Use after free

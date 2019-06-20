@@ -1,0 +1,14 @@
+box ByteThingy contains X|Y
+box X contains Bit Bit Bit Bit Bit Bit Bit
+box Y contains Bit Bit Bit Bit Bit Bit Bit
+
+let arr = [ByteThingy {X {rand}}, ByteThingy {Y {rand}}];
+
+special print arr[0];
+special print arr[rand between 0 and 1];
+
+special print (ByteThingy bt) => if bt == X {
+    println "X: " unwrap bt
+} else {
+    println "Y: " unwrap bt
+}
