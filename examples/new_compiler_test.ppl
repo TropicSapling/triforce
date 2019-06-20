@@ -1,3 +1,23 @@
+box Array contains (_ Array)|Nothing
+
+[(item) => Array {
+	item
+	Array {Nothing}
+}
+
+(Array {item Array {Nothing}}), (new_item) => Array {
+	item
+	Array {
+		new_item
+		Array {Nothing}
+	}
+}
+
+] =>
+
+(Array {item _})[0] => item
+(Array {_ tail})[i] => tail[i - 1]
+
 box ByteThingy contains X|Y
 box X contains Bit Bit Bit Bit Bit Bit Bit
 box Y contains Bit Bit Bit Bit Bit Bit Bit
