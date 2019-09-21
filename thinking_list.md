@@ -6,3 +6,6 @@
 
 ## purity
 - Proving equality?
+
+## == box
+- How will this "non-strict" equality work?
