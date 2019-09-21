@@ -16,3 +16,7 @@
 - getting function without calling it?
 - anonymous functions?
 - could spaces in names be problematic?
+
+## memory
+- rust borrow system? changes?
+- memory layouts (of boxes)?
