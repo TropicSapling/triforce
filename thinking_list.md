@@ -20,3 +20,7 @@
 ## memory
 - rust borrow system? changes?
 - memory layouts (of boxes)?
+
+## mutability
+- Dependent types makes mutability harder
+- Maybe immutability by default, then specify what ranges of mutability are allowed?
