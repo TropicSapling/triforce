@@ -24,3 +24,11 @@
 ## mutability
 - Dependent types makes mutability harder
 - Maybe immutability by default, then specify what ranges of mutability are allowed?
+
+## syntax / parsing
+- Line breaks, semicolons?
+- How will parsing work?
+
+## lists
+- memory layout
+- should lists without `[]` (`a, b, ...`) exist and be similar to tuples?
