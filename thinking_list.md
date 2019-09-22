@@ -23,6 +23,7 @@
 
 ## mutability
 - Dependent types makes mutability harder
+- Like, `let n = 123` says type is (Integer) 123 rather than just Integer
 - Maybe immutability by default, then specify what ranges of mutability are allowed?
 
 ## syntax / parsing
