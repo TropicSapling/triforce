@@ -47,8 +47,6 @@ box Nat contains Zero|PlusOne // "8*n bytes mem"
 (Nat {Zero}) + (Nat n) => Nat n // "n = {Zero|(PlusOne m)}; notice how the outer parentheses are a part of n"
 (Nat {PlusOne n}) + (Nat m) => Nat {PlusOne {n + Nat m}}
 
-(m) + (n) => n + m // "makes the function commutative"
-
 #precedence 1
 (a) += (b) => a = a + b
 
