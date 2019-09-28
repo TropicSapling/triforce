@@ -8,7 +8,7 @@ P+ is for...
 * **It makes sense.**
 
 ## Features [OUTDATED]
-#### <s>Definitions
+#### Definitions
 <sup>Keywords surrounded by</sup>
 * <sub>brackets (`[]`) are *optional*</sub>
 * <sub>angle brackets (`<>`) **must** be replaced by a name of your choice</sub>
@@ -19,7 +19,7 @@ P+ is for...
 <sub>Everything else is **required.**</sub>
 
 --------
-
+<s>
 ### Data types
 #### Basic
 * `char`
