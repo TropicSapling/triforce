@@ -19,8 +19,8 @@ P+ is for...
 <sub>Everything else is **required.**</sub>
 
 --------
-<s>
-### Data types
+
+### <s>Data types
 #### Basic
 * `char`
 * `number`
