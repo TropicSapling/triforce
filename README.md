@@ -1,7 +1,5 @@
 # P+ programming language
-## NOTE: This README is very outdated so I have crossed out everything.
-
-<s>P+ is for...
+P+ is for...
 * Performance
 * Power
 * Productivity
@@ -9,7 +7,7 @@
 ... and most importantly:
 * **It makes sense.**
 
-## Features
+<s>## Features [OUTDATED]
 #### Definitions
 <sup>Keywords surrounded by</sup>
 * <sub>brackets (`[]`) are *optional*</sub>
