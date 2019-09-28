@@ -7,8 +7,8 @@ P+ is for...
 ... and most importantly:
 * **It makes sense.**
 
-## <s>Features [OUTDATED]
-#### Definitions
+## Features [OUTDATED]
+#### <s>Definitions
 <sup>Keywords surrounded by</sup>
 * <sub>brackets (`[]`) are *optional*</sub>
 * <sub>angle brackets (`<>`) **must** be replaced by a name of your choice</sub>
