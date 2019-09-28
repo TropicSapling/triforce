@@ -1,5 +1,7 @@
 # P+ programming language
-P+ is for...
+## NOTE: This README is very outdated so I have crossed out everything.
+
+<s>P+ is for...
 * Performance
 * Power
 * Productivity
@@ -226,3 +228,4 @@ comment> */
 15. `>>>`, `<<<`, `,`, `in`
 
 --------
+</s>
