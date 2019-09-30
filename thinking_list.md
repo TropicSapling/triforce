@@ -12,6 +12,7 @@
 - `Integer` or `Integer {*}` -> `Integer {...|-1|0|1|...}`?
 - `A {(B C {D})|E}` or `A {(B {*} C {D})|(E {*})}` -> `A {(B {...} C {D})|(E {...})}`?
 - `*` -> `Bool|Integer|String|all_types_etc...`?
+- This syntax sugar may be implemented if ``(`code`)`` args are added, i.e.
 
 ## concurrency
 
