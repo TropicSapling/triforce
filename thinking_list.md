@@ -9,6 +9,7 @@
 
 ## == box
 - How will this "non-strict" equality work?
+- Could this syntax sugar work?: `Integer` -> `Integer {...|-1|0|1|...}`
 
 ## concurrency
 
