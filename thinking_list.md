@@ -10,7 +10,8 @@
 ## == box
 - How will this "non-strict" equality work?
 - `Integer` or `Integer {*}` -> `Integer {...|-1|0|1|...}`?
-- `A {(B C {D})|E}` or `A {(B {*} C {D})|(E {*})}` -> `A {(B {...} C {D})|(E {...})}?
+- `A {(B C {D})|E}` or `A {(B {*} C {D})|(E {*})}` -> `A {(B {...} C {D})|(E {...})}`?
+- `*` -> `Bool|Integer|String|all_types_etc...`?
 
 ## concurrency
 
