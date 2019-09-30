@@ -35,6 +35,8 @@
 ## syntax / parsing
 - Line breaks, semicolons?
 - How will parsing work?
+- Allow running functions inside args?
+  - i.e. `f ([1, 2] length)` = `f (2)`
 
 ## lists
 - memory layout
@@ -55,3 +57,8 @@
 - `f (raw raw_code) => ...` - here `raw` specifies that input is raw and `raw_code` contains the raw code
 - would this be necessary or could it as well work with `frozen`?
   - i.e. `f (frozen raw_code)` and `f (frozen (some raw code))`
+
+## special symbols
+- Repellors
+  - i.e. digits of numbers
+- Operators
