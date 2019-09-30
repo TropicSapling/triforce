@@ -12,8 +12,8 @@
 - `Integer` or `Integer {*}` -> `Integer {...|-1|0|1|...}`?
 - `A {(B C {D})|E}` or `A {(B {*} C {D})|(E {*})}` -> `A {(B {...} C {D})|(E {...})}`?
 - `*` -> `Bool|Integer|String|all_types_etc...`?
-- This syntax sugar may be implemented if ``(`code`)`` args are added, i.e.
-  - ``(`Integer`) => Integer {...|-1|0|1|...}``
+- This syntax sugar may be implemented if ``(`code`)`` args are added
+  - i.e. ``(`Integer`) => Integer {...|-1|0|1|...}``
   - Hard to make it work for every single type though
 
 ## concurrency
@@ -49,3 +49,9 @@
 - functions returning multiple things?
 - functions returning either one thing or another?
 - nested functions
+
+## raw code input
+- ``f (`some raw code`) => ...`` (you can also return raw code same way)
+- `f (raw raw_code) => ...` - here `raw` specifies that input is raw and `raw_code` contains the raw code
+- would this be necessary or could it as well work with `frozen`?
+  - i.e. `f (frozen raw_code)` and `f (frozen (some raw code))`
