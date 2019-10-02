@@ -66,3 +66,8 @@
 ## Scratch-ish GUI
 - Not totally related to the language, but would be nice to have some GUI for testing programs easily
   - kinda like in Scratch
+
+## Left- or right-associative function calls?
+- Operators are typically left, but currently normal functions are right
+- In Haskell normal functions are also left
+  - However, this causes strange stuff like `print 1 + 2` becoming `(print 1) + 2`
