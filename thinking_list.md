@@ -62,3 +62,7 @@
 - Repellors
   - i.e. digits of numbers
 - Operators
+
+## Scratch-ish GUI
+- Not totally related to the language, but would be nice to have some GUI for testing programs easily
+  - kinda like in Scratch
