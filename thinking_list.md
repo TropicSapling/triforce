@@ -1,6 +1,6 @@
 # Things that need more thinking
 ## frozen
-- Lazy?
+- Lazy evaluation? Optional like in Idris?
 
 ## impl box
 
