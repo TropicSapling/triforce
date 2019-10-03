@@ -22,6 +22,7 @@
 - getting function without calling it?
 - anonymous functions?
 - could spaces in names be problematic?
+  - better to only allow Agda-style? (`this (arg) is (arg2) a (arg3) function ...`)
 
 ## memory
 - rust borrow system? changes?
