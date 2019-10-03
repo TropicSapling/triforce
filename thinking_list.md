@@ -37,6 +37,7 @@
 - How will parsing work?
 - Allow running functions inside args?
   - i.e. `f ([1, 2] length)` = `f (2)`
+- Allow indentation as replacement for parentheses `()`?
 
 ## lists
 - memory layout
