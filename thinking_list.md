@@ -68,6 +68,7 @@
 ## Scratch-ish GUI
 - Not totally related to the language, but would be nice to have some GUI for testing programs easily
   - kinda like in Scratch
+- Example of a similar thing but more text-ish: https://marketplace.visualstudio.com/items?itemName=fraser.live-coder
 
 ## Left- or right-associative function calls?
 - Operators are typically left, but currently normal functions are right
