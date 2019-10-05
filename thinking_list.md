@@ -74,3 +74,6 @@
 - Operators are typically left, but currently normal functions are right
 - In Haskell normal functions are also left
   - However, this causes strange stuff like `print 1 + 2` becoming `(print 1) + 2`
+
+## other
+- should `map` be called `apply <function> for each in <list>` or maybe `apply_all <function> <list>`?
