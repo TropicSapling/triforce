@@ -75,5 +75,8 @@
 - In Haskell normal functions are also left
   - However, this causes strange stuff like `print 1 + 2` becoming `(print 1) + 2`
 
+## modules
+- https://news.ycombinator.com/item?id=16458732
+
 ## other
 - should `map` be called `apply <function> for each in <list>` or maybe `apply_all <function> <list>`?
