@@ -77,6 +77,7 @@
 
 ## modules
 - https://news.ycombinator.com/item?id=16458732
+- https://ocaml.org/learn/tutorials/modules.html
 
 ## other
 - should `map` be called `apply <function> for each in <list>` or maybe `apply_all <function> <list>`?
