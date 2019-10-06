@@ -81,3 +81,4 @@
 
 ## other
 - should `map` be called `apply <function> for each in <list>` or maybe `apply_all <function> <list>`?
+- code readability: https://dmitripavlutin.com/coding-like-shakespeare-practical-function-naming-conventions/
