@@ -53,6 +53,7 @@
 - functions returning multiple things?
 - functions returning either one thing or another?
 - nested functions
+- https://www.youtube.com/watch?v=XrNdvWqxBvA
 
 ## raw code input
 - ``f (`some raw code`) => ...`` (you can also return raw code same way)
