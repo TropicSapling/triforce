@@ -20,6 +20,7 @@
 
 ## functions
 - getting function without calling it?
+  - Haskell does this simply based on function type info; function specifies if accepts value or function
 - anonymous functions?
 - could spaces in names be problematic?
   - better to only allow Agda-style? (`this (arg) is (arg2) a (arg3) function ...`)
