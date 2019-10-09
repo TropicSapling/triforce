@@ -48,7 +48,10 @@
 - `pattern | pattern | ...` - should this be allowed? i.e. `(0) + (1) | (1) + (0) => ...`
 - NOTE: using such a syntax `[0, x] | [y, 0]` would *not* be allowed; instead use `[0, x] | [x, 0]`
 
-## boxes as functions, Church numerals, etc.
+## boxes as functions, Church encoding, etc.
+- i.e. Church numerals, bools, etc.
+  - `true (x) (_) => x; false (_) (y) => y`
+  - `zero (f) (x) => x; one (f) (x) => f x; two (f) (x) => f (f x); ...`
 - seems rather difficult
 - functions returning multiple things?
 - functions returning either one thing or another?
