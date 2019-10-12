@@ -7,7 +7,7 @@ P+ is for...
 ... and most importantly:
 * **It makes sense.**
 
-## Features
+## Features [OUTDATED]
 #### Definitions
 <sup>Keywords surrounded by</sup>
 * <sub>brackets (`[]`) are *optional*</sub>
@@ -20,7 +20,7 @@ P+ is for...
 
 --------
 
-### Data types
+### <s>Data types
 #### Basic
 * `char`
 * `number`
@@ -226,3 +226,4 @@ comment> */
 15. `>>>`, `<<<`, `,`, `in`
 
 --------
+</s>
