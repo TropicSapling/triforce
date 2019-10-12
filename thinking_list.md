@@ -36,3 +36,10 @@
 
 ## pattern matching
 - `pattern | pattern | ...` - should this be allowed? i.e. `(0) + (1) | (1) + (0) => ...`
+- NOTE: using such a syntax `[0, x] | [y, 0]` would *not* be allowed; instead use `[0, x] | [x, 0]`
+
+## boxes as functions, Church numerals, etc.
+- seems rather difficult
+- functions returning multiple things?
+- functions returning either one thing or another?
+- nested functions
