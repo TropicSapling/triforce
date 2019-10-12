@@ -35,3 +35,35 @@ special print (ByteThingy bt) => if bt == X (
 ) else (
     println "Y: " unwrap bt
 )
+
+--------------------------------------------------------------
+
+box [b]               => (b =>)
+box [b] contains [b2] => (b [b2] =>)
+
+box Zero
+box PlusOne contains Nat
+box Nat contains Zero|PlusOne
+
+Nat     [Zero|(PlusOne n)] =>
+PlusOne [Nat n]            =>
+Zero                       =>
+
+Nat     [Zero|(PlusOne [n])] [f] [x] => (Zero f x) | (PlusOne n f x)
+PlusOne [Nat [n]]            [f] [x] => f (n f x)
+Zero                         [f] [x] => x
+
+Nat Zero
+Nat (PlusOne (Nat Zero))
+Nat (PlusOne (Nat (PlusOne (Nat Zero)))) ([x] => x + "!") "hi"
+
+PlusOne (Nat (PlusOne (Nat Zero))) f "hi"
+f (PlusOne (Nat Zero) f "hi")
+f (f (Zero f "hi"))
+f (f "hi")
+f ("hi" + "!")
+("hi" + "!") + "!"
+"hi!!"
+
+True  [x] [_] => x
+False [_] [y] => y
