@@ -39,19 +39,19 @@ special print (ByteThingy bt) => if bt == X (
 --------------------------------------------------------------
 
 box [b]               => (b =>)
-box [b] contains [b2] => (b [b2] =>)
+box [b] contains [b2] => (b [b2] => b2)
 
 box Zero
-box PlusOne contains Nat
-box Nat contains Zero|PlusOne
+box PlusOne contains Nat n
+box Nat contains Zero|(PlusOne n)
 
-Nat     [Zero|(PlusOne n)] =>
-PlusOne [Nat n]            =>
 Zero                       =>
+PlusOne [Nat n]            => Nat n
+Nat     [Zero|(PlusOne n)] => Zero|(PlusOne n)
 
-Nat     [Zero|(PlusOne [n])] [f] [x] => (Zero f x) | (PlusOne n f x)
-PlusOne [Nat [n]]            [f] [x] => f (n f x)
-Zero                         [f] [x] => x
+Zero                       [f] [x] => x
+PlusOne [Nat n]            [f] [x] => f (n f x)
+Nat     [Zero|(PlusOne n)] [f] [x] => (Zero f x) | (PlusOne n f x)
 
 Nat Zero
 Nat (PlusOne (Nat Zero))
@@ -65,5 +65,12 @@ f ("hi" + "!")
 ("hi" + "!") + "!"
 "hi!!"
 
+Bool True => True
+Bool False => False
+
 True  [x] [_] => x
 False [_] [y] => y
+
+if [True] [body] => body
+if [False] [_] =>
+if [Bool b] [body] else [expr] => Bool b body expr
