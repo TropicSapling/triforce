@@ -44,6 +44,7 @@
 ## lists
 - memory layout
 - should lists without `[]` (`a, b, ...`) exist and be similar to tuples?
+- `,` as a function of its own like in Haskell?
 
 ## pattern matching
 - `pattern | pattern | ...` - should this be allowed? i.e. `(0) + (1) | (1) + (0) => ...`
