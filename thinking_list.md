@@ -89,4 +89,6 @@
 - code readability: https://dmitripavlutin.com/coding-like-shakespeare-practical-function-naming-conventions/
 - box defs with commas? `A {B C ...` -> `A {B, C, ...}`
 - `id` / `identity` (function) actually has a few uses
+- `any (T) => T _ _ ... _`
+  - i.e. `x == any String`
   - ex: `bimap id (\w -> Tetris (startPosition,nextShape) w rest) (clearLines (well `combine` place player))`
