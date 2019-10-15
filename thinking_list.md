@@ -85,6 +85,10 @@
 - https://news.ycombinator.com/item?id=16458732
 - https://ocaml.org/learn/tutorials/modules.html
 
+## refinement types
+- define types using predicates/conditions
+  - i.e. `Nat = n >= 0`
+
 ## other
 - should `map` be called `apply <function> for each in <list>` or maybe `apply_all <function> <list>`?
 - code readability: https://dmitripavlutin.com/coding-like-shakespeare-practical-function-naming-conventions/
