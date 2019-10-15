@@ -92,4 +92,4 @@
   - ex: `bimap id (\w -> Tetris (startPosition,nextShape) w rest) (clearLines (well `combine` place player))`
 - `any (T) => T _ _ ... _`
   - `_` = all possible values
-  - i.e. `x == any Nat` <=> `x == Nat _` <=> `x == (Nat Zero)|(Nat (PlusOne Zero))|...`
+  - i.e. `x == any Nat` <=> `x == Nat _` <=> `x == Nat (Zero|(Nat (PlusOne Zero))|...)`
