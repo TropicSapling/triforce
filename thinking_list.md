@@ -87,7 +87,7 @@
 ## other
 - should `map` be called `apply <function> for each in <list>` or maybe `apply_all <function> <list>`?
 - code readability: https://dmitripavlutin.com/coding-like-shakespeare-practical-function-naming-conventions/
-- box defs with commas? `A {B C ...` -> `A {B, C, ...}`
+- box defs with commas? `A {B C ...}` -> `A {B, C, ...}`
 - `id` / `identity` (function) actually has a few uses
   - ex: `bimap id (\w -> Tetris (startPosition,nextShape) w rest) (clearLines (well `combine` place player))`
 - `any (T) => T _ _ ... _`
