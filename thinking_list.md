@@ -102,3 +102,5 @@
 - some way to get amount of args a function takes? probably necessary for `any` function
   - a way to specify functions taking `n` args is also necessary
     - i.e. perhaps `f (g _ _ _)` and `f (_ infix _ function _)` specifies functions taking 3 args?
+- some way of differentiating between naming a function and matching on a function name
+  - i.e. does `f (g x)` mean "only take the specific function `g` as input" or "take all (1-arg) functions as input and name them `g`?
