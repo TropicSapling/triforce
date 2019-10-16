@@ -59,6 +59,7 @@
 - functions returning either one thing or another?
 - nested functions
 - https://www.youtube.com/watch?v=XrNdvWqxBvA
+- needs something to group function args like you could using `{}` with boxes
 
 ## raw code input
 - ``f (`some raw code`) => ...`` (you can also return raw code same way)
