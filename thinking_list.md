@@ -98,3 +98,5 @@
 - `any (T) => T _ _ ... _`
   - `_` = all possible values
   - i.e. `x == any Nat` <=> `x == Nat _` <=> `x == Nat (Zero|(Nat (PlusOne Zero))|...)`
+- `a|b|c|...` as sort-of lists? probably necessary in order to implement some functions
+- some way to get amount of args a function takes? probably necessary for `any` function
