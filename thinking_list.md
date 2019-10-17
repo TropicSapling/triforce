@@ -44,6 +44,7 @@
 ## lists
 - memory layout
 - should lists without `[]` (`a, b, ...`) exist and be similar to tuples?
+- `,` as a function of its own like in Haskell?
 
 ## pattern matching
 - `pattern | pattern | ...` - should this be allowed? i.e. `(0) + (1) | (1) + (0) => ...`
@@ -58,6 +59,7 @@
 - functions returning either one thing or another?
 - nested functions
 - https://www.youtube.com/watch?v=XrNdvWqxBvA
+- needs something to group function args like you could using `{}` with boxes
 
 ## raw code input
 - ``f (`some raw code`) => ...`` (you can also return raw code same way)
@@ -84,9 +86,22 @@
 - https://news.ycombinator.com/item?id=16458732
 - https://ocaml.org/learn/tutorials/modules.html
 
+## refinement types
+- define types using predicates/conditions
+  - i.e. `Nat = n >= 0`
+
 ## other
 - should `map` be called `apply <function> for each in <list>` or maybe `apply_all <function> <list>`?
 - code readability: https://dmitripavlutin.com/coding-like-shakespeare-practical-function-naming-conventions/
-- box defs with commas? `A {B C ...` -> `A {B, C, ...}`
+- box defs with commas? `A {B C ...}` -> `A {B, C, ...}`
 - `id` / `identity` (function) actually has a few uses
   - ex: `bimap id (\w -> Tetris (startPosition,nextShape) w rest) (clearLines (well `combine` place player))`
+- `any (T) => T _ _ ... _`
+  - `_` = all possible values
+  - i.e. `x == any Nat` <=> `x == Nat _` <=> `x == Nat (Zero|(Nat (PlusOne Zero))|...)`
+- `a|b|c|...` as sort-of lists? probably necessary in order to implement some functions
+- some way to get amount of args a function takes? probably necessary for `any` function
+  - a way to specify functions taking `n` args is also necessary
+    - i.e. perhaps `f (g _ _ _)` and `f (_ infix _ function _)` specifies functions taking 3 args?
+- some way of differentiating between naming a function and matching on a function name
+  - i.e. does `f (g x)` mean "only take the specific function `g` as input" or "take all (1-arg) functions as input and name them `g`?
