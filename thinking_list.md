@@ -44,6 +44,7 @@
 ## lists
 - memory layout
 - should lists without `[]` (`a, b, ...`) exist and be similar to tuples?
+  - how would that work though? how to differentiate between `a` and list containing `a`?
 - `,` as a function of its own like in Haskell?
 
 ## pattern matching
