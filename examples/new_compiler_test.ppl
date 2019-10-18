@@ -108,7 +108,7 @@ while (Bool cond) (frozen $body) => (
 	while cond body
 )
 
-$n..$m => n|(n + 1)|...|m
+(frozen $n)..(frozen $m) => n|(n + 1)|...|m
 
 for (frozen $i) in ($start..$end) $body => (
 	let i = start;
@@ -127,3 +127,20 @@ for i in 1..100 (
 		print "Fizz"
 	) else print i
 )
+
+--------------------------------------------------------------
+
+// "Prelude test or something"
+
+(_); =>
+
+Bool True  $x _  => x
+Bool False _  $y => y
+
+True  => Bool True
+False => Bool False
+
+Zero                 $f $x => x
+PlusOne (Nat $n _ _) $f $x => f (n f x)
+Nat Zero                   => Zero f x
+Nat (PlusOne $n _ _) $f $x => PlusOne n f x
