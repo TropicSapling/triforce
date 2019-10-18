@@ -175,17 +175,11 @@ $n..$m => n|(n + 1)|...|m
 
 any ($b) => b (Args _)
 
-// "Stuff below here doesn't really work"
-// "Issues:"
-// "- frozen $cond will not be a Bool because it hasn't been evaluated to that yet"
-// "- 'continue' needs to somehow run not in this function but in the function using this"
-
 if fulfilling (True)              $body => body
-if fulfilling (frozen Bool $cond) _     => frozen (
-	continue or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify cond])); // "continue to next function def if there is one, else panic"
-)
+if fulfilling (frozen $cond)      _     => if unfreeze cond == False (
+	// "continue to next function def if there is one, else panic"
+	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify cond]))
+) else panic (format_err "Contract is not a Bool")
 
 if fulfilling (True)  $body else report _             => body
-if fulfilling (False) _     else report (String $msg) => frozen (
-	continue or alt prerun panic (format_err (String msg));
-)
+if fulfilling (False) _     else report (String $msg) => continue from caller or alt prerun panic (format_err (String msg))
