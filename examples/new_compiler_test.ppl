@@ -95,3 +95,7 @@ take any args from specific func (g $x $y $z)
 take specific args from specific func (g x y z)
 
 take any amount of args from specific func (g (Args $args))
+
+Zero                            $f $x => x
+PlusOne (Nat $n _ _)            $f $x => f (n f x)
+Nat     (Zero|(PlusOne $n _ _)) $f $x => (Zero f x) | (PlusOne n f x)
