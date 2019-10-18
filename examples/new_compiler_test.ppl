@@ -99,3 +99,31 @@ take any amount of args from specific func (g (Args $args))
 Zero                            $f $x => x
 PlusOne (Nat $n _ _)            $f $x => f (n f x)
 Nat     (Zero|(PlusOne $n _ _)) $f $x => (Zero f x) | (PlusOne n f x)
+
+--------------------------------------------------------------
+
+while (False)     _              =>
+while (Bool cond) (frozen $body) => (
+	body;
+	while cond body
+)
+
+$n..$m => n|(n + 1)|...|m
+
+for (frozen $i) in ($start..$end) $body => (
+	let i = start;
+	while i < end body
+)
+
+$n % $m => (
+	while n >= m (n -= m);
+	n
+)
+
+for i in 1..100 (
+	if i % 15 == 0 (
+		print "FizzBuzz"
+	) else if i % 3 == 0 (
+		print "Fizz"
+	) else print i
+)
