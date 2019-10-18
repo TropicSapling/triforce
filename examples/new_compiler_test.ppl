@@ -140,7 +140,33 @@ Bool False _  $y => y
 True  => Bool True
 False => Bool False
 
-Zero                 $f $x => x
-PlusOne (Nat $n _ _) $f $x => f (n f x)
-Nat Zero                   => Zero f x
-Nat (PlusOne $n _ _) $f $x => PlusOne n f x
+(True)          && (True)          => True
+(Bool (Args _)) && (Bool (Args _)) => False
+
+(False)         || (False)         => False
+(Bool (Args _)) || (Bool (Args _)) => True
+
+!(True) => False
+!(False) => True
+
+$a == $a => True
+_  == _  => False
+$a != $b => !(a == b)
+
+Zero                     $f $x => x
+PlusOne (Nat $n _ _)     $f $x => f (n f x)
+Nat     (Zero)                 => Zero f x
+Nat     (PlusOne $n _ _) $f $x => PlusOne n f x
+
+if (True)    $body            => body
+if (False)   _                =>
+if (Bool $b) $body else $expr => b body expr
+
+category of ($b (Args _)) => b
+unbox       (_ (Args $b)) => b
+
+$n mod $m => if n >= m (
+	(n - m) mod m
+) else n
+
+$n..$m => n|(n + 1)|...|m
