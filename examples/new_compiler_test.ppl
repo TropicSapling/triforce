@@ -74,3 +74,24 @@ False [_] [y] => y
 if [True] [body] => body
 if [False] [_] =>
 if [Bool b] [body] else [expr] => Bool b body expr
+
+[a] == [a] => True
+[_] == [_] => False
+
+((Nat Zero) == (Nat Zero)) print "true" print "false" // "like C's 'b ? t : f'"
+
+--------------------------------------------------------------
+
+f $x
+g $x $y $z
+
+let [x, y, z] = [1, 2, 3];
+
+take any func $f
+take specific func (f)
+
+take any args from any func ($g $x $y $z)
+take any args from specific func (g $x $y $z)
+take specific args from specific func (g x y z)
+
+take any amount of args from specific func (g (Args $args))
