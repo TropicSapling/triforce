@@ -225,10 +225,10 @@ P+ is for...
 * `__line`
 * `__item`
 * `__app`
-</s>
+
 --------
 
-### Comments
+### </s>Comments
 * `// <One line comment>`
 
 ```
