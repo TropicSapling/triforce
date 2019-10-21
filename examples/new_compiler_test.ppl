@@ -78,7 +78,7 @@ if [Bool b] [body] else [expr] => Bool b body expr
 [a] == [a] => True
 [_] == [_] => False
 
-((Nat Zero) == (Nat Zero)) print "true" print "false" // "like C's 'b ? t : f'"
+((Nat Zero) == (Nat Zero)) print "true" print "false" // like C's 'b ? t : f'
 
 --------------------------------------------------------------
 
@@ -130,12 +130,12 @@ for i in 1..100 (
 
 --------------------------------------------------------------
 
-// "Prelude test or something"
+// Prelude test or something
 
 #precedence below _
 (_; =>);
 
-(Nothing $f $x =>); // "Parentheses not actually needed, just there to clarify"
+(Nothing $f $x =>); // Parentheses not actually needed, just there to clarify
 
 Bool True  $x _  => x;
 Bool False _  $y => y;
@@ -178,7 +178,7 @@ any ($b) => b (Args _);
 
 if fulfilling (True)              $body => body;
 if fulfilling (frozen $cond)      _     => if unfreeze cond == False (
-	// "continue to next function def if there is one, else panic"
+	// continue to next function def if there is one, else panic
 	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify cond]))
 ) else panic (format_err "Contract is not a Bool");
 
@@ -187,7 +187,7 @@ if fulfilling (False) _     else report (String $msg) => continue from caller or
 
 --------------------------------------------------------------
 
-// "Variadic function test"
+// Variadic function test
 sumOf $x    => x;
 sumOf $x $y => sumOf (x + y);
 
