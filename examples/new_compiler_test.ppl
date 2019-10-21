@@ -196,4 +196,4 @@ sumOf 1 2   => 3;
 sumOf 1 2 3 => 6;
 
 return statement => (True;)
-return value => True;
+return value     => True;
