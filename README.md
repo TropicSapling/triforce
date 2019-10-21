@@ -225,7 +225,7 @@ P+ is for...
 * `__line`
 * `__item`
 * `__app`
-
+</s>
 --------
 
 ### Comments
@@ -239,7 +239,7 @@ comment> */
 
 --------
 
-### Precedence [OUTDATED]
+### <s>Precedence [OUTDATED]
 1. `()`, `[]`, `.`, `++`, `--`
 2. `!`, `~`, `(<type>)`, `@`, `->`, `**`
 3. `*`, `/`, `%`
