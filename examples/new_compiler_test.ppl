@@ -188,7 +188,7 @@ if fulfilling (False) _     else report (String $msg) => continue from caller or
 
 VarDecl _ _ => ;
 
-let (frozen $var) = $val => VarDecl (($var => scope) val)
+let (frozen $var) = $val => VarDecl (($var => scope) val);
 
 $n++ => (
 	a += 1;
@@ -222,7 +222,7 @@ for (frozen $i) in ($start..$end) $body => (
 		body;
 		i++;
 	)
-)
+);
 
 --------------------------------------------------------------
 
@@ -244,4 +244,4 @@ for i in 1..100 (
 	) else if i mod 3 == 0 (
 		print "Fizz"
 	) else print i
-)
+);
