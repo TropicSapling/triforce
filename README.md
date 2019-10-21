@@ -29,7 +29,7 @@ P+ is for...
 4. Functions can have almost any structure (mixfix with additions).
 5. Function names can only contain *either* characters *or* operators.
 6. Variable function input is denoted by `$<var>`.
-7. Non-variable (specific functions) input or input with both non-variables and variables require surrounding `()`.
+7. Non-variable (specific functions) input (except literals) or input with both non-variables and variables require surrounding `()`.
 8. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
 9. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
 10. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
