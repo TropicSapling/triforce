@@ -7,7 +7,7 @@ P+ is for...
 ... and most importantly:
 * **It makes sense.**
 
-## Features [OUTDATED]
+## Features
 #### Definitions
 <sup>Keywords surrounded by</sup>
 * <sub>brackets (`[]`) are *optional*</sub>
@@ -16,11 +16,42 @@ P+ is for...
 * <sub>parentheses (`()`) **and** seperated by bars (`|`) are part of a list of mutually exclusive **required** keywords</sub>
 * <sub>brackets (`[]`) **and** seperated by bars (`|`) are part of a list of mutually exclusive *optional* keywords</sub>
 
+<sub>Dots (`...`) mean essentially what they do in mathematics.</sub>
+
 <sub>Everything else is **required.**</sub>
 
 --------
 
-### <s>Data types
+### Syntax
+1. Functions are defined using `<input> => <output>`.
+2. `(<expr>)` *always* has higher precedence than `<expr>`.
+3. Function args are called `Args <list name>` and `length (Args <list name>) >= 0`.
+4. Functions can have almost any structure (mixfix with additions).
+5. Function names can only contain *either* characters *or* operators.
+6. Variable function input is denoted by `$<var>`.
+7. Non-variable (specific functions) input or input with both non-variables and variables require surrounding `()`.
+8. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
+9. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
+10. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
+11. Functions return themselves and can be called "anonymously".
+12. Functions return *partially* if passed as args to a non-evaluating function. I.e. `f ($x => x)` partially returns `($x => x)`.
+13. Functions are defined in the scope they were created and scopes in which they (possibly partially) have been returned to.
+14. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
+15. Function input works using pattern matching of function names and their args.
+16. `continue from <function> or alt <expr>` continues pattern matching if possible, else evaluates `<expr>`.
+17. `caller` is a reserved keyword for the caller of the current function.
+18. Functions which are passed fewer args than required are called *partially applied* and return the partially applied versions of themselves.
+19. `` a`|`b`|`...`|`z `` is an or-pattern.
+20. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
+21. The compiler will try to run as much as possible during compilation unless otherwise specified.
+22. `prerun <expr>` ensures `<expr>` runs during compilation.
+23. `run <expr>` ensures `<expr>` runs during runtime.
+24. `stringify <expr>` turns the code of `<expr>` into a string.
+25. `op <operator>[\n op <operator>...]` defines operators, which are defined to be characters placeable right next to separate functions. I.e. `op ;` allows `($expr; =>);`.
+
+--------
+
+### <s>Data types [OUTDATED]
 #### Basic
 * `char`
 * `number`
@@ -59,7 +90,7 @@ P+ is for...
 
 --------
 
-### Operators
+### Operators [OUTDATED]
 #### Arithmetic
 * `+`
 * `-`
@@ -112,7 +143,7 @@ P+ is for...
 
 --------
 
-### Lists & arrays
+### Lists & arrays [OUTDATED]
 * `str[>>>] == "Test"`
 * `str[start >>> stop]`
 * `str == address`
@@ -126,13 +157,13 @@ P+ is for...
 
 --------
 
-### Conditionals
+### Conditionals [OUTDATED]
 * `if <condition> { <code> } [else if <condition> { <code> } else if...] [else { <code> }]`
 * `match <var> { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }` (equivalent of C's `switch`)
 
 --------
 
-### Strings
+### Strings [OUTDATED]
 * `"null terminated string"`
 * `'string size determined by <size> property'`
 * `'null terminated string, but <size> property can still be used to get size\0'`
@@ -140,7 +171,7 @@ P+ is for...
 
 --------
 
-### Functions
+### Functions [OUTDATED]
 * `func <function>([<parameters>]) [-> <return type>] { <code> }`
 * `<function>([parameters])` or `<function> <parameter>` or `<parameter> <function> <parameter>`
 * `return [from <function>] <value>` (**NOTE:** You can't return from just any function, it needs to call the function you're currently in either directly or indirectly)
@@ -150,7 +181,7 @@ P+ is for...
 
 --------
 
-### Loops
+### Loops [OUTDATED]
 * `while <condition> { <code> }`
 * `foreach <item> in <list> { <code> }`
 * `repeat <n times> { <code> }`
@@ -159,7 +190,7 @@ P+ is for...
 
 --------
 
-### Concurrency
+### Concurrency [OUTDATED]
 * `async { <code> }`
 * `select { <cases> }`
 * `send <data> to <channel>`
@@ -167,7 +198,7 @@ P+ is for...
 
 --------
 
-### Defining
+### Defining [OUTDATED]
 * `#def '<code>' as '<code>'` (will support regex in the future using `#{<regex>}`, as well as `%{(property|properties|var)}`)
 * `#if <condition>`
 * `#else`
@@ -178,7 +209,7 @@ P+ is for...
 
 --------
 
-### Special
+### Special [OUTDATED]
 * `goto <label>`
 * ``#import (('|")<path>('|")|`<`<std lib path>`>`) [as <name>]``
 * `#export <function1>[, <function2>...]`
@@ -186,7 +217,7 @@ P+ is for...
 
 --------
 
-### Built-in global variables
+### Built-in global variables [OUTDATED]
 * `__OS`
 * `__path`
 * `__args`
@@ -197,7 +228,7 @@ P+ is for...
 
 --------
 
-### Comments
+### </s>Comments
 * `// <One line comment>`
 
 ```
@@ -208,7 +239,7 @@ comment> */
 
 --------
 
-### Precedence
+### <s>Precedence [OUTDATED]
 1. `()`, `[]`, `.`, `++`, `--`
 2. `!`, `~`, `(<type>)`, `@`, `->`, `**`
 3. `*`, `/`, `%`
