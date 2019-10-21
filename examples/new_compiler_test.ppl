@@ -132,64 +132,68 @@ for i in 1..100 (
 
 // "Prelude test or something"
 
-(_); =>
+#precedence below _
+(_; =>);
 
-Nothing $f $x =>
+(Nothing $f $x =>); // "Parentheses not actually needed, just there to clarify"
 
-Bool True  $x _  => x
-Bool False _  $y => y
+Bool True  $x _  => x;
+Bool False _  $y => y;
 
-True  => Bool True
-False => Bool False
+True  => Bool True;
+False => Bool False;
 
-(True)          && (True)          => True
-(Bool (Args _)) && (Bool (Args _)) => False
+(True)          && (True)          => True;
+(Bool (Args _)) && (Bool (Args _)) => False;
 
-(False)         || (False)         => False
-(Bool (Args _)) || (Bool (Args _)) => True
+(False)         || (False)         => False;
+(Bool (Args _)) || (Bool (Args _)) => True;
 
-!(True) => False
-!(False) => True
+!(True) => False;
+!(False) => True;
 
-$a == $a => True
-_  == _  => False
-$a != $b => !(a == b)
+$a == $a => True;
+_  == _  => False;
+$a != $b => !(a == b);
 
-Zero                     $f $x => x
-PlusOne (Nat $n _ _)     $f $x => f (n f x)
-Nat     (Zero)                 => Zero f x
-Nat     (PlusOne $n _ _) $f $x => PlusOne n f x
+Zero                     $f $x => x;
+PlusOne (Nat $n _ _)     $f $x => f (n f x);
+Nat     (Zero)                 => Zero f x;
+Nat     (PlusOne $n _ _) $f $x => PlusOne n f x;
 
-if (True)    $body            => body
-if (False)   _                =>
-if (Bool (Args $b)) $body else $expr => b body expr
+if (True)           $body            => body;
+if (False)          _                =>     ;
+if (Bool (Args $b)) $body else $expr => b body expr;
 
-category of ($b (Args _)) => b
-unbox       (_ (Args $b)) => b
+category of ($b (Args _)) => b;
+unbox       (_ (Args $b)) => b;
 
 $n mod $m => if n >= m (
 	(n - m) mod m
-) else n
+) else n;
 
-$n..$m => n|(n + 1)|...|m
+$n..$m => n|(n + 1)|...|m;
 
-any ($b) => b (Args _)
+any ($b) => b (Args _);
 
-if fulfilling (True)              $body => body
+if fulfilling (True)              $body => body;
 if fulfilling (frozen $cond)      _     => if unfreeze cond == False (
 	// "continue to next function def if there is one, else panic"
 	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify cond]))
-) else panic (format_err "Contract is not a Bool")
+) else panic (format_err "Contract is not a Bool");
 
-if fulfilling (True)  $body else report _             => body
-if fulfilling (False) _     else report (String $msg) => continue from caller or alt prerun panic (format_err (String msg))
+if fulfilling (True)  $body else report _             => body;
+if fulfilling (False) _     else report (String $msg) => continue from caller or alt prerun panic (format_err (String msg));
 
 --------------------------------------------------------------
 
 // "Variadic function test"
-sumOf $x    => x
-sumOf $x $y => sumOf (x + y)
+sumOf $x    => x;
+sumOf $x $y => sumOf (x + y);
 
-sumOf 1     => 1
-sumOf 1 2   => 3
-sumOf 1 2 3 => 6
+sumOf 1     => 1;
+sumOf 1 2   => 3;
+sumOf 1 2 3 => 6;
+
+return statement => (True;)
+return value => True;
