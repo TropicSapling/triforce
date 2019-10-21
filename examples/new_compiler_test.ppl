@@ -134,6 +134,7 @@ for i in 1..100 (
 
 #precedence below _
 (_; =>);
+(VarDecl $decl); => VarDecl decl;
 
 (Nothing $f $x =>); // Parentheses not actually needed, just there to clarify
 
@@ -185,6 +186,44 @@ if fulfilling (frozen $cond)      _     => if unfreeze cond == False (
 if fulfilling (True)  $body else report _             => body;
 if fulfilling (False) _     else report (String $msg) => continue from caller or alt prerun panic (format_err (String msg));
 
+VarDecl _ _ => ;
+
+let (frozen $var) = $val => VarDecl (($var => scope) val);
+
+$n++ => (
+	a += 1;
+	a - 1
+);
+
+++$n => (
+	a += 1;
+	a
+);
+
+$n-- => (
+	a -= 1;
+	a + 1
+);
+
+--$n => (
+	a -= 1;
+	a
+);
+
+while (False)     _              => ;
+while (Bool cond) (frozen $body) => (
+	body;
+	while cond body
+);
+
+for (frozen $i) in ($start..$end) $body => (
+	let i = start;
+	while i < end (
+		body;
+		i++;
+	)
+);
+
 --------------------------------------------------------------
 
 // Variadic function test
@@ -197,3 +236,12 @@ sumOf 1 2 3 => 6;
 
 return statement => (True;);
 return value     => True;
+
+// FizzBuzz
+for i in 1..100 (
+	if i mod 15 == 0 (
+		print "FizzBuzz"
+	) else if i mod 3 == 0 (
+		print "Fizz"
+	) else print i
+);
