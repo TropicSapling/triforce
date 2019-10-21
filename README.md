@@ -7,7 +7,7 @@ P+ is for...
 ... and most importantly:
 * **It makes sense.**
 
-## Features [OUTDATED]
+## Features
 #### Definitions
 <sup>Keywords surrounded by</sup>
 * <sub>brackets (`[]`) are *optional*</sub>
@@ -51,7 +51,7 @@ P+ is for...
 
 --------
 
-### <s>Data types
+### <s>Data types [OUTDATED]
 #### Basic
 * `char`
 * `number`
@@ -90,7 +90,7 @@ P+ is for...
 
 --------
 
-### Operators
+### Operators [OUTDATED]
 #### Arithmetic
 * `+`
 * `-`
@@ -143,7 +143,7 @@ P+ is for...
 
 --------
 
-### Lists & arrays
+### Lists & arrays [OUTDATED]
 * `str[>>>] == "Test"`
 * `str[start >>> stop]`
 * `str == address`
@@ -157,13 +157,13 @@ P+ is for...
 
 --------
 
-### Conditionals
+### Conditionals [OUTDATED]
 * `if <condition> { <code> } [else if <condition> { <code> } else if...] [else { <code> }]`
 * `match <var> { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }` (equivalent of C's `switch`)
 
 --------
 
-### Strings
+### Strings [OUTDATED]
 * `"null terminated string"`
 * `'string size determined by <size> property'`
 * `'null terminated string, but <size> property can still be used to get size\0'`
@@ -171,7 +171,7 @@ P+ is for...
 
 --------
 
-### Functions
+### Functions [OUTDATED]
 * `func <function>([<parameters>]) [-> <return type>] { <code> }`
 * `<function>([parameters])` or `<function> <parameter>` or `<parameter> <function> <parameter>`
 * `return [from <function>] <value>` (**NOTE:** You can't return from just any function, it needs to call the function you're currently in either directly or indirectly)
@@ -181,7 +181,7 @@ P+ is for...
 
 --------
 
-### Loops
+### Loops [OUTDATED]
 * `while <condition> { <code> }`
 * `foreach <item> in <list> { <code> }`
 * `repeat <n times> { <code> }`
@@ -190,7 +190,7 @@ P+ is for...
 
 --------
 
-### Concurrency
+### Concurrency [OUTDATED]
 * `async { <code> }`
 * `select { <cases> }`
 * `send <data> to <channel>`
@@ -198,7 +198,7 @@ P+ is for...
 
 --------
 
-### Defining
+### Defining [OUTDATED]
 * `#def '<code>' as '<code>'` (will support regex in the future using `#{<regex>}`, as well as `%{(property|properties|var)}`)
 * `#if <condition>`
 * `#else`
@@ -209,7 +209,7 @@ P+ is for...
 
 --------
 
-### Special
+### Special [OUTDATED]
 * `goto <label>`
 * ``#import (('|")<path>('|")|`<`<std lib path>`>`) [as <name>]``
 * `#export <function1>[, <function2>...]`
@@ -217,7 +217,7 @@ P+ is for...
 
 --------
 
-### Built-in global variables
+### Built-in global variables [OUTDATED]
 * `__OS`
 * `__path`
 * `__args`
@@ -239,7 +239,7 @@ comment> */
 
 --------
 
-### Precedence
+### Precedence [OUTDATED]
 1. `()`, `[]`, `.`, `++`, `--`
 2. `!`, `~`, `(<type>)`, `@`, `->`, `**`
 3. `*`, `/`, `%`
