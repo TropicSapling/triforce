@@ -32,17 +32,22 @@ P+ is for...
 7. Non-variable (specific functions) input or input with both non-variables and variables require surrounding `()`.
 8. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
 9. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
-10. `(expr)` returns whatever is left of `expr` after evaluation to the outer scope.
+10. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
 11. Functions return themselves and can be called "anonymously".
 12. Functions return *partially* if passed as args to a non-evaluating function. I.e. `f ($x => x)` partially returns `($x => x)`.
 13. Functions are defined in the scope they were created and scopes in which they (possibly partially) have been returned to.
 14. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
 15. Function input works using pattern matching of function names and their args.
-16. `continue from <function> or alt <expr>` is a reserved function that continues pattern matching if possible, else evaluates expr.
+16. `continue from <function> or alt <expr>` continues pattern matching if possible, else evaluates `<expr>`.
 17. `caller` is a reserved keyword for the caller of the current function.
 18. Functions which are passed fewer args than required are called *partially applied* and return the partially applied versions of themselves.
 19. `` a`|`b`|`...`|`z `` is an or-pattern.
 20. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
+21. The compiler will try to run as much as possible during compilation unless otherwise specified.
+22. `prerun <expr>` ensures `<expr>` runs during compilation.
+23. `run <expr>` ensures `<expr>` runs during runtime.
+24. `stringify <expr>` turns the code of `<expr>` into a string.
+25. `op <operator>[\n op <operator>...]` defines operators, which are defined to be characters placeable right next to separate functions. I.e. `op ;` allows `($expr; =>);`.
 
 --------
 
