@@ -48,6 +48,7 @@ P+ is for...
 23. `run <expr>` ensures `<expr>` runs during runtime.
 24. `stringify <expr>` turns the code of `<expr>` into a string.
 25. `op <operator>[\n op <operator>...]` defines operators, which are defined to be characters placeable right next to separate functions. I.e. `op ;` allows `($expr; =>);`.
+26. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
 
 --------
 
