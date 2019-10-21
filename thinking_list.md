@@ -93,6 +93,7 @@
 
 ## other
 - should `map` be called `apply <function> for each in <list>` or maybe `apply_all <function> <list>`?
+- `map` -> `lmap` (list map)? Fits better together with `fmap`.
 - code readability: https://dmitripavlutin.com/coding-like-shakespeare-practical-function-naming-conventions/
 - box defs with commas? `A {B C ...}` -> `A {B, C, ...}`
 - `id` / `identity` (function) actually has a few uses
