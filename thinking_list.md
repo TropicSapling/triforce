@@ -44,6 +44,7 @@
 ## lists
 - memory layout
 - should lists without `[]` (`a, b, ...`) exist and be similar to tuples?
+  - how would that work though? how to differentiate between `a` and list containing `a`?
 - `,` as a function of its own like in Haskell?
 
 ## pattern matching
@@ -105,3 +106,5 @@
     - i.e. perhaps `f (g _ _ _)` and `f (_ infix _ function _)` specifies functions taking 3 args?
 - some way of differentiating between naming a function and matching on a function name
   - i.e. does `f (g x)` mean "only take the specific function `g` as input" or "take all (1-arg) functions as input and name them `g`?
+- https://en.wikipedia.org/wiki/Aspect-oriented_programming
+- https://pike.lysator.liu.se/about/
