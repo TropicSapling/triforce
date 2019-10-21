@@ -16,7 +16,33 @@ P+ is for...
 * <sub>parentheses (`()`) **and** seperated by bars (`|`) are part of a list of mutually exclusive **required** keywords</sub>
 * <sub>brackets (`[]`) **and** seperated by bars (`|`) are part of a list of mutually exclusive *optional* keywords</sub>
 
+<sub>Dots (`...`) mean essentially what they do in mathematics.</sub>
+
 <sub>Everything else is **required.**</sub>
+
+--------
+
+### Syntax
+1. Functions are defined using `<input> => <output>`.
+2. `(expr)` *always* has higher precedence than `expr`.
+3. Function args are called `Args <list name>` and `length (Args <list name>) >= 0`.
+4. Functions can have almost any structure (mixfix with additions).
+5. Function names can only contain *either* characters *or* operators.
+6. Variable function input is denoted by `$<var>`.
+7. Non-variable (specific functions) input or input with both non-variables and variables require surrounding `()`.
+8. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
+9. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
+10. `(expr)` returns whatever is left of `expr` after evaluation to the outer scope.
+11. Functions return themselves and can be called "anonymously".
+12. Functions return *partially* if passed as args to a non-evaluating function. I.e. `f ($x => x)` partially returns `($x => x)`.
+13. Functions are defined in the scope they were created and scopes in which they (possibly partially) have been returned to.
+14. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
+15. Function input works using pattern matching of function names and their args.
+16. `continue from <function> or alt <expr>` is a reserved function that continues pattern matching if possible, else evaluates expr.
+17. `caller` is a reserved keyword for the caller of the current function.
+18. Functions which are passed fewer args than required are called *partially applied* and return the partially applied versions of themselves.
+19. `` a`|`b`|`...`|`z `` is an or-pattern.
+20. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
 
 --------
 
