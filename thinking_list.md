@@ -40,6 +40,8 @@
 - Allow running functions inside args?
   - i.e. `f ([1, 2] length)` = `f (2)`
 - Allow indentation as replacement for parentheses `()`?
+- Mixfix parsing: http://www.cse.chalmers.se/~nad/publications/danielsson-norell-mixfix.pdf
+  - Here it says even parentheses `()` can be defined as a function this way?!
 
 ## lists
 - memory layout
