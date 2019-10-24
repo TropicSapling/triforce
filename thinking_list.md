@@ -111,3 +111,4 @@
   - i.e. does `f (g x)` mean "only take the specific function `g` as input" or "take all (1-arg) functions as input and name them `g`?
 - https://en.wikipedia.org/wiki/Aspect-oriented_programming
 - https://pike.lysator.liu.se/about/
+- http://www.cs.ox.ac.uk/jeremy.gibbons/publications/progorn.pf (Section 2.1, p. 3: Index-first)
