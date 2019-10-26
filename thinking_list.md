@@ -112,4 +112,5 @@
 - https://en.wikipedia.org/wiki/Aspect-oriented_programming
 - https://pike.lysator.liu.se/about/
 - http://www.cs.ox.ac.uk/jeremy.gibbons/publications/progorn.pf (Section 2.1, p. 3: Index-first)
-- https://dev.to/myterminal/recursion-memoization-and-y-combinator-174l (easy memoization with only anonymous functions)
+- https://dev.to/myterminal/recursion-memoization-and-y-combinator-174l
+  - easy memoization with only anonymous functions
