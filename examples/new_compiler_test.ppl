@@ -166,6 +166,10 @@ if (True)           $body            => body;
 if (False)          _                =>     ;
 if (Bool (Args $b)) $body else $expr => b body expr;
 
+if (True)           then $body            => body;
+if (False)          then _                =>     ;
+if (Bool (Args $b)) then $body else $expr => b body expr;
+
 category of ($b (Args _)) => b;
 unbox       (_ (Args $b)) => b;
 
