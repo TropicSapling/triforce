@@ -40,6 +40,8 @@
 - Allow running functions inside args?
   - i.e. `f ([1, 2] length)` = `f (2)`
 - Allow indentation as replacement for parentheses `()`?
+- Mixfix parsing: http://www.cse.chalmers.se/~nad/publications/danielsson-norell-mixfix.pdf
+  - Here it says even parentheses `()` can be defined as a function this way?!
 
 ## lists
 - memory layout
@@ -93,6 +95,7 @@
 
 ## other
 - should `map` be called `apply <function> for each in <list>` or maybe `apply_all <function> <list>`?
+- `map` -> `lmap` (list map)? Fits better together with `fmap`.
 - code readability: https://dmitripavlutin.com/coding-like-shakespeare-practical-function-naming-conventions/
 - box defs with commas? `A {B C ...}` -> `A {B, C, ...}`
 - `id` / `identity` (function) actually has a few uses
@@ -108,3 +111,6 @@
   - i.e. does `f (g x)` mean "only take the specific function `g` as input" or "take all (1-arg) functions as input and name them `g`?
 - https://en.wikipedia.org/wiki/Aspect-oriented_programming
 - https://pike.lysator.liu.se/about/
+- http://www.cs.ox.ac.uk/jeremy.gibbons/publications/progorn.pf (Section 2.1, p. 3: Index-first)
+- https://dev.to/myterminal/recursion-memoization-and-y-combinator-174l
+  - easy memoization with only anonymous functions
