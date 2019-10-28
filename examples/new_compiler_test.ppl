@@ -249,3 +249,22 @@ for i in 1..100 (
 		print "Fizz"
 	) else print i
 );
+
+// Fun!
+$f using $closure => f ((closure _) f);
+
+memo _ => (
+	cache = [];
+	
+	$f $next $x => if cache.x exists (
+		cache.x
+	) else f (next) x
+);
+
+fibY $next $n => if n < 2 (
+	1
+) else next (next) (n - 2) + next (next) (n - 1);
+
+fibMemo => fibY using memo;
+
+fibMemo 5; // 8
