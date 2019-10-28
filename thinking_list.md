@@ -114,3 +114,4 @@
 - http://www.cs.ox.ac.uk/jeremy.gibbons/publications/progorn.pf (Section 2.1, p. 3: Index-first)
 - https://dev.to/myterminal/recursion-memoization-and-y-combinator-174l
   - easy memoization with only anonymous functions
+  - alt: https://stackoverflow.com/questions/93526/what-is-a-y-combinator/6713431#6713431
