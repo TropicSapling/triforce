@@ -265,6 +265,6 @@ fibY $next $n => if n < 2 (
 	1
 ) else next (next) (n - 2) + next (next) (n - 1);
 
-fibMemo $n => fibY using memo;
+fibMemo => fibY using memo;
 
 fibMemo 5; // 8
