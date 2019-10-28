@@ -254,7 +254,7 @@ for i in 1..100 (
 $f using $closure => f ((closure _) f);
 
 memo _ => (
-	cache = [];
+	let cache = [];
 	
 	$f $next $x => if cache.x exists (
 		cache.x
