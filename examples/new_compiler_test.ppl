@@ -249,3 +249,24 @@ for i in 1..100 (
 		print "Fizz"
 	) else print i
 );
+
+// Fun
+Y $f $g $x => f (g) x;
+
+YC $closure $f => Y (f) ((closure _) f)
+
+memo _ => (
+	cache = [];
+	
+	$f $g $x => if cache.x exists (
+		cache.x
+	) else f (g) x
+);
+
+fibY $this $n => if n < 2 (
+	1
+) else this (this) (n - 2) + this (this) (n - 1)
+
+fibMemo $n => YC (memo) fibY;
+
+fibMemo 5; // 8
