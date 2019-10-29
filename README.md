@@ -25,7 +25,7 @@ P+ is for...
 ### Syntax
 1. Functions are defined using `<input> => <output>`.
 2. `(<expr>)` *always* has higher precedence than `<expr>`.
-3. Function args are called `Args <list name>` and `length (Args <list name>) >= 0`.
+3. *Applied* function args are called `Args <list name>` and `length (Args <list name>) >= 0`.
 4. Functions can have almost any structure (mixfix with additions).
 5. Function names can only contain *either* characters *or* operators.
 6. Variable function input is denoted by `$<var>`.
@@ -49,7 +49,8 @@ P+ is for...
 24. `stringify <expr>` turns the code of `<expr>` into a string.
 25. `op <operator>[\n op <operator>...]` defines operators, which are defined to be characters placeable right next to separate functions. I.e. `op ;` allows `($expr; =>);`.
 26. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
-27. Passing all required args to a function will run it.
+27. Functions can have any amount of args.
+28. Passing all required args to a function will run it.
 
 --------
 
