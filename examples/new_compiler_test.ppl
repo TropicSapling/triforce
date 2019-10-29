@@ -141,14 +141,14 @@ for i in 1..100 (
 Bool True  $x _  => x;
 Bool False _  $y => y;
 
-True  => Bool True;
-False => Bool False;
+let True  = Bool True;
+let False = Bool False;
 
-(True)          && (True)          => True;
-(Bool (Args _)) && (Bool (Args _)) => False;
+(True)   && (True)   => True;
+(Bool _) && (Bool _) => False;
 
-(False)         || (False)         => False;
-(Bool (Args _)) || (Bool (Args _)) => True;
+(False)  || (False)  => False;
+(Bool _) || (Bool _) => True;
 
 !(True) => False;
 !(False) => True;
@@ -157,21 +157,21 @@ $a == $a => True;
 _  == _  => False;
 $a != $b => !(a == b);
 
-Zero                     $f $x => x;
-PlusOne (Nat $n _ _)     $f $x => f (n f x);
-Nat     (Zero)                 => Zero f x;
-Nat     (PlusOne $n _ _) $f $x => PlusOne n f x;
+Zero                 $f $x => x;
+PlusOne (Nat $n)     $f $x => f (n f x);
+Nat     (Zero)             => Zero f x;
+Nat     (PlusOne $n) $f $x => PlusOne n f x;
 
-if (True)           $body            => body;
-if (False)          _                =>     ;
-if (Bool (Args $b)) $body else $expr => b body expr;
+if (True)    $body            => body;
+if (False)   _                =>     ;
+if (Bool $b) $body else $expr => b body expr;
 
-if (True)           then $body            => body;
-if (False)          then _                =>     ;
-if (Bool (Args $b)) then $body else $expr => b body expr;
+if (True)    then $body            => body;
+if (False)   then _                =>     ;
+if (Bool $b) then $body else $expr => b body expr;
 
-category of ($b (Args _)) => b;
-unbox       (_ (Args $b)) => b;
+category of ($b (ALL_ARGS b)) => b;
+unbox       $b                => APPLIED_ARGS b;
 
 $n mod $m => if n >= m (
 	(n - m) mod m
@@ -179,7 +179,7 @@ $n mod $m => if n >= m (
 
 $n..$m => n|(n + 1)|...|m;
 
-any ($b) => b (Args _);
+any ($b) => b (ALL_ARGS b);
 
 if fulfilling (True)              $body => body;
 if fulfilling (frozen $cond)      _     => if unfreeze cond == False (
@@ -215,7 +215,7 @@ $n-- => (
 );
 
 while (False)     _              => ;
-while (Bool cond) (frozen $body) => (
+while (Bool $cond) (frozen $body) => (
 	body;
 	while cond body
 );
@@ -227,6 +227,8 @@ for (frozen $i) in ($start..$end) $body => (
 		i++;
 	)
 );
+
+remaining args of $f => ALL_ARGS f length - APPLIED_ARGS f length;
 
 --------------------------------------------------------------
 
@@ -251,7 +253,9 @@ for i in 1..100 (
 );
 
 // Fun!
-$f using $closure => f ((closure _) f);
+$f using $closure => if fulfilling remaining args of closure == 1 (
+	f ((closure _) f)
+);
 
 memo _ => (
 	let cache = [];
