@@ -25,7 +25,7 @@ P+ is for...
 ### Syntax
 1. Functions are defined using `<input> => <output>`.
 2. `(<expr>)` *always* has higher precedence than `<expr>`.
-3. Function args are called `Args <list name>` and `length (Args <list name>) > 0`.
+3. Function args are called `Args <list name>` and `length (Args <list name>) >= 0`.
 4. Functions can have almost any structure (mixfix with additions).
 5. Function names can only contain *either* characters *or* operators.
 6. Variable function input is denoted by `$<var>`.
