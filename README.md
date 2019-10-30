@@ -52,6 +52,8 @@ P+ is for...
 27. Passing all required args to a function will run it.
 28. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.
 29. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
+30. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
+31. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this. I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
 
 --------
 
