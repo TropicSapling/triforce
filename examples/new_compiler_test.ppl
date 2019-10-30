@@ -159,7 +159,7 @@ $a != $b => !(a == b);
 
 Zero                 $f $x => x;
 PlusOne (Nat $n)     $f $x => f (n f x);
-Nat     (Zero)             => Zero f x;
+Nat     (Zero)       $f $x => Zero f x;
 Nat     (PlusOne $n) $f $x => PlusOne n f x;
 
 if (True)    $body            => body;
