@@ -272,3 +272,6 @@ fibY $next $n => if n < 2 (
 fibMemo $n => (fibY using memo) n;
 
 fibMemo 5; // 8
+
+// Testing
+blueprint (Nat) => Nat Zero|(PlusOne (Nat _));
