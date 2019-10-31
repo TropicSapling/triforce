@@ -48,7 +48,12 @@ if fulfilling (False) _     else report (String $msg) => continue from caller or
 // Variables
 VarDecl _ _ => ;
 
-let (frozen $var) = $val => VarDecl (($var => scope) val);
+Var $val (transparent $type) => val; // transparent makes this function both stay unevaluated and evaluate when all non-transparent args are applied? (superposition? xD)
+
+let (frozen $var): $type = $val => VarDecl (($var => scope) (Var val type));
+let (frozen $var)        = $val => let var: val = val;
+
+(Var $val $type) = $type => __ASSIGN__;
 
 // List ...
 List ...
