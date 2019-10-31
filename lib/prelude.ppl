@@ -107,6 +107,8 @@ public group Misc [
 
 	$n..$m => n|(n + 1)|...|m,
 	
+	(n) +- (m) => n-m..m+n,
+	
 	remaining args of $f => ALL_ARGS f length - APPLIED_ARGS f length,
 	
 	$n++ => (
