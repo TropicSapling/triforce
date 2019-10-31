@@ -138,6 +138,7 @@ for i in 1..100 (
 
 (Nothing $f $x =>); // Parentheses not actually needed, just there to clarify
 
+// Bool True|False
 Bool True  $x _  => x;
 Bool False _  $y => y;
 
@@ -157,6 +158,7 @@ $a == $a => True;
 _  == _  => False;
 $a != $b => !(a == b);
 
+// Nat Zero|(PlusOne (Nat _))
 Zero                 $f $x => x;
 PlusOne (Nat $n)     $f $x => f (n f x);
 Nat     (Zero)       $f $x => Zero f x;
