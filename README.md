@@ -27,7 +27,8 @@ P+ is for...
 
 2. `(<expr>)` *always* has higher precedence than `<expr>`.
 
-3. Functions can have 1 or more args. (define `f _ => ...` and call with `f _` to emulate 0 args)
+3. Functions can have 1 or more args.
+    - (define `f _ => ...` and call with `f _` to emulate 0 args)
 
 4. Functions can have almost any structure (mixfix with additions).
 
@@ -45,7 +46,8 @@ P+ is for...
 
 11. Functions return themselves and can be called "anonymously".
 
-12. Functions return *partially* if passed as args to a non-evaluating function. I.e. `f (g $x => x)` partially returns `(g $x => x)`.
+12. Functions return *partially* if passed as args to a non-evaluating function.
+    - I.e. `f (g $x => x)` partially returns `(g $x => x)`.
     - **NOTE:** This does *not* apply to anonymous functions. I.e. `f ($x => x)` does *not* partially return `($x => x)`.
 
 13. Functions are defined in the scope they were created and scopes in which they (possibly partially) have been returned to.
@@ -72,7 +74,8 @@ P+ is for...
 
 24. `stringify <expr>` turns the code of `<expr>` into a string.
 
-25. `op <operator>[\n op <operator>...]` defines operators, which are defined to be characters placeable right next to separate functions. I.e. `op ;` allows `($expr; =>);`.
+25. `op <operator>[\n op <operator>...]` defines operators, which are defined to be characters placeable right next to separate functions.
+    - I.e. `op ;` allows `($expr; =>);`.
 
 26. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
 
@@ -84,7 +87,8 @@ P+ is for...
 
 30. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
 
-31. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this. I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
+31. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
+    - I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
 
 --------
 
