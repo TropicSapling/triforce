@@ -51,6 +51,7 @@ VarDecl _ _ => ;
 Var $val (transparent $type) => val; // transparent makes this function both stay unevaluated and evaluate when all non-transparent args are applied? (superposition? xD)
 
 let (frozen $var): $type = $val => VarDecl (($var => scope) (Var val type));
+let (frozen $var): auto  = $val => let var: category of val = val;
 let (frozen $var)        = $val => let var: val = val;
 
 (Var $val $type) = $type => __ASSIGN__;
@@ -103,7 +104,7 @@ public group ControlFlow [
 ];
 
 public group Misc [
-	category of ($b (ALL_ARGS b)) => b,
+	category of ($b (ALL_ARGS b)) => b, // TODO: Move this up
 	unbox       $b                => APPLIED_ARGS b,
 
 	$n mod $m => if n >= m (
