@@ -24,35 +24,65 @@ P+ is for...
 
 ### Syntax
 1. Functions are defined using `<input> => <output>`.
+
 2. `(<expr>)` *always* has higher precedence than `<expr>`.
+
 3. Functions can have 1 or more args. (define `f _ => ...` and call with `f _` to emulate 0 args)
+
 4. Functions can have almost any structure (mixfix with additions).
+
 5. Function names can only contain *either* characters *or* operators.
+
 6. Variable function input is denoted by `$<var>`.
+
 7. Non-variable (specific functions) input (except literals) or input with both non-variables and variables require surrounding `()`.
+
 8. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
+
 9. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
+
 10. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
+
 11. Functions return themselves and can be called "anonymously".
+
 12. Functions return *partially* if passed as args to a non-evaluating function. I.e. `f (g $x => x)` partially returns `(g $x => x)`. **NOTE:** This does *not* apply to anonymous functions. I.e. `f ($x => x)` does *not* partially return `($x => x)`.
+
 13. Functions are defined in the scope they were created and scopes in which they (possibly partially) have been returned to.
+
 14. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
+
 15. Function input works using pattern matching of function names and their args.
+
 16. `continue from <function> or alt <expr>` continues pattern matching if possible, else evaluates `<expr>`.
+
 17. `caller` is a reserved keyword for the caller of the current function.
+
 18. Functions which are passed fewer args than required are called *partially applied* and return the partially applied versions of themselves.
+
 19. `` a`|`b`|`...`|`z `` is an or-pattern.
+
 20. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
+
 21. The compiler will try to run as much as possible during compilation unless otherwise specified.
+
 22. `prerun <expr>` ensures `<expr>` runs during compilation.
+
 23. `run <expr>` ensures `<expr>` runs during runtime.
+
 24. `stringify <expr>` turns the code of `<expr>` into a string.
+
 25. `op <operator>[\n op <operator>...]` defines operators, which are defined to be characters placeable right next to separate functions. I.e. `op ;` allows `($expr; =>);`.
+
 26. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
+
 27. Passing all required args to a function will run it.
+
 28. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.
+
 29. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
+
 30. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
+
 31. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this. I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
 
 --------
