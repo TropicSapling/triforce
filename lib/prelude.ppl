@@ -37,7 +37,7 @@ if (Bool $b) then $body else $expr => b body expr;
 any ($b) => b (ALL_ARGS b);
 
 if fulfilling (True)              $body => body;
-if fulfilling (frozen $cond)      _     => if unfreeze cond == False (
+if fulfilling (frozen $cond)      _     => if !(unfreeze cond) (
 	// continue to next function def if there is one, else panic
 	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify cond]))
 ) else panic (format_err "Contract is not a Bool");
