@@ -34,7 +34,7 @@ P+ is for...
 9. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
 10. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
 11. Functions return themselves and can be called "anonymously".
-12. Functions return *partially* if passed as args to a non-evaluating function. I.e. `f ($x => x)` partially returns `($x => x)`.
+12. Functions return *partially* if passed as args to a non-evaluating function. I.e. `f (g $x => x)` partially returns `(g $x => x)`. **NOTE:** This does *not* apply to anonymous functions. I.e. `f ($x => x)` does *not* partially return `($x => x)`.
 13. Functions are defined in the scope they were created and scopes in which they (possibly partially) have been returned to.
 14. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
 15. Function input works using pattern matching of function names and their args.
