@@ -61,10 +61,16 @@ let (frozen $var)        = $val => let var: val = val;
 (Var $val $type) = $type => __ASSIGN__;
 
 // List Empty|($item (List $list))
-List []|($item, (List $list))
+Empty                   $x _  => x;
+List (Empty)            $x _  => x Empty;
+List $item (List $tail) _  $y => y item (List tail);
 
-List Empty
-List $item (List $tail)
+let [] = List Empty;
+
+[$item => List item (List Empty);
+
+(List $item (List Empty)), $new_item => List item (List new_item (List Empty));
+(List $item $tail       ), $new_item => List item (tail, new_item);
 
 index of _ in ([]) => Nothing;
 index of $item in (List (x:xs)) => ...
