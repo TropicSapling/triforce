@@ -72,16 +72,24 @@ let [] = List Empty;
 (List $item (List Empty)), $new_item => List item (List new_item (List Empty));
 (List $item $tail       ), $new_item => List item (tail, new_item);
 
-index of _ in ([]) => Nothing;
-index of $item in (List (x:xs)) => ...
+index         of $item in $list               => index from 0 of item in list;
+index from _  of _     in ([])                => Nothing;
+index from $i of $item in (List $item2 $tail) => if item == item2 (
+	i
+) else (
+	index from (i + 1) of item in tail
+);
+
+map _  to ([]) => [];
+map $f to (List $item $tail) => List (f item) (map f to tail);
 
 // Groups
 group (frozen $name) $funcs exports $exports => if fulfilling (funcs == any List && exports == any List) [
 	(unfreeze name).$f => (
-		let res = index of (stringify f) in (map stringify funcs);
+		let res = index of (stringify f) in (map stringify to funcs);
 		
 		if res != Nothing (
-			funcs[index of (stringify f) in (map stringify funcs)]
+			funcs[index of (stringify f) in (map stringify to funcs)]
 		) else (
 			prerun panic (format_err (format "Failed to find '{}' in group '{}'" [stringify f, stringify name])) // Aren't stringify and frozen quite similar?
 		)
