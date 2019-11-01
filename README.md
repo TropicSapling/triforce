@@ -46,7 +46,7 @@ P+ is for...
 11. Functions return themselves and can be called "anonymously".
 
 12. Functions return *partially* if passed as args to a non-evaluating function. I.e. `f (g $x => x)` partially returns `(g $x => x)`.
-  - **NOTE:** This does *not* apply to anonymous functions. I.e. `f ($x => x)` does *not* partially return `($x => x)`.
+    - **NOTE:** This does *not* apply to anonymous functions. I.e. `f ($x => x)` does *not* partially return `($x => x)`.
 
 13. Functions are defined in the scope they were created and scopes in which they (possibly partially) have been returned to.
 
