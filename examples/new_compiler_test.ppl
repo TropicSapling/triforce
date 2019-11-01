@@ -318,5 +318,26 @@ n
 	(Zero)             => 0
 	(PlusOne) (Nat $n) => n
 
-Nat     (Zero)       $f $x => Zero f x;
-Nat     (PlusOne $n) $f $x => PlusOne n f x;
+$a $b    $x $y => x a b
+$c $d $e $x $y => y c d e
+
+(Nat) (Zero)             $x $y => x Nat Zero
+(Nat) (PlusOne) (Nat $c) $x $y => y Nat PlusOne (Nat c)
+
+n
+	(Nat) (Zero)             => 0
+	(Nat) (PlusOne) (Nat $n) => n
+
+if (True)  then $body else $expr $x $y => x True  body expr
+if (False) then $body else $expr $x $y => y False body expr
+
+ifte
+	(True)  $body $expr => True
+	(False) $body $expr => False
+
+if (True)  then $body else $expr ($x matches if (True) then $b else $c) _  => x True body expr
+if (False) then $body else $expr _ ($y matches if (False) then $b else $c) => y False body expr
+
+ifte
+	if (True)  then $body else $expr => True // order matters! how to make it not matter?
+	if (False) then $body else $expr => False
