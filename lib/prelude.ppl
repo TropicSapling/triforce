@@ -4,6 +4,10 @@
 
 (Nothing $f $x =>); // Parentheses not actually needed, just there to clarify
 
+// Boxes
+category of ($b (ALL_ARGS b)) => b;
+unbox       $b                => APPLIED_ARGS b;
+
 // Bool True|False
 Bool True  $x _  => x;
 Bool False _  $y => y;
@@ -56,8 +60,11 @@ let (frozen $var)        = $val => let var: val = val;
 
 (Var $val $type) = $type => __ASSIGN__;
 
-// List ...
-List ...
+// List Empty|($item (List $list))
+List []|($item, (List $list))
+
+List Empty
+List $item (List $tail)
 
 index of _ in ([]) => Nothing;
 index of $item in (List (x:xs)) => ...
@@ -104,9 +111,6 @@ public group ControlFlow [
 ];
 
 public group Misc [
-	category of ($b (ALL_ARGS b)) => b, // TODO: Move this up
-	unbox       $b                => APPLIED_ARGS b,
-
 	$n mod $m => if n >= m (
 		(n - m) mod m
 	) else n,

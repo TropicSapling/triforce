@@ -277,3 +277,46 @@ fibMemo 5; // 8
 
 // Testing
 blueprint (Nat) => Nat Zero|(PlusOne (Nat _));
+
+// Scott encoding
+A a b ... | B c d ... | ...
+
+A $a $b ... $x $y ... => x a b ...
+B $c $d ... $x $y ... => y c d ...
+...
+
+// Ex:
+Bool True|False
+
+True  $x $y => x
+False $x $y => y
+
+b
+	=> 1
+	=> 0
+
+// Ex 2:
+Nat Zero|(PlusOne (Nat _))
+(Nat Zero)|(Nat PlusOne (Nat _))
+
+Nat $a    $x $y => x a
+Nat $c $d $x $y => y c d
+
+Nat Zero             $x $y => x
+Nat PlusOne (Nat $c) $x $y => y c
+
+match n {
+	Nat Zero             => 0
+	Nat PlusOne (Nat $n) => n
+}
+
+n
+	   => 0
+	$n => n
+
+n
+	(Zero)             => 0
+	(PlusOne) (Nat $n) => n
+
+Nat     (Zero)       $f $x => Zero f x;
+Nat     (PlusOne $n) $f $x => PlusOne n f x;
