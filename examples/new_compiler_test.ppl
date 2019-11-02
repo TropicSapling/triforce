@@ -341,3 +341,36 @@ if (False) then $body else $expr _ ($y matches if (False) then $b else $c) => y 
 ifte
 	if (True)  then $body else $expr => True // order matters! how to make it not matter?
 	if (False) then $body else $expr => False
+
+// Anonymous pattern matching
+(
+	f (1) => 4;
+	f (2) => 5;
+	f (3) => 6;
+	
+	f
+) 2; // 5
+
+([
+	f (1) => 4,
+	f (2) => 5,
+	g (3) => 6
+]; g 3) // 6
+
+match $x with $patterns => if fulfilling patterns == any List (
+	patterns; x
+);
+
+match g 3 with [
+	f (1) => 4,
+	f (2) => 5,
+	g (3) => 6
+] // 6
+
+match 2 with [
+	(1) => 4,
+	(2) => 5,
+	(3) => 6
+] // 5
+
+(((123) => 456); 123)
