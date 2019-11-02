@@ -376,11 +376,11 @@ match 2 with [
 (((123) => 456); 123)
 
 // Some sort of lambda-pattern calculus
-(let $var = $val as $var $val) => (
-    let $a = 123
-    let func (frozen $pattern): $body = (let pattern = ALL_ARGS pattern => body)
-    
-    func if $a then $b: (
-        a
-    )
-) ((frozen $var) $val => ((var as frozen val) => scope) val)
+((let $var = $val; as $var $val) => scope) ((frozen $var) $val => ((var as frozen val) => scope) val)
+
+let $a = 123;
+let func (frozen $pattern): $body; = frozen (let pattern = ALL_ARGS pattern => body;);
+
+func if $a then $b: (
+    a
+);
