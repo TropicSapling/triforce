@@ -376,10 +376,6 @@ match 2 with [
 (((123) => 456); 123)
 
 // Some sort of lambda-pattern calculus
-let (frozen $var): $type = $val => VarDecl (($var => scope) (Var val type));
-let (frozen $var): auto  = $val => let var: category of val = val;
-let (frozen $var)        = $val => let var: val = val;
-
 ((let untyped $var = $val; as $var $val) => scope) ((frozen $var) $val => ((var as frozen val) => scope) val)
 
 let untyped (untyped func (frozen $pattern) returns $body;) = $pattern $body => frozen (let untyped pattern = ALL_ARGS pattern => body;);
