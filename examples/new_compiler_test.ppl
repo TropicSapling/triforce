@@ -378,9 +378,23 @@ match 2 with [
 // Some sort of lambda-pattern calculus
 ((let $var = $val; as $var $val) => scope) ((frozen $var) $val => ((var as frozen val) => scope) val)
 
-let $a = 123;
 let func (frozen $pattern): $body; = frozen (let pattern = ALL_ARGS pattern => body;);
 
-func if $a then $b: (
-    a
-);
+func Nothing $f $x: ;
+
+
+
+let (frozen $var): $type = $val => VarDecl (($var => scope) (Var val type));
+let (frozen $var): auto  = $val => let var: category of val = val;
+let (frozen $var)        = $val => let var: val = val;
+
+((let untyped $var = $val; as $var $val) => scope) ((frozen $var) $val => ((var as frozen val) => scope) val)
+
+let untyped (untyped func (frozen $pattern): $body); = frozen (let untyped pattern = ALL_ARGS pattern => body;);
+
+untyped func (Var $val $type) = $type: __ASSIGN__;
+
+untyped func category of ($b (ALL_ARGS b)): b;
+untyped func unbox        $b              : APPLIED_ARGS b;
+
+untyped func (let (frozen $var): $type = $val): frozen (let untyped var = Var val type);
