@@ -398,4 +398,4 @@ untyped func (func (frozen $pattern) returns $body: $type) returns frozen (let p
 // Examples
 let n: Int = 123;
 
-func a plus b returns a + b: Int;
+func $a plus $b returns a + b: Int;
