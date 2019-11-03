@@ -376,25 +376,26 @@ match 2 with [
 (((123) => 456); 123)
 
 // Some sort of lambda-pattern calculus
-((let $var = $val; as $var $val) => scope) ((frozen $var) $val => ((var as frozen val) => scope) val)
-
-let func (frozen $pattern): $body; = frozen (let pattern = ALL_ARGS pattern => body;);
-
-func Nothing $f $x: ;
-
-
-
 let (frozen $var): $type = $val => VarDecl (($var => scope) (Var val type));
 let (frozen $var): auto  = $val => let var: category of val = val;
 let (frozen $var)        = $val => let var: val = val;
 
 ((let untyped $var = $val; as $var $val) => scope) ((frozen $var) $val => ((var as frozen val) => scope) val)
 
-let untyped (untyped func (frozen $pattern): $body); = frozen (let untyped pattern = ALL_ARGS pattern => body;);
+let untyped (untyped func (frozen $pattern) returns $body;) = $pattern $body => frozen (let untyped pattern = ALL_ARGS pattern => body;);
 
-untyped func (Var $val $type) = $type: __ASSIGN__;
+untyped func (Var $val $type) = $type returns __ASSIGN__;
 
-untyped func category of ($b (ALL_ARGS b)): b;
-untyped func unbox        $b              : APPLIED_ARGS b;
+untyped func category of ($b (ALL_ARGS b)) returns b;
+untyped func unbox        $b               returns APPLIED_ARGS b;
 
-untyped func (let (frozen $var): $type = $val): frozen (let untyped var = Var val type);
+untyped func (let (frozen $var): $type = $val) returns frozen (let untyped var = Var val type;);
+untyped func (let (frozen $var): auto  = $val) returns frozen (let var: category of val = val;);
+untyped func (let (frozen $var)        = $val) returns frozen (let var: val = val;);
+
+untyped func (func (frozen $pattern) returns $body: $type) returns frozen (let pattern: type = ALL_ARGS pattern => body;);
+
+// Examples
+let n: Int = 123;
+
+func a plus b returns a + b: Int;
