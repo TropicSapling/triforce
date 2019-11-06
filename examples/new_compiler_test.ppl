@@ -395,3 +395,8 @@ untyped func (func (frozen $pattern) returns $body: $type) returns frozen (let p
 let n: Int = 123;
 
 func $a plus $b returns a + b: Int;
+
+--------------------------------------
+
+// returns f c = f 456 = fu 123 nc 456
+((f $b as fu ($a as 123) nc #b) $c => f c) (fu 123 nc) 456 // '$a': store applied arg in 'a'. '#b': link unapplied arg to '$b'
