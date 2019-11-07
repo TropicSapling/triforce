@@ -428,7 +428,7 @@ untyped func (let (Typed $var $type)   = $val)   returns frozen (let untyped var
 untyped func (let (frozen $var): auto  = $val)   returns frozen (let var: category of val = val;);
 untyped func (let (frozen $var)        = $val)   returns frozen (let var: val = val;);
 
-untyped func (func (frozen $pattern): $type returns $body) returns frozen (let pattern: type = ALL_ARGS pattern => body;);
+untyped func (func (frozen $pattern) returns $body) returns frozen (let pattern = ALL_ARGS pattern => body;);
 
 // Examples
 
@@ -439,7 +439,7 @@ let untyped n = 123: Int;
 ((123 + 456): Int; "hello": String): String // any expr can have a type
 "world": Int // this returns an error
 
-func ($a plus $b): Function returns (
+func (($a: Number) plus ($b: Number)): Function returns (
 	a + b
 ): Number;
 
