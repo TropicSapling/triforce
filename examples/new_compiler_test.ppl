@@ -383,7 +383,9 @@ let untyped (untyped func (frozen $pattern) returns $body;) = $pattern $body => 
 // transparent makes this function both stay unevaluated and evaluate when all non-transparent args are applied? (superposition? xD)
 untyped func Var $val $type (transparent _) returns val;
 
-untyped func (Var $val $type) = $type returns __ASSIGN__; // $type probably needs changing
+untyped func (Var $val $type) = $new_val returns if fulfilling new_val is type (
+	__ASSIGN__ (Var val type) (Var new_val type)
+);
 
 untyped func category of ($b (ALL_ARGS b)) returns b;
 untyped func unbox        $b               returns APPLIED_ARGS b;
