@@ -376,9 +376,12 @@ match 2 with [
 (((123) => 456); 123)
 
 // Some sort of lambda-pattern calculus
-((let untyped $var = $val; as $var $val) => scope) ((frozen var) val => ((var as frozen val) => scope) val)
+((let untyped $var = $val; as #var #val) => scope) ((frozen $var) $val => ((var as frozen val) => scope) val)
 
-let untyped (untyped func (frozen $pattern) returns $body;) = pattern body => frozen (let untyped pattern = ALL_ARGS pattern => body;);
+let untyped (untyped func (frozen $pattern) returns $body;) = $pattern $body => frozen (let untyped pattern = ALL_ARGS pattern => body;);
+
+// transparent makes this function both stay unevaluated and evaluate when all non-transparent args are applied? (superposition? xD)
+untyped func Var $val $type (transparent _) returns val;
 
 untyped func (Var $val $type) = $type returns __ASSIGN__; // $type probably needs changing
 
