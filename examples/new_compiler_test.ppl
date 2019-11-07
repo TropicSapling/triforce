@@ -405,3 +405,35 @@ func $a plus $b returns a + b: Int;
 
 // returns f c = f 456 = fu 123 nc 456
 ((f $b as fu ($a as 123) nc #b) $c => f c) (fu 123 nc) 456 // '$a': store applied arg in 'a'. '#b': link unapplied arg to '$b'
+
+// New try
+((let untyped $var = $val; as #var #val) => scope) ((frozen $var) $val => ((var as frozen val) => scope) val)
+
+let untyped (untyped func (frozen $pattern) returns $body;) = $pattern $body => frozen (let untyped pattern = ALL_ARGS pattern => body;);
+
+// 'transparent _' makes this function run if it fails all pattern matches
+untyped func $expr: $type (transparent _) returns expr;
+
+untyped func ((frozen $var): $type) = $new_val returns if fulfilling new_val is type (
+	__ASSIGN__ var (Var new_val type)
+);
+
+untyped func category of ($b (ALL_ARGS b)) returns b;
+untyped func unbox        $b               returns APPLIED_ARGS b;
+
+untyped func (let ((frozen $var): $type) = $val) returns if fulfilling val is type (
+	frozen (let untyped var = val: type;)
+);
+
+untyped func (let (frozen $var): auto  = $val)   returns frozen (let var: category of val = val;);
+untyped func (let (frozen $var)        = $val)   returns frozen (let var: val = val;);
+
+untyped func (func (frozen $pattern) returns $body: $type) returns frozen (let pattern: type = ALL_ARGS pattern => body;);
+
+// Examples
+
+let n: Int = 123;
+// is equivalent to
+let untyped n = 123: Int;
+
+(123 + 456; "hello"): String // any expr can have a type
