@@ -444,3 +444,29 @@ func (($a: Number) plus ($b: Number)): Function returns (
 ): Number;
 
 $a plus $b = $a $b => 123;
+
+—————————————————————————————
+
+listify 1|2|3 != 1|2|3
+
+f $a => a + 1;
+
+f 1|2|3 => 2|3|4;
+
+1 == 1|2|3
+1|2|3 != 1 (necessarily)
+
+g (1|2|3) vs. g (listify 1|2|3)
+
+h _ <=> h (a|b|...)
+
+1 == 1|2|3 => True|False
+1|2|3 == 1 => True|False
+
+1 is (listify 1|2|3) => True
+(listify 1|2|3) is (listify 1) => False
+
+- x = 1|2|3 where x will be one of
+- f (1|2|3) where f takes one of
+- g (1|2|3) where f takes all as list
+- x: 1|2|3 where x has all as type (list)
