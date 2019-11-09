@@ -470,3 +470,8 @@ h _ <=> h (a|b|...)
 - f (1|2|3) where f takes one of
 - g (1|2|3) where f takes all as list
 - x: 1|2|3 where x has all as type (list)
+
+g $x <=> g ($x as _)
+g 1  <=> g (_ as 1)
+
+($x as type) is $type => True
