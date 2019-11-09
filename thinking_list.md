@@ -96,6 +96,9 @@
 ## error handling
 - https://www.reddit.com/r/ProgrammingLanguages/comments/drr3ri/comment/f6kn8a5
 
+## static/dynamic linking
+- https://gankra.github.io/blah/swift-abi/
+
 ## other
 - should `map` be called `apply <function> for each in <list>` or maybe `apply_all <function> <list>`?
 - `map` -> `lmap` (list map)? Fits better together with `fmap`.
