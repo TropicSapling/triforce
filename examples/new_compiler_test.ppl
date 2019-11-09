@@ -473,5 +473,27 @@ h _ <=> h (a|b|...)
 
 g $x <=> g ($x as _)
 g 1  <=> g (_ as 1)
+g _  <=> g (_ as _)
+
+g ($x as if $a then $b) <=> g ($x as if ($a as _) then ($b as _))
+g ($x as if _  then _ ) <=> g ($x as if _ then _)
+g (      if $a then $b) <=> g (_  as if $a then $b)
+
+h (ifte $a $b as if $a then $b)
 
 ($x as type) is $type => True
+
+--------------------------------
+// New syntax?
+
+($(if #a then #b) as ifte #a #b)
+
+// returns f (a + c) = f (123 + 456) = f 579 = fu 123 nc 579
+// '#b' is NOT accessible within the body, it's only used for the linking
+((f #b as fu ($a as 123) nc #b) ($c as _) => f (a + c)) (fu 123 nc) 456
+
+// Syntax sugar
+$a  <=> ($a as _)
+(x) <=> (_ as x) // where 'x' is not '$a'
+
+(_ as type) is $type => True
