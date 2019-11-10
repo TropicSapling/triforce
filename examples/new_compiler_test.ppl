@@ -488,6 +488,8 @@ h (ifte $a $b as if $a then $b)
 
 ($(if #a then #b) as ifte #a #b)
 
+let if (#(f #x) as #x) then (_ as g $y) = ($(f #x) as #x) (_ as g $y) => f y;
+
 // NOTE: 'as' is *not* allowed within variables '$(...)'.
 //       This by extension (due to syntax sugar) means that
 //       neither '$a' nor '(x)' is allowed.
@@ -498,7 +500,8 @@ h (ifte $a $b as if $a then $b)
 (($(f #b) as fu ($a as 123) nc #b) ($c as _) => f (a + c)) (fu 123 nc) 456
 
 // Syntax sugar
-$a  <=> ($a as _)
-(x) <=> (_ as x) // where 'x' is not '$a'
+$a       <=> ($a as _)
+$(f #a)  <=> ($(f #a) as #a)
+(x)      <=> (_ as x) // where 'x' is not '$a'
 
 (_ as type) is $type => True
