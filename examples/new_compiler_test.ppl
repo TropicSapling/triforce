@@ -488,6 +488,11 @@ h (ifte $a $b as if $a then $b)
 
 ($(if #a then #b) as ifte #a #b)
 
+// NOTE: 'as' is *not* allowed within variables '$(...)'.
+//       This by extension (due to syntax sugar) means that
+//       neither '$a' nor '(x)' is allowed.
+//       Only linked args '#a' are allowed.
+
 // returns f (a + c) = f (123 + 456) = f 579 = fu 123 nc 579
 // '#b' is NOT accessible within the body, it's only used for the linking
 ((f #b as fu ($a as 123) nc #b) ($c as _) => f (a + c)) (fu 123 nc) 456
