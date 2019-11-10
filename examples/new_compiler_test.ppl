@@ -495,7 +495,7 @@ h (ifte $a $b as if $a then $b)
 
 // returns f (a + c) = f (123 + 456) = f 579 = fu 123 nc 579
 // '#b' is NOT accessible within the body, it's only used for the linking
-((f #b as fu ($a as 123) nc #b) ($c as _) => f (a + c)) (fu 123 nc) 456
+(($(f #b) as fu ($a as 123) nc #b) ($c as _) => f (a + c)) (fu 123 nc) 456
 
 // Syntax sugar
 $a  <=> ($a as _)
