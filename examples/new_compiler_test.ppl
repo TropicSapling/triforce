@@ -502,8 +502,9 @@ h (ifte $a $b as if $a then $b)
 (($(f #b) as fu ($a as 123) nc #b) ($c as _) => f (a + c)) (fu 123 nc) 456
 
 // Syntax sugar
-$a       <=> ($a as _)
-$(f #a)  <=> ($(f #a) as #a)
-(x)      <=> (_ as x) // where 'x' is not '$a'
+$a          <=> ($a as _)
+$(f #a)     <=> ($(f #a) as #a)
+(x)         <=> (_ as x) // where 'x' is not '$a'
+($a as f _) <=> ($a as f $_) // '#_' for unapplied
 
 (_ as type) is $type => True
