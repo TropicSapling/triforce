@@ -490,6 +490,24 @@ h (ifte $a $b as if $a then $b)
 
 ($(if (#a as #_) then (#b as g $_)) as #a #b) (($(f #x) as #x) (_ as g $y) => f y) // works, but how to make 'let' & 'func' work with this system?
 
+($(if (#a as #x) then (#b as g $y)) as #a #b) (($(f #x) as _) (_ as _) => f y)
+
+func if ($(f #x) as #x) then (_ as g $y) (
+	f y
+);
+
+($(if ($(f _) as #_) then (_ as g $y)) as #($(f _) as #_) #(_ as g $y)) (_ _ => f y)
+
+-----------
+
+func if ($(f _) as #0) then (_ as g $y) (
+	f y
+);
+
+($(if ($(f _) as #0) then (_ as g $y)) as #1 #0) (_ _ => f y)
+
+(($(f _) as fu ($a as 123) nc #0) ($c as _) => f (a + c)) (fu 123 nc) 456
+
 //let if (#(f #x) as #x) then (_ as g $y) = ($(f #x) as #x) (_ as g $y) => f y;
 
 // NOTE: 'as' is *not* allowed within variables '$(...)'.
