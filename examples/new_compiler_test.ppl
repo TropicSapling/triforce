@@ -526,3 +526,6 @@ $(f #a)     <=> ($(f #a) as #a)
 ($a as f _) <=> ($a as f $_) // '#_' for unapplied
 
 (_ as type) is $type => True
+
+// replace 'frozen' with this?
+{$expr} _ => expr
