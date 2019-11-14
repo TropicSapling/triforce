@@ -488,7 +488,9 @@ h (ifte $a $b as if $a then $b)
 
 ($(if #a then #b) as ifte #a #b)
 
-let if (#(f #x) as #x) then (_ as g $y) = ($(f #x) as #x) (_ as g $y) => f y;
+($(if (#a as #_) then (#b as g $_)) as #a #b) (($(f #x) as #x) (_ as g $y) => f y) // works, but how to make 'let' & 'func' work with this system?
+
+//let if (#(f #x) as #x) then (_ as g $y) = ($(f #x) as #x) (_ as g $y) => f y;
 
 // NOTE: 'as' is *not* allowed within variables '$(...)'.
 //       This by extension (due to syntax sugar) means that
