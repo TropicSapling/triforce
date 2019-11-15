@@ -1,0 +1,157 @@
+#precedence below _
+(_; =>);
+(VarDecl $decl); => VarDecl decl;
+
+(Nothing $f $x =>); // Parentheses not actually needed, just there to clarify
+
+// Boxes
+category of ($b (ALL_ARGS b)) => b;
+unbox       $b                => APPLIED_ARGS b;
+
+// Bool True|False
+Bool True  $x _  => x;
+Bool False _  $y => y;
+
+let True  = Bool True;
+let False = Bool False;
+
+(True)   && (True)   => True;
+(Bool _) && (Bool _) => False;
+
+(False)  || (False)  => False;
+(Bool _) || (Bool _) => True;
+
+!(True) => False;
+!(False) => True;
+
+$a == $a => True;
+_  == _  => False;
+$a != $b => !(a == b);
+
+// if_then_else
+if (True)    $body            => body;
+if (False)   _                =>     ;
+if (Bool $b) $body else $expr => b body expr;
+
+if (True)    then $body            => body;
+if (False)   then _                =>     ;
+if (Bool $b) then $body else $expr => b body expr;
+
+// Type checking
+any ($b) => b (ALL_ARGS b);
+
+if fulfilling (True)              $body => body;
+if fulfilling (frozen $cond)      _     => if !(unfreeze cond) (
+	// continue to next function def if there is one, else panic
+	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify cond]))
+) else panic (format_err "Contract is not a Bool");
+
+if fulfilling (True)  $body else report _             => body;
+if fulfilling (False) _     else report (String $msg) => continue from caller or alt prerun panic (format_err (String msg));
+
+// Variables
+VarDecl _ _ => ;
+
+Var $val (transparent $type) => val; // transparent makes this function both stay unevaluated and evaluate when all non-transparent args are applied? (superposition? xD)
+
+let (frozen $var): $type = $val => VarDecl (($var => scope) (Var val type));
+let (frozen $var): auto  = $val => let var: category of val = val;
+let (frozen $var)        = $val => let var: val = val;
+
+(Var $val $type) = $type => __ASSIGN__;
+
+// List Empty|($item (List $list))
+Empty                   $x _  => x;
+List (Empty)            $x _  => x Empty;
+List $item (List $tail) _  $y => y item (List tail);
+
+let [] = List Empty;
+
+[$item => List item (List Empty);
+
+(List $item (List Empty)), $new_item => List item (List new_item (List Empty));
+(List $item $tail       ), $new_item => List item (tail, new_item);
+
+index         of $item in $list               => index from 0 of item in list;
+index from _  of _     in ([])                => Nothing;
+index from $i of $item in (List $item2 $tail) => if item == item2 (
+	i
+) else (
+	index from (i + 1) of item in tail
+);
+
+map _  to ([]) => [];
+map $f to (List $item $tail) => List (f item) (map f to tail);
+
+// Groups
+group (frozen $name) $funcs exports $exports => if fulfilling (funcs == any List && exports == any List) [
+	(unfreeze name).$f => (
+		let res = index of (stringify f) in (map stringify to funcs);
+		
+		if res != Nothing (
+			funcs[index of (stringify f) in (map stringify to funcs)]
+		) else (
+			prerun panic (format_err (format "Failed to find '{}' in group '{}'" [stringify f, stringify name])) // Aren't stringify and frozen quite similar?
+		)
+	),
+	
+	exports
+];
+
+public group (frozen $name) $funcs => group name funcs exports funcs;
+
+public group Numbers [
+	// Nat Zero|(PlusOne (Nat _))
+	Zero                 $f $x => x,
+	PlusOne (Nat $n)     $f $x => f (n f x),
+	Nat     (Zero)       $f $x => Zero f x,
+	Nat     (PlusOne $n) $f $x => PlusOne n f x
+];
+
+public group ControlFlow [
+	while (False)     _               => ,
+	while (Bool $cond) (frozen $body) => (
+		body;
+		while cond body
+	),
+
+	for (frozen $i) in ($start..$end) $body => (
+		let i = start;
+		while i < end (
+			body;
+			i++;
+		)
+	)
+];
+
+public group Misc [
+	$n mod $m => if n >= m (
+		(n - m) mod m
+	) else n,
+
+	$n..$m => n|(n + 1)|...|m,
+	
+	(n) +- (m) => n-m..m+n,
+	
+	remaining args of $f => ALL_ARGS f length - APPLIED_ARGS f length,
+	
+	$n++ => (
+		a += 1;
+		a - 1
+	),
+
+	++$n => (
+		a += 1;
+		a
+	),
+
+	$n-- => (
+		a -= 1;
+		a + 1
+	),
+
+	--$n => (
+		a -= 1;
+		a
+	)
+];

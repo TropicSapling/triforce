@@ -138,6 +138,7 @@ for i in 1..100 (
 
 (Nothing $f $x =>); // Parentheses not actually needed, just there to clarify
 
+// Bool True|False
 Bool True  $x _  => x;
 Bool False _  $y => y;
 
@@ -157,6 +158,7 @@ $a == $a => True;
 _  == _  => False;
 $a != $b => !(a == b);
 
+// Nat Zero|(PlusOne (Nat _))
 Zero                 $f $x => x;
 PlusOne (Nat $n)     $f $x => f (n f x);
 Nat     (Zero)       $f $x => Zero f x;
@@ -272,3 +274,258 @@ fibY $next $n => if n < 2 (
 fibMemo $n => (fibY using memo) n;
 
 fibMemo 5; // 8
+
+// Testing
+blueprint (Nat) => Nat Zero|(PlusOne (Nat _));
+
+// Scott encoding
+A a b ... | B c d ... | ...
+
+A $a $b ... $x $y ... => x a b ...
+B $c $d ... $x $y ... => y c d ...
+...
+
+// Ex:
+Bool True|False
+
+True  $x $y => x
+False $x $y => y
+
+b
+	=> 1
+	=> 0
+
+// Ex 2:
+Nat Zero|(PlusOne (Nat _))
+(Nat Zero)|(Nat PlusOne (Nat _))
+
+Nat $a    $x $y => x a
+Nat $c $d $x $y => y c d
+
+Nat Zero             $x $y => x
+Nat PlusOne (Nat $c) $x $y => y c
+
+match n {
+	Nat Zero             => 0
+	Nat PlusOne (Nat $n) => n
+}
+
+n
+	   => 0
+	$n => n
+
+n
+	(Zero)             => 0
+	(PlusOne) (Nat $n) => n
+
+$a $b    $x $y => x a b
+$c $d $e $x $y => y c d e
+
+(Nat) (Zero)             $x $y => x Nat Zero
+(Nat) (PlusOne) (Nat $c) $x $y => y Nat PlusOne (Nat c)
+
+n
+	(Nat) (Zero)             => 0
+	(Nat) (PlusOne) (Nat $n) => n
+
+if (True)  then $body else $expr $x $y => x True  body expr
+if (False) then $body else $expr $x $y => y False body expr
+
+ifte
+	(True)  $body $expr => True
+	(False) $body $expr => False
+
+if (True)  then $body else $expr ($x matches if (True) then $b else $c) _  => x True body expr
+if (False) then $body else $expr _ ($y matches if (False) then $b else $c) => y False body expr
+
+ifte
+	if (True)  then $body else $expr => True // order matters! how to make it not matter?
+	if (False) then $body else $expr => False
+
+// Anonymous pattern matching
+(
+	f (1) => 4;
+	f (2) => 5;
+	f (3) => 6;
+	
+	f
+) 2; // 5
+
+([
+	f (1) => 4,
+	f (2) => 5,
+	g (3) => 6
+]; g 3) // 6
+
+match $x with $patterns => if fulfilling patterns == any List (
+	patterns; x
+);
+
+match g 3 with [
+	f (1) => 4,
+	f (2) => 5,
+	g (3) => 6
+] // 6
+
+match 2 with [
+	(1) => 4,
+	(2) => 5,
+	(3) => 6
+] // 5
+
+(((123) => 456); 123)
+
+// Some sort of lambda-pattern calculus
+((let untyped $var = $val; as #var #val) => scope) ((frozen $var) $val => ((var as frozen val) => scope) val)
+
+let untyped (untyped func (frozen $pattern) returns $body;) = $pattern $body => frozen (let untyped pattern = ALL_ARGS pattern => body;);
+
+// transparent makes this function both stay unevaluated and evaluate when all non-transparent args are applied? (superposition? xD)
+untyped func Var $val $type (transparent _) returns val;
+
+untyped func (Var $val $type) = $new_val returns if fulfilling new_val is type (
+	__ASSIGN__ (Var val type) (Var new_val type)
+);
+
+untyped func category of ($b (ALL_ARGS b)) returns b;
+untyped func unbox        $b               returns APPLIED_ARGS b;
+
+untyped func (let (frozen $var): $type = $val) returns frozen (let untyped var = Var val type;); // TODO: check if $type unstrictly equals $val
+untyped func (let (frozen $var): auto  = $val) returns frozen (let var: category of val = val;);
+untyped func (let (frozen $var)        = $val) returns frozen (let var: val = val;);
+
+untyped func (func (frozen $pattern) returns $body: $type) returns frozen (let pattern: type = ALL_ARGS pattern => body;);
+
+// Examples
+let n: Int = 123;
+
+func $a plus $b returns a + b: Int;
+
+--------------------------------------
+
+// returns f c = f 456 = fu 123 nc 456
+((f $b as fu ($a as 123) nc #b) $c => f c) (fu 123 nc) 456 // '$a': store applied arg in 'a'. '#b': link unapplied arg to '$b'
+
+// New try
+((let untyped $var = $val; as #var #val) => scope) ((frozen $var) $val => ((var as frozen val) => scope) val)
+
+let untyped (untyped func (frozen $pattern) returns $body;) = $pattern $body => frozen (let untyped pattern = ALL_ARGS pattern => body;);
+
+// 'transparent _' makes this function run if it fails all pattern matches
+untyped func (Typed $expr _): $type returns expr: type; // allows for stuff like '(123: 0..): Int'
+untyped func           $expr: $type returns if fulfilling expr is type (
+	Typed expr type
+);
+
+untyped func Typed $expr $type (transparent _) returns expr; // is 'transparent' needed?
+
+untyped func (frozen $var): $type = $new_val returns __ASSIGN__ var (new_val: type);
+
+untyped func category of ($b (ALL_ARGS b)) returns b;
+untyped func unbox        $b               returns APPLIED_ARGS b;
+
+untyped func (let (Typed $var $type)   = $val)   returns frozen (let untyped var = val: type;);
+untyped func (let (frozen $var): auto  = $val)   returns frozen (let var: category of val = val;);
+untyped func (let (frozen $var)        = $val)   returns frozen (let var: val = val;);
+
+untyped func (func (frozen $pattern) returns $body) returns frozen (let pattern = ALL_ARGS pattern => body;);
+
+// Examples
+
+let n: Int = 123;
+// is equivalent to
+let untyped n = 123: Int;
+
+((123 + 456): Int; "hello": String): String // any expr can have a type
+"world": Int // this returns an error
+
+func (($a: Number) plus ($b: Number)): Function returns (
+	a + b
+): Number;
+
+$a plus $b = $a $b => 123;
+
+—————————————————————————————
+
+listify 1|2|3 != 1|2|3
+
+f $a => a + 1;
+
+f 1|2|3 => 2|3|4;
+
+1 == 1|2|3
+1|2|3 != 1 (necessarily)
+
+g (1|2|3) vs. g (listify 1|2|3)
+
+h _ <=> h (a|b|...)
+
+1 == 1|2|3 => True|False
+1|2|3 == 1 => True|False
+
+1 is (listify 1|2|3) => True
+(listify 1|2|3) is (listify 1) => False
+
+- x = 1|2|3 where x will be one of
+- f (1|2|3) where f takes one of
+- g (1|2|3) where f takes all as list
+- x: 1|2|3 where x has all as type (list)
+
+g $x <=> g ($x as _)
+g 1  <=> g (_ as 1)
+g _  <=> g (_ as _)
+
+g ($x as if $a then $b) <=> g ($x as if ($a as _) then ($b as _))
+g ($x as if _  then _ ) <=> g ($x as if _ then _)
+g (      if $a then $b) <=> g (_  as if $a then $b)
+
+h (ifte $a $b as if $a then $b)
+
+($x as type) is $type => True
+
+--------------------------------
+// New syntax?
+
+($(if #a then #b) as ifte #a #b)
+
+($(if (#a as #_) then (#b as g $_)) as #a #b) (($(f #x) as #x) (_ as g $y) => f y) // works, but how to make 'let' & 'func' work with this system?
+
+($(if (#a as #x) then (#b as g $y)) as #a #b) (($(f #x) as _) (_ as _) => f y)
+
+func if ($(f #x) as #x) then (_ as g $y) (
+	f y
+);
+
+($(if ($(f _) as #_) then (_ as g $y)) as #($(f _) as #_) #(_ as g $y)) (_ _ => f y)
+
+-----------
+
+func if ($(f _) as #0) then (_ as g $y) (
+	f y
+);
+
+($(if ($(f _) as #0) then (_ as g $y)) as #1 #0) (_ _ => f y)
+
+(($(f _) as fu ($a as 123) nc #0) ($c as _) => f (a + c)) (fu 123 nc) 456
+
+//let if (#(f #x) as #x) then (_ as g $y) = ($(f #x) as #x) (_ as g $y) => f y;
+
+// NOTE: 'as' is *not* allowed within variables '$(...)'.
+//       This by extension (due to syntax sugar) means that
+//       neither '$a' nor '(x)' is allowed.
+//       Only linked args '#a' are allowed.
+
+// returns f (a + c) = f (123 + 456) = f 579 = fu 123 nc 579
+// '#b' is NOT accessible within the body, it's only used for the linking
+(($(f #b) as fu ($a as 123) nc #b) ($c as _) => f (a + c)) (fu 123 nc) 456
+
+// Syntax sugar
+$a          <=> ($a as _)
+$(f #a)     <=> ($(f #a) as #a)
+(x)         <=> (_ as x) // where 'x' is not '$a'
+($a as f _) <=> ($a as f $_) // '#_' for unapplied
+
+(_ as type) is $type => True
+
+// replace 'frozen' with this?
+{$expr} _ => expr
