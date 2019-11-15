@@ -93,6 +93,16 @@
 - define types using predicates/conditions
   - i.e. `Nat = n >= 0`
 
+## error handling
+- https://www.reddit.com/r/ProgrammingLanguages/comments/drr3ri/comment/f6kn8a5
+
+## static/dynamic linking
+- https://gankra.github.io/blah/swift-abi/
+
+## optimisation
+- http://www.lihaoyi.com/post/HowanOptimizingCompilerWorks.html
+- The dependent typing system "automatically" optimises some code
+
 ## other
 - should `map` be called `apply <function> for each in <list>` or maybe `apply_all <function> <list>`?
 - `map` -> `lmap` (list map)? Fits better together with `fmap`.
