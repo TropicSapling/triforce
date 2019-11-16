@@ -531,3 +531,7 @@ $(f #a)     <=> ($(f #a) as #a)
 
 // replace 'frozen' with this?
 {$expr} _ => expr
+
+-------------------------------
+
+False|True|Paradoxical // Add this kind of extended-boolean?

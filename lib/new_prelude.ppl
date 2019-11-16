@@ -1,0 +1,84 @@
+// Syntax sugar
+$a                 <=> ($a as _) // 'a' can be called like 'a arg1 arg2 ...'
+$(f $a $b ...)     <=> ($(f $a $b ...) as #0 #1 ...)
+(x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
+
+////////////////////////////////////////////////////////////////
+
+($(let basic $var = $val;) => scope) (($var as frozen) $val => (var => scope) val)
+
+let basic $({$expr as frozen} _) = $expr _ => expr;
+
+let basic $(basic func ($pattern as frozen) $(body _);) = $pattern $(body _) => frozen (let basic pattern = ALL_ARGS pattern => body _;);
+
+basic func $(Nothing $f $x) {scope};
+
+basic func $(remaining args of $f) {
+	ALL_ARGS f length - APPLIED_ARGS f length
+};
+
+// Boxes
+basic func $(category of ($wrapper (ALL_ARGS wrapper))) {wrapper};
+basic func $(unbox $b) {APPLIED_ARGS b};
+
+// Bool True|False
+let untyped $(Bool True  $x _ ) = $x _  => x;
+let untyped $(Bool False _  $y) = _  $y => y;
+
+let untyped $True  = Bool True;
+let untyped $False = Bool False;
+
+let untyped $((True)   && (True))   = _ _ => True;
+let untyped $((Bool _) && (Bool _)) = _ _ => False;
+
+let untyped $((False)  || (False))  = _ _ => False;
+let untyped $((Bool _) || (Bool _)) = _ _ => True;
+
+let untyped $(!(True))  = _ => False;
+let untyped $(!(False)) = _ => True;
+
+let untyped $($a == $a) = _  _  => True;
+let untyped $(_  == _ ) = _  _  => False;
+let untyped $($a != $b) = $a $b => !(a == b);
+
+// if_then_else
+
+if (True)    $body            => body;
+if (False)   _                =>     ;
+if (Bool $b) $body else $expr => b body expr;
+
+if (True)    then $body            => body;
+if (False)   then _                =>     ;
+if (Bool $b) then $body else $expr => b body expr;
+
+// Type checking
+any ($b) => b (ALL_ARGS b);
+
+if fulfilling (True)              $body => body;
+if fulfilling (frozen $cond)      _     => if !(unfreeze cond) (
+	// continue to next function def if there is one, else panic
+	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify cond]))
+) else panic (format_err "Contract is not a Bool");
+
+if fulfilling (True)  $body else report _             => body;
+if fulfilling (False) _     else report (String $msg) => continue from caller or alt prerun panic (format_err (String msg));
+
+$f using $closure => if fulfilling remaining args of closure == 1 (
+	f ((closure _) f)
+);
+
+memo _ => (
+	$f $next $x => f (next) x
+);
+
+fibY $next $n => if n < 2 (
+	1
+) else next (next) (n - 2) + next (next) (n - 1);
+
+fibMemo $n => (fibY using memo) n;
+
+untyped func ##(precedence below _) $($expr;) {
+	scope
+}
+
+let {($expr as frozen)} _ = ($expr as frozen) => expr;
