@@ -86,3 +86,13 @@ untyped func @(precedence below _) $($expr;) {
 }
 
 let {($expr as frozen)} _ = ($expr as frozen) => expr;
+
+-------------------------------------------------
+
+// Parsing instructions
+(($(f ($(a) as 7)) as #a) => ...) ($x => 123)
+
+1. Choose a $(...) and move to its outside
+2. If inside another $(...), move to its outside, and then keep leaving scopes until you find 'as'
+   If not, keep leaving scopes until you find '=>'
+3. Your variable is defined after this 'as' or '=>'
