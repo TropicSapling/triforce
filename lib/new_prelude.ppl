@@ -77,7 +77,11 @@ fibY $next $n => if n < 2 (
 
 fibMemo $n => (fibY using memo) n;
 
-untyped func ##(precedence below _) $($expr;) {
+basic func @($attr as frozen) $(id as frozen) {
+	ATTRIBUTE attr id
+} // use '##' instead if you decide to use '@' for pointers
+
+untyped func @(precedence below _) $($expr;) {
 	scope
 }
 
