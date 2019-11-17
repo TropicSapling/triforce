@@ -3,7 +3,7 @@ $a                 <=> ($a as _) // 'a' can be called like 'a arg1 arg2 ...'
 $(f $a $b ...)     <=> ($(f $a $b ...) as #0 #1 ...)
 (x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
 
-// Requirements for *complete* functions (*basic* functions don't have these)
+// Requirements for *complete* functions (*basic* functions don't allow these easily)
 - Attributes
 - Recursion
 - Types
@@ -12,6 +12,8 @@ $(f $a $b ...)     <=> ($(f $a $b ...) as #0 #1 ...)
 
 ($(let basic $var = $val;) => scope) (($var as frozen) $val => (var => scope) val)
 
+// Normal 'frozen' keyword only freezes until 'expr' gets used again.
+// Use '{expr}' to freeze expression and make it stay frozen. Unfreeze with '{expr} _'.
 let basic $({$expr as frozen} _) = $expr _ => expr;
 
 let basic $(basic func ($pattern as frozen) $(body _);) = $pattern $(body _) => frozen (let basic $pattern = ALL_ARGS pattern => body _;);
@@ -47,26 +49,33 @@ basic func _  == _  {False};
 basic func $a != $b {!(a == b)};
 
 // if_then_else
+basic func if (True)    $body            {body};
+basic func if (False)   _                {scope};
+basic func if (Bool $b) $body else $expr {b body expr};
 
-if (True)    $body            => body;
-if (False)   _                =>     ;
-if (Bool $b) $body else $expr => b body expr;
-
-if (True)    then $body            => body;
-if (False)   then _                =>     ;
-if (Bool $b) then $body else $expr => b body expr;
+basic func if (True)    then $body            {body};
+basic func if (False)   then _                {scope};
+basic func if (Bool $b) then $body else $expr {b body expr};
 
 // Type checking
-any ($b) => b (ALL_ARGS b);
+basic func any $b {b (ALL_ARGS b)};
 
-if fulfilling (True)              $body => body;
-if fulfilling (frozen $cond)      _     => if !(unfreeze cond) (
-	// continue to next function def if there is one, else panic
-	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify cond]))
-) else panic (format_err "Contract is not a Bool");
+basic func if fulfilling (True)         $body {body};
+basic func if fulfilling (frozen $cond) _     {
+	if !cond {
+		// continue to next function def if there is one, else panic
+		continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify {cond}]))
+	} else {
+		panic (format_err "Contract is not a Bool")
+	};
+};
 
-if fulfilling (True)  $body else report _             => body;
-if fulfilling (False) _     else report (String $msg) => continue from caller or alt prerun panic (format_err (String msg));
+basic func if fulfilling (True)  $body else report _             {body};
+basic func if fulfilling (False) _     else report (String $msg) {
+	continue from caller or alt prerun panic (format_err (String msg))
+};
+
+// TODO: Fix so that stuff below works with new syntax
 
 $f using $closure => if fulfilling remaining args of closure == 1 (
 	f ((closure _) f)
