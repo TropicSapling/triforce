@@ -504,9 +504,11 @@ func if ($(f _) as #0) then (_ as g $y) (
 	f y
 );
 
-($(if ($(f _) as #0) then (_ as g $y)) as #1 #0) (_ _ => f y)
+(($(if ($(f _) as #0) then (_ as g $y)) as #1 #0) => ...) (_ _ => f y)
 
 (($(f _) as fu ($a as 123) nc #0) ($c as _) => f (a + c)) (fu 123 nc) 456
+
+(($(f $x) as #0) => f 456) ($x => f x) // recursion doesn't work! Y-combinator?
 
 //let if (#(f #x) as #x) then (_ as g $y) = ($(f #x) as #x) (_ as g $y) => f y;
 
@@ -529,3 +531,7 @@ $(f #a)     <=> ($(f #a) as #a)
 
 // replace 'frozen' with this?
 {$expr} _ => expr
+
+-------------------------------
+
+False|True|Paradoxical // Add this kind of extended-boolean?
