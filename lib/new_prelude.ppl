@@ -92,12 +92,12 @@ fibY $next $n => if n < 2 (
 fibMemo $n => (fibY using memo) n;
 
 basic func @($attr as frozen) $(id as frozen) {
-	ATTRIBUTE attr id
-} // use '##' instead if you decide to use '@' for pointers
+	ATTRIBUTE attr id // this built-in tells compiler 'id' has attribute 'attr' and returns 'id'
+}; // use '##' instead if you decide to use '@' for pointers
 
-untyped func @(precedence below _) $($expr;) {
+@(precedence below _) func $expr; {
 	scope
-}
+}: auto;
 
 let {($expr as frozen)} _ = ($expr as frozen) => expr;
 
