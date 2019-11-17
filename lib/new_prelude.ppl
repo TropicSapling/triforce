@@ -3,43 +3,48 @@ $a                 <=> ($a as _) // 'a' can be called like 'a arg1 arg2 ...'
 $(f $a $b ...)     <=> ($(f $a $b ...) as #0 #1 ...)
 (x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
 
+// Requirements for *complete* functions (*basic* functions don't have these)
+- Attributes
+- Recursion
+- Types
+
 ////////////////////////////////////////////////////////////////
 
 ($(let basic $var = $val;) => scope) (($var as frozen) $val => (var => scope) val)
 
 let basic $({$expr as frozen} _) = $expr _ => expr;
 
-let basic $(basic func ($pattern as frozen) $(body _);) = $pattern $(body _) => frozen (let basic pattern = ALL_ARGS pattern => body _;);
+let basic $(basic func ($pattern as frozen) $(body _);) = $pattern $(body _) => frozen (let basic $pattern = ALL_ARGS pattern => body _;);
 
-basic func $(Nothing $f $x) {scope};
+basic func Nothing $f $x {scope};
 
-basic func $(remaining args of $f) {
+basic func remaining args of $f {
 	ALL_ARGS f length - APPLIED_ARGS f length
 };
 
 // Boxes
-basic func $(category of ($wrapper (ALL_ARGS wrapper))) {wrapper};
-basic func $(unbox $b) {APPLIED_ARGS b};
+basic func category of ($wrapper (ALL_ARGS wrapper)) {wrapper};
+basic func unbox $b {APPLIED_ARGS b};
 
 // Bool True|False
-let untyped $(Bool True  $x _ ) = $x _  => x;
-let untyped $(Bool False _  $y) = _  $y => y;
+basic func Bool True  $x _  {x};
+basic func Bool False _  $y {y};
 
-let untyped $True  = Bool True;
-let untyped $False = Bool False;
+let basic $True  = Bool True;
+let basic $False = Bool False;
 
-let untyped $((True)   && (True))   = _ _ => True;
-let untyped $((Bool _) && (Bool _)) = _ _ => False;
+basic func (True)   && (True)   {True};
+basic func (Bool _) && (Bool _) {False};
 
-let untyped $((False)  || (False))  = _ _ => False;
-let untyped $((Bool _) || (Bool _)) = _ _ => True;
+basic func (False)  || (False)  {False};
+basic func (Bool _) || (Bool _) {False};
 
-let untyped $(!(True))  = _ => False;
-let untyped $(!(False)) = _ => True;
+basic func !(True)  {False};
+basic func !(False) {True};
 
-let untyped $($a == $a) = _  _  => True;
-let untyped $(_  == _ ) = _  _  => False;
-let untyped $($a != $b) = $a $b => !(a == b);
+basic func $a == $a {True};
+basic func _  == _  {False};
+basic func $a != $b {!(a == b)};
 
 // if_then_else
 
@@ -90,7 +95,7 @@ let {($expr as frozen)} _ = ($expr as frozen) => expr;
 -------------------------------------------------
 
 // Parsing instructions
-(($(f ($(a) as 7)) as #a) => ...) ($x => 123)
+(($(add (4) to ($(a) as 7)) as #a #0) => add 4 to 7) ($x _ => x + 4)
 
 1. Choose a $(...) and move to its outside
 2. If inside another $(...), move to its outside, and then keep leaving scopes until you find 'as'
