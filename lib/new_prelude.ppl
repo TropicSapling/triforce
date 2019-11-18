@@ -94,18 +94,50 @@ basic func fibR $fibR $n {
 	if n < 2 {
 		1
 	} else {
-		fibR (n - 2) + fibR (n - 1)
+		fibR (fibR) (n - 2) + fibR (fibR) (n - 1)
 	}
 };
 
-fibR (next next) 123
+fibR (fibR) 123
 
 // test impl
-basic func rec func ($pattern as frozen) $body; {
-	basic func $next pattern ...
-	
-	TODO ...
-}
+basic func rec func ($pattern as frozen) ($body _); {
+	frozen (
+		basic func pattern {
+			basic func $f pattern {
+				let basic $(pattern) = (f) f;
+				body _
+			};
+			
+			(pattern) pattern // becomes '($f fib $n) $f fib $n', somehow must turn into '($f fib $n) fib n'
+		};
+	)
+};
+
+rec func fib $n {
+	if n < 2 {
+		1
+	} else {
+		fib (n - 2) + fib (n - 1)
+	}
+};
+
+=>
+
+basic func fib $n {
+	basic func $f fib $n {
+		let basic $(fib $n) = (f) f;
+		if n < 2 {
+			1
+		} else {
+			fib (n - 2) + fib (n - 1)
+		}
+	};
+
+	(fib) fib n
+};
+
+fib 5
 
 fibMemo $n => (fibY using memo) n;
 
