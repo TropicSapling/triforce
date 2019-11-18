@@ -101,16 +101,16 @@ basic func fibR $fibR $n {
 fibR (fibR) 123
 
 // test impl
-basic func rec func ($pattern as frozen) ($body _); {
+basic func rec func $pattern ($body _); {
 	frozen (
-		basic func pattern {
+		let basic pattern = (
 			basic func $f pattern {
-				let basic $(pattern) = (f) f;
+				let basic $pattern = (f) f;
 				body _
 			};
 			
-			(pattern) pattern // becomes '($f fib $n) $f fib $n', somehow must turn into '($f fib $n) fib n'
-		};
+			($f pattern) ($f pattern) // becomes '($f fib $n) fib $n' if pattern = 'fib $n'
+		);
 	)
 };
 
@@ -124,7 +124,7 @@ rec func fib $n {
 
 =>
 
-basic func fib $n {
+let basic fib $n = (
 	basic func $f fib $n {
 		let basic $(fib $n) = (f) f;
 		if n < 2 {
@@ -134,8 +134,8 @@ basic func fib $n {
 		}
 	};
 
-	(fib) fib n
-};
+	($f fib) fib $n
+);
 
 fib 5
 
