@@ -28,12 +28,20 @@ P+ is for...
 2. `<input pars>` = `(<par1>) (<par2>) ...`
 3. Every parameter is a *pattern*.
 
-#### Pattern matching
-1. `$(add (4) to ($(a) as 7)) as #a #0`
-1. Structure: `$(<pattern to define>) as <pattern to match>`
+#### Patterns (variables but better)
+1. Def. structure: `($(<pattern to define>) as <pattern to match>)`
+2. Call structure:
+	- mixfix ex: `example pattern taking (x) and (123)`
+	- prefix ex: `(example pattern taking $_ and $_) x 123`
+3. Patterns are defined within the scope described by the *pattern parsing algorithm*.
 
-#### Patterns
-1. TODO
+`$(add (4) to ($(a) as 7)) as #a #0`
+
+#### Pattern parsing algorithm
+1. Choose a `$(...)` and move to its outside.
+2. If inside another `$(...)`, move to its outside, and then keep leaving scopes until you find `as`.
+   If not, keep leaving scopes until you find `=>`.
+3. Your pattern is defined after this `as` or `=>`.
 
 ### [OLD] Syntax
 1. Functions are defined using `<input> => <output>`.
