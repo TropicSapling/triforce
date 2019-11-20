@@ -22,7 +22,20 @@ P+ is for...
 
 --------
 
-### Syntax
+### Spec
+#### Anonymous functions
+1. Structure: `(<input pars> => <function body>) <input args>`.
+2. `<input pars>` = `(<par1>) (<par2>) ...`
+3. Every parameter is a *pattern*.
+
+#### Pattern matching
+1. `$(add (4) to ($(a) as 7)) as #a #0`
+1. Structure: `$(<pattern to define>) as <pattern to match>`
+
+#### Patterns
+1. TODO
+
+### [OLD] Syntax
 1. Functions are defined using `<input> => <output>`.
 
 2. `(<expr>)` *always* has higher precedence than `<expr>`.
