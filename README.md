@@ -34,6 +34,8 @@ P+ is for...
 	- mixfix ex: `example pattern taking (x) and (123)`
 	- prefix ex: `(example pattern taking $_ and $_) x 123`
 3. Patterns are defined within the scope described by the *pattern parsing algorithm*.
+4. Patterns can only be defined within `<input pars>`.
+	- if it looks like a pattern is defined outside, it's actually a call to a defined pattern
 
 `$(add (4) to ($(a) as 7)) as #a #0`
 
