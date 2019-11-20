@@ -158,3 +158,32 @@ basic func @($attr as frozen) $(id as frozen) {
 2. If inside another $(...), move to its outside, and then keep leaving scopes until you find 'as'
    If not, keep leaving scopes until you find '=>'
 3. Your variable is defined after this 'as' or '=>'
+
+---------------------
+
+Let f $x, $a f $b be patterns/functions
+
+Then:
+      f <=>      f $x
+$a f <=> $a f $b
+
+let f = $x => ...;
+<=>
+let f $x = $x => ...;
+
+This is because there is no pattern matching before ‘as’. So doing ‘$x’ there serves no other purpose than naming the pattern / which order args come in.
+
+Both patterns and anonymous functions can be passed around as values.
+
+‘$x => ...` is almost equivalent to ‘$x’.
+
+All inputs to functions are parenthesised. They are also evaluated unless frozen.
+
+---------------------
+
+Number literals can be linked to types for a certain scope. This allows changing the link for different scope, a.k.a. changing the representation (between for example machine and natural numbers).
+
+// default representation, change part
+// after ‘=‘ to change representation
+let __NUMBERS__ = any Nat;
+let __STRINGS__ = any String;
