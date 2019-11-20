@@ -26,7 +26,7 @@ P+ is for...
 #### Anonymous functions
 1. Structure: `(<input pars> => <function body>) <input args>`.
 2. `<input pars>` = `(<par1>) (<par2>) ...`
-3. Every parameter is a *pattern*.
+3. Every parameter is a *pattern def*.
 4. If not enough input args are given, the function is partially applied.
 
 #### Patterns (variables but better)
