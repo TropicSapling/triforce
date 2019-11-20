@@ -27,6 +27,7 @@ P+ is for...
 1. Structure: `(<input pars> => <function body>) <input args>`.
 2. `<input pars>` = `(<par1>) (<par2>) ...`
 3. Every parameter is a *pattern*.
+4. If not enough input args are given, the function is partially applied.
 
 #### Patterns (variables but better)
 1. Def. structure: `($(<pattern to define>) as <pattern to match>)`
@@ -36,6 +37,7 @@ P+ is for...
 3. Patterns are defined within the scope described by the *pattern parsing algorithm*.
 4. Patterns can only be defined within `<input pars>`.
 	- if it looks like a pattern is defined outside, it's actually part of a call to a defined pattern
+5. Patterns, like functions, can be partially applied.
 
 `$(add (4) to ($(a) as 7)) as #a #0`
 
