@@ -28,6 +28,8 @@
 ## memory
 - rust borrow system? changes?
 - memory layouts (of boxes)?
+- How to deal with 8/16+ byte boxes?
+  - Built-in arrays?
 
 ## mutability
 - Dependent types makes mutability harder
