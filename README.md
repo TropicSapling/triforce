@@ -27,7 +27,7 @@ P+ is for...
 1. Structure: `(<input pars> => <function body>) <input args>`.
 2. `<input pars>` = `(<par1>) [(<par2>) ...]`
 3. `<input args>` = `<arg1> [<arg2> ...]`
-4. Every parameter is a *pattern*.
+4. Every parameter is a *pattern def*.
 5. If not enough input args are given, the function is partially applied.
 
 #### Patterns (variables but better)
