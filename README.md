@@ -25,13 +25,16 @@ P+ is for...
 ### Spec
 #### Anonymous functions
 1. Structure: `(<input pars> => <function body>) <input args>`.
-2. `<input pars>` = `(<par1>) (<par2>) ...`
-3. Every parameter is a *pattern*.
-4. If not enough input args are given, the function is partially applied.
+2. `<input pars>` = `(<par1>) [(<par2>) ...]`
+3. `<input args>` = `<arg1> [<arg2> ...]`
+4. Every parameter is a *pattern*.
+5. If not enough input args are given, the function is partially applied.
 
 #### Patterns (variables but better)
-1. Def. structure: `($(<pattern to define>) as <pattern to match>)`
-2. Call structure:
+1. `<pattern def>` = `($(<pattern to define>) as <pattern to match>)` where
+	- `<pattern to define>` = `<name start> [(<pattern def>)|<name continuation> ...] [<name end>]` where
+		- `<name start>`, `name continuation`, `<name end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
+2. Call structure for ex. def. `$(example pattern taking (_ as _) and (_ as _)) as _`:
 	- mixfix ex: `example pattern taking (x) and (123)`
 	- prefix ex: `(example pattern taking $_ and $_) x 123`
 3. Patterns are defined within the scope described by the *pattern parsing algorithm*.
@@ -46,6 +49,16 @@ P+ is for...
 2. If inside another `$(...)`, move to its outside, and then keep leaving scopes until you find `as`.
    If not, keep leaving scopes until you find `=>`.
 3. Your pattern is defined after this `as` or `=>`.
+
+#### Syntax sugar
+```Swift
+$a                 <=> ($a as _) // 'a' can be called like 'a arg1 arg2 ...'
+$(f $a $b ...)     <=> ($(f $a $b ...) as #0 #1 ...)
+(x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
+```
+
+#### Misc
+1. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
 
 ### [OLD] Syntax
 1. Functions are defined using `<input> => <output>`.
