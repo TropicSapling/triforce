@@ -55,6 +55,21 @@ P+ is for...
    If not, keep leaving scopes until you find `=>`.
 3. Your pattern is defined after this `as` or `=>`.
 
+#### Pattern matching
+1. When a pattern name is used, the compiler will try to find a matching pattern definition. If it can't find any match, it reports a compile error.
+2. If 2 or more variables in the same function have the same name they will be pattern matched to be equal.
+	- i.e. in `$x $y $x => ...` the 2 `x`s must be equal
+3. An or-pattern, `` a`|`b`|`...`|`z ``, can be used in pattern matching.
+	- `a|b|c` <=> `a|a|b|c|b|a` <=> `c|a|b`
+	- `a`, `b`, `c`, `a|b`, `a|c` and `a|b|c` all match `a|b|c`
+	- `a|b|c`, `a|b` and `a|c` *may* match `a`, `b` or `c` (and `a|b|c` *may* match `a|b`)
+		- by default this will compile and instead pattern matching will be completed at runtime; if this fails, the program crashes
+		- if using `prerun` this counts as failing to match and won't compile
+	- `a|b|c == a|b`, `a|b|c == a|c` and `a|b|c == a|b|c` all return `True|False`
+4. Pattern matching is done at compile time whenever possible. If pattern matching can't be completed during compile time, it will continue during runtime.
+	- `prerun` can be used to override this and force pattern matching to be completed during compile time
+	-    `run` can be used to override this and force pattern matching to only be done during runtime
+
 #### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as #0 [#1 ...])`
 	- Note that this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> ...]`
@@ -77,15 +92,14 @@ P+ is for...
 4. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
 5. P+ uses eager evaluation.
 6. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
-7. `` a`|`b`|`...`|`z `` is an or-pattern.
-8. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
-9. The compiler will try to run as much as possible during compilation unless otherwise specified.
-10. `prerun <expr>` ensures `<expr>` runs during compilation.
-11. `run <expr>` ensures `<expr>` runs during runtime.
-12. `stringify <expr>` turns the code of `<expr>` into a string.
-13. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
-14. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
-15. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
+7. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
+8. The compiler will try to run as much as possible during compilation unless otherwise specified.
+9. `prerun <expr>` ensures `<expr>` runs during compilation.
+10. `run <expr>` ensures `<expr>` runs during runtime.
+11. `stringify <expr>` turns the code of `<expr>` into a string.
+12. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
+13. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
+14. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
     - I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
 
 ### [OLD] Syntax
