@@ -51,11 +51,9 @@ P+ is for...
 3. Your pattern is defined after this `as` or `=>`.
 
 #### Syntax sugar
-```Swift
-$a                 <=> ($a as _) // 'a' can be called like 'a arg1 arg2 ...'
-$(f $a $b ...)     <=> ($(f $a $b ...) as #0 #1 ...)
-(x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
-```
+1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as #0 [#1 ...])`
+	- Note that this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> ...]`
+2. `(<pattern to match>)`   <=> `(_ as <pattern to match>)`
 
 #### Misc
 1. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
