@@ -59,6 +59,8 @@ P+ is for...
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as #0 [#1 ...])`
 	- Note that this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> ...]`
 2. `(<pattern to match>)`   <=> `(_ as <pattern to match>)`
+3. `scope` can be used to avoid making your program look like Lisp:
+	- `(<input pars> => scope) <input args> <rest of scope>` <=> `(<input pars> $scope => scope) <input args> (<rest of scope>)`
 
 #### Built-in "functions"
 1. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.
