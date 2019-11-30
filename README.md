@@ -66,7 +66,9 @@ P+ is for...
 		- by default this will compile and instead pattern matching will be completed at runtime; if this fails, the program crashes
 		- if using `prerun` this counts as failing to match and won't compile
 	- `a|b|c == a|b`, `a|b|c == a|c` and `a|b|c == a|b|c` all return `True|False`
-4. Pattern matching is done at compile time whenever possible. If pattern matching can't be completed during compile time, it will continue during runtime.
+4. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
+	- ex: `0|1|...` is an or-pattern consisting of all integers >= 0 
+5. Pattern matching is done at compile time whenever possible. If pattern matching can't be completed during compile time, it will continue during runtime.
 	- `prerun` can be used to override this and force pattern matching to be completed during compile time
 	-    `run` can be used to override this and force pattern matching to only be done during runtime
 
@@ -92,14 +94,11 @@ P+ is for...
 4. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
 5. P+ uses eager evaluation.
 6. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
-7. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
-8. The compiler will try to run as much as possible during compilation unless otherwise specified.
-9. `prerun <expr>` ensures `<expr>` runs during compilation.
-10. `run <expr>` ensures `<expr>` runs during runtime.
-11. `stringify <expr>` turns the code of `<expr>` into a string.
-12. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
-13. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
-14. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
+7. The compiler will try to run as much as possible during compilation unless otherwise specified.
+8. `stringify <expr>` turns the code of `<expr>` into a string.
+9. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
+10. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
+11. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
     - I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
 
 ### [OLD] Syntax
