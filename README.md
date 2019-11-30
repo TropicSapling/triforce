@@ -60,8 +60,27 @@ P+ is for...
 	- Note that this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> ...]`
 2. `(<pattern to match>)`   <=> `(_ as <pattern to match>)`
 
+#### Built-in "functions"
+1. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.
+2. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
+
 #### Misc
 1. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
+2. `(<expr>)` *always* has higher precedence than `<expr>`.
+3. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
+4. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
+5. P+ uses eager evaluation.
+6. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
+7. `` a`|`b`|`...`|`z `` is an or-pattern.
+8. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
+9. The compiler will try to run as much as possible during compilation unless otherwise specified.
+10. `prerun <expr>` ensures `<expr>` runs during compilation.
+11. `run <expr>` ensures `<expr>` runs during runtime.
+12. `stringify <expr>` turns the code of `<expr>` into a string.
+13. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
+14. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
+15. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
+    - I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
 
 ### [OLD] Syntax
 1. Functions are defined using `<input> => <output>`.
