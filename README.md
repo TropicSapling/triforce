@@ -41,12 +41,16 @@ P+ is for...
 			- a number specifying what parameter to link to
 			- ex: `(($(add (4) and (2) to ($(a) as 7)) as #1 #a #0) => ...) ($x $y $z => x + y * z)` where
 				- `...` = `add 4 and 2 to 7` => `($x $y $z => x + y * z) 2 7 4` => `2 + 7 * 4` => `2 + 28` => `30`
+
 2. Call structure for ex. def. `$(example pattern taking (_ as _) and (_ as _)) as _`:
 	- mixfix ex: `example pattern taking (x) and (123)`
 	- prefix ex: `(example pattern taking $_ and $_) x 123`
+
 3. Patterns are defined within the scope described by the *pattern parsing algorithm*.
+
 4. Patterns can only be defined within `<input pars>`.
 	- if it looks like a pattern is defined outside, it's actually part of a call to a defined pattern
+
 5. Patterns, like functions, can be partially applied.
 
 #### Pattern parsing algorithm
@@ -57,8 +61,10 @@ P+ is for...
 
 #### Pattern matching
 1. When a pattern name is used, the compiler will try to find a matching pattern definition. If it can't find any match, it reports a compile error.
+
 2. If 2 or more variables in the same function have the same name they will be pattern matched to be equal.
 	- i.e. in `$x $y $x => ...` the 2 `x`s must be equal
+
 3. An or-pattern, `` a`|`b`|`...`|`z ``, can be used in pattern matching.
 	- ``a`|`b`|`c`` <=> ``a`|`a`|`b`|`c`|`b`|`a`` <=> ``c`|`a`|`b``
 	- `a`, `b`, `c`, ``a`|`b``, ``a`|`c`` and ``a`|`b`|`c`` all match ``a`|`b`|`c``
@@ -66,8 +72,10 @@ P+ is for...
 		- by default this will compile and instead pattern matching will be completed at runtime; if this fails, the program crashes
 		- if using `prerun` this counts as failing to match and won't compile
 	- ``a`|`b`|`c == a`|`b``, ``a`|`b`|`c == a`|`c`` and ``a`|`b`|`c == a`|`b`|`c`` all return ``True`|`False``
+
 4. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
 	- ex: ``` 0`|`1`|``...` ``` is an or-pattern consisting of all integers >= 0
+
 5. Pattern matching is done at compile time whenever possible. If pattern matching can't be completed during compile time, it will continue during runtime.
 	- `prerun` can be used to override this and force pattern matching to be completed during compile time
 	-    `run` can be used to override this and force pattern matching to only be done during runtime
@@ -75,9 +83,12 @@ P+ is for...
 #### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as #0 [#1 ...])`
 	- Note that this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> ...]`
+
 2. `(<pattern to match>)`   <=> `(_ as <pattern to match>)`
+
 3. `scope` can be used to avoid making your program look like Lisp:
 	- `(<input pars> => scope) <input args> <rest of scope>` <=> `(<input pars> $scope => scope) <input args> (<rest of scope>)`
+
 4. `$(<pattern to define>) as frozen <pattern to match>` can be used to delay evaluation of input until inside the scope where the pattern is defined:
 	- `(($x as frozen _) => x) <expr>`   <=> `(($x as _) => x _) {<expr>}`
 	- `$(<pattern to define>) as frozen` <=> `$(<pattern to define>) as frozen _`
@@ -93,11 +104,13 @@ P+ is for...
 3. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
 4. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
 5. P+ uses eager evaluation.
+
 6. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
 7. The compiler will try to run as much as possible during compilation unless otherwise specified.
 8. `stringify <expr>` turns the code of `<expr>` into a string.
 9. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
 10. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
+
 11. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
     - I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
 
