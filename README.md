@@ -32,8 +32,15 @@ P+ is for...
 
 #### Patterns (variables but better)
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match>)` where
-	- `<pattern to define>` = `<name start> [(<pattern def>)|<name continuation> ...] [<name end>]` where
-		- `<name start>`, `name continuation`, `<name end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
+	- `<pattern to define>` = ` <dname start>  [(<pattern def>)|<dname continuation> ...] [<dname end>]` where
+		- `<dname start>`, `dname continuation`, `<dname end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
+	- `<pattern to match>`  = `[<mname start>] [(<pattern def>)|<mname continuation>|#<n> ...] [<mname end>]` where
+		- `<mname start>`, `mname continuation`, `<mname end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
+		- `<n>` is either:
+			- a name for a parameter that is linked to a parameter of the same name in `<pattern to define>`, or
+			- a number specifying what parameter to link to
+			- ex: `($(add (4) and (2) to ($(a) as 7)) as #1 #a #0 => ...) ($x $y $z => x + y * z)` where
+				- `...` = `add 4 and 2 to 7` => `($x $y $z => x + y * z) 2 7 4` => `2 + 7 * 4` => `2 + 28` => `30`
 2. Call structure for ex. def. `$(example pattern taking (_ as _) and (_ as _)) as _`:
 	- mixfix ex: `example pattern taking (x) and (123)`
 	- prefix ex: `(example pattern taking $_ and $_) x 123`
@@ -41,8 +48,6 @@ P+ is for...
 4. Patterns can only be defined within `<input pars>`.
 	- if it looks like a pattern is defined outside, it's actually part of a call to a defined pattern
 5. Patterns, like functions, can be partially applied.
-
-`$(add (4) to ($(a) as 7)) as #a #0`
 
 #### Pattern parsing algorithm
 1. Choose a `$(...)` and move to its outside.
