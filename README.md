@@ -12,7 +12,7 @@ P+ is for...
 <sup>Keywords surrounded by</sup>
 * <sub>brackets (`[]`) are *optional*</sub>
 * <sub>angle brackets (`<>`) **must** be replaced by a name of your choice</sub>
-* <sub>backticks (`` ` ``) are **required** and escapes these definitions (i.e. `` `<type>` `` means you must literally type `<type>`)</sub>
+* <sub>backticks (`` ` ``) are **required** and escapes these definitions (i.e. `` a`|`b `` means you must literally type `a|b`)</sub>
 * <sub>parentheses (`()`) **and** seperated by bars (`|`) are part of a list of mutually exclusive **required** keywords</sub>
 * <sub>brackets (`[]`) **and** seperated by bars (`|`) are part of a list of mutually exclusive *optional* keywords</sub>
 
@@ -60,14 +60,14 @@ P+ is for...
 2. If 2 or more variables in the same function have the same name they will be pattern matched to be equal.
 	- i.e. in `$x $y $x => ...` the 2 `x`s must be equal
 3. An or-pattern, `` a`|`b`|`...`|`z ``, can be used in pattern matching.
-	- `a|b|c` <=> `a|a|b|c|b|a` <=> `c|a|b`
-	- `a`, `b`, `c`, `a|b`, `a|c` and `a|b|c` all match `a|b|c`
-	- `a|b|c`, `a|b` and `a|c` *may* match `a`, `b` or `c` (and `a|b|c` *may* match `a|b`)
+	- ``a`|`b`|`c`` <=> ``a`|`a`|`b`|`c`|`b`|`a`` <=> ``c`|`a`|`b``
+	- `a`, `b`, `c`, ``a`|`b``, ``a`|`c`` and ``a`|`b`|`c`` all match ``a`|`b`|`c``
+	- ``a`|`b`|`c``, ``a`|`b`` and ``a`|`c`` *may* match `a`, `b` or `c` (and ``a`|`b`|`c`` *may* match ``a`|`b``)
 		- by default this will compile and instead pattern matching will be completed at runtime; if this fails, the program crashes
 		- if using `prerun` this counts as failing to match and won't compile
-	- `a|b|c == a|b`, `a|b|c == a|c` and `a|b|c == a|b|c` all return `True|False`
+	- ``a`|`b`|`c == a`|`b``, ``a`|`b`|`c == a`|`c`` and ``a`|`b`|`c == a`|`b`|`c`` all return ``True`|`False``
 4. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
-	- ex: `0|1|...` is an or-pattern consisting of all integers >= 0 
+	- ex: ``` 0`|`1`|``...` ``` is an or-pattern consisting of all integers >= 0
 5. Pattern matching is done at compile time whenever possible. If pattern matching can't be completed during compile time, it will continue during runtime.
 	- `prerun` can be used to override this and force pattern matching to be completed during compile time
 	-    `run` can be used to override this and force pattern matching to only be done during runtime
