@@ -39,7 +39,7 @@ P+ is for...
 		- `<n>` is either:
 			- a name for a parameter that is linked to a parameter of the same name in `<pattern to define>`, or
 			- a number specifying what parameter to link to
-			- ex: `($(add (4) and (2) to ($(a) as 7)) as #1 #a #0 => ...) ($x $y $z => x + y * z)` where
+			- ex: `(($(add (4) and (2) to ($(a) as 7)) as #1 #a #0) => ...) ($x $y $z => x + y * z)` where
 				- `...` = `add 4 and 2 to 7` => `($x $y $z => x + y * z) 2 7 4` => `2 + 7 * 4` => `2 + 28` => `30`
 2. Call structure for ex. def. `$(example pattern taking (_ as _) and (_ as _)) as _`:
 	- mixfix ex: `example pattern taking (x) and (123)`
@@ -61,10 +61,14 @@ P+ is for...
 2. `(<pattern to match>)`   <=> `(_ as <pattern to match>)`
 3. `scope` can be used to avoid making your program look like Lisp:
 	- `(<input pars> => scope) <input args> <rest of scope>` <=> `(<input pars> $scope => scope) <input args> (<rest of scope>)`
+4. `$(<pattern to define>) as frozen <pattern to match>` can be used to delay evaluation of input until inside the scope where the pattern is defined:
+	- `(($x as frozen _) => x) <expr>`   <=> `(($x as _) => x _) {<expr>}`
+	- `$(<pattern to define>) as frozen` <=> `$(<pattern to define>) as frozen _`
 
 #### Built-in "functions"
 1. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.
 2. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
+3. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
 
 #### Misc
 1. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
