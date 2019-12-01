@@ -134,7 +134,7 @@ let basic fib $n = (
 		}
 	};
 
-	($f fib) fib $n
+	($f fib $n) fib $n
 );
 
 fib 5

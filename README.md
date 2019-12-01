@@ -49,9 +49,15 @@ P+ is for...
 3. Patterns are defined within the scope described by the *pattern parsing algorithm*.
 
 4. Patterns can only be defined within `<input pars>`.
-	- if it looks like a pattern is defined outside, it's actually part of a call to a defined pattern
+	- If it looks like a pattern is defined outside, it's actually a partially applied pattern
 
 5. Patterns, like functions, can be partially applied.
+	- This can be done by leaving out some of the `<input args>` or by having placeholders for args using `$(<placeholder pattern>)`
+		- `<placeholder pattern>` has the same syntax as `<pattern to define>`, but doesn't define the pattern
+		- Given a defined pattern `$($a f $b $c)`:
+			- ex. of leaving out args: `f`, `1 f`, `f 2`, `1 f 2`
+			- ex. of having placeholders: `$x f $y $z`, `1 f $y $z`, `$x f 2 $z`, `$x f $y 3`, `1 f $y 3`
+			- ex. of both: `1 f $y 3`
 
 #### Pattern parsing algorithm
 1. Choose a `$(...)` and move to its outside.
