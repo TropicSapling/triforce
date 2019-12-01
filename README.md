@@ -73,6 +73,7 @@ P+ is for...
 
 2. If 2 or more variables in the same function have the same name they will be pattern matched to be equal.
 	- i.e. in `$x $y $x => ...` the 2 `x`s must be equal
+	- the equality function `==` is defined using this
 
 3. An or-pattern, `` a`|`b`|`...`|`z ``, can be used in pattern matching.
 	- ``a`|`b`|`c`` <=> ``a`|`a`|`b`|`c`|`b`|`a`` <=> ``c`|`a`|`b``
@@ -95,9 +96,16 @@ P+ is for...
 	- Numbers, strings, etc. are defined as partially applied functions or patterns
 3. Values are differentiated using pattern matching (as described under "Patterns" and "Pattern matching").
 4. 2 values are equal iff they both are placeholders *or* all below criteria are met:
-	- They have the same amount of parameters in the same order
-	- They have the same applied args in the same order
-	- TODO ...
+	- They have the same amount of parameters   in the same order
+	- They have the same applied args           in the same order
+	- They have the same `<pattern to match>`:s in the same order
+	- They have the same name (if applicable)
+
+#### Pseudo-values
+1. Pseudo-values and or-patterns are equivalent.
+2. 2 pseudo-values can be equal, not equal or *neither*.
+3. Equality of pseudo-values is further described under "Pattern matching" §3.
+	- Note: 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
 
 #### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as #0 [#1 ...])`
