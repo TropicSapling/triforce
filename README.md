@@ -28,7 +28,10 @@ P+ is for...
 2. `<input pars>` = `(<par1>) [(<par2>) ...]`
 3. `<input args>` = `<arg1> [<arg2> ...]`
 4. Every parameter is a *pattern def*.
-5. If not enough input args are given, the function is partially applied.
+5. All functions are closures.
+6. If not enough input args are given, the function is partially applied.
+7. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined)
+	- This is what it means to say that a function returns `<function body>`
 
 #### Patterns (variables but better)
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match>)` where
@@ -85,6 +88,16 @@ P+ is for...
 5. Pattern matching is done at compile time whenever possible. If pattern matching can't be completed during compile time, it will continue during runtime.
 	- `prerun` can be used to override this and force pattern matching to be completed during compile time
 	-    `run` can be used to override this and force pattern matching to only be done during runtime
+
+#### Values
+1. Partially applied functions and patterns are treated as values.
+2. There are no other values.
+	- Numbers, strings, etc. are defined as partially applied functions or patterns
+3. Values are differentiated using pattern matching (as described under "Patterns" and "Pattern matching").
+4. 2 values are equal iff they both are placeholders *or* all below criteria are met:
+	- They have the same amount of parameters in the same order
+	- They have the same applied args in the same order
+	- TODO ...
 
 #### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as #0 [#1 ...])`
