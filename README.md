@@ -16,7 +16,7 @@ P+ is for...
 * <sub>parentheses (`()`) **and** seperated by bars (`|`) are part of a list of mutually exclusive **required** keywords</sub>
 * <sub>brackets (`[]`) **and** seperated by bars (`|`) are part of a list of mutually exclusive *optional* keywords</sub>
 
-<sub>Dots (`...`) mean essentially what they do in mathematics.</sub>
+<sub>Dots (`...`) and the equivalence symbol (`<=>`) mean essentially what they do in mathematics.</sub>
 
 <sub>Everything else is **required.**</sub>
 
