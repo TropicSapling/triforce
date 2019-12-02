@@ -13,10 +13,13 @@ $(f $a $b ...)     <=> ($(f $a $b ...) as #0 #1 ...)
 ($(let basic $var = $val;) => scope) (($var as frozen) $val => (var => scope) val)
 
 // Normal 'frozen' keyword only freezes until 'expr' gets used again.
-// Use '{expr}' to freeze expression and make it stay frozen. Unfreeze with '{expr} _'.
-let basic $({$expr as frozen} _) = $expr _ => expr;
+// Use '{expr}' to permafrost 'expr'. Defrost with 'defrost {expr}'.
+let basic $({($expr as frozen)} _)           = $expr   _ => expr;
+let basic $(permafrosted ($input as frozen)) = $input    => frozen ($(input _));
+let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
 
-let basic $(basic func ($pattern as frozen) $(body _);) = $pattern $(body _) => frozen (let basic $pattern = ALL_ARGS pattern => body _;);
+// We could've just used 'frozen' here. However, ...
+let basic $(basic func ($pattern as frozen) $(permafrosted body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
 
 basic func Nothing $f $x {scope};
 
@@ -75,14 +78,36 @@ basic func if fulfilling (False) _     else report (String $msg) {
 	continue from caller or alt prerun panic (format_err (String msg))
 };
 
-// TODO: Fix so that stuff below works with new syntax
+// TODO: Generalise into 'apply $f to itself $n times'
+basic func apply $f to itself {f f};
 
-$f using $closure => if fulfilling remaining args of closure == 1 (
+basic func $f using $closure => if fulfilling remaining args of closure == 1 (
 	f ((closure _) f)
 );
 
+basic func attr func 
+
+basic func rec func $pattern ($body _); {
+	frozen (
+		let basic pattern = (
+			basic func $f pattern {
+				let basic $pattern = (f) f;
+				body _
+			};
+			
+			($f pattern) ($f pattern) // becomes '($f fib $n) fib $n' if pattern = 'fib $n'
+		);
+	)
+};
+
+// TODO: Fix so that stuff below works with new syntax
+
 memo _ => (
-	$f $next $x => f (next) x
+	let basic $cache = [];
+	
+	$f $next $x => if cache.x exists (
+		cache.x
+	) else f (next) x
 );
 
 fibY $next $n => if n < 2 (
