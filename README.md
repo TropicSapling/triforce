@@ -145,14 +145,11 @@ P+ is for...
 3. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
 4. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
 5. P+ uses eager evaluation.
-
 6. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
 7. The compiler will try to run as much as possible during compilation unless otherwise specified.
-8. `stringify <expr>` turns the code of `<expr>` into a string.
-9. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
-10. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
-
-11. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
+8. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
+9. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
+10. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
     - I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
 
 ### [OLD] Syntax
