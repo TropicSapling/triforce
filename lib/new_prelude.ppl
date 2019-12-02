@@ -18,7 +18,11 @@ let basic $({($expr as frozen)} _)           = $expr   _ => expr;
 let basic $(permafrosted ($input as frozen)) = $input    => frozen ($(input _));
 let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
 
-// We could've just used 'frozen' here. However, ...
+// We could've just used 'frozen' here. However, using permafrost
+// forces the user to explicitly write '{}', thereby making them
+// aware of the code not being evaluated until later.
+// It's convention to make this explicit as long as it
+// doesn't negatively affect user experience.
 let basic $(basic func ($pattern as frozen) $(permafrosted body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
 
 basic func Nothing $f $x {scope};
