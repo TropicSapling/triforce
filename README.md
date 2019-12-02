@@ -36,10 +36,10 @@ P+ is for...
 4. Every parameter is a *pattern def*.
 5. All functions are closures.
 6. If not enough input args are given, the function is partially applied.
-7. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined)
+7. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined).
 	- This is what it means to say that a function returns `<function body>`
-8. Functions and patterns can be (partially) called/applied *anywhere*.
-	- This includes inside of `<input pars>`, but then surrounding parentheses are necessary
+8. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>` and `<pattern to define>`.
+	- Note that surrounding parentheses are *always* necessary when applying inside `<pattern to define>`
 
 #### Patterns (variables but better)
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match>)` where
