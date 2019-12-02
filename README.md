@@ -23,6 +23,12 @@ P+ is for...
 --------
 
 ### Spec
+#### Programs
+1. So far a program only consists of 1 file, but that will change in the future, and so will likely below points.
+2. A program is just one single anonymous function (counting `<input args>` to it).
+3. The compiler will evaluate this function as much as it can during compilation, and then convert the remnants into the specified output format.
+	- Normally this is machine code
+
 #### Anonymous functions
 1. Structure: `(<input pars> => <function body>) <input args>`.
 2. `<input pars>` = `(<par1>) [(<par2>) ...]`
@@ -32,6 +38,8 @@ P+ is for...
 6. If not enough input args are given, the function is partially applied.
 7. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined)
 	- This is what it means to say that a function returns `<function body>`
+8. Functions and patterns can be (partially) called/applied *anywhere*.
+	- This includes inside of `<input pars>`, but then surrounding parentheses are necessary
 
 #### Patterns (variables but better)
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match>)` where
@@ -44,10 +52,12 @@ P+ is for...
 			- a number specifying what parameter to link to
 			- ex: `(($(add (4) and (2) to ($(a) as 7)) as #1 #a #0) => ...) ($x $y $z => x + y * z)` where
 				- `...` = `add 4 and 2 to 7` => `($x $y $z => x + y * z) 2 7 4` => `2 + 7 * 4` => `2 + 28` => `30`
+	- patterns named `_` (written like `($_ as ...)`) are called unnamed patterns and will not be defined
 
 2. Call structure for ex. def. `$(example pattern taking (_ as _) and (_ as _)) as _`:
 	- mixfix ex: `example pattern taking (x) and (123)`
 	- prefix ex: `(example pattern taking $_ and $_) x 123`
+		- `$_` is here used as an unnamed pattern since `_`
 
 3. Patterns are defined within the scope described by the *pattern parsing algorithm*.
 
@@ -111,7 +121,8 @@ P+ is for...
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as #0 [#1 ...])`
 	- Note that this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> ...]`
 
-2. `(<pattern to match>)`   <=> `(_ as <pattern to match>)`
+2. `(<pattern to match>)`   <=> `($_ as <pattern to match>)`    <=> `(_ as <pattern to match>)`
+	- Note that `$_` and `_` are not generally equivalent; this is a special case
 
 3. `scope` can be used to avoid making your program look like Lisp:
 	- `(<input pars> => scope) <input args> <rest of scope>` <=> `(<input pars> $scope => scope) <input args> (<rest of scope>)`
