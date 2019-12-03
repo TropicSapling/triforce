@@ -56,13 +56,13 @@ basic func _  == _  {False};
 basic func $a != $b {!(a == b)};
 
 // if_then_else
-basic func if (True)    $body            {body};
-basic func if (False)   _                {scope};
-basic func if (Bool $b) $body else $expr {b body expr};
+basic func if (True)  (permafrosted $body)                           {defrost body};
+basic func if (False) (permafrosted $body)                           {scope};
+basic func if (True)  (permafrosted $body) else (permafrosted $expr) {defrost body};
+basic func if (False) (permafrosted $body) else (permafrosted $expr) {defrost expr};
 
-basic func if (True)    then $body            {body};
-basic func if (False)   then _                {scope};
-basic func if (Bool $b) then $body else $expr {b body expr};
+let basic $(if _ then _)        = if;
+let basic $(if _ then _ else _) = if $_ $_ else;
 
 // Type checking
 basic func any $b {b (ALL_ARGS b)};
@@ -89,7 +89,11 @@ basic func $f using $closure => if fulfilling remaining args of closure == 1 (
 	f ((closure _) f)
 );
 
-basic func attr func 
+basic func @($attr as frozen) $(id as frozen) {
+	ATTRIBUTE attr id // this built-in tells compiler 'id' has attribute 'attr' and returns 'id'
+}; // use '##' instead if you decide to use '@' for pointers
+
+basic func attr func ... // TODO
 
 basic func rec func $pattern ($body _); {
 	frozen (
@@ -103,6 +107,11 @@ basic func rec func $pattern ($body _); {
 		);
 	)
 };
+
+// The legendary SEMICOLON
+@(precedence below _) func $expr; {
+	scope
+}: auto;
 
 // TODO: Fix so that stuff below works with new syntax
 
@@ -169,14 +178,6 @@ let basic fib $n = (
 fib 5
 
 fibMemo $n => (fibY using memo) n;
-
-basic func @($attr as frozen) $(id as frozen) {
-	ATTRIBUTE attr id // this built-in tells compiler 'id' has attribute 'attr' and returns 'id'
-}; // use '##' instead if you decide to use '@' for pointers
-
-@(precedence below _) func $expr; {
-	scope
-}: auto;
 
 -------------------------------------------------
 

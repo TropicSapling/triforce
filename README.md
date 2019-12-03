@@ -72,6 +72,8 @@ P+ is for...
 			- ex. of having placeholders: `$x f $y $z`, `1 f $y $z`, `$x f 2 $z`, `$x f $y 3`, `1 f $y 3`
 			- ex. of both: `1 f $y 3`
 
+6. Patterns only consisting of names are called *variables*.
+
 #### Pattern parsing algorithm
 1. Choose a `$(...)` and move to its outside.
 2. If inside another `$(...)`, move to its outside, and then keep leaving scopes until you find `as`.
@@ -119,7 +121,9 @@ P+ is for...
 
 #### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as #0 [#1 ...])`
-	- Note that this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> ...]`
+	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> ...]`
+	- If the pattern isn't a variable, the amount of `#` after `as` will match the amount of parameters of the pattern
+		- i.e. `$(pattern taking $x and $y)` <=> `($(pattern taking $x and $y) as #0 #1)`
 
 2. `(<pattern to match>)`   <=> `($_ as <pattern to match>)`    <=> `(_ as <pattern to match>)`
 	- Note that `$_` and `_` are not generally equivalent; this is a special case
