@@ -128,10 +128,13 @@ P+ is for...
 2. `(<pattern to match>)`   <=> `($_ as <pattern to match>)`    <=> `(_ as <pattern to match>)`
 	- Note that `$_` and `_` are not generally equivalent; this is a special case
 
-3. `scope` can be used to avoid making your program look like Lisp:
+3. `$(<variable to define>) as <pattern to match>` <=> `$(<variable to define> _ [_ ...]) as <pattern to match>`
+	- i.e. `$b as Bool _` <=> `$(b _) as Bool _`
+
+4. `scope` can be used to avoid making your program look like Lisp:
 	- `(<input pars> => scope) <input args> <rest of scope>` <=> `(<input pars> $scope => scope) <input args> (<rest of scope>)`
 
-4. `$(<pattern to define>) as frozen <pattern to match>` can be used to delay evaluation of input until inside the scope where the pattern is defined:
+5. `$(<pattern to define>) as frozen <pattern to match>` can be used to delay evaluation of input until inside the scope where the pattern is defined:
 	- `(($x as frozen _) => x) <expr>`   <=> `(($x as _) => x _) {<expr>}`
 	- `$(<pattern to define>) as frozen` <=> `$(<pattern to define>) as frozen _`
 

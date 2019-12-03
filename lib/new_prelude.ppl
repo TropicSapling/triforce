@@ -42,11 +42,11 @@ basic func Bool False _  $y {y};
 let basic $True  = Bool True;
 let basic $False = Bool False;
 
-basic func (True)   && (True)   {True};
-basic func (Bool _) && (Bool _) {False};
+basic func (True)  && ($b as  Bool _) {b};
+basic func (False) && (frozen Bool _) {False};
 
-basic func (False)  || (False)  {False};
-basic func (Bool _) || (Bool _) {False};
+basic func (True)  || (frozen Bool _) {False};
+basic func (False) || ($b as  Bool _) {b};
 
 basic func !(True)  {False};
 basic func !(False) {True};
@@ -67,18 +67,14 @@ let basic $(if _ then _ else _) = if $_ $_ else;
 // Type checking
 basic func any $b {b (ALL_ARGS b)};
 
-basic func if fulfilling (True)         $body {body};
-basic func if fulfilling (frozen $cond) _     {
-	if !cond {
-		// continue to next function def if there is one, else panic
-		continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify {cond}]))
-	} else {
-		panic (format_err "Contract is not a Bool")
-	};
+basic func if fulfilling (True)                   (permafrosted $body) {body};
+basic func if fulfilling ($cond as frozen Bool _) (permafrosted $body) {
+	// continue to next function def if there is one, else panic
+	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify {cond}]))
 };
 
-basic func if fulfilling (True)  $body else report _             {body};
-basic func if fulfilling (False) _     else report (String $msg) {
+basic func if fulfilling (True)  (permafrosted $body) else report _             {body};
+basic func if fulfilling (False) (permafrosted $body) else report (String $msg) {
 	continue from caller or alt prerun panic (format_err (String msg))
 };
 
