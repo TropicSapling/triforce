@@ -55,14 +55,17 @@ basic func $a == $a {True};
 basic func _  == _  {False};
 basic func $a != $b {!(a == b)};
 
-// if_then_else
+// if _ _ else
+// ex: 'if x == 123 {456} else {789}'
 basic func if (True)  (permafrosted $body)                           {defrost body};
 basic func if (False) (permafrosted $body)                           {scope};
 basic func if (True)  (permafrosted $body) else (permafrosted $expr) {defrost body};
 basic func if (False) (permafrosted $body) else (permafrosted $expr) {defrost expr};
 
-let basic $(if _ then _)        = if;
-let basic $(if _ then _ else _) = if $_ $_ else;
+// if _ then _ else _
+// ex: 'if x == 123 then 456 else 789'
+basic func if $cond then ($body as frozen)                        {if cond {body}};
+basic func if $cond then ($body as frozen) else ($expr as frozen) {if cond {body} else {expr}};
 
 // Type checking
 basic func any $b {b (ALL_ARGS b)};
