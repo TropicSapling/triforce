@@ -76,6 +76,7 @@ P+ is for...
 
 #### Pattern parsing algorithm
 1. Choose a `$(...)` and move to its outside.
+	- NOTE: If the pattern is after 'as', choose a '#(...)' here instead (? TODO)
 2. If inside another `$(...)`, move to its outside, and then keep leaving scopes until you find `as`.
    If not, keep leaving scopes until you find `=>`.
 3. Your pattern is defined after this `as` or `=>`.

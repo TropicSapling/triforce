@@ -1,6 +1,8 @@
+TODO: Fix $ vs. # in ‘as’ and ‘: type’
+
 // Syntax sugar
 $a                 <=> ($a as _) // 'a' can be called like 'a arg1 arg2 ...'
-$(f $a $b ...)     <=> ($(f $a $b ...) as #0 #1 ...)
+$(f $a $b ...)     <=> ($(f $a $b ...) as $#0 $#1 ...)
 (x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
 
 // Requirements for *complete* functions (*basic* functions don't allow these easily)
@@ -180,20 +182,26 @@ fibMemo $n => (fibY using memo) n;
 
 -------------------------------------------------
 
-// Parsing instructions
+// OLD Parsing instructions
 (($(add (4) to ($(a) as 7)) as #a #0) => add 4 to 7) ($x _ => x + 4)
+// NEW SYNTAX:                 $a $#0
 
 1. Choose a $(...) and move to its outside
 2. If inside another $(...), move to its outside, and then keep leaving scopes until you find 'as'
    If not, keep leaving scopes until you find '=>'
 3. Your variable is defined after this 'as' or '=>'
 
+-------
+
+// returns f c + a = f 456 + 123 = fu 123 nc 456 + 123
+((f $b as fu #($(a $f $x) as #123 $f $x) nc $b) $c => f c + a) (fu 123 nc) 456
+
 ---------------------
 
 Let f $x, $a f $b be patterns/functions
 
 Then:
-      f <=>      f $x
+   f <=>    f $x
 $a f <=> $a f $b
 
 let f = $x => ...;
