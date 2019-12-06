@@ -4,6 +4,7 @@ TODO: Fix $ vs. # in ‘as’ and ‘: type’
 $a                 <=> ($a as _) // 'a' can be called like 'a arg1 arg2 ...'
 $(f $a $b ...)     <=> ($(f $a $b ...) as $#0 $#1 ...)
 (x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
+// EDIT: should that last sugar be removed? might just be confusing to have it
 
 // Requirements for *complete* functions (*basic* functions don't allow these easily)
 - Attributes
@@ -195,6 +196,10 @@ fibMemo $n => (fibY using memo) n;
 
 // returns f c + a = f 456 + 123 = fu 123 nc 456 + 123
 ((f $b as fu #($(a $f $x) as #123 $f $x) nc $b) $c => f c + a) (fu 123 nc) 456
+
+// returns f c + n = f 456 + 122 = fu 123 nc 456 + 122
+// '122' is here below syntax sugar for 'PlusOne #121'
+((f $b as fu #(PlusOne ($n as 122)) nc $b) $c => f c + n) (fu 123 nc) 456
 
 // ISSUE: if 'f' <=> 'f $x', then 'f $x' <=> '(f $x) $x' <=> '((f $x) $x) $x' <=> ...
 
