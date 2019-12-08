@@ -34,6 +34,8 @@ basic func remaining args of $f {
 	ALL_ARGS f length - APPLIED_ARGS f length
 };
 
+basic func call $f {f (ALL_ARGS f)};
+
 // Boxes
 basic func category of ($wrapper (ALL_ARGS wrapper)) {wrapper};
 basic func unbox $b {APPLIED_ARGS b};
