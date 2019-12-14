@@ -97,14 +97,18 @@ basic func @($attr as frozen) $(id as frozen) {
 	ATTRIBUTE attr id // this built-in tells compiler 'id' has attribute 'attr' and returns 'id'
 }; // use '##' instead if you decide to use '@' for pointers
 
-basic func attr func ... // TODO
+basic func $attr_list attr func ($pattern as frozen) (permafrosted $body) {
+	frozen (
+		basic func (attr_list pattern) body
+	)
+};
 
-basic func rec func $pattern ($body _); {
+basic func rec func ($pattern as frozen) (permafrosted $body); {
 	frozen (
 		let basic pattern = (
 			basic func $f pattern {
 				let basic $pattern = (f) f;
-				body _
+				defrost body
 			};
 			
 			($f pattern) ($f pattern) // becomes '($f fib $n) fib $n' if pattern = 'fib $n'
@@ -112,8 +116,11 @@ basic func rec func $pattern ($body _); {
 	)
 };
 
+basic func typed func ... // TODO
+
 // The legendary SEMICOLON
-@(precedence below _) func $expr; {
+@(precedence below _)
+func $expr; {
 	scope
 }: auto;
 
