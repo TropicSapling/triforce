@@ -142,10 +142,12 @@ P+ is for...
 #### Built-in "functions"
 1. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.
 2. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
-3. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
-4. `stringify <code>` converts `<code>` to a string
-5. `codify <string>` converts `<string>` to code
-6. `codify (stringify <code>)` <=> `<code>`
+3. `ATTRIBUTE <attr> <id>` tells the compiler that `<id>` has attribute `<attr>` and returns `<id>`.
+	- Precedence is specified using attributes
+4. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
+5. `stringify <code>` converts `<code>` to a string
+6. `codify <string>` converts `<string>` to code
+7. `codify (stringify <code>)` <=> `<code>`
 
 #### Misc
 1. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
