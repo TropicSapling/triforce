@@ -1,6 +1,9 @@
 # Things that need more thinking
 ## frozen
 - Lazy evaluation? Optional like in Idris?
+- Should it be renamed to `lazy` or similar?
+	- `frozen` makes little sense when pattern matching still requires some partial evaluation
+		- i.e. `$x as frozen any Bool` may require some evaluation in order to determine if `$x` is `any Bool`
 
 ## impl box
 
