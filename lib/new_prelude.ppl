@@ -86,8 +86,9 @@ basic func if fulfilling (False) (permafrosted $body) else report (String $msg) 
 	continue from caller or alt prerun panic (format_err (String msg))
 };
 
-basic func (Typed $expr _): $type {expr: type}; // allows for stuff like '(123: 0..): Int'
-basic func ($expr as type): $type {Typed expr type};
+basic func (Typed $expr _                ): $type {expr: type}; // allows for stuff like '(123: 0..): any Int'
+basic func ($expr              as type   ): $type {Typed expr type};
+basic func (permafrosted $expr as type $_): $type {Typed expr type}; // allows for stuff like '{123}: any Int'
 
 // 'transparent _' makes this function run if all previous pattern matches failed
 basic func Typed $expr $type (transparent _) {expr};

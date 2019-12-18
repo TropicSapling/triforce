@@ -45,13 +45,14 @@ P+ is for...
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match>)` where
 	- `<pattern to define>` = ` <dname start>  [(<pattern def>)|<dname continuation> ...] [<dname end>]` where
 		- `<dname start>`, `dname continuation`, `<dname end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
-	- `<pattern to match>`  = `[<mname start>] [(<pattern def>)|<mname continuation>|#<n> ...] [<mname end>]` where
+	- `<pattern to match>`  = `[<mname start>] [(<pattern def>)|<mname continuation>|$(<var>|#<n>) ...] [<mname end>]` where
 		- `<mname start>`, `mname continuation`, `<mname end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
-		- `<n>` is either:
+		- `$<var>` is either:
 			- a name for a parameter that is linked to a parameter of the same name in `<pattern to define>`, or
-			- a number specifying what parameter to link to
-			- ex: `(($(add (4) and (2) to ($(a) as 7)) as #1 #a #0) => ...) ($x $y $z => x + y * z)` where
-				- `...` = `add 4 and 2 to 7` => `($x $y $z => x + y * z) 2 7 4` => `2 + 7 * 4` => `2 + 28` => `30`
+			- the symbol `_` (specifying to link whatever parameter is left to link)
+		- `<n>` is a number specifying what parameter to link to
+		- ex: `(($(add (1) and (2) to ($(a) as 3) plus $b) as $#1 $a $#0 $_) => ...) ($x $y $z $w => x + y + z + w)` where
+			- `...` = `add 1 and 2 to 3 plus 4` => `($x $y $z $w => x + y + z + w) 2 3 1 4` => `2 + 3 + 1 + 4`
 	- patterns named `_` (written like `($_ as ...)`) are called unnamed patterns and will not be defined
 
 2. Call structure for ex. def. `$(example pattern taking (_ as _) and (_ as _)) as _`:
@@ -121,10 +122,10 @@ P+ is for...
 	- Note: 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
 
 #### Syntax sugar
-1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as #0 [#1 ...])`
+1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1 ...])`
 	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> ...]`
-	- If the pattern isn't a variable, the amount of `#` after `as` will match the amount of parameters of the pattern
-		- i.e. `$(pattern taking $x and $y)` <=> `($(pattern taking $x and $y) as #0 #1)`
+	- If the pattern isn't a variable, the amount of `$` after `as` will match the amount of parameters of the pattern
+		- i.e. `$(pattern taking $x and $y)` <=> `($(pattern taking $x and $y) as $#0 $#1)`
 
 2. `(<pattern to match>)`   <=> `($_ as <pattern to match>)`    <=> `(_ as <pattern to match>)`
 	- Note that `$_` and `_` are not generally equivalent; this is a special case
