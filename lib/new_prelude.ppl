@@ -6,11 +6,6 @@ $(f $a $b ...)     <=> ($(f $a $b ...) as $#0 $#1 ...)
 (x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
 // EDIT: should that last sugar be removed? might just be confusing to have it
 
-// Requirements for *complete* functions (*basic* functions don't allow these easily)
-- Attributes
-- Recursion
-- Types
-
 ////////////////////////////////////////////////////////////////
 
 ($(let basic $var = $val;) => scope) (($var as frozen) $val => (var => scope) val)
@@ -106,7 +101,7 @@ basic func @($attr as frozen) $(id as frozen) {
 
 basic func $attr_list attr func ($pattern as frozen) (permafrosted $body); {
 	frozen (
-		basic func (attr_list pattern) body
+		basic func (attr_list pattern) body;
 	)
 };
 
@@ -125,7 +120,17 @@ basic func rec func ($pattern as frozen) (permafrosted $body); {
 
 basic func typed func ($pattern as frozen) (permafrosted $body): $type; {
 	frozen (
-		basic func pattern {body: type} // so that variables are defined when checking type
+		basic func pattern {body: type}; // so that variables are defined when checking type
+	)
+};
+
+// Complete functions: allows easy attributes, recursion & types
+basic func            func ($pattern as frozen) (permafrosted $body)       ; {[]        func pattern body: _   ;};
+basic func            func ($pattern as frozen) (permafrosted $body): $type; {[]        func pattern body: type;};
+basic func $attr_list func ($pattern as frozen) (permafrosted $body)       ; {attr_list func pattern body: _   ;};
+basic func $attr_list func ($pattern as frozen) (permafrosted $body): $type; {
+	frozen (
+		rec func (attr_list pattern) {body: type};
 	)
 };
 
@@ -133,7 +138,7 @@ basic func typed func ($pattern as frozen) (permafrosted $body): $type; {
 @(precedence below _)
 func $expr; {
 	scope
-}: auto;
+};
 
 // TODO: Fix so that stuff below works with new syntax
 
