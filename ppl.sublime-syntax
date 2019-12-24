@@ -1,0 +1,175 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+name: P+
+file_extensions:
+  - ppl
+scope: source.rust
+variables:
+  identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
+  escaped_byte: '\\(x\h{2}|n|r|t|0|"|''|\\)'
+  escaped_char: '\\(x\h{2}|n|r|t|0|"|''|\\|u\{\h{1,6}\})'
+contexts:
+  main:
+    - include: statements
+
+  statements:
+    # Strings begin and end with quotes, and use backslashes as an escape
+    # character
+    - match: '"'
+      scope: punctuation.definition.string.begin.example-c
+      push: double_quoted_string
+
+    # Comments begin with a '//' and finish at the end of the line
+    - match: '//'
+      scope: punctuation.definition.comment.example-c
+      push: line_comment
+
+    # Keywords.
+    # Note that blackslashes don't need to be escaped within single quoted
+    # strings in YAML. When using single quoted strings, only single quotes
+    # need to be escaped: this is done by using two single quotes next to each
+    # other.
+    - match: '\b(if|then|else|for|while|fulfilling|where)\b'
+      scope: keyword.control.rust
+
+    - match: '\b(frozen|permafrosted|defrost|Bool|Nat|Int|String|ALL_ARGS|APPLIED_ARGS)\b'
+      scope: storage.type.rust
+
+    - match: '\b(True|False)\b'
+      scope: constant.language.rust
+
+    - match: '\b(as|in|box|any)\b'
+      scope: keyword.operator.rust
+
+    # Numbers
+    - match: '\b(-)?[0-9.]+\b'
+      scope: constant.numeric.example-c
+
+    # Making this an operator helps visually break up large
+    # match blocks containing just enums
+    - match: '=>'
+      scope: keyword.operator.rust
+
+    - include: operators
+
+    - match: ';'
+      scope: punctuation.terminator.rust
+
+    - match: '[:,]'
+      scope: punctuation.separator.rust
+
+    - match: '\.'
+      scope: punctuation.accessor.dot.rust
+
+    - match: '(?=\{)'
+      push: block
+
+    - match: '(?=\()'
+      push: group
+
+    - match: '\bfunc\b'
+      scope: storage.type.rust
+      push: func-id-search
+
+    - match: '\blet\b'
+      scope: storage.type.rust
+      push: let-id-search
+  
+  func-id-search:
+    - match: '(?=\()'
+      push: group
+    - match: '\$'
+      scope: keyword.operator.rust
+      push:
+        - match: '{{identifier}}'
+          scope: variable.parameter.rust
+          pop: true
+        - match: ''
+          pop: true
+    - match: '{{identifier}}'
+      scope: entity.name.function.rust
+    - match: '\{|:|;'
+      pop: true
+
+  let-id-search:
+    - match: '(?=\()'
+      push: group
+    - match: '\$'
+      scope: keyword.operator.rust
+      push:
+        - match: '{{identifier}}'
+          scope: variable.parameter.rust
+          pop: true
+        - match: ''
+          pop: true
+    - match: '{{identifier}}'
+      scope: entity.name.function.rust
+    - match: '='
+      pop: true
+
+  operators:
+    - match: \.{2,3}
+      scope: keyword.operator.range.rust
+    - match: '[!<>=]=|[<>]'
+      scope: keyword.operator.comparison.rust
+    - match: '(?:[-+%/*^&|]|<<|>>)?='
+      scope: keyword.operator.assignment.rust
+    - match: '&&|\|\||!'
+      scope: keyword.operator.logical.rust
+    - match: '[-+%/*]'
+      scope: keyword.operator.arithmetic.rust
+    - match: '[&|^]|<<|>>'
+      scope: keyword.operator.bitwise.rust
+    - match: '[@~?$#'']'
+      scope: keyword.operator.rust
+    - match: '\b_\b'
+      scope: keyword.operator.rust
+
+  double_quoted_string:
+    - meta_scope: string.quoted.double.example-c
+    - match: '\\.'
+      scope: constant.character.escape.example-c
+    - match: '"'
+      scope: punctuation.definition.string.end.example-c
+      pop: true
+
+  line_comment:
+    - meta_scope: comment.line.example-c
+    - match: $
+      pop: true
+
+  block:
+    - match: '\}'
+      scope: meta.block.rust punctuation.section.block.end.rust
+      pop: true
+    - match: '\{'
+      scope: punctuation.section.block.begin.rust
+      push: [block-body]
+
+  block-body:
+    - meta_scope: meta.block.rust
+    - match: '(?=\})'
+      pop: true
+    - include: statements
+
+  group:
+    - match: '\)'
+      scope: meta.group.rust punctuation.section.group.end.rust
+      pop: true
+    - match: '\('
+      scope: punctuation.section.group.begin.rust
+      push: [group-body]
+
+  group-body:
+    - meta_scope: meta.group.rust
+    - match: '(?=\))'
+      pop: true
+    - include: statements
+
+  group-tail:
+    - meta_scope: meta.group.rust
+    - match: '\)'
+      scope: punctuation.section.group.end.rust
+      pop: true
+    - include: statements
