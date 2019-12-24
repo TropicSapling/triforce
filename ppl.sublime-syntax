@@ -81,12 +81,7 @@ contexts:
       push: group
     - match: '\$'
       scope: keyword.operator.rust
-      push:
-        - match: '{{identifier}}'
-          scope: variable.parameter.rust
-          pop: true
-        - match: ''
-          pop: true
+      push: op-dollar
     - match: '{{identifier}}'
       scope: entity.name.function.rust
     - match: '\{|:|;'
@@ -97,12 +92,7 @@ contexts:
       push: group
     - match: '\$'
       scope: keyword.operator.rust
-      push:
-        - match: '{{identifier}}'
-          scope: variable.parameter.rust
-          pop: true
-        - match: ''
-          pop: true
+      push: op-dollar
     - match: '{{identifier}}'
       scope: entity.name.function.rust
     - match: '='
@@ -121,10 +111,20 @@ contexts:
       scope: keyword.operator.arithmetic.rust
     - match: '[&|^]|<<|>>'
       scope: keyword.operator.bitwise.rust
-    - match: '[@~?$#'']'
+    - match: '[@~?#'']'
       scope: keyword.operator.rust
+    - match: '\$'
+      scope: keyword.operator.rust
+      push: op-dollar
     - match: '\b_\b'
       scope: keyword.operator.rust
+
+  op-dollar:
+    - match: '{{identifier}}'
+      scope: variable.parameter.rust
+      pop: true
+    - match: ''
+      pop: true
 
   double_quoted_string:
     - meta_scope: string.quoted.double.example-c
