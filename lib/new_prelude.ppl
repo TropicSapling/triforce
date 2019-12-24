@@ -91,11 +91,13 @@ basic func Typed $expr $type (transparent _) {expr};
 // TODO: Generalise into 'apply $f to itself $n times'
 basic func apply $f to itself {f f};
 
-basic func $f using $closure => if fulfilling remaining args of closure == 1 (
-	f ((closure _) f)
-);
+basic func $f using $closure {
+	if fulfilling remaining args of closure == 1 {
+		f ((closure _) f)
+	};
+};
 
-basic func @($attr as frozen) $(id as frozen) {
+basic func @($attr as frozen) ($id as frozen) {
 	ATTRIBUTE attr id // this built-in tells compiler 'id' has attribute 'attr' and returns 'id'
 }; // use '##' instead if you decide to use '@' for pointers
 
@@ -220,11 +222,11 @@ fibMemo $n => (fibY using memo) n;
 -------
 
 // returns f c + a = f 456 + 123 = fu 123 nc 456 + 123
-((f $b as fu #($(a $f $x) as #123 $f $x) nc $b) $c => f c + a) (fu 123 nc) 456
+(($(f $b) as fu #($(a $f $x) as #123 $f $x) nc $b) $c => f c + a) (fu 123 nc) 456
 
 // returns f c + n = f 456 + 122 = fu 123 nc 456 + 122
 // '122' is here below syntax sugar for 'PlusOne #121'
-((f $b as fu #(PlusOne ($n as 122)) nc $b) $c => f c + n) (fu 123 nc) 456
+(($(f $b) as fu #(PlusOne ($n as 122)) nc $b) $c => f c + n) (fu 123 nc) 456
 
 // ISSUE: if 'f' <=> 'f $x', then 'f $x' <=> '(f $x) $x' <=> '((f $x) $x) $x' <=> ...
 
