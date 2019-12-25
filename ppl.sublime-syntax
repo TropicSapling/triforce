@@ -33,13 +33,13 @@ contexts:
     - match: '\b(if|then|else|for|while|fulfilling|where|continue from caller or alt|prerun|run)\b'
       scope: keyword.control.rust
 
-    - match: '\b(frozen|permafrosted|defrost|Bool|Nat|Int|String|ALL_ARGS|APPLIED_ARGS)\b'
+    - match: '\b(frozen|permafrosted|defrost|transparent|Bool|Nat|Int|String)\b'
       scope: storage.type.rust
 
     - match: '\b(True|False)\b'
       scope: constant.language.rust
 
-    - match: '\b(as|in|box|any)\b'
+    - match: '\b(as|in|box|any|ALL_ARGS|APPLIED_ARGS|ATTRIBUTE|scope|stringify)\b'
       scope: keyword.operator.rust
 
     # Numbers
