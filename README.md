@@ -149,6 +149,8 @@ P+ is for...
 5. `stringify <code>` converts `<code>` to a string
 6. `codify <string>` converts `<string>` to code
 7. `codify (stringify <code>)` <=> `<code>`
+8. `continue from <function> or alt <expr>` continues pattern matching if possible, else evaluates `<expr>`.
+	- if `<function>` is `caller` it will continue from the caller
 
 #### Misc
 1. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
