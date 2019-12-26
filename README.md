@@ -104,19 +104,19 @@ P+ is for...
 	- `prerun` can be used to override this and force pattern matching to be completed during compile time
 	-    `run` can be used to override this and force pattern matching to only be done during runtime
 
-6. The special `Exception` value matches any pattern.
-	- i.e. `$x as 123` <=> `$x as Exception|123`
-		- note that while this will compile, if `x` is `Exception` during runtime the program will crash (hence the name `Exception`)
-	- `$x as Exception` specifies that `x` must be `Exception`
-		- useful for expressions returning an infinite loop: `forever {...}: Exception`
+6. The special `Undefined` value matches any pattern.
+	- i.e. `$x as 123` <=> `$x as Undefined|123`
+		- note that while this will compile, if `x` is `Undefined` but still used during runtime the program will crash
+	- `$x as Undefined` specifies that `x` must be `Undefined`
+		- useful for expressions returning an infinite loop: `forever {...}: Undefined`
 
 #### Values
 1. Partially applied functions and patterns are treated as values.
-2. There exists a special `Exception` value, which will be inserted into compilation or-patterns whenever a value might not come to exist during runtime. This happens if:
+2. There exists a special `Undefined` value, which will be inserted into compilation or-patterns whenever a value might not come to exist during runtime. This happens if:
 	- the program specifies it might crash during runtime
-		- ex: `let x = rand any Int; if x == 1337 {panic!}; x` returns `Exception|(any Int)` during compilation
+		- ex: `let x = rand any Int; if x == 1337 {panic!}; x` returns `Undefined|(any Int)` during compilation
 	- the compiler suspects there is an infinite loop in the program
-		- ex: `let x: auto = 0; forever {x++}; x` returns `Exception|1|2|...` during compilation
+		- ex: `let x: auto = 0; forever {x++}; x` returns `Undefined|1|2|...` during compilation
 		- note that due to the halting problem the compiler may think there is an infinite loop when there isn't, hence 'suspects'
 3. There are no other values.
 	- Numbers, strings, etc. are defined as partially applied functions or patterns
