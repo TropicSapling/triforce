@@ -104,12 +104,24 @@ P+ is for...
 	- `prerun` can be used to override this and force pattern matching to be completed during compile time
 	-    `run` can be used to override this and force pattern matching to only be done during runtime
 
+6. The special `Exception` value matches any pattern.
+	- i.e. `$x as 123` <=> `$x as Exception|123`
+		- note that while this will compile, if `x` is `Exception` during runtime the program will crash (hence the name `Exception`)
+	- `$x as Exception` specifies that `x` must be `Exception`
+		- useful for expressions returning an infinite loop: `forever {...}: Exception`
+
 #### Values
 1. Partially applied functions and patterns are treated as values.
-2. There are no other values.
+2. There exists a special `Exception` value, which will be inserted into compilation or-patterns whenever a value might not come to exist during runtime. This happens if:
+	- the program specifies it might crash during runtime
+		- ex: `let x = rand any Int; if x == 1337 {panic!}; x` returns `Exception|(any Int)` during compilation
+	- the compiler suspects there is an infinite loop in the program
+		- ex: `let x: auto = 0; forever {x++}; x` returns `Exception|1|2|...` during compilation
+		- note that due to the halting problem the compiler may think there is an infinite loop when there isn't, hence 'suspects'
+3. There are no other values.
 	- Numbers, strings, etc. are defined as partially applied functions or patterns
-3. Values are differentiated using pattern matching (as described under "Patterns" and "Pattern matching").
-4. 2 values are equal iff they both are placeholders *or* all below criteria are met:
+4. Values are differentiated using pattern matching (as described under "Patterns" and "Pattern matching").
+5. 2 values are equal iff they both are placeholders *or* all below criteria are met:
 	- They have the same amount of parameters   in the same order
 	- They have the same applied args           in the same order
 	- They have the same `<pattern to match>`:s in the same order

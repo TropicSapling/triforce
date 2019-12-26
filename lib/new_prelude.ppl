@@ -70,16 +70,26 @@ basic func if $cond then ($body as frozen) else ($expr as frozen) {if cond {body
 // Type checking
 basic func any $b {b (ALL_ARGS b)};
 
-basic func if fulfilling (True)                   (permafrosted $body) {body};
-basic func if fulfilling ($cond as frozen Bool _) (permafrosted $body) {
+basic func if fulfilling (True)                       (permafrosted $body) {body};
+basic func if fulfilling ($contract as frozen Bool _) (permafrosted $body) {
 	// continue to next function def if there is one, else panic
-	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify {cond}]))
+	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify {contract}]))
 };
 
 basic func if fulfilling (True)  (permafrosted $body) else report _             {body};
 basic func if fulfilling (False) (permafrosted $body) else report (String $msg) {
 	continue from caller or alt prerun panic (format_err (String msg))
 };
+
+basic func $this fulfilling ($contract as frozen Bool _) {
+	// Note that the structure of this function allows 'this' to be used inside of the contract
+	if !contract {
+		continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify {contract}]))
+	};
+};
+
+// 'arr: any Array where this length == 7' sounds better than 'arr: any Array fulfilling this length == 7'
+let basic where = fulfilling;
 
 basic func (Typed $expr _                ): $type {expr: type}; // allows for stuff like '(123: 0..): any Int'
 basic func ($expr              as type   ): $type {Typed expr type};
@@ -258,3 +268,28 @@ Number literals can be linked to types for a certain scope. This allows changing
 // after ‘=‘ to change representation
 let __NUMBERS__ = any Nat;
 let __STRINGS__ = any String;
+
+let n  = rand any Nat;
+let n2 = rand any Nat;
+
+// LHS: 'n', RHS: 'n'
+(n - 1)            * 2 + 2 == n * 2
+Exception|0|1|...  * 2 + 2 == 0|2|4...
+// Potential Exception(s) found!
+// Add Exception to or-pattern, then
+// start over with values not leading to Exception:
+          0|1|...  * 2 + 2 ==   2|4|...
+          0|2|...      + 2 ==   2|4|...
+          2|4|...          ==   2|4|...
+=> Exception|True
+
+// LHS: 'n', RHS: 'n2'
+(n - 1)            * 2 + 2 == n2 * 2
+Exception|0|1|...  * 2 + 2 == 0|2|4...
+// Potential Exception(s) found!
+// Add Exception to or-pattern, then
+// start over with values not leading to Exception:
+          0|1|...  * 2 + 2 ==   2|4|...
+          0|2|...      + 2 ==   2|4|...
+          2|4|...          ==   2|4|...
+=> Exception|True|False
