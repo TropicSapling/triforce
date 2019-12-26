@@ -118,6 +118,7 @@ P+ is for...
 	- the compiler suspects there is an infinite loop in the program
 		- ex: `let x: auto = 0; forever {x++}; x` returns `Undefined|1|2|...` during compilation
 		- note that due to the halting problem the compiler may think there is an infinite loop when there isn't, hence 'suspects'
+	- for more info, see "Example code snippets" §1
 3. There are no other values.
 	- Numbers, strings, etc. are defined as partially applied functions or patterns
 4. Values are differentiated using pattern matching (as described under "Patterns" and "Pattern matching").
@@ -176,6 +177,35 @@ P+ is for...
 9. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
 10. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
     - I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
+
+#### Example code snippets
+1.
+```Swift
+let n  = rand any Nat;
+let n2 = rand any Nat;
+
+// LHS: 'n', RHS: 'n'
+(n - 1)            * 2 + 2 == n * 2
+Undefined|0|1|...  * 2 + 2 == 0|2|4...
+// Potential Undefined(s) found!
+// Add Undefined to or-pattern, then
+// start over with values not leading to Undefined:
+          0|1|...  * 2 + 2 ==   2|4|...
+          0|2|...      + 2 ==   2|4|...
+          2|4|...          ==   2|4|...
+=> Undefined|True
+
+// LHS: 'n', RHS: 'n2'
+(n - 1)            * 2 + 2 == n2 * 2
+Undefined|0|1|...  * 2 + 2 == 0|2|4...
+// Potential Undefined(s) found!
+// Add Undefined to or-pattern, then
+// start over with values not leading to Undefined:
+          0|1|...  * 2 + 2 ==   2|4|...
+          0|2|...      + 2 ==   2|4|...
+          2|4|...          ==   2|4|...
+=> Undefined|True|False
+```
 
 ### [OLD] Syntax
 1. Functions are defined using `<input> => <output>`.
