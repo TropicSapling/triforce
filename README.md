@@ -145,14 +145,16 @@ P+ is for...
 6. Placeholder-values are further described in "Patterns" §5
 
 #### Equality
-1. 2 values are equal iff all below criteria are met:
+1. 2 (finally evaluated) values are equal iff all below criteria are met:
 	- They have the same amount of parameters   in the same order
 	- They have the same applied args           in the same order
 	- They have the same `<pattern to match>`:s in the same order
 	- They have the same name (if applicable)
 2. 2 placeholder-values are always equal.
 	- i.e. `$xyz == $abc`
-3. ``a`|`b`|`c == a`|`b``, ``a`|`b`|`c == a`|`c`` and ``a`|`b`|`c == a`|`b`|`c`` all return ``True`|`False``
+3. Equality of or-patterns is either decided after collapse at runtime, *or* during compilation iff all below criteria are met:
+	- They consist of the same values in the same order
+	- They were both formed as a result of known-to-be-equal pseudo-values being combined in some way with *known* terms (see "Misc" §11)
 4. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
 5. See "Example code snippets" §1 for an example of equality.
 
@@ -204,6 +206,9 @@ P+ is for...
 #### Example code snippets
 1.
 ```Swift
+let n  = rand any Nat;
+let n2 = rand any Nat;
+
 // - n == n is True
 // - The remaining terms of LHS & RHS are known
 // => Compiler can determine if True or False
@@ -217,8 +222,7 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
           2|4|...          ==   2|4|...
 // LHS == RHS since:
 // - Compiler can determine if True or False
-// - LHS & RHS match
-// - LHS & RHS or-patterns are in the same order
+// - LHS & RHS or-patterns consist of the same values in the same order
 => Undefined|True
 
 // - n == n2 is True|False

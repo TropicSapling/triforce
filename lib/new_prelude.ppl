@@ -285,8 +285,7 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
           2|4|...          ==   2|4|...
 // LHS == RHS since:
 // - Compiler can determine if True or False
-// - LHS & RHS match
-// - LHS & RHS or-patterns are in the same order
+// - LHS & RHS or-patterns consist of the same values in the same order
 => Undefined|True
 
 // - n == n2 is True|False
