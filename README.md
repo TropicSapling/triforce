@@ -95,7 +95,6 @@ P+ is for...
 	- ``a`|`b`|`c``, ``a`|`b`` and ``a`|`c`` *may* match `a`, `b` or `c` (and ``a`|`b`|`c`` *may* match ``a`|`b``)
 		- by default this will compile and instead pattern matching will be completed at runtime; if this fails, the program crashes
 		- if using `prerun` this counts as failing to match and won't compile
-	- ``a`|`b`|`c == a`|`b``, ``a`|`b`|`c == a`|`c`` and ``a`|`b`|`c == a`|`b`|`c`` all return ``True`|`False``
 
 4. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
 	- ex: ``` 0`|`1`|``...` ``` is an or-pattern consisting of all integers >= 0
@@ -122,17 +121,36 @@ P+ is for...
 3. There are no other values.
 	- Numbers, strings, etc. are defined as partially applied functions or patterns
 4. Values are differentiated using pattern matching (as described under "Patterns" and "Pattern matching").
-5. 2 values are equal iff they both are placeholders *or* all below criteria are met:
+
+#### Pseudo-values
+1. Pseudo-values are similar to values but act a bit differently, and include:
+	- or-patterns
+		- ex: `1|2|3`
+	- placeholder-values
+		- ex: `$x` (outside of pattern definition)
+2. Pseudo-values may be created by the programmer and/or the compiler.
+	- programmer ex:
+		- or-patterns: `random value in range 0|1|...`
+		- placeholder-values: `$n+1`
+	- compiler ex:
+		- or-patterns: creates an or-pattern for what `(123|456|789) + 1` returns: `124|457|790`
+		- placeholder-values: inserts missing placeholder in `+1` by converting to `$n+1`
+3. Pseudo-values can be placed anywhere values can (if in the right situation).
+4. Or-patterns are further described in "Pattern matching" §3
+5. Placeholder-values are further described in "Patterns" §5
+
+#### Equality
+1. 2 values are equal iff all below criteria are met:
 	- They have the same amount of parameters   in the same order
 	- They have the same applied args           in the same order
 	- They have the same `<pattern to match>`:s in the same order
 	- They have the same name (if applicable)
-
-#### Pseudo-values
-1. Pseudo-values and or-patterns are equivalent.
-2. 2 pseudo-values can be equal, not equal or *neither*.
-3. Equality of pseudo-values is further described under "Pattern matching" §3.
-	- Note: 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
+2. 2 placeholder-values are always equal.
+	- i.e. `$xyz == $abc`
+3. ``a`|`b`|`c == a`|`b``, ``a`|`b`|`c == a`|`c`` and ``a`|`b`|`c == a`|`b`|`c`` all return ``True`|`False``
+4. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
+5. If there is at least 1 or-pattern involved when checking equality of 2 terms, equality may not be decidable until runtime or never.
+	- if equality can't ever be decided, the program will crash (TODO: change this to compilation error?)
 
 #### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1 ...])`
