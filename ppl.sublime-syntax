@@ -33,7 +33,7 @@ contexts:
     - match: '\b(if|then|else|for|while|fulfilling|where|continue from caller or alt|prerun|run)\b'
       scope: keyword.control.rust
 
-    - match: '\b(frozen|permafrosted|defrost|transparent|Bool|Nat|Int|String)\b'
+    - match: '\b(frozen|permafrosted|defrost|transparent)\b'
       scope: storage.type.rust
 
     - match: '\b(True|False)\b'
@@ -41,6 +41,9 @@ contexts:
 
     - match: '\b(as|in|box|any|ALL_ARGS|APPLIED_ARGS|ATTRIBUTE|scope|stringify)\b'
       scope: keyword.operator.rust
+
+    - match: '\b[A-Z]{{identifier}}'
+      scope: support.function.rust
 
     # Numbers
     - match: '\b(-)?[0-9.]+\b'
@@ -68,9 +71,17 @@ contexts:
     - match: '(?=\()'
       push: group
 
+    - match: '\bbasic func\b'
+      scope: storage.type.rust
+      push: func-id-search
+
     - match: '\bfunc\b'
       scope: storage.type.rust
       push: func-id-search
+
+    - match: '\blet basic\b'
+      scope: storage.type.rust
+      push: let-id-search
 
     - match: '\blet\b'
       scope: storage.type.rust
