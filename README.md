@@ -136,8 +136,13 @@ P+ is for...
 		- or-patterns: creates an or-pattern for what `(123|456|789) + 1` returns: `124|457|790`
 		- placeholder-values: inserts missing placeholder in `+1` by converting to `$n+1`
 3. Pseudo-values can be placed anywhere values can (if in the right situation).
-4. Or-patterns are further described in "Pattern matching" §3
-5. Placeholder-values are further described in "Patterns" §5
+4. Pseudo-values only exist before runtime (during compilation).
+	- or-patterns (eventually) collapse into single values at runtime
+		- i.e. `1|2` collapses into either `1` or `2`
+		- programs not allowing this to happen won't be accepted by the compiler (TODO: check if this works, maybe change to runtime crash?)
+	- placeholder-values are converted into something else at runtime (TODO: figure out what)
+5. Or-patterns are further described in "Pattern matching" §3
+6. Placeholder-values are further described in "Patterns" §5
 
 #### Equality
 1. 2 values are equal iff all below criteria are met:
@@ -149,8 +154,6 @@ P+ is for...
 	- i.e. `$xyz == $abc`
 3. ``a`|`b`|`c == a`|`b``, ``a`|`b`|`c == a`|`c`` and ``a`|`b`|`c == a`|`b`|`c`` all return ``True`|`False``
 4. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
-5. If there is at least 1 or-pattern involved when checking equality of 2 terms, equality may not be decidable until runtime or never.
-	- if equality can't ever be decided, the program will crash (TODO: change this to compilation error?)
 
 #### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1 ...])`
