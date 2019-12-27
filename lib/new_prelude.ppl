@@ -272,7 +272,9 @@ let __STRINGS__ = any String;
 let n  = rand any Nat;
 let n2 = rand any Nat;
 
-// LHS: 'n', RHS: 'n'
+// - n == n is True
+// - The remaining terms of LHS & RHS are known
+// => Compiler can determine if True or False
 (n - 1)            * 2 + 2 == n * 2
 Undefined|0|1|...  * 2 + 2 == 0|2|4...
 // Potential Undefined(s) found!
@@ -281,17 +283,20 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
           0|1|...  * 2 + 2 ==   2|4|...
           0|2|...      + 2 ==   2|4|...
           2|4|...          ==   2|4|...
+// LHS == RHS since:
+// - Compiler can determine if True or False
+// - LHS & RHS match
+// - LHS & RHS or-patterns are in the same order
 => Undefined|True
 
-// LHS: 'n', RHS: 'n2'
+// - n == n2 is True|False
+// => Compiler *cannot* determine if True or False
 (n - 1)            * 2 + 2 == n2 * 2
 Undefined|0|1|...  * 2 + 2 == 0|2|4...
 // Potential Undefined(s) found!
-// Add Undefined to or-pattern, then
-// start over with values not leading to Undefined:
-          0|1|...  * 2 + 2 ==   2|4|...
-          0|2|...      + 2 ==   2|4|...
-          2|4|...          ==   2|4|...
+// Since the compiler cannot determine anything more,
+// and it's irrelevant if there are more potential Undefineds,
+// it stops here and returns:
 => Undefined|True|False
 
 // !!!!!!!
