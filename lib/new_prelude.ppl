@@ -299,6 +299,4 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
 // it stops here and returns:
 => Undefined|True|False
 
-// !!!!!!!
-// NEEDS FIXING:
-0|1|...|25 != 1|2|...|25|0 // check discord
+// TODO: Fix so that func def order doesn't matter but variable order still does

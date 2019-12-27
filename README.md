@@ -154,6 +154,7 @@ P+ is for...
 	- i.e. `$xyz == $abc`
 3. ``a`|`b`|`c == a`|`b``, ``a`|`b`|`c == a`|`c`` and ``a`|`b`|`c == a`|`b`|`c`` all return ``True`|`False``
 4. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
+5. See "Example code snippets" §1 for an example of equality.
 
 #### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1 ...])`
@@ -198,6 +199,7 @@ P+ is for...
 9. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
 10. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
     - I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
+11. An expression, or term, is said to be *known* to the compiler if the compiler sees it as a specific value rather than a pseudo-value.
 
 #### Example code snippets
 1.
