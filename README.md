@@ -149,7 +149,7 @@ P+ is for...
 	- They have the same amount of parameters   in the same order
 	- They have the same applied args           in the same order
 	- They have the same `<pattern to match>`:s in the same order
-	- They have the same name (if applicable)
+	- They have the same name (or both have no name at all)
 2. 2 placeholder-values are always equal.
 	- i.e. `$xyz == $abc`
 3. Equality of or-patterns is either decided after collapse at runtime, *or* during compilation iff all below criteria are met:
