@@ -40,6 +40,17 @@ P+ is for...
 	- This is what it means to say that a function returns `<function body>`
 8. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>` and `<pattern to define>`.
 	- Note that surrounding parentheses are *always* necessary when applying inside `<pattern to define>`
+9. Functions are *total* and *open* by default.
+	- a total function must:
+		- have no infinite loops
+		- cause no side-effects
+		- use no outside/free patterns
+	- the body of an open function will be "opened" and checked by the compiler as soon as it is encountered
+		- this means undefined patterns, incorrect syntax, mismatches, etc. are not allowed
+10. `partial <function>` allows for the function to be non-total.
+11. `closed <function>` allows for the function to be non-open.
+	- this means the compiler won't check the function body until it's in its final scope
+	- for an example, see "Example code snippets" §2
 
 #### Patterns (variables but better)
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match>)` where
@@ -234,6 +245,41 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
 // and it's irrelevant if there are more potential Undefineds,
 // it stops here and returns:
 => Undefined|True|False
+```
+
+2.
+```Swift
+// 'closed' prevents the compiler from looking at the function body
+// before the function is in its final scope.
+// 'partial' allows the function to be non-total, a.k.a. allows:
+// - infinite loops
+// - side-effects
+// - using outside/free patterns
+$x => (
+	($y $z => (
+		// Final scope
+		// 'z' is defined here, so all is fine
+
+		(_ => y x) _ // just to show final scope isn't necessarily call scope
+	)) (closed partial $a => x (z a)) 123 // 'partial' allows use of 'x', so all is fine
+)
+
+$x => (
+	($y => (
+		// Final scope
+		// ERROR: 'z' is undefined
+		
+		($z => y x) 123 // just to show final scope isn't necessarily call scope
+	)) (closed partial $a => x (z a)) // 'partial' allows use of 'x', so all is fine
+)
+
+$x => (
+	($y $z => (
+		// Final scope
+		
+		(_ => y x) _ // just to show final scope isn't necessarily call scope
+	)) ($a => x (z a)) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern
+)
 ```
 
 ### [OLD] Syntax

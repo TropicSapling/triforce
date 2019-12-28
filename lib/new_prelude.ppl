@@ -299,3 +299,35 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
 => Undefined|True|False
 
 // TODO: Fix so that func def order doesn't matter but variable order still does
+
+// 'closed' prevents the compiler from looking at the function body
+// before the function is in its final scope.
+// 'partial' allows the function to be non-total, a.k.a. allows:
+// - infinite loops
+// - side-effects
+// - using outside/free patterns
+$x => (
+	($y $z => (
+		// Final scope
+		// 'z' is defined here, so all is fine
+
+		(_ => y x) _ // just to show final scope isn't necessarily call scope
+	)) (closed partial $a => x (z a)) 123 // 'partial' allows use of 'x', so all is fine
+)
+
+$x => (
+	($y => (
+		// Final scope
+		// ERROR: 'z' is undefined
+		
+		($z => y x) 123 // just to show final scope isn't necessarily call scope
+	)) (closed partial $a => x (z a)) // 'partial' allows use of 'x', so all is fine
+)
+
+$x => (
+	($y $z => (
+		// Final scope
+		
+		(_ => y x) _ // just to show final scope isn't necessarily call scope
+	)) ($a => x (z a)) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern
+)
