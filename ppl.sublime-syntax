@@ -36,7 +36,7 @@ contexts:
     - match: '\b(frozen|permafrosted|defrost|transparent)\b'
       scope: storage.type.rust
 
-    - match: '\b(True|False)\b'
+    - match: '\b(True|False|this)\b'
       scope: constant.language.rust
 
     - match: '\b(as|in|box|any|ALL_ARGS|APPLIED_ARGS|ATTRIBUTE|scope|stringify)\b'
