@@ -96,6 +96,10 @@ basic func (Typed $expr _                ): $type {expr: type}; // allows for st
 basic func ($expr              as type   ): $type {Typed expr type};
 basic func (permafrosted $expr as type $_): $type {Typed expr type}; // allows for stuff like '{123}: any Int'
 
+basic func ($expr              as type   ) matches $type {True};
+basic func (permafrosted $expr as type $_) matches $type {True};
+basic func _                               matches $type {False};
+
 // 'transparent _' makes this function run if all previous pattern matches failed
 basic func Typed $expr $type (transparent _) {expr};
 
