@@ -21,7 +21,8 @@ let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
 // aware of the code not being evaluated until later.
 // It's convention to make this explicit as long as it
 // doesn't negatively affect user experience.
-let basic $(basic func ($pattern as frozen) $(permafrosted body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
+let basic $(basic         func ($pattern as frozen) $(permafrosted body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
+let basic $(basic partial func ($pattern as frozen) $(permafrosted body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
 
 basic func Nothing $f $x {scope};
 
@@ -111,12 +112,6 @@ basic func @($attr as frozen) ($id as frozen) {
 	ATTRIBUTE attr id // this built-in tells compiler 'id' has attribute 'attr' and returns 'id'
 }; // use '##' instead if you decide to use '@' for pointers
 
-basic func $attr_list attr func ($pattern as frozen) (permafrosted $body); {
-	frozen (
-		basic func (attr_list pattern) body;
-	)
-};
-
 basic func rec func ($pattern as frozen) (permafrosted $body); {
 	frozen (
 		let basic pattern = (
@@ -130,9 +125,16 @@ basic func rec func ($pattern as frozen) (permafrosted $body); {
 	)
 };
 
-basic func typed func ($pattern as frozen) (permafrosted $body): $type; {
+basic func rec partial func ($pattern as frozen) (permafrosted $body); {
 	frozen (
-		basic func pattern {body: type}; // so that variables are defined when checking type
+		let basic pattern = (
+			basic partial func $f pattern {
+				let basic $pattern = (f) f;
+				defrost body
+			};
+			
+			($f pattern) ($f pattern) // becomes '($f fib $n) fib $n' if pattern = 'fib $n'
+		);
 	)
 };
 
@@ -142,7 +144,16 @@ basic func            func ($pattern as frozen) (permafrosted $body): $type; {[]
 basic func $attr_list func ($pattern as frozen) (permafrosted $body)       ; {attr_list func pattern body: _   ;};
 basic func $attr_list func ($pattern as frozen) (permafrosted $body): $type; {
 	frozen (
-		rec func (attr_list pattern) {body: type};
+		rec func (attr_list pattern) {body: type}; // '{body: type}' to make patterns defined when checking type
+	)
+};
+
+basic func            partial func ($pattern as frozen) (permafrosted $body)       ; {[]        partial func pattern body: _   ;};
+basic func            partial func ($pattern as frozen) (permafrosted $body): $type; {[]        partial func pattern body: type;};
+basic func $attr_list partial func ($pattern as frozen) (permafrosted $body)       ; {attr_list partial func pattern body: _   ;};
+basic func $attr_list partial func ($pattern as frozen) (permafrosted $body): $type; {
+	frozen (
+		rec partial func (attr_list pattern) {body: type};
 	)
 };
 
