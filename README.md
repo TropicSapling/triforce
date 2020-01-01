@@ -184,9 +184,9 @@ P+ is for...
 4. `scope` can be used to avoid making your program look like Lisp:
 	- `(<input pars> => scope) <input args> <rest of scope>` <=> `(<input pars> $scope => scope) <input args> (<rest of scope>)`
 
-5. `$(<pattern to define>) as frozen <pattern to match>` can be used to delay evaluation of input until inside the scope where the pattern is defined:
-	- `(($x as frozen _) => x) <expr>`   <=> `(($x as _) => x _) {<expr>}`
-	- `$(<pattern to define>) as frozen` <=> `$(<pattern to define>) as frozen _`
+5. `$(<pattern to define>) as frozen [<pattern to match>] [becoming <pattern to match>]` can be used to delay evaluation of input until inside the scope where the pattern is defined:
+	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as {#1}) => x _: 2) {<expr>}`
+	- `$(...) as frozen [becoming ...]`           <=> `$(...) as frozen _ [becoming ...]`
 
 #### Built-in "functions"
 1. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.

@@ -21,8 +21,14 @@ let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
 // aware of the code not being evaluated until later.
 // It's convention to make this explicit as long as it
 // doesn't negatively affect user experience.
-let basic $(basic         func ($pattern as frozen) $(permafrosted body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
-let basic $(basic partial func ($pattern as frozen) $(permafrosted body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
+let basic $(basic         func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
+let basic $(basic partial func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
+
+// NOTE: Basic functions:
+// - must be defined in order
+// - don't allow easy attributes
+// - don't allow easy recursion
+// - don't allow easy return type checking
 
 basic func Nothing $f $x {scope};
 
@@ -43,11 +49,11 @@ basic func Bool False _  $y {y};
 let basic $True  = Bool True;
 let basic $False = Bool False;
 
-basic func (True)  && ($b as  Bool _) {b};
-basic func (False) && (frozen Bool _) {False};
+basic func (True)  && ($b as           Bool _) {b};
+basic func (False) && (frozen becoming Bool _) {False};
 
-basic func (True)  || (frozen Bool _) {False};
-basic func (False) || ($b as  Bool _) {b};
+basic func (True)  || (frozen becoming Bool _) {False};
+basic func (False) || ($b as           Bool _) {b};
 
 basic func !(True)  {False};
 basic func !(False) {True};
@@ -92,13 +98,13 @@ basic func $this fulfilling ($contract as frozen Bool _) {
 // 'arr: any Array where this length == 7' sounds better than 'arr: any Array fulfilling this length == 7'
 let basic where = fulfilling;
 
-basic func (Typed $expr _                ): $type {expr: type}; // allows for stuff like '(123: 0..): any Int'
-basic func ($expr              as type   ): $type {Typed expr type};
-basic func (permafrosted $expr as type $_): $type {Typed expr type}; // allows for stuff like '{123}: any Int'
+basic func (Typed $expr _     ): $type {expr: type}; // allows for stuff like '(123: 0..): any Int'
+basic func ($expr as type     ): $type {Typed expr type};
+basic func (permafrosted $expr): $type {(_ => Typed expr type) (defrost expr: type)}; // allows for stuff like '{123}: any Int'
 
-basic func ($expr              as type   ) matches $type {True};
-basic func (permafrosted $expr as type $_) matches $type {True};
-basic func _                               matches $type {False};
+basic func ($expr as type     ) matches $type {True};
+basic func (permafrosted $expr) matches $type {defrost expr matches type};
+basic func _                    matches $type {False};
 
 // 'transparent _' makes this function run if all previous pattern matches failed
 basic func Typed $expr $type (transparent _) {expr};
@@ -142,7 +148,7 @@ basic func rec partial func ($pattern as frozen) (permafrosted $body); {
 	)
 };
 
-// Complete functions: allows easy attributes, recursion & types
+// Complete functions: allows easy attributes, recursion & types (TODO: allow out-of-order definitions as well)
 basic func            func ($pattern as frozen) (permafrosted $body)       ; {[]        func pattern body: _   ;};
 basic func            func ($pattern as frozen) (permafrosted $body): $type; {[]        func pattern body: type;};
 basic func $attr_list func ($pattern as frozen) (permafrosted $body)       ; {attr_list func pattern body: _   ;};
