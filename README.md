@@ -40,15 +40,10 @@ P+ is for...
 	- This is what it means to say that a function returns `<function body>`
 8. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>` and `<pattern to define>`.
 	- Note that surrounding parentheses are *always* necessary when applying inside `<pattern to define>`
-9. Functions are *total* and *open* by default.
-	- a total function must:
-		- have no infinite loops
-		- cause no side-effects
-		- use no outside/free patterns
+9. Functions are *open* by default.
 	- the body of an open function will be "opened" and checked by the compiler as soon as it is encountered
 		- this means undefined patterns, incorrect syntax, mismatches, etc. are not allowed
-10. `partial <function>` allows for the function to be non-total.
-11. `closed <function>` allows for the function to be non-open.
+10. `closed <function>` allows for the function to be non-open.
 	- this means the compiler won't check the function body until it's in its final scope
 	- for an example, see "Example code snippets" §2
 
@@ -100,14 +95,20 @@ P+ is for...
 	- i.e. in `$x $y $x => ...` the 2 `x`s must be equal
 	- the equality function `==` is defined using this
 
-3. An or-pattern, `` a`|`b`|`...`|`z ``, can be used in pattern matching.
+3. An and/or-pattern, `` a`|`b`|`...`|`z [& <or-pattern> [& ...]]``, can be used in pattern matching.
 	- ``a`|`b`|`c`` <=> ``a`|`a`|`b`|`c`|`b`|`a`` <=> ``c`|`a`|`b``
 	- `a`, `b`, `c`, ``a`|`b``, ``a`|`c`` and ``a`|`b`|`c`` all match ``a`|`b`|`c``
 	- ``a`|`b`|`c``, ``a`|`b`` and ``a`|`c`` *may* match `a`, `b` or `c` (and ``a`|`b`|`c`` *may* match ``a`|`b``)
 		- by default this will compile and instead pattern matching will be completed at runtime; if this fails, the program crashes
 		- if using `prerun` this counts as failing to match and won't compile
+	- ``a`|`b`|`c & b`|`c`|`d`` <=> ``b`|`c``
+		- all matching involving and-patterns is done after the and-patterns have collapsed into or-patterns
+	- and/or-patterns may contain the "not" (exclusion) operator `~`
+		- ex: ``a`|`b`|`c & ~c`` <=> ``a`|`b`|`c``
+			- **note:** `<or-pattern> & ~Undefined` is *not* equivalent to `<or-pattern>`, see "Pattern matching" §6
+	- side-note: and/or-patterns are similar to intersection/union types in other languages
 
-4. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
+4. `` `...` `` are used in (and/or-)patterns to let the compiler figure out the rest.
 	- ex: ``` 0`|`1`|``...` ``` is an or-pattern consisting of all integers >= 0
 
 5. Pattern matching is done at compile time whenever possible. If pattern matching can't be completed during compile time, it will continue during runtime.
@@ -115,18 +116,20 @@ P+ is for...
 	-    `run` can be used to override this and force pattern matching to only be done during runtime
 
 6. The special `Undefined` value matches any pattern.
-	- i.e. `$x as 123` <=> `$x as Undefined|123`
+	- i.e. `$x as 123` <=> ``$x as Undefined`|`123``
 		- note that while this will compile, if `x` is `Undefined` but still used during runtime the program will crash
 	- `$x as Undefined` specifies that `x` must be `Undefined`
 		- useful for expressions returning an infinite loop: `forever {...}: Undefined`
+	- `$x as ~Undefined` overrides this and specifies that `x` must *not* be `Undefined`
+		- useful for ensuring something is total: `this_should_be_total: ~Undefined`
 
 #### Values
 1. Partially applied functions and patterns are treated as values.
 2. There exists a special `Undefined` value, which will be inserted into compilation or-patterns whenever a value might not come to exist during runtime. This happens if:
 	- the program specifies it might crash during runtime
-		- ex: `let x = rand any Int; if x == 1337 {panic!}; x` returns `Undefined|(any Int)` during compilation
+		- ex: `let x = rand any Int; if x == 1337 {panic!}; x` returns ``Undefined`|`(any Int)`` during compilation
 	- the compiler suspects there is an infinite loop in the program
-		- ex: `let x: auto = 0; forever {x++}; x` returns `Undefined|1|2|...` during compilation
+		- ex: `let x: auto = 0; forever {x++}; x` returns ```Undefined`|`1`|`2`|``...` ``` during compilation
 		- note that due to the halting problem the compiler may think there is an infinite loop when there isn't, hence 'suspects'
 	- for more info, see "Example code snippets" §1
 3. There are no other values.
@@ -135,24 +138,29 @@ P+ is for...
 
 #### Pseudo-values
 1. Pseudo-values are similar to values but act a bit differently, and include:
-	- or-patterns
-		- ex: `1|2|3`
+	- and/or-patterns
+		- ex: ``1`|`2`|`3 & 2`|`3`|`4``
+		- values and 1-value ("singleton") and/or-patterns are equivalent
+			- ex: `456` is both a value and a 1-value and/or-pattern
 	- placeholder-values
 		- ex: `$x` (outside of pattern definition)
 2. Pseudo-values may be created by the programmer and/or the compiler.
 	- programmer ex:
-		- or-patterns: `random value in range 0|1|...`
+		- or-patterns: ```random value in range 0`|`1`|``...` ```
 		- placeholder-values: `$n+1`
 	- compiler ex:
-		- or-patterns: creates an or-pattern for what `(123|456|789) + 1` returns: `124|457|790`
+		- or-patterns: creates an or-pattern for what ``(123`|`456`|`789) + 1`` returns: ``124`|`457`|`790``
 		- placeholder-values: inserts missing placeholder in `+1` by converting to `$n+1`
 3. Pseudo-values can be placed anywhere values can (if in the right situation).
 4. Pseudo-values only exist before runtime (during compilation).
+	- and-patterns collapse into or-patterns during compilation
+		- i.e. ``1`|`2`|`3 & 2`|`3`|`4`` collapses into ``2`|`3``
+		- **note:** `<or-pattern> & ~Undefined` is an exception to this, see "Pattern matching" §6
 	- or-patterns (eventually) collapse into single values at runtime
-		- i.e. `1|2` collapses into either `1` or `2`
+		- i.e. ``1`|`2`` collapses into either `1` or `2`
 		- programs not allowing this to happen won't be accepted by the compiler (TODO: check if this works, maybe change to runtime crash?)
 	- placeholder-values are converted into something else at runtime (TODO: figure out what)
-5. Or-patterns are further described in "Pattern matching" §3
+5. And/Or-patterns are further described in "Pattern matching" §3
 6. Placeholder-values are further described in "Patterns" §5
 
 #### Equality
@@ -163,11 +171,12 @@ P+ is for...
 	- They have the same name (or both have no name at all)
 2. 2 placeholder-values are always equal.
 	- i.e. `$xyz == $abc`
-3. Equality of or-patterns is either decided after collapse at runtime, *or* during compilation iff all below criteria are met:
+3. Equality of and-patterns is decided after they have collapsed into or-patterns.
+4. Equality of or-patterns is either decided after collapse at runtime, *or* during compilation iff all below criteria are met:
 	- They consist of the same values in the same order
 	- They were both formed as a result of known-to-be-equal pseudo-values being combined in some way with *known* terms (see "Misc" §11)
-4. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
-5. See "Example code snippets" §1 for an example of equality.
+5. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
+6. See "Example code snippets" §1 for an example of equality.
 
 #### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1 ...])`
@@ -255,6 +264,9 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
 // - infinite loops
 // - side-effects
 // - using outside/free patterns
+// EDIT: Anonymous functions are no longer total by default;
+//       instead, named functions are (by use of ': ~Undefined').
+//       This means this example is outdated WRT 'partial'.
 $x => (
 	($y $z => (
 		// Final scope

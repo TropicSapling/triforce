@@ -22,7 +22,6 @@ let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
 // It's convention to make this explicit as long as it
 // doesn't negatively affect user experience.
 let basic $(basic         func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
-let basic $(basic partial func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
 
 // NOTE: Basic functions:
 // - must be defined in order
@@ -135,37 +134,26 @@ basic func rec func ($pattern as frozen) (permafrosted $body); {
 	)
 };
 
-basic func rec partial func ($pattern as frozen) (permafrosted $body); {
+// Complete *total* functions: allows easy attributes, recursion & types (TODO: allow out-of-order definitions as well)
+// - a total function must:
+//		- have no infinite loops
+//		- cause no side-effects
+//		- use no outside/free patterns
+basic func $attr_list func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {
 	frozen (
-		let basic pattern = (
-			basic partial func $f pattern {
-				let basic $pattern = (f) f;
-				defrost body
-			};
-			
-			($f pattern) ($f pattern) // becomes '($f fib $n) fib $n' if pattern = 'fib $n'
-		);
+		rec func (attr_list pattern) {typed_body: ~Undefined};
 	)
 };
 
-// Complete functions: allows easy attributes, recursion & types (TODO: allow out-of-order definitions as well)
-basic func            func ($pattern as frozen) (permafrosted $body)       ; {[]        func pattern body: _   ;};
-basic func            func ($pattern as frozen) (permafrosted $body): $type; {[]        func pattern body: type;};
-basic func $attr_list func ($pattern as frozen) (permafrosted $body)       ; {attr_list func pattern body: _   ;};
-basic func $attr_list func ($pattern as frozen) (permafrosted $body): $type; {
+// Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
+basic func $attr_list partial func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {
 	frozen (
-		rec func (attr_list pattern) {body: type}; // '{body: type}' to make patterns defined when checking type
+		rec func (attr_list pattern) {typed_body};
 	)
 };
 
-basic func            partial func ($pattern as frozen) (permafrosted $body)       ; {[]        partial func pattern body: _   ;};
-basic func            partial func ($pattern as frozen) (permafrosted $body): $type; {[]        partial func pattern body: type;};
-basic func $attr_list partial func ($pattern as frozen) (permafrosted $body)       ; {attr_list partial func pattern body: _   ;};
-basic func $attr_list partial func ($pattern as frozen) (permafrosted $body): $type; {
-	frozen (
-		rec partial func (attr_list pattern) {body: type};
-	)
-};
+basic func         func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {[]         func pattern body;};
+basic func partial func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {[] partial func pattern body;};
 
 // The legendary SEMICOLON
 @(precedence below _)
@@ -327,6 +315,9 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
 // - infinite loops
 // - side-effects
 // - using outside/free patterns
+// EDIT: Anonymous functions are no longer total by default;
+//       instead, named functions are (by use of ': ~Undefined').
+//       This means this example is outdated WRT 'partial'.
 $x => (
 	($y $z => (
 		// Final scope
