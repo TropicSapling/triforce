@@ -8,7 +8,8 @@ $(f $a $b ...)     <=> ($(f $a $b ...) as $#0 $#1 ...)
 
 ////////////////////////////////////////////////////////////////
 
-($(let basic $var = $val;) => scope) (($var as frozen) $val => (var => scope) val)
+(impure $(let basic $var = $val;) => scope) (impure ($var as frozen) $val => (var => scope) val)
+(impure $(let pure  $var = $val;) => scope) (       ($var as frozen) $val => (var => scope) val)
 
 // Normal 'frozen' keyword only freezes until 'expr' gets used again.
 // Use '{expr}' to permafrost 'expr'. Defrost with 'defrost {expr}'.
@@ -21,7 +22,8 @@ let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
 // aware of the code not being evaluated until later.
 // It's convention to make this explicit as long as it
 // doesn't negatively affect user experience.
-let basic $(basic         func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
+let basic $(       basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let pure  $pattern = ALL_ARGS pattern => defrost body;);
+let basic $(impure basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
 
 // NOTE: Basic functions:
 // - must be defined in order
@@ -134,12 +136,25 @@ basic func rec func ($pattern as frozen) (permafrosted $body); {
 	)
 };
 
+basic func impure rec func ($pattern as frozen) (permafrosted $body); {
+	frozen (
+		let basic pattern = (
+			impure basic func $f pattern {
+				let basic $pattern = (f) f;
+				defrost body
+			};
+			
+			($f pattern) ($f pattern) // becomes '($f fib $n) fib $n' if pattern = 'fib $n'
+		);
+	)
+};
+
 // Complete *total* functions: allows easy attributes, recursion & types (TODO: allow out-of-order definitions as well)
 // - a total function must:
 //		- have no infinite loops
 //		- cause no side-effects
 //		- use no outside/free patterns
-// TODO: Add purity
+// Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
 basic func $attr_list func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {
 	frozen (
 		rec func (attr_list pattern) {typed_body: ~Undefined};
