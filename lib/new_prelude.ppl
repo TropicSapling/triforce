@@ -139,6 +139,7 @@ basic func rec func ($pattern as frozen) (permafrosted $body); {
 //		- have no infinite loops
 //		- cause no side-effects
 //		- use no outside/free patterns
+// TODO: Add purity
 basic func $attr_list func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {
 	frozen (
 		rec func (attr_list pattern) {typed_body: ~Undefined};
@@ -311,20 +312,14 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
 
 // 'closed' prevents the compiler from looking at the function body
 // before the function is in its final scope.
-// 'partial' allows the function to be non-total, a.k.a. allows:
-// - infinite loops
-// - side-effects
-// - using outside/free patterns
-// EDIT: Anonymous functions are no longer total by default;
-//       instead, named functions are (by use of ': ~Undefined').
-//       This means this example is outdated WRT 'partial'.
+// 'impure' allows the function to be non-pure.
 $x => (
 	($y $z => (
 		// Final scope
 		// 'z' is defined here, so all is fine
 
 		(_ => y x) _ // just to show final scope isn't necessarily call scope
-	)) (closed partial $a => x (z a)) 123 // 'partial' allows use of 'x', so all is fine
+	)) (closed impure $a => x++ * z a) 123 // 'impure' allows change of 'x', so all is fine
 )
 
 $x => (
@@ -333,7 +328,7 @@ $x => (
 		// ERROR: 'z' is undefined
 		
 		($z => y x) 123 // just to show final scope isn't necessarily call scope
-	)) (closed partial $a => x (z a)) // 'partial' allows use of 'x', so all is fine
+	)) (closed impure $a => x++ * z a) // 'impure' allows change of 'x', so all is fine
 )
 
 $x => (
@@ -341,5 +336,5 @@ $x => (
 		// Final scope
 		
 		(_ => y x) _ // just to show final scope isn't necessarily call scope
-	)) ($a => x (z a)) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern
+	)) ($a => x++ * z a) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern being changed
 )

@@ -40,10 +40,17 @@ P+ is for...
 	- This is what it means to say that a function returns `<function body>`
 8. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>` and `<pattern to define>`.
 	- Note that surrounding parentheses are *always* necessary when applying inside `<pattern to define>`
-9. Functions are *open* by default.
+9. Functions are *pure* and *open* by default.
+	- pure functions cannot use mutable patterns defined outside
+		- ex: `let g = $x => x;` - OK
+		- ex: `let f = ...; let g = $x => f;` - OK
+		- ex: `let f = ...; let g = $x => f x;` - OK
+		- ex: `let f: auto = ...; let g = $x => f x; f = ...;` - ERROR!
+		- ex: `let f: auto = ...; let g = $x => (f = ...; f x);` - ERROR!
 	- the body of an open function will be "opened" and checked by the compiler as soon as it is encountered
 		- this means undefined patterns, incorrect syntax, mismatches, etc. are not allowed
-10. `closed <function>` allows for the function to be non-open.
+10. `impure <function>` allows for the function to be non-pure.
+11. `closed <function>` allows for the function to be non-open.
 	- this means the compiler won't check the function body until it's in its final scope
 	- for an example, see "Example code snippets" §2
 
@@ -80,6 +87,13 @@ P+ is for...
 			- ex. of both: `1 f $y 3`
 
 6. Patterns only consisting of names are called *variables*.
+	- This means variables are a subset of patterns in P+
+		- Whenever we talk about patterns, we're including variables
+	- I.e. `$(example pattern)` is a variable, while `$(example pattern taking $x)` is not
+
+7. Patterns can be placed anywhere functions can as long as they become a function after full evaluation.
+	- This means that anywhere it says `<function>` in this README it's actually `<function/pattern-becoming-function>`
+	- TODO: check if there are any exceptions to this
 
 #### Pattern parsing algorithm
 1. Choose a `$(...)` and move to its outside.
@@ -260,20 +274,14 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
 ```Swift
 // 'closed' prevents the compiler from looking at the function body
 // before the function is in its final scope.
-// 'partial' allows the function to be non-total, a.k.a. allows:
-// - infinite loops
-// - side-effects
-// - using outside/free patterns
-// EDIT: Anonymous functions are no longer total by default;
-//       instead, named functions are (by use of ': ~Undefined').
-//       This means this example is outdated WRT 'partial'.
+// 'impure' allows the function to be non-pure.
 $x => (
 	($y $z => (
 		// Final scope
 		// 'z' is defined here, so all is fine
 
 		(_ => y x) _ // just to show final scope isn't necessarily call scope
-	)) (closed partial $a => x (z a)) 123 // 'partial' allows use of 'x', so all is fine
+	)) (closed impure $a => x++ * z a) 123 // 'impure' allows change of 'x', so all is fine
 )
 
 $x => (
@@ -282,7 +290,7 @@ $x => (
 		// ERROR: 'z' is undefined
 		
 		($z => y x) 123 // just to show final scope isn't necessarily call scope
-	)) (closed partial $a => x (z a)) // 'partial' allows use of 'x', so all is fine
+	)) (closed impure $a => x++ * z a) // 'impure' allows change of 'x', so all is fine
 )
 
 $x => (
@@ -290,7 +298,7 @@ $x => (
 		// Final scope
 		
 		(_ => y x) _ // just to show final scope isn't necessarily call scope
-	)) ($a => x (z a)) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern
+	)) ($a => x++ * z a) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern being changed
 )
 ```
 
