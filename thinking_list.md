@@ -6,6 +6,8 @@
 
 ## purity
 - Proving equality?
+- Probably better with a different definition though: rather than no outside/free variables, it should be no mutable outside/free patterns/functions
+  - Because you're almost always going to use some functions defined outside, like `mod` or `+`
 
 ## == box
 - How will this "non-strict" equality work?
