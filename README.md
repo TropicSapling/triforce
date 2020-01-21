@@ -212,6 +212,10 @@ P+ is for...
 	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as {#1}) => x _: 2) {<expr>}`
 	- `$(...) as frozen [becoming ...]`           <=> `$(...) as frozen _ [becoming ...]`
 
+6. `decl $(<pattern to declare>) [...] in <scope>` allows use of declared patterns before they have been defined in `<scope>`.
+	- Note that they must still be defined somewhere in `<scope>`
+	- See "Example code snippets" §3 for an example
+
 #### Built-in "functions"
 1. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.
 2. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
@@ -300,6 +304,15 @@ $x => (
 		
 		(_ => y x) _ // just to show final scope isn't necessarily call scope
 	)) ($a => x++ * z a) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern being changed
+)
+```
+
+3.
+```Swift
+// Declarations to allow use of patterns before they have been defined
+decl $x $y $z in (
+	println x;
+	let x = 123;
 )
 ```
 

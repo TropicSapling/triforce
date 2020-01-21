@@ -353,3 +353,9 @@ $x => (
 		(_ => y x) _ // just to show final scope isn't necessarily call scope
 	)) ($a => x++ * z a) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern being changed
 )
+
+// Declarations to allow use of patterns before they have been defined
+decl $x $y $z in (
+	println x;
+	let x = 123;
+)
