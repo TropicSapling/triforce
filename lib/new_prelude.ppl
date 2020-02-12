@@ -1,5 +1,3 @@
-TODO: Fix $ vs. # in ‘as’ and ‘: type’
-
 // Syntax sugar
 $a                 <=> ($a as _) // 'a' can be called like 'a arg1 arg2 ...'
 $(f $a $b ...)     <=> ($(f $a $b ...) as $#0 $#1 ...)
@@ -359,3 +357,14 @@ decl $x $y $z in (
 	println x;
 	let x = 123;
 )
+
+// Example of a cool thing using #-defs
+// '#($y)%' defines 'y' inside function body as '5' in this case
+// You could also do '#($y as 5)%' if you only want to allow that input
+func (any Number)% _ {};
+
+func ($x as any Number) * (#($y)%) {
+    x * y / 100
+};
+
+120 * 5% == 6
