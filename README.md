@@ -58,7 +58,7 @@ P+ is for...
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match>)` where
 	- `<pattern to define>` = ` <dname start>  [(<pattern def>)|<dname continuation> ...] [<dname end>]` where
 		- `<dname start>`, `dname continuation`, `<dname end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
-	- `<pattern to match>`  = `[<mname start>] [(<pattern def>)|<mname continuation>|$(<var>|#<n>) ...] [<mname end>]` where
+	- `<pattern to match>`  = `[<mname start>] [(<pattern def>)|<mname continuation>|$(<var>|#<n>)|#<pattern def> ...] [<mname end>]` where
 		- `<mname start>`, `mname continuation`, `<mname end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
 		- `$<var>` is either:
 			- a name for a parameter that is linked to a parameter of the same name in `<pattern to define>`, or
@@ -66,6 +66,7 @@ P+ is for...
 		- `<n>` is a number specifying what parameter to link to
 		- ex: `(($(add (1) and (2) to ($(a) as 3) plus $b) as $#1 $a $#0 $_) => ...) ($x $y $z $w => x + y + z + w)` where
 			- `...` = `add 1 and 2 to 3 plus 4` => `($x $y $z $w => x + y + z + w) 2 3 1 4` => `2 + 3 + 1 + 4`
+		- see percentage example in `new_prelude.ppl` for more info on `#<pattern def>`
 	- patterns named `_` (written like `($_ as ...)`) are called unnamed patterns and will not be defined
 
 2. Call structure for ex. def. `$(example pattern taking (_ as _) and (_ as _)) as _`:
