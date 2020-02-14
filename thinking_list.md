@@ -1,4 +1,10 @@
 # Things that need more thinking
+## pointers
+- Pointers should be clearly distinguished from other values
+  - Idk how many times I’ve made the mistake of accidentally copying a pointer to the data instead of the actual data
+  - No `Array` type secretly being a pointer to an array
+    - How to make this work though? Arrays rely on pointers
+
 ## frozen
 - Lazy evaluation? Optional like in Idris?
 - Should it be renamed to `lazy` or similar?
