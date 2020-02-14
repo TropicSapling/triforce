@@ -1,0 +1,87 @@
+// -------------------------------------------
+// |                EXAMPLE 1                |
+// -------------------------------------------
+
+// - n == n is True
+// - The remaining terms of LHS & RHS are known
+// => Compiler can determine if True or False
+(n - 1)            * 2 + 2 == n * 2
+Undefined|0|1|...  * 2 + 2 == 0|2|4...
+// Potential Undefined(s) found!
+// Add Undefined to or-pattern, then
+// start over with values not leading to Undefined:
+          0|1|...  * 2 + 2 ==   2|4|...
+          0|2|...      + 2 ==   2|4|...
+          2|4|...          ==   2|4|...
+// LHS == RHS since:
+// - Compiler can determine if True or False
+// - LHS & RHS or-patterns consist of the same values in the same order
+=> Undefined|True
+
+// - n == n2 is True|False
+// => Compiler *cannot* determine if True or False
+(n - 1)            * 2 + 2 == n2 * 2
+Undefined|0|1|...  * 2 + 2 == 0|2|4...
+// Potential Undefined(s) found!
+// Since the compiler cannot determine anything more,
+// and it's irrelevant if there are more potential Undefineds,
+// it stops here and returns:
+=> Undefined|True|False
+
+// -------------------------------------------
+// |                EXAMPLE 2                |
+// -------------------------------------------
+
+// 'closed' prevents the compiler from looking at the function body
+// before the function is in its final scope.
+// 'impure' allows the function to be non-pure.
+$x => (
+	($y $z => (
+		// Final scope
+		// 'z' is defined here, so all is fine
+
+		(_ => y x) _ // just to show final scope isn't necessarily call scope
+	)) (closed impure $a => x++ * z a) 123 // 'impure' allows change of 'x', so all is fine
+)
+
+$x => (
+	($y => (
+		// Final scope
+		// ERROR: 'z' is undefined
+		
+		($z => y x) 123 // just to show final scope isn't necessarily call scope
+	)) (closed impure $a => x++ * z a) // 'impure' allows change of 'x', so all is fine
+)
+
+$x => (
+	($y $z => (
+		// Final scope
+		
+		(_ => y x) _ // just to show final scope isn't necessarily call scope
+	)) ($a => x++ * z a) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern being changed
+)
+
+// -------------------------------------------
+// |                EXAMPLE 3                |
+// -------------------------------------------
+
+// Declarations to allow use of patterns before they have been defined
+decl $x $y $z in (
+	println x;
+	let x = 123;
+)
+
+// -------------------------------------------
+// |                EXAMPLE 4                |
+// -------------------------------------------
+
+// Example of a cool thing using #-defs
+// '#($y)%' defines 'y' inside function body as '5' in this case
+// You could also do '#($y as 5)%' if you only want to allow that input
+func (any Number)% _ {};
+
+func ($x as any Number) * (#($y)%) {
+    x * y / 100
+};
+
+120 * 5% == 6

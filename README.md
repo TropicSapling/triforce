@@ -244,92 +244,13 @@ P+ is for...
 11. An expression, or term, is said to be *known* to the compiler if the compiler sees it as a specific value rather than a pseudo-value.
 
 #### Example code snippets
-1.
-```Swift
-let n  = rand any Nat;
-let n2 = rand any Nat;
+1. ![ex1](ex1.png)
 
-// - n == n is True
-// - The remaining terms of LHS & RHS are known
-// => Compiler can determine if True or False
-(n - 1)            * 2 + 2 == n * 2
-Undefined|0|1|...  * 2 + 2 == 0|2|4...
-// Potential Undefined(s) found!
-// Add Undefined to or-pattern, then
-// start over with values not leading to Undefined:
-          0|1|...  * 2 + 2 ==   2|4|...
-          0|2|...      + 2 ==   2|4|...
-          2|4|...          ==   2|4|...
-// LHS == RHS since:
-// - Compiler can determine if True or False
-// - LHS & RHS or-patterns consist of the same values in the same order
-=> Undefined|True
+2. ![ex2](ex2.png)
 
-// - n == n2 is True|False
-// => Compiler *cannot* determine if True or False
-(n - 1)            * 2 + 2 == n2 * 2
-Undefined|0|1|...  * 2 + 2 == 0|2|4...
-// Potential Undefined(s) found!
-// Since the compiler cannot determine anything more,
-// and it's irrelevant if there are more potential Undefineds,
-// it stops here and returns:
-=> Undefined|True|False
-```
+3. ![ex3](ex3.png)
 
-2.
-```Swift
-// 'closed' prevents the compiler from looking at the function body
-// before the function is in its final scope.
-// 'impure' allows the function to be non-pure.
-$x => (
-	($y $z => (
-		// Final scope
-		// 'z' is defined here, so all is fine
-
-		(_ => y x) _ // just to show final scope isn't necessarily call scope
-	)) (closed impure $a => x++ * z a) 123 // 'impure' allows change of 'x', so all is fine
-)
-
-$x => (
-	($y => (
-		// Final scope
-		// ERROR: 'z' is undefined
-		
-		($z => y x) 123 // just to show final scope isn't necessarily call scope
-	)) (closed impure $a => x++ * z a) // 'impure' allows change of 'x', so all is fine
-)
-
-$x => (
-	($y $z => (
-		// Final scope
-		
-		(_ => y x) _ // just to show final scope isn't necessarily call scope
-	)) ($a => x++ * z a) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern being changed
-)
-```
-
-3.
-```Swift
-// Declarations to allow use of patterns before they have been defined
-decl $x $y $z in (
-	println x;
-	let x = 123;
-)
-```
-
-4.
-```Swift
-// Example of a cool thing using #-defs
-// '#($y)%' defines 'y' inside function body as '5' in this case
-// You could also do '#($y as 5)%' if you only want to allow that input
-func (any Number)% _ {};
-
-func ($x as any Number) * (#($y)%) {
-    x * y / 100
-};
-
-120 * 5% == 6
-```
+4. ![ex4](ex4.png)
 
 ### [OLD] Syntax
 1. Functions are defined using `<input> => <output>`.
