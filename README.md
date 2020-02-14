@@ -256,6 +256,8 @@ P+ is for...
 4.
 ![ex4](ex4.PNG)
 
+*Source code for examples available in [readme_examples.ppl](examples/readme_examples.ppl).*
+
 ### [OLD] Syntax
 1. Functions are defined using `<input> => <output>`.
 
