@@ -30,10 +30,10 @@ contexts:
     # strings in YAML. When using single quoted strings, only single quotes
     # need to be escaped: this is done by using two single quotes next to each
     # other.
-    - match: '\b(if|then|else|for|while|fulfilling|where|matches|continue from caller or alt|prerun|run)\b'
+    - match: '\b(if|then|else|for each|while|fulfilling|where|matches|continue from caller or alt|prerun|run)\b'
       scope: keyword.control.rust
 
-    - match: '\b(frozen|permafrosted|closed|partial|defrost|transparent)\b'
+    - match: '\b(frozen|becoming|permafrosted|closed|impure|defrost|transparent)\b'
       scope: storage.type.rust
 
     - match: '\b(True|False|this)\b'
@@ -75,7 +75,7 @@ contexts:
       scope: storage.type.rust
       push: func-id-search
 
-    - match: '\blet(\s+basic)?\b'
+    - match: '\blet(\s+(basic|pure))?\b'
       scope: storage.type.rust
       push: let-id-search
   

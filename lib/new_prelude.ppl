@@ -296,3 +296,46 @@ let n  = rand any Nat;
 let n2 = rand any Nat;
 
 // TODO: Fix so that func def order doesn't matter but variable order still does
+
+let Even = Zero|(PlusOne (PlusOne Zero))|...;
+let Even = even_zero|(even_plus2 Zero);
+let Even = Zero|(EvenI Zero);
+
+// needs lazy list, could be impl using permafrost '{}' and defrost during access
+let Even = lazily flatten [Zero, EvenIL Zero]; // allows for Even.0, Even.2, etc.
+let any Even = Zero|(EvenI Zero); // allows for '$n as any Even'
+
+basic func any $b {orify b};
+
+basic func orify $list {
+	list[0]|list[1]|...
+};
+
+basic func use $module {
+	if module.length > 0 {
+		frozen (
+			module[0];
+			use module[1..];
+		)
+	}
+
+	scope
+};
+
+func even_zero {
+	Zero
+};
+
+func even_plus2 $n {
+	PlusOne (PlusOne n)
+};
+
+func EvenI $n {
+	let next = PlusOne (PlusOne n);
+	next|(EvenI next)
+}
+
+func EvenIL $n {
+	let next = PlusOne (PlusOne n);
+	[next, EvenI next]
+}

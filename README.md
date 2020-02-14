@@ -122,6 +122,7 @@ P+ is for...
 		- ex: ``a`|`b`|`c & ~c`` <=> ``a`|`b`|`c``
 			- **note:** `<or-pattern> & ~Undefined` is *not* equivalent to `<or-pattern>`, see "Pattern matching" §6
 	- side-note: and/or-patterns are similar to intersection/union types in other languages
+	- or-patterns are *lazy*
 
 4. `` `...` `` are used in (and/or-)patterns to let the compiler figure out the rest.
 	- ex: ``` 0`|`1`|``...` ``` is an or-pattern consisting of all integers >= 0
