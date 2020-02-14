@@ -66,7 +66,7 @@ P+ is for...
 		- `<n>` is a number specifying what parameter to link to
 		- ex: `(($(add (1) and (2) to ($(a) as 3) plus $b) as $#1 $a $#0 $_) => ...) ($x $y $z $w => x + y + z + w)` where
 			- `...` = `add 1 and 2 to 3 plus 4` => `($x $y $z $w => x + y + z + w) 2 3 1 4` => `2 + 3 + 1 + 4`
-		- see percentage example in `new_prelude.ppl` for more info on `#<pattern def>`
+		- for more info on `#<pattern def>`, see "Example code snippets" §4
 	- patterns named `_` (written like `($_ as ...)`) are called unnamed patterns and will not be defined
 
 2. Call structure for ex. def. `$(example pattern taking (_ as _) and (_ as _)) as _`:
@@ -315,6 +315,20 @@ decl $x $y $z in (
 	println x;
 	let x = 123;
 )
+```
+
+4.
+```Swift
+// Example of a cool thing using #-defs
+// '#($y)%' defines 'y' inside function body as '5' in this case
+// You could also do '#($y as 5)%' if you only want to allow that input
+func (any Number)% _ {};
+
+func ($x as any Number) * (#($y)%) {
+    x * y / 100
+};
+
+120 * 5% == 6
 ```
 
 ### [OLD] Syntax
