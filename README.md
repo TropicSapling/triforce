@@ -244,13 +244,13 @@ P+ is for...
 11. An expression, or term, is said to be *known* to the compiler if the compiler sees it as a specific value rather than a pseudo-value.
 
 #### Example code snippets
-1. ![ex1](ex1.png)
+1. ![ex1](ex1.PNG)
 
-2. ![ex2](ex2.png)
+2. ![ex2](ex2.PNG)
 
-3. ![ex3](ex3.png)
+3. ![ex3](ex3.PNG)
 
-4. ![ex4](ex4.png)
+4. ![ex4](ex4.PNG)
 
 ### [OLD] Syntax
 1. Functions are defined using `<input> => <output>`.
