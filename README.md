@@ -228,8 +228,11 @@ P+ is for...
 		- ex: `ALL_ARGS_PLACEHOLDERS (f $x $y) == [$x, $y]`
 2. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
 3. `ATTRIBUTE <attr> <id>` tells the compiler that `<id>` has attribute `<attr>` and returns `<id>`.
-	- Precedence is specified using attributes
+	- precedence is specified using attributes
 4. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
+	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
+5. `frozenraw <expr>` is identical to `frozen` except it's unhygienic.
+	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
 5. `stringify <code>` converts `<code>` to a string
 6. `codify <string>` converts `<string>` to code
 7. `codify (stringify <code>)` <=> `<code>`

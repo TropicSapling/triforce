@@ -20,8 +20,8 @@ let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
 // aware of the code not being evaluated until later.
 // It's convention to make this explicit as long as it
 // doesn't negatively affect user experience.
-let basic $(       basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let pure  $pattern = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
-let basic $(impure basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic $(       basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozenraw (let pure  $pattern = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic $(impure basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozenraw (let basic $pattern = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
 
 // NOTE: Basic functions:
 // - must be defined in order
@@ -122,7 +122,7 @@ basic func @($attr as frozen) ($id as frozen) {
 }; // use '##' instead if you decide to use '@' for pointers
 
 basic func rec func ($pattern as frozen) (permafrosted $body); {
-	frozen (
+	frozenraw (
 		let basic pattern = (
 			basic func $f pattern {
 				let basic $pattern = (f) f;
@@ -135,7 +135,7 @@ basic func rec func ($pattern as frozen) (permafrosted $body); {
 };
 
 basic func impure rec func ($pattern as frozen) (permafrosted $body); {
-	frozen (
+	frozenraw (
 		let basic pattern = (
 			impure basic func $f pattern {
 				let basic $pattern = (f) f;
@@ -154,14 +154,14 @@ basic func impure rec func ($pattern as frozen) (permafrosted $body); {
 //		- use no outside/free patterns
 // Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
 basic func $attr_list func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {
-	frozen (
+	frozenraw (
 		rec func (attr_list pattern) {typed_body: ~Undefined};
 	)
 };
 
 // Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
 basic func $attr_list partial func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {
-	frozen (
+	frozenraw (
 		rec func (attr_list pattern) {typed_body};
 	)
 };
@@ -202,7 +202,7 @@ fibR (fibR) 123
 
 // test impl
 basic func rec func $pattern ($body _); {
-	frozen (
+	frozenraw (
 		let basic pattern = (
 			basic func $f pattern {
 				let basic $pattern = (f) f;
@@ -313,7 +313,7 @@ basic func orify $list {
 
 basic func use $module {
 	if module.length > 0 {
-		frozen (
+		frozenraw (
 			module[0];
 			use module[1..];
 		)
@@ -342,15 +342,24 @@ func EvenIL $n {
 
 ---------------------
 
+func any $list {
+	(list[0] (ALL_ARGS_BUT_ONE list[0])) | if list.length > 1 then any list[1..] else (list[0] (ALL_ARGS_BUT_ONE list[0]))
+};
+
+func use $module {
+	frozenraw (
+		module[0];
+		if module.length > 1 {
+			use module[1..];
+		};
+	)
+};
+
 let Module = [
 	f $a,
 	0,
 	g $x $y
 ];
-
-func any $list {
-	(list[0] (ALL_ARGS_BUT_ONE list[0])) | if list.length > 1 then any list[1..] else (list[0] (ALL_ARGS_BUT_ONE list[0]))
-};
 
 any Module == f|0|(g _)|(g _)
 
@@ -362,3 +371,5 @@ let Nat = (
 );
 
 any Nat == Zero|(PlusOne Zero|(PlusOne _))
+
+use Nat;
