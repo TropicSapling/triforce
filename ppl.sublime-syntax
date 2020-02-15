@@ -30,7 +30,7 @@ contexts:
     # strings in YAML. When using single quoted strings, only single quotes
     # need to be escaped: this is done by using two single quotes next to each
     # other.
-    - match: '\b(if|then|else|for each|while|fulfilling|where|matches|continue from caller or alt|prerun|run)\b'
+    - match: '\b(if|then|else|for each|while|return|fulfilling|where|matches|continue from caller or alt|prerun|run)\b'
       scope: keyword.control.rust
 
     - match: '\b(frozen|frozenraw|becoming|permafrosted|closed|impure|defrost|transparent)\b'

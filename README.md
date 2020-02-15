@@ -160,6 +160,7 @@ P+ is for...
 			- ex: `456` is both a value and a 1-value and/or-pattern
 	- placeholder-values
 		- ex: `$x` (outside of pattern definition)
+		- `f $x` <=> `$x => f x` (only applies outside of pattern definition)
 2. Pseudo-values may be created by the programmer and/or the compiler.
 	- programmer ex:
 		- or-patterns: ```random value in range 0`|`1`|``...` ```
@@ -180,11 +181,12 @@ P+ is for...
 6. Placeholder-values are further described in "Patterns" §5
 
 #### Equality
-1. 2 (finally evaluated) values are equal iff all below criteria are met:
+1. 2 (finally evaluated\*) values are equal iff all below criteria are met:
 	- They have the same amount of parameters   in the same order
 	- They have the same applied args           in the same order
 	- They have the same `<pattern to match>`:s in the same order
 	- They have the same name (or both have no name at all)
+		-\* A value is first finally evaluated when all synonyms have been "unwinded", see "Example code snippets" §5
 2. 2 placeholder-values are always equal.
 	- i.e. `$xyz == $abc`
 3. Equality of and-patterns is decided after they have collapsed into or-patterns.
@@ -265,6 +267,9 @@ P+ is for...
 
 4.
 ![ex4](ex4.PNG)
+
+5.
+![ex5](ex5.PNG)
 
 *Source code for examples available in [readme_examples.ppl](examples/readme_examples.ppl).*
 

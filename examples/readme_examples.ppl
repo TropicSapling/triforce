@@ -85,3 +85,26 @@ func ($x as any Number) * (#($y)%) {
 };
 
 120 * 5% == 6
+
+// -------------------------------------------
+// |                EXAMPLE 5                |
+// -------------------------------------------
+
+let    id    = $x => x;
+let    plus1 = $x => id x + 1
+let    f     = plus1;
+let $x g     = f;
+
+f <=> f $x <=> ($x => f x) // last equivalence only holds outside pattern defs!
+
+
+// g <=> f <=> plus1 is just shorthand for g == f && f == plus1
+g <=> f <=> plus1 // because 'g' is just a synonym for 'f' which is a synonym for 'plus1'
+
+g != id
+
+plus1     != ($x => id x + 1) // because anonymous function != named function
+id        != ($x => x)        // same as above
+($x => x) == ($x => x)
+
+123 g <=> f 123 <=> plus1 123 <=> id 123 + 1 <=> 123 + 1 <=> 124 // since all evaluate to 124

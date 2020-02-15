@@ -343,13 +343,44 @@ func EvenIL $n {
 ---------------------
 
 func any $list {
-	(list[0] (ALL_ARGS_BUT_ONE list[0])) | if list.length > 1 then any list[1..] else (list[0] (ALL_ARGS_BUT_ONE list[0]))
+	(list[0] (ALL_ARGS_BUT_ONE list[0])) | if list length > 1 then any list[1..] else (list[0] (ALL_ARGS_BUT_ONE list[0]))
 };
+
+func $list.($field as frozen) {
+	for each item in list {
+		let (field) = field; // unrelated but just realised 'let 0 = 1;' ('let Zero $x = PlusOne Zero $y;') may be possible; needs fixing, maybe shadowing too
+		if item == field {
+			return field;
+		}
+	};
+
+	Nothing
+};
+
+let field = frozen (Zero $x);
+let item $x = Zero $x;
+
+let n  $x = Zero $x;
+let n2 $x = Zero $x;
+
+n $x == n2 $x
+
+(
+	let Zero $x = $x => ;
+
+	Zero $x
+
+	/////////
+
+	$(Zero $x) => (
+		Zero $x
+	) ($x => )
+)
 
 func use $module {
 	frozenraw (
 		let (module[0]) = module[0]; // using parentheses to clarify the name is the evaluated module[0] rather than 'module[0]'; TODO: does this actually work?
-		if module.length > 1 {
+		if module length > 1 {
 			use module[1..];
 		};
 	)
@@ -373,3 +404,8 @@ let Nat = (
 any Nat == Zero|(PlusOne Zero|(PlusOne _))
 
 use Nat;
+
+Zero                   == Nat.Zero
+PlusOne (PlusOne Zero) == Nat.PlusOne (Nat.PlusOne Nat.Zero)
+
+// TODO: Bring back operator defs in some way (before it was 'operator +;')
