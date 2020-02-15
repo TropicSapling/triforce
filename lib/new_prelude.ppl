@@ -20,8 +20,8 @@ let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
 // aware of the code not being evaluated until later.
 // It's convention to make this explicit as long as it
 // doesn't negatively affect user experience.
-let basic $(       basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let pure  $pattern = ALL_ARGS pattern => defrost body;);
-let basic $(impure basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS pattern => defrost body;);
+let basic $(       basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let pure  $pattern = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic $(impure basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozen (let basic $pattern = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
 
 // NOTE: Basic functions:
 // - must be defined in order
@@ -38,7 +38,7 @@ basic func remaining args of $f {
 basic func call $f {f (ALL_ARGS f)};
 
 // Boxes
-basic func category of ($wrapper (ALL_ARGS wrapper)) {wrapper};
+basic func category of ($wrapper (ALL_ARGS_PLACEHOLDERS wrapper)) {wrapper};
 basic func unbox $b {APPLIED_ARGS b};
 
 // Bool True|False
@@ -74,7 +74,7 @@ basic func if $cond then ($body as frozen)                        {if cond {body
 basic func if $cond then ($body as frozen) else ($expr as frozen) {if cond {body} else {expr}};
 
 // Type checking
-basic func any $b {b (ALL_ARGS b)};
+basic func any $b {b (ALL_ARGS_BUT_ONE b)};
 
 basic func if fulfilling (True)                       (permafrosted $body) {body};
 basic func if fulfilling ($contract as frozen Bool _) (permafrosted $body) {
@@ -339,3 +339,26 @@ func EvenIL $n {
 	let next = PlusOne (PlusOne n);
 	[next, EvenI next]
 }
+
+---------------------
+
+let Module = [
+	f $a,
+	0,
+	g $x $y
+];
+
+func any $list {
+	(list[0] (ALL_ARGS_BUT_ONE list[0])) | if list.length > 1 then any list[1..] else (list[0] (ALL_ARGS_BUT_ONE list[0]))
+};
+
+any Module == f|0|(g _)|(g _)
+
+let Nat = (
+	func Zero _ {};
+	func PlusOne ($n as Zero|(PlusOne _)) _ {};
+
+	[Zero, PlusOne]
+);
+
+any Nat == Zero|(PlusOne Zero|(PlusOne _))

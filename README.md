@@ -220,6 +220,12 @@ P+ is for...
 
 #### Built-in "functions"
 1. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.
+	- ex: `ALL_ARGS (f $n $str) == [any Nat, any String]`
+		- except array is special: `f [any Nat, any String] == f (any Nat) (any String)`
+	- `ALL_ARGS_BUT_ONE` does the same except doesn't apply the last arg
+		- may be removed in the future in favor of using `ALL_ARGS[..ALL_ARGS.length - 1]`
+	- `ALL_ARGS_PLACEHOLDERS` does the equivalent for placeholder args
+		- ex: `ALL_ARGS_PLACEHOLDERS (f $x $y) == [$x, $y]`
 2. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
 3. `ATTRIBUTE <attr> <id>` tells the compiler that `<id>` has attribute `<attr>` and returns `<id>`.
 	- Precedence is specified using attributes
