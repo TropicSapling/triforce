@@ -185,7 +185,8 @@ P+ is for...
 	- They have the same amount of parameters   in the same order
 	- They have the same applied args           in the same order
 	- They have the same `<pattern to match>`:s in the same order
-	- They have the same name (or both have no name at all)
+	- They have the same name
+		- If one or both are anonymous equality is undecidable
 		-\* A value is first finally evaluated when all synonyms have been "unwinded", see "Example code snippets" §5
 2. 2 placeholder-values are always equal.
 	- i.e. `$xyz == $abc`
