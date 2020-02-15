@@ -363,7 +363,6 @@ let Module = [
 
 any Module == f|0|(g _)|(g _)
 
-// This should probably be permafrosted?
 let Nat = (
 	func Zero _ {};
 	func PlusOne ($n as Zero|(PlusOne _)) _ {};
