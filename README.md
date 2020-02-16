@@ -17,6 +17,7 @@ P+ is for...
 * <sub>brackets (`[]`) **and** seperated by bars (`|`) are part of a list of mutually exclusive *optional* keywords</sub>
 
 <sub>Dots (`...`) and the equivalence symbol (`<=>`) mean essentially what they do in mathematics.</sub>
+<sub>``` \` ``` escapes the escaper (i.e. ``` \`\` ``` means you must literally type ``` `` ```).</sub>
 
 <sub>Everything else is **required.**</sub>
 
@@ -39,7 +40,8 @@ P+ is for...
 7. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined).
 	- This is what it means to say that a function returns `<function body>`
 8. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>` and `<pattern to define>`.
-	- Note that surrounding parentheses are *always* necessary when applying inside `<pattern to define>`
+	- Note that surrounding backticks (``` \`\` ```) are necessary when applying inside `<pattern to define>`
+		- i.e. if we `let f = Something`, then `let f _ = SomethingElse` redefines `f` while ``` let `f _` = SomethingElse ``` becomes `let Something = SomethingElse`
 9. Functions are *pure* and *open* by default.
 	- pure functions cannot use mutable patterns defined outside
 		- ex: `let g = $x => x;` - OK

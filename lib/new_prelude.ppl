@@ -12,7 +12,7 @@ $(f $a $b ...)     <=> ($(f $a $b ...) as $#0 $#1 ...)
 // Normal 'frozen' keyword only freezes until 'expr' gets used again.
 // Use '{expr}' to permafrost 'expr'. Defrost with 'defrost {expr}'.
 let basic $({($expr as frozen)} _)           = $expr   _ => expr;
-let basic $(permafrosted ($input as frozen)) = $input    => frozen ($(input _));
+let basic $(permafrosted ($input as frozen)) = $input    => frozen ($(`input` _));
 let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
 
 // We could've just used 'frozen' here. However, using permafrost
@@ -20,8 +20,8 @@ let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
 // aware of the code not being evaluated until later.
 // It's convention to make this explicit as long as it
 // doesn't negatively affect user experience.
-let basic $(       basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozenraw (let pure  $pattern = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
-let basic $(impure basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozenraw (let basic $pattern = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic $(       basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozenraw (let pure  $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic $(impure basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozenraw (let basic $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
 
 // NOTE: Basic functions:
 // - must be defined in order
@@ -63,10 +63,10 @@ basic func $a != $b {!(a == b)};
 
 // if _ _ else
 // ex: 'if x == 123 {456} else {789}'
-basic func if (True)  (permafrosted $body)                           {defrost body};
-basic func if (False) (permafrosted $body)                           {scope};
-basic func if (True)  (permafrosted $body) else (permafrosted $expr) {defrost body};
-basic func if (False) (permafrosted $body) else (permafrosted $expr) {defrost expr};
+basic func if (True)  `permafrosted $body`                           {defrost body};
+basic func if (False) `permafrosted $body`                           {scope};
+basic func if (True)  `permafrosted $body` else `permafrosted $expr` {defrost body};
+basic func if (False) `permafrosted $body` else `permafrosted $expr` {defrost expr};
 
 // if _ then _ else _
 // ex: 'if x == 123 then 456 else 789'
@@ -76,14 +76,14 @@ basic func if $cond then ($body as frozen) else ($expr as frozen) {if cond {body
 // Type checking
 basic func any $b {b (ALL_ARGS_BUT_ONE b)};
 
-basic func if fulfilling (True)                       (permafrosted $body) {body};
-basic func if fulfilling ($contract as frozen Bool _) (permafrosted $body) {
+basic func if fulfilling (True)                       `permafrosted $body` {body};
+basic func if fulfilling ($contract as frozen Bool _) `permafrosted $body` {
 	// continue to next function def if there is one, else panic
 	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify {contract}]))
 };
 
-basic func if fulfilling (True)  (permafrosted $body) else report _             {body};
-basic func if fulfilling (False) (permafrosted $body) else report (String $msg) {
+basic func if fulfilling (True)  `permafrosted $body` else report _             {body};
+basic func if fulfilling (False) `permafrosted $body` else report (String $msg) {
 	continue from caller or alt prerun panic (format_err (String msg))
 };
 
@@ -95,14 +95,14 @@ basic func $this fulfilling ($contract as frozen Bool _) {
 };
 
 // 'arr: any Array where this length == 7' sounds better than 'arr: any Array fulfilling this length == 7'
-let basic where = fulfilling;
+let basic $where = fulfilling;
 
 basic func (Typed $expr _     ): $type {expr: type}; // allows for stuff like '(123: 0..): any Int'
 basic func ($expr as type     ): $type {Typed expr type};
-basic func (permafrosted $expr): $type {(_ => Typed expr type) (defrost expr: type)}; // allows for stuff like '{123}: any Int'
+basic func `permafrosted $expr`: $type {(_ => Typed expr type) (defrost expr: type)}; // allows for stuff like '{123}: any Int'
 
 basic func ($expr as type     ) matches $type {True};
-basic func (permafrosted $expr) matches $type {defrost expr matches type};
+basic func `permafrosted $expr` matches $type {defrost expr matches type};
 basic func _                    matches $type {False};
 
 // 'transparent _' makes this function run if all previous pattern matches failed
@@ -121,28 +121,28 @@ basic func @($attr as frozen) ($id as frozen) {
 	ATTRIBUTE attr id // this built-in tells compiler 'id' has attribute 'attr' and returns 'id'
 }; // use '##' instead if you decide to use '@' for pointers
 
-basic func rec func ($pattern as frozen) (permafrosted $body); {
+basic func rec func ($pattern as frozen) `permafrosted $body`; {
 	frozenraw (
-		let basic pattern = (
-			basic func $f pattern {
-				let basic $pattern = (f) f;
+		let basic $`pattern` = (
+			basic func $f `pattern` {
+				let basic $`pattern` = f f;
 				defrost body
 			};
 			
-			($f pattern) ($f pattern) // becomes '($f fib $n) fib $n' if pattern = 'fib $n'
+			($f pattern) ($f pattern) // becomes '($f fib $n) ($f fib $n)' => '(($f fib $n) fib $n)' if pattern = 'fib $n'
 		);
 	)
 };
 
-basic func impure rec func ($pattern as frozen) (permafrosted $body); {
+basic func impure rec func ($pattern as frozen) `permafrosted $body`; {
 	frozenraw (
-		let basic pattern = (
-			impure basic func $f pattern {
-				let basic $pattern = (f) f;
+		let basic $`pattern` = (
+			impure basic func $f `pattern` {
+				let basic $`pattern` = f f;
 				defrost body
 			};
 			
-			($f pattern) ($f pattern) // becomes '($f fib $n) fib $n' if pattern = 'fib $n'
+			($f pattern) ($f pattern) // becomes '($f fib $n) ($f fib $n)' => '(($f fib $n) fib $n)' if pattern = 'fib $n'
 		);
 	)
 };
@@ -155,14 +155,14 @@ basic func impure rec func ($pattern as frozen) (permafrosted $body); {
 // Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
 basic func $attr_list func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {
 	frozenraw (
-		rec func (attr_list pattern) {typed_body: ~Undefined};
+		rec func (attr_list pattern) (typed_body: ~Undefined);
 	)
 };
 
 // Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
 basic func $attr_list partial func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {
 	frozenraw (
-		rec func (attr_list pattern) {typed_body};
+		rec func (attr_list pattern) (typed_body);
 	)
 };
 
@@ -170,7 +170,7 @@ basic func         func ($pattern as frozen) ($typed_body as frozen becoming {#_
 basic func partial func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {[] partial func pattern body;};
 
 // The legendary SEMICOLON
-@(precedence below _)
+@(precedence below _) // this is a function and not a list of attrs, needs fixing
 func $expr; {
 	scope
 };
@@ -279,7 +279,7 @@ This is because there is no pattern matching before ‘as’. So doing ‘$x’ 
 
 Both patterns and anonymous functions can be passed around as values.
 
-‘$x => ...` is almost equivalent to ‘$x’.
+‘$x => ...’ is almost equivalent to ‘$x’.
 
 All inputs to functions are parenthesised. They are also evaluated unless frozen.
 
@@ -348,7 +348,8 @@ func any $list {
 
 func $list.($field as frozen) {
 	for each item in list {
-		let (field) = field; // unrelated but just realised 'let 0 = 1;' ('let Zero $x = PlusOne Zero $y;') may be possible; needs fixing, maybe shadowing too
+		let `item`  = item;
+		let `field` = field;
 		if item == field {
 			return field;
 		}
@@ -356,6 +357,8 @@ func $list.($field as frozen) {
 
 	Nothing
 };
+
+---------------------
 
 let field = frozen (Zero $x);
 let item $x = Zero $x;
@@ -377,9 +380,29 @@ n $x == n2 $x
 	) ($x => )
 )
 
+let item = (
+	func Zero _ {};
+
+	Zero
+);
+
+let item = item;
+
+$(item $x) => (
+	$(`item $x`) => (
+		...
+	) (item $x)
+) (
+	$(Zero $x) => (
+		Zero $x
+	) ($x => )
+)
+
+---------------------
+
 func use $module {
 	frozenraw (
-		let (module[0]) = module[0]; // using parentheses to clarify the name is the evaluated module[0] rather than 'module[0]'; TODO: does this actually work?
+		let `module[0]` = module[0]; // using '``' to clarify the name is the evaluated module[0] rather than 'module[0]'
 		if module length > 1 {
 			use module[1..];
 		};
@@ -409,3 +432,4 @@ Zero                   == Nat.Zero
 PlusOne (PlusOne Zero) == Nat.PlusOne (Nat.PlusOne Nat.Zero)
 
 // TODO: Bring back operator defs in some way (before it was 'operator +;')
+// TODO: Actually define 'let'. Apparently you forgot that and only 'let basic/pure' exists.
