@@ -90,20 +90,44 @@ func ($x as any Number) * (#($y)%) {
 // |                EXAMPLE 5                |
 // -------------------------------------------
 
+// Examples of referring to the same function or not
+func f ($x as any String) $y {println 123};
+func f ($x as any Int)    $y {println 123};
+
+f      != f      // ERROR! Unable to determine function being referred to
+f "hi" != f 789
+
+func    g ($x as any Int) $y {println 123};
+func $y g ($x as any Int)    {println 123};
+
+g 789 == g 789
+g 789 != $y g 789
+
+// Here the second function shadows the first
+func h ($x as any Int) $y {println 123};
+func h ($x as any Int) $y {println 456};
+
+h 1 == h 1
+h 1 != h 2
+
+// Note! Full application this time
+h 1 2 == 456
+
+// Other comparison examples
 let    id    = $x => x;
 let    plus1 = $x => id x + 1
 let    f     = plus1;
 let $x g     = f;
 
-f <=> f $x <=> ($x => f x) // last equivalence only holds outside pattern defs!
-
+f <=> f $x
 
 // g <=> f <=> plus1 is just shorthand for g == f && f == plus1
 g <=> f <=> plus1 // because 'g' is just a synonym for 'f' which is a synonym for 'plus1'
 
 g != id
 
-// All 3 lines below error! Anonymous functions are not comparable
+// All 4 lines below error! Anonymous functions are not comparable
+f $x      != ($x => f x)
 plus1     != ($x => id x + 1)
 id        != ($x => x)
 ($x => x) != ($x => x)
