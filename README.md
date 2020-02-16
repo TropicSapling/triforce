@@ -181,6 +181,14 @@ P+ is for...
 5. And/Or-patterns are further described in "Pattern matching" §3
 6. Placeholder-values are further described in "Patterns" §5
 
+#### Evaluation
+1. P+ uses eager evaluation.
+2. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
+3. The compiler will try to run as much as possible during compilation unless otherwise specified.
+4. There are 2 stages of evaluation:
+	1. Synonyms are "unwinded" (see "Synonyms and Shadows")
+	2. Function application is evaluated
+
 #### Equality
 1. 2 finally evaluated values are equal if they refer to the same named function and they have the same applied args.
 	- This means anonymous functions are incomparable
@@ -194,7 +202,8 @@ P+ is for...
 	- They consist of the same values in the same order
 	- They were both formed as a result of known-to-be-equal pseudo-values being combined in some way with *known* terms (see "Misc" §11)
 5. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
-6. See "Example code snippets" §1 for an example of equality.
+6. Equality of frozen values cannot be determined and will result in an error.
+7. See "Example code snippets" §1 for an example of equality.
 
 #### Synonyms and Shadows
 1. 2 patterns `f $x` and `$y g` are *synonymous* iff all below criteria are met:
@@ -247,10 +256,12 @@ P+ is for...
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
 5. `frozenraw <expr>` is identical to `frozen` except it's unhygienic.
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
-5. `stringify <code>` converts `<code>` to a string
-6. `codify <string>` converts `<string>` to code
-7. `codify (stringify <code>)` <=> `<code>`
-8. `continue from <function> or alt <expr>` continues pattern matching if possible, else evaluates `<expr>`.
+6. `stringify <code>` converts `<code>` to a string
+	- partially applied functions are converted into their "full form"
+		- i.e. if we `let f = $x $y => ...` then `stringify f == "f $x $y"`
+7. `codify <string>` converts `<string>` to code
+8. `codify (stringify <code>)` <=> `<code>`
+9. `continue from <function> or alt <expr>` continues pattern matching if possible, else evaluates `<expr>`.
 	- if `<function>` is `caller` it will continue from the caller
 
 #### Misc
@@ -258,14 +269,11 @@ P+ is for...
 2. `(<expr>)` *always* has higher precedence than `<expr>`.
 3. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
 4. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
-5. P+ uses eager evaluation.
-6. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
-7. The compiler will try to run as much as possible during compilation unless otherwise specified.
-8. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
-9. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
-10. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
-    - I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
-11. An expression, or term, is said to be *known* to the compiler if the compiler sees it as a specific value rather than a pseudo-value.
+5. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
+6. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
+7. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
+    - I.e. `if True then do_something` is assumed to mean the fully applied `if $cond then $body` function rather than a partially applied `if $cond then $expr else $expr`.
+8. An expression, or term, is said to be *known* to the compiler if the compiler sees it as a specific value rather than a pseudo-value.
 
 #### Example code snippets
 1.
