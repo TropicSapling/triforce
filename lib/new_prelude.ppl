@@ -348,7 +348,7 @@ func any $list {
 
 func $list.($field as frozen) {
 	for each item in list {
-		if stringify item == stringify field {
+		if item == frozen field {
 			return field;
 		}
 	};

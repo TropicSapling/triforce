@@ -186,8 +186,11 @@ P+ is for...
 2. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
 3. The compiler will try to run as much as possible during compilation unless otherwise specified.
 4. There are 2 stages of evaluation:
-	1. Synonyms are "unwinded" (see "Synonyms and Shadows")
-	2. Function application is evaluated
+	1. Patterns are "expanded"
+		- i.e. if we `let f = $x $y => ...` then `f` is expanded to `f $x $y`
+	2. Synonyms are "unwinded" (see "Synonyms and Shadows")
+	3. Function application is evaluated
+5. `frozen` and `frozenraw` prevents evaluation from going past stage 1.
 
 #### Equality
 1. 2 finally evaluated values are equal if they refer to the same named function and they have the same applied args.
@@ -202,7 +205,7 @@ P+ is for...
 	- They consist of the same values in the same order
 	- They were both formed as a result of known-to-be-equal pseudo-values being combined in some way with *known* terms (see "Misc" §11)
 5. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
-6. Equality of frozen values cannot be determined and will result in an error.
+6. Comparison involving frozen values will compare the values as if they were strings.
 7. See "Example code snippets" §1 for an example of equality.
 
 #### Synonyms and Shadows
@@ -257,8 +260,7 @@ P+ is for...
 5. `frozenraw <expr>` is identical to `frozen` except it's unhygienic.
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
 6. `stringify <code>` converts `<code>` to a string
-	- partially applied functions are converted into their "full form"
-		- i.e. if we `let f = $x $y => ...` then `stringify f == "f $x $y"`
+	- TODO: only allow frozen code as input?
 7. `codify <string>` converts `<string>` to code
 8. `codify (stringify <code>)` <=> `<code>`
 9. `continue from <function> or alt <expr>` continues pattern matching if possible, else evaluates `<expr>`.
