@@ -194,6 +194,18 @@ P+ is for...
 5. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
 6. See "Example code snippets" §1 for an example of equality.
 
+#### Synonyms and Shadows
+1. 2 patterns `f $x` and `$y g` are *synonymous* iff all below criteria are met:
+	- They have the same amount of parameters
+	- They have the same `<pattern to match>`:s
+	- We `let f $x = $y g`
+		- We say that `f` is *"unwinded"* to `g` when evaluated
+			- i.e. `f 123` becomes `123 g`
+2. A newly defined pattern will *shadow* another iff all below criteria are met:
+	- They have the same amount of parameters   in the same order
+	- They have the same `<pattern to match>`:s in the same order
+	- They have the same name
+
 #### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1 ...])`
 	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> ...]`
