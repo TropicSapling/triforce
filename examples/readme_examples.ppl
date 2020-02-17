@@ -133,3 +133,20 @@ id        != ($x => x)
 ($x => x) != ($x => x)
 
 123 g <=> f 123 <=> plus1 123 <=> id 123 + 1 <=> 123 + 1 <=> 124 // since all evaluate to 124
+
+// -------------------------------------------
+// |                EXAMPLE 6                |
+// -------------------------------------------
+
+func Potato _ {};
+
+let potato  = Potato;
+let potato2 = Potato;
+let potato3 = (
+	func Potato _ {};
+
+	Potato
+);
+
+potato == potato2
+potato != potato3 // the Potato:es were created using different constructors, so they are different
