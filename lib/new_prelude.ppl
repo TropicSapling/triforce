@@ -431,3 +431,11 @@ PlusOne (PlusOne Zero) == Nat.PlusOne (Nat.PlusOne Nat.Zero)
 
 // TODO: Bring back operator defs in some way (before it was 'operator +;')
 // TODO: Actually define 'let'. Apparently you forgot that and only 'let basic/pure' exists.
+
+---------------------
+
+func $this where ($contract as frozen any Bool) {
+	if contract then this
+};
+
+(0|1|2|3 where this mod 2 == 0): 0|2
