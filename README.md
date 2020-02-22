@@ -39,7 +39,7 @@ P+ is for...
 6. If not enough input args are given, the function is partially applied.
 7. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined).
 	- This is what it means to say that a function returns `<function body>`
-8. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>` and `<pattern to define>`.
+8. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>`, `<pattern to define>` and `<pattern to match>`.
 	- Note that surrounding backticks (``` \`\` ```) are necessary when applying inside `<pattern to define>`
 		- i.e. if we `let f = Something`, then `let f _ = SomethingElse` redefines `f` while ``` let `f _` = SomethingElse ``` becomes `let Something = SomethingElse`
 9. Functions are *pure* and *open* by default.
@@ -68,6 +68,8 @@ P+ is for...
 		- `<n>` is a number specifying what parameter to link to
 		- ex: `(($(add (1) and (2) to ($(a) as 3) plus $b) as $#1 $a $#0 $_) => ...) ($x $y $z $w => x + y + z + w)` where
 			- `...` = `add 1 and 2 to 3 plus 4` => `($x $y $z $w => x + y + z + w) 2 3 1 4` => `2 + 3 + 1 + 4`
+		- if we `let f = $x $y $z => ...` then `$a as f #_ #_` <=> `$a as f _ _`
+			- **note:** this equivalence does not hold for `$a as frozen f #_ #_ #_` and `$a as frozen f _ _ _`
 		- for more info on `#<pattern def>`, see "Example code snippets" §4
 	- patterns named `_` (written like `($_ as ...)`) are called unnamed patterns and will not be defined
 
