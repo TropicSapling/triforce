@@ -6,7 +6,7 @@ $(f $a $b ...)     <=> ($(f $a $b ...) as $#0 $#1 ...)
 
 ////////////////////////////////////////////////////////////////
 
-// TODO: Fix '@(precedence below ;)' for 'let [basic|pure]'
+// TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
 (impure $(let basic $var = $val;) => scope) (impure ($var as frozen) $val => (var => scope) val)
 (impure $(let pure  $var = $val;) => scope) (       ($var as frozen) $val => (var => scope) val)
 
