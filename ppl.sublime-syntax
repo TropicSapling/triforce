@@ -14,6 +14,8 @@ contexts:
     - include: statements
 
   statements:
+    - include: universal
+
     # Strings begin and end with quotes, and use backslashes as an escape
     # character
     - match: '"'
@@ -39,7 +41,7 @@ contexts:
     - match: '\b(True|False|this)\b'
       scope: constant.language.rust
 
-    - match: '\b(as|in|box|any|ALL_ARGS|ALL_ARGS_BUT_ONE|ALL_ARGS_PLACEHOLDERS|APPLIED_ARGS|ATTRIBUTE|scope|stringify)\b'
+    - match: '\b(as|in|box|any(\s+of)?|ALL_ARGS|ALL_ARGS_BUT_ONE|ALL_ARGS_PLACEHOLDERS|APPLIED_ARGS|ATTRIBUTE|scope|stringify)\b'
       scope: keyword.operator.rust
 
     - match: '\b[A-Z]{{identifier}}'
@@ -49,8 +51,6 @@ contexts:
     - match: '\b(-)?[0-9.]+\b'
       scope: constant.numeric.example-c
 
-    # Making this an operator helps visually break up large
-    # match blocks containing just enums
     - match: '=>'
       scope: keyword.operator.rust
 
@@ -78,8 +78,14 @@ contexts:
     - match: '\blet(\s+(basic|pure))?\b'
       scope: storage.type.rust
       push: let-id-search
+
+  universal:
+    - match: '`'
+      scope: markup.italic
+      push: eval-group
   
   func-id-search:
+    - include: universal
     - match: '(?=\()'
       push: group
     - match: '\$'
@@ -91,6 +97,7 @@ contexts:
       pop: true
 
   let-id-search:
+    - include: universal
     - match: '(?=\()'
       push: group
     - match: '\$'
@@ -123,6 +130,7 @@ contexts:
       scope: keyword.operator.rust
 
   op-dollar:
+    - include: universal
     - match: '{{identifier}}'
       scope: variable.parameter.rust
       pop: true
@@ -174,5 +182,12 @@ contexts:
     - meta_scope: meta.group.rust
     - match: '\)'
       scope: punctuation.section.group.end.rust
+      pop: true
+    - include: statements
+
+  eval-group:
+    - meta_scope: markup.italic
+    - match: '`'
+      scope: markup.italic
       pop: true
     - include: statements

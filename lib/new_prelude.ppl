@@ -440,3 +440,30 @@ func $this where ($contract as frozen any Bool) {
 };
 
 (0|1|2|3 where this mod 2 == 0): 0|2
+
+---------------------
+
+object Player [
+  $x as Int,
+  $y as Int,
+  $health as Double
+];
+
+let HealthContract = frozen (
+  this health > 50.0 &&
+  this health < 100.0
+);
+
+let items = [
+  Dirt,
+  Stone,
+  Wood
+];
+
+func throw ($item as any of items) from ($player as any Player fulfilling HealthContract) {...};
+
+throw Stone   from (Player 123 456 75.0); // ok
+throw Dirt    from (Player 123 456 75.0); // ok
+throw Invalid from (Player 123 456 75.0); // ERROR
+throw Stone   from (Player 123 456 30.0); // ERROR
+throw Stone   from (Bird 123 456 75.0); // ERROR
