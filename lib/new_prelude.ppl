@@ -467,3 +467,9 @@ throw Dirt    from (Player 123 456 75.0); // ok
 throw Invalid from (Player 123 456 75.0); // ERROR
 throw Stone   from (Player 123 456 30.0); // ERROR
 throw Stone   from (Bird 123 456 75.0); // ERROR
+
+module Nat [
+	object Zero,
+	object OneMoreThan (any Nat),
+	object Nat (Zero|(OneMoreThan _))
+]
