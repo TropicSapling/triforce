@@ -86,6 +86,23 @@ func ($x as any Number) * (#($y)%) {
 
 120 * 5% == 6
 
+// By overloading this special function,
+// the function body's code will be ran
+// before evaluation of every matching
+// term in the scope this is defined
+//
+// Here we are making it possible to do
+// <x>% <op> <y>% for every existing operator
+// that works with numbers
+func __EVAL__ ($(_ op _) as frozen #($x)% #($y)%) {
+    (((x / 100) op (y / 100)) * 100)%
+}
+
+// The 2 lines below work thanks to
+// the above __EVAL__ overload
+120% * 5% == 6%
+120% + 5% == 125%
+
 // -------------------------------------------
 // |                EXAMPLE 5                |
 // -------------------------------------------

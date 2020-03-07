@@ -470,6 +470,6 @@ throw Stone   from (Bird 123 456 75.0); // ERROR
 
 module Nat [
 	object Zero,
-	object OneMoreThan (any Nat),
-	object Nat (Zero|(OneMoreThan _))
+	object (any Nat) PlusOne,
+	object Nat (Zero|(_ PlusOne))
 ]
