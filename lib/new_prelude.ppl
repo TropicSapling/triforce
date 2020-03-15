@@ -443,10 +443,11 @@ func $this where ($contract as frozen any Bool) {
 
 ---------------------
 
+// Something is an *object* if it's atomic or only contains properties of itself
 object Player [
-  $x as Int,
-  $y as Int,
-  $health as Double
+  $x      as any Int,
+  $y      as any Int,
+  $health as any Double
 ];
 
 let HealthContract = frozen (
@@ -454,6 +455,7 @@ let HealthContract = frozen (
   this health < 100.0
 );
 
+// Something is a *category* if it contains objects that aren't properties of itself
 let items = [
   Dirt,
   Stone,
@@ -468,8 +470,25 @@ throw Invalid from (Player 123 456 75.0); // ERROR
 throw Stone   from (Player 123 456 30.0); // ERROR
 throw Stone   from (Bird 123 456 75.0); // ERROR
 
+// Maybe only use wrapper objects when there's an use for it?
+// Use like Haskell constructors?
+// Lists could be used for the types instead
 module Nat [
 	object Zero,
-	object (any Nat) PlusOne,
-	object Nat (Zero|(_ PlusOne))
-]
+	object (any of Nats) PlusOne,
+
+	let Nats = [
+		Zero,
+		_ PlusOne
+	]
+];
+
+module Bool [
+	object True,
+	object False,
+
+	let Bools = [
+		True,
+		False
+	]
+];
