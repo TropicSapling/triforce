@@ -539,7 +539,7 @@ let Category = (
 let obj:  Category.Category = Category.Object   _ _ ... _;
 let obj2: Category.Category = Category.Object2  _ _ ... _;
 
-// Exposed use
+// Exposed use:
 expose Category;
 
 let obj:  Category = Object _ _ ... _;
@@ -555,7 +555,9 @@ category Character (
 		$health as Number
 	];
 
-	// TODO: Player and NPC share some similarities; how to prevent code duplication?
+	// TODO:
+	// Player and NPC share some similar properties; how to prevent code duplication?
+	// Apparently Rust doesn't do anything about this; maybe it's not worth it?
 
 	object NonExportedExperiment [
 		$idk
@@ -565,6 +567,7 @@ category Character (
 );
 
 // If 'Character' was in another file, we would also need to 'import' that file first
+// TODO: Consider merging 'import' and 'expose' to Rust's 'use'
 expose Character;
 
 let player: Character = Player 100;
