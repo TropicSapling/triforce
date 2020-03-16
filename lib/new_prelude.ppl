@@ -522,7 +522,7 @@ let Category = (
 	...
 	func ObjectN $a $b ... $z _ {};
 
-	let objs = [
+	let exports = [
 		Object,
 		Object2,
 		...,
@@ -530,9 +530,9 @@ let Category = (
 		Category
 	];
 
-	let Category = any of objs;
+	let Category = any of exports;
 
-	[objs, Category]
+	flatten [exports, Category]
 );
 
 // Unexposed use:
@@ -581,3 +581,31 @@ let npc:    any NPC    = NPC 50;
 
 player = npc; // ERROR!
 player = Player 80; // fine
+
+category Bool (
+	object True;
+	object False;
+
+	export all;
+);
+
+if Bool.True {
+	println "always";
+};
+
+expose Bool;
+
+if False {
+	println "never";
+};
+
+False: Bool;
+True: Bool;
+
+Bool.False: Bool.Bool;
+Bool.True: Bool.Bool;
+
+// Bool is a special list where you can access items with '.'
+// Kind of like JS objects
+// Bool = [True, False, Bool] <-- last Bool is a different, inner Bool
+Bool.Bool == any of [Bool.True, Bool.False] == True|False
