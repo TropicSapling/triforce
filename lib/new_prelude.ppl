@@ -497,8 +497,16 @@ module Bool [
 	let Bool = any of bools
 ];
 
-----
+---------------------------------------
 // Testing new potential syntax below
+
+basic func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
+
+basic func any of ($list as any List) {
+	// TODO
+};
+
+let basic any $list = any of $list;
 
 // This:
 category Category (
@@ -522,28 +530,18 @@ let Category = (
 	...
 	func ObjectN $a $b ... $z _ {};
 
-	let exports = [
-		Object,
-		Object2,
-		...,
-		ObjectN,
-		Category
-	];
-
-	let Category = any of exports;
-
-	flatten [exports, Category]
+	[Object, Object2, ..., ObjectN] // TODO: make list dot-accessible
 );
 
 // Unexposed use:
-let obj:  Category.Category = Category.Object   _ _ ... _;
-let obj2: Category.Category = Category.Object2  _ _ ... _;
+let obj:  any Category = Category.Object   _ _ ... _;
+let obj2: any Category = Category.Object2  _ _ ... _;
 
 // Exposed use:
 expose Category;
 
-let obj:  Category = Object _ _ ... _;
-let obj2: Category = Object _ _ ... _;
+let obj:  any Category = Object _ _ ... _;
+let obj2: any Category = Object _ _ ... _;
 
 // Example:
 category Character (
@@ -570,8 +568,8 @@ category Character (
 // TODO: Consider merging 'import' and 'expose' to Rust's 'use'
 expose Character;
 
-let player: Character = Player 100;
-let npc:    Character = NPC 50;
+let player: any Character = Player 100;
+let npc:    any Character = NPC 50;
 
 player = npc; // works fine, because only restriction is that it stays a character
 
@@ -599,13 +597,13 @@ if False {
 	println "never";
 };
 
-False: Bool;
-True: Bool;
+False: any Bool;
+True: any Bool;
 
-Bool.False: Bool.Bool;
-Bool.True: Bool.Bool;
+Bool.False: any Bool;
+Bool.True: any Bool;
 
 // Bool is a special list where you can access items with '.'
 // Kind of like JS objects
-// Bool = [True, False, Bool] <-- last Bool is a different, inner Bool
-Bool.Bool == any of [Bool.True, Bool.False] == True|False
+// Bool = [True, False]
+any Bool == any of [Bool.True, Bool.False] == Bool.True|Bool.False
