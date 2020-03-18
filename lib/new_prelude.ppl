@@ -530,7 +530,8 @@ let Category = (
 	...
 	func ObjectN $a $b ... $z _ {};
 
-	[Object, Object2, ..., ObjectN] // TODO: make list dot-accessible
+	// Should the insertion of 'any' instead be handled by the 'any $list' function?
+	[any Object, any Object2, ..., any ObjectN] // TODO: make list dot-accessible
 );
 
 // Unexposed use:
