@@ -608,3 +608,30 @@ Bool.True: any Bool;
 // Kind of like JS objects
 // Bool = [True, False]
 any Bool == any of [Bool.True, Bool.False] == Bool.True|Bool.False
+
+// Another example
+category Shape (
+  object Rectangle [
+    $width,
+    $height
+  ];
+
+  object Circle [
+    $radius
+  ];
+  
+  export all;
+);
+
+expose Shape; // so we don't need to type Shape.Circle and Shape.Rectangle all the time
+
+let shape: any Shape = Circle 100; // ok
+shape = Rectangle 300 150; // ok
+shape = Bird 123; // ERROR
+
+let shape2: any Circle = Circle 100; // ok
+shape = Rectangle 300 150; // ERROR
+shape = Circle 150; // ok
+
+let shape3: Circle 100 = Circle 100; // ok
+shape3 = Circle 150; // ERROR
