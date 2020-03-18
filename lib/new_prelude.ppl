@@ -98,6 +98,7 @@ basic func $this fulfilling ($contract as frozen Bool _) {
 // 'arr: any Array where this length == 7' sounds better than 'arr: any Array fulfilling this length == 7'
 let basic $where = fulfilling;
 
+// Pronounced as: "$expr [should] be[come] type"
 basic func (Typed $expr _     ): $type {expr: type}; // allows for stuff like '(123: 0..): any Int'
 basic func ($expr as type     ): $type {Typed expr type};
 basic func `permafrosted $expr`: $type {(_ => Typed expr type) (defrost expr: type)}; // allows for stuff like '{123}: any Int'
@@ -105,6 +106,11 @@ basic func `permafrosted $expr`: $type {(_ => Typed expr type) (defrost expr: ty
 basic func ($expr as type     ) matches $type {True};
 basic func `permafrosted $expr` matches $type {defrost expr matches type};
 basic func _                    matches $type {False};
+
+// TODO:
+// Fix permafrost, either by adding here or by changing lang spec so that
+// frozen/permafrost/etc. are automatically fixed for synonyms
+let basic $expr is $type = $expr matches $type;
 
 // 'transparent _' makes this function run if all previous pattern matches failed
 basic func Typed $expr $type (transparent _) {expr};
