@@ -512,6 +512,15 @@ module Bool [
 ---------------------------------------
 // Testing new potential syntax below
 
+func expose $cat {
+	frozenraw (
+		let `cat[0]` = cat[0]; // using '``' to clarify the name is the evaluated cat[0] rather than 'cat[0]'
+		if cat length > 1 {
+			expose cat[1..];
+		};
+	)
+};
+
 // This:
 category Category (
 	object Object  [$a, $b, ..., $z];
