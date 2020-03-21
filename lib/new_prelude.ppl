@@ -350,7 +350,8 @@ func EvenIL $n {
 --------------------------------------------------
 
 func any ($cat as any List) {
-	(cat[0] (ALL_ARGS_BUT_ONE cat[0])) | if cat length > 1 then any cat[1..] else (cat[0] (ALL_ARGS_BUT_ONE cat[0]))
+	(if cat[0] is any List then any cat[0] else cat[0] (ALL_ARGS_BUT_ONE cat[0])) |
+	(if cat length > 1 then any cat[1..] else (cat[0] (ALL_ARGS_BUT_ONE cat[0])))
 };
 
 func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
