@@ -75,7 +75,7 @@ basic func if $cond then ($body as frozen)                        {if cond {body
 basic func if $cond then ($body as frozen) else ($expr as frozen) {if cond {body} else {expr}};
 
 // Type checking
-basic func any $b {b (ALL_ARGS_BUT_ONE b)};
+basic func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
 
 basic func if fulfilling (True)                       `permafrosted $body` {body};
 basic func if fulfilling ($contract as frozen Bool _) `permafrosted $body` {
@@ -349,14 +349,20 @@ func EvenIL $n {
 
 ---------------------
 
-func any $list {
-	(list[0] (ALL_ARGS_BUT_ONE list[0])) | if list length > 1 then any list[1..] else (list[0] (ALL_ARGS_BUT_ONE list[0]))
+func any ($cat as any List) {
+	(cat[0] (ALL_ARGS_BUT_ONE cat[0])) | if cat length > 1 then any cat[1..] else (cat[0] (ALL_ARGS_BUT_ONE cat[0]))
+};
+
+func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
+
+func any of ($list as any List) {
+	list[0] | if list length > 1 then any of list[1..] else list[0]
 };
 
 func $list.($field as frozen) {
 	for each item in list {
 		if item == frozen field {
-			return field;
+			return item;
 		}
 	};
 
@@ -506,14 +512,6 @@ module Bool [
 ---------------------------------------
 // Testing new potential syntax below
 
-basic func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
-
-basic func any of ($list as any List) {
-	// TODO
-};
-
-let basic any $list = any of $list;
-
 // This:
 category Category (
 	object Object  [$a, $b, ..., $z];
@@ -527,7 +525,7 @@ category Category (
 		...,
 		ObjectN
 	]
-)
+);
 
 // Becomes:
 let Category = (
@@ -536,8 +534,8 @@ let Category = (
 	...
 	func ObjectN $a $b ... $z _ {};
 
-	// Should the insertion of 'any' instead be handled by the 'any $list' function?
-	[any Object, any Object2, ..., any ObjectN] // TODO: make list dot-accessible
+	// any Category => (any Object)|(any Object2)|...|(any ObjectN)
+	[Object, Object2, ..., ObjectN]
 );
 
 // Unexposed use:
