@@ -4,7 +4,7 @@ $(f $a $b ...)     <=> ($(f $a $b ...) as $#0 $#1 ...)
 (x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
 // EDIT: should that last sugar be removed? might just be confusing to have it
 
-////////////////////////////////////////////////////////////////
+--------------------------------------------------
 
 // TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
 (impure $(let basic $var = $val;) => scope) (impure ($var as frozen) $val => (var => scope) val)
@@ -16,11 +16,9 @@ let basic $({($expr as frozen)} _)           = $expr   _ => expr;
 let basic $(permafrosted ($input as frozen)) = $input    => frozen ($(`input` _));
 let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
 
-// We could've just used 'frozen' here. However, using permafrost
-// forces the user to explicitly write '{}', thereby making them
-// aware of the code not being evaluated until later.
-// It's convention to make this explicit as long as it
-// doesn't negatively affect user experience.
+// We could've just used 'frozen' here. However, using permafrost forces the user to explicitly
+// write '{}', thereby making them aware of the code not being evaluated until later.
+// It's convention to make this explicit as long as it doesn't negatively affect user experience.
 let basic $(       basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozenraw (let pure  $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
 let basic $(impure basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozenraw (let basic $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
 
@@ -108,8 +106,9 @@ basic func `permafrosted $expr` matches $type {defrost expr matches type};
 basic func _                    matches $type {False};
 
 // TODO:
-// Fix permafrost, either by adding here or by changing lang spec so that
-// frozen/permafrost/etc. are automatically fixed for synonyms
+// Fix permafrost, either by adding here or by
+// changing lang spec so that frozen/permafrost/etc.
+// are automatically fixed for synonyms
 let basic $expr is $type = $expr matches $type;
 
 // 'transparent _' makes this function run if all previous pattern matches failed
@@ -182,6 +181,7 @@ func $expr; {
 	scope
 };
 
+--------------------------------------------------
 // TODO: Fix so that stuff below works with new syntax
 
 memo _ => (
@@ -248,7 +248,7 @@ fib 5
 
 fibMemo $n => (fibY using memo) n;
 
--------------------------------------------------
+--------------------------------------------------
 
 // OLD Parsing instructions
 (($(add (4) to ($(a) as 7)) as #a #0) => add 4 to 7) ($x _ => x + 4)
@@ -259,7 +259,7 @@ fibMemo $n => (fibY using memo) n;
    If not, keep leaving scopes until you find '=>'
 3. Your variable is defined after this 'as' or '=>'
 
--------
+-------------------------
 
 // returns f c + a = f 456 + 123 = fu 123 nc 456 + 123
 (($(f $b) as fu #($(a $f $x) as #123 $f $x) nc $b) $c => f c + a) (fu 123 nc) 456
@@ -270,7 +270,7 @@ fibMemo $n => (fibY using memo) n;
 
 // ISSUE: if 'f' <=> 'f $x', then 'f $x' <=> '(f $x) $x' <=> '((f $x) $x) $x' <=> ...
 
----------------------
+--------------------------------------------------
 
 Let f $x, $a f $b be patterns/functions
 
@@ -290,7 +290,7 @@ Both patterns and anonymous functions can be passed around as values.
 
 All inputs to functions are parenthesised. They are also evaluated unless frozen.
 
----------------------
+--------------------------------------------------
 
 Number literals can be linked to types for a certain scope. This allows changing the link for different scope, a.k.a. changing the representation (between for example machine and natural numbers).
 
@@ -347,7 +347,7 @@ func EvenIL $n {
 	[next, EvenI next]
 }
 
----------------------
+--------------------------------------------------
 
 func any ($cat as any List) {
 	(cat[0] (ALL_ARGS_BUT_ONE cat[0])) | if cat length > 1 then any cat[1..] else (cat[0] (ALL_ARGS_BUT_ONE cat[0]))
@@ -369,7 +369,7 @@ func $list.($field as frozen) {
 	Nothing
 };
 
----------------------
+--------------------------------------------------
 
 let field = frozen (Zero $x);
 let item $x = Zero $x;
@@ -409,7 +409,7 @@ $(item $x) => (
 	) ($x => )
 )
 
----------------------
+--------------------------------------------------
 
 func use $module {
 	frozenraw (
@@ -445,7 +445,7 @@ PlusOne (PlusOne Zero) == Nat.PlusOne (Nat.PlusOne Nat.Zero)
 // TODO: Bring back operator defs in some way (before it was 'operator +;')
 // TODO: Actually define 'let'. Apparently you forgot that and only 'let basic/pure' exists.
 
----------------------
+--------------------------------------------------
 
 func $this where ($contract as frozen any Bool) {
 	if contract then this
@@ -453,7 +453,7 @@ func $this where ($contract as frozen any Bool) {
 
 (0|1|2|3 where this mod 2 == 0): 0|2
 
----------------------
+--------------------------------------------------
 
 // Something is an *object* if it's atomic or only contains properties of itself
 object Player [
@@ -509,7 +509,7 @@ module Bool [
 	let Bool = any of bools
 ];
 
----------------------------------------
+--------------------------------------------------
 // Testing new potential syntax below
 
 func category ($cat as frozen) ($contents as any List) {
@@ -517,11 +517,16 @@ func category ($cat as frozen) ($contents as any List) {
 };
 
 // Currently doesn't do anything more than checking
-// that what you're exporting is a list,
-// which is useless since 'category'
-// does that later anyway...
+// that what you're exporting is a list, which is
+// useless since 'category' does that later anyway
 func export ($exports as any List) {
 	exports
+};
+
+// Currently imports files as raw, maybe it should
+// automatically package them into categories?
+func import ($filepath as any Path) {
+	frozenraw codify (read file filepath) // TODO: fix file reading
 };
 
 func expose ($cat as any List) {
