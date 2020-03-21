@@ -514,7 +514,7 @@ module Bool [
 // Testing new potential syntax below
 
 func category ($cat as frozen) ($contents as any List) {
-	frozenraw (let `cat` = contents;)
+	frozenraw (let `cat` = contents; contents)
 };
 
 // Currently doesn't do anything more than checking
@@ -528,6 +528,12 @@ func export ($exports as any List) {
 // automatically package them into categories?
 func import ($filepath as any Path) {
 	frozenraw codify (read file filepath) // TODO: fix file reading
+};
+
+// If this conflicts with built-in 'as', rename to
+// 'import ... and rename to ...'
+func import ($filepath as any Path) as $name {
+	category `name` (import filepath)
 };
 
 func expose ($cat as any List) {
