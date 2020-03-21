@@ -512,7 +512,19 @@ module Bool [
 ---------------------------------------
 // Testing new potential syntax below
 
-func expose $cat {
+func category ($cat as frozen) ($contents as any List) {
+	frozenraw (let `cat` = contents;)
+};
+
+// Currently doesn't do anything more than checking
+// that what you're exporting is a list,
+// which is useless since 'category'
+// does that later anyway...
+func export ($exports as any List) {
+	exports
+};
+
+func expose ($cat as any List) {
 	frozenraw (
 		let `cat[0]` = cat[0]; // using '``' to clarify the name is the evaluated cat[0] rather than 'cat[0]'
 		if cat length > 1 {
