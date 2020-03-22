@@ -1,3 +1,11 @@
+// --------------------------------------------------
+// |                  THE PRELUDE                   |
+// --------------------------------------------------
+
+// TODO: Put the basic things that are needed for the prelude but shouldn't be visible from the
+//       outside inside a module 'Foundation'. This can be done by writing the module stuff
+//       by hand using anonymous functions, or by generating these anonymous functions.
+
 // TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
 (impure $(let basic        $var = $val;) => scope) (       ($var as frozen code) $val => ($`var` => scope) val)
 (impure $(let basic impure $var = $val;) => scope) (impure ($var as frozen code) $val => ($`var` => scope) val)
