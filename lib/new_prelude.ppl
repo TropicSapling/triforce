@@ -11,8 +11,8 @@ let basic $(defrost (permafrosted $pfexpr))  =        $pfexpr   => pfexpr _;
 // We could've just used 'frozen' here. However, using permafrost forces the user to explicitly
 // write '{}', thereby making them aware of the code not being evaluated until later.
 // It's convention to make this explicit as long as it doesn't negatively affect user experience.
-let basic $(       basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozenraw (let pure  $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
-let basic $(impure basic func ($pattern as frozen) (permafrosted $body);) = $pattern $body => frozenraw (let basic $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic $(       basic func ($pattern as frozen) `permafrosted $body`;) = $pattern $body => frozenraw (let pure  $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic $(impure basic func ($pattern as frozen) `permafrosted $body`;) = $pattern $body => frozenraw (let basic $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
 
 // NOTE: Basic functions:
 // - must be defined in order
