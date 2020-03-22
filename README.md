@@ -260,7 +260,7 @@ P+ is for...
 4. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
 5. `frozenraw <expr>` is identical to `frozen` except it's unhygienic.
-	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
+	- i.e. assuming `func f _ {frozenraw (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
 6. `stringify <code>` converts `<code>` to a string
 	- TODO: only allow frozen code as input?
 7. `codify <string>` converts `<string>` to code

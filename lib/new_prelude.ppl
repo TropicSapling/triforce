@@ -12,9 +12,9 @@ $(f $a $b ...)     <=> ($(f $a $b ...) as $#0 $#1 ...)
 
 // Normal 'frozen' keyword only freezes until 'expr' gets used again.
 // Use '{expr}' to permafrost 'expr'. Defrost with 'defrost {expr}'.
-let basic $({($expr as frozen)} _)           = $expr   _ => expr;
-let basic $(permafrosted ($input as frozen)) = $input    => frozen ($(`input` _));
-let basic $(defrost (permafrosted $pfexpr))  = $pfexpr   => pfexpr _;
+let basic $({($expr as frozen)} _)           = closed $expr   _ => expr;
+let basic $(permafrosted ($input as frozen)) =        $input    => frozen ($(`input` _));
+let basic $(defrost (permafrosted $pfexpr))  =        $pfexpr   => pfexpr _;
 
 // We could've just used 'frozen' here. However, using permafrost forces the user to explicitly
 // write '{}', thereby making them aware of the code not being evaluated until later.
@@ -515,6 +515,26 @@ module Bool [
 
 func category ($cat as frozen) ($contents as any List) {
 	frozenraw (let `cat` = contents; contents)
+};
+
+let name = 123;
+
+func ($var as really frozen) equals $val {
+	frozenraw (($`var` => scope) val)
+};
+
+func assign ($var2 as really frozen) to $val {
+	`var2` equals val
+};
+
+func assign2 ($var3 as really frozen) to $val {
+	assign `var3*2` to val
+};
+
+assign2 name to 456;
+
+if True {
+	println name;
 };
 
 // Currently doesn't do anything more than checking
