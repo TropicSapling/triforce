@@ -42,6 +42,8 @@ P+ is for...
 8. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>`, `<pattern to define>` and `<pattern to match>`.
 	- Note that surrounding backticks (``` \`\` ```) are necessary when applying inside `<pattern to define>`
 		- i.e. if we `let f = Something`, then `let f _ = SomethingElse` redefines `f` while ``` let `f _` = SomethingElse ``` becomes `let Something = SomethingElse`
+		- this is because `<pattern to define>` is taken as `frozen code`
+		- the surrounding backticks force evaluation even when frozen
 9. Functions are *pure* and *open* by default.
 	- pure functions cannot use mutable patterns defined outside
 		- ex: `let g = $x => x;` - OK
@@ -207,7 +209,7 @@ P+ is for...
 	- They consist of the same values in the same order
 	- They were both formed as a result of known-to-be-equal pseudo-values being combined in some way with *known* terms (see "Misc" §11)
 5. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
-6. Comparison involving frozen values will compare the values as if they were strings.
+6. Comparison involving `frozen[raw] [code]` values will compare the values as if they were strings.
 7. See "Example code snippets" §1 for an example of equality.
 
 #### Synonyms and Shadows
@@ -257,9 +259,9 @@ P+ is for...
 2. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
 3. `ATTRIBUTE <attr> <id>` tells the compiler that `<id>` has attribute `<attr>` and returns `<id>`.
 	- precedence is specified using attributes
-4. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
+4. `frozen [code] <expr>` delays evaluation of `<expr>` until it has left the current scope.
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
-5. `frozenraw <expr>` is identical to `frozen` except it's unhygienic.
+5. `frozenraw [code] <expr>` is identical to `frozen` except it's unhygienic.
 	- i.e. assuming `func f _ {frozenraw (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
 6. `stringify <code>` converts `<code>` to a string
 	- TODO: only allow frozen code as input?
