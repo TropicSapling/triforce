@@ -259,15 +259,17 @@ P+ is for...
 2. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
 3. `ATTRIBUTE <attr> <id>` tells the compiler that `<id>` has attribute `<attr>` and returns `<id>`.
 	- precedence is specified using attributes
-4. `frozen [code] <expr>` delays evaluation of `<expr>` until it has left the current scope.
+4. `ASSIGN <var> <val>` does *unchecked* assignment.
+5. `__EVAL__` is a special function, more info in example 4.
+6. `frozen [code] <expr>` delays evaluation of `<expr>` until it has left the current scope.
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
-5. `frozenraw [code] <expr>` is identical to `frozen` except it's unhygienic.
+7. `frozenraw [code] <expr>` is identical to `frozen` except it's unhygienic.
 	- i.e. assuming `func f _ {frozenraw (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
-6. `stringify <code>` converts `<code>` to a string
+8. `stringify <code>` converts `<code>` to a string
 	- TODO: only allow frozen code as input?
-7. `codify <string>` converts `<string>` to code
-8. `codify (stringify <code>)` <=> `<code>`
-9. `continue from <function> or alt <expr>` continues pattern matching if possible, else evaluates `<expr>`.
+9. `codify <string>` converts `<string>` to code
+10. `codify (stringify <code>)` <=> `<code>`
+11. `continue from <function> or alt <expr>` continues pattern matching if possible, else evaluates `<expr>`.
 	- if `<function>` is `caller` it will continue from the caller
 
 #### Misc
@@ -297,31 +299,12 @@ P+ is for...
 5.
 ![ex5](ex5.PNG)
 
+6. *See examples file, picture coming soon...*
+
 *Source code for examples available in [readme_examples.ppl](examples/readme_examples.ppl).*
 
 ### [OLD] Syntax
-1. Functions are defined using `<input> => <output>`.
-
-2. `(<expr>)` *always* has higher precedence than `<expr>`.
-
-3. Functions can have 1 or more args.
-    - (define `f _ => ...` and call with `f _` to emulate 0 args)
-
-4. Functions can have almost any structure (mixfix with additions).
-
 5. Function names can only contain *either* characters *or* operators.
-
-6. Variable function input is denoted by `$<var>`.
-
-7. Non-variable (specific functions) input (except literals) or input with both non-variables and variables require surrounding `()`.
-
-8. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
-
-9. Precedence can be overriden using `#precedence (below|above) <function> <your function>`.
-
-10. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
-
-11. Functions return themselves and can be called "anonymously".
 
 12. Functions return *partially* if passed as args to a non-evaluating function.
     - I.e. `f (g $x => x)` partially returns `(g $x => x)`.
@@ -330,43 +313,12 @@ P+ is for...
 13. Functions are *only* defined in the scope they were created and scopes in which they (possibly partially) have been returned to.
     - **NOTE:** Functions are *not* defined inside functions they are passed to (except inside the variable). This means that `let f = g;` is different from `g;` in that the latter returns and therefore defines the function `g` in the scope while the former does not.
 
-14. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
-
-15. Function input works using pattern matching of function names and their args.
-
-16. `continue from <function> or alt <expr>` continues pattern matching if possible, else evaluates `<expr>`.
-
 17. `caller` is a reserved keyword for the caller of the current function.
-
-18. Functions which are passed fewer args than required are called *partially applied* and return the partially applied versions of themselves.
-
-19. `` a`|`b`|`...`|`z `` is an or-pattern.
-
-20. `` `...` `` are used in (or-)patterns to let the compiler figure out the rest.
 
 21. The compiler will try to run as much as possible during compilation unless otherwise specified.
 
-22. `prerun <expr>` ensures `<expr>` runs during compilation.
-
-23. `run <expr>` ensures `<expr>` runs during runtime.
-
-24. `stringify <expr>` turns the code of `<expr>` into a string.
-
 25. `op <operator>[\n op <operator>...]` defines operators, which are defined to be characters placeable right next to separate functions.
     - I.e. `op ;` allows `($expr; =>);`.
-
-26. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
-
-27. Passing all required args to a function will run it.
-
-28. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.
-
-29. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
-
-30. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
-
-31. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
-    - I.e. `if True do_something` is assumed to mean the fully applied `if $cond $body` function rather than a partially applied `if $cond $expr else $expr`.
 
 --------
 

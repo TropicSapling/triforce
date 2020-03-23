@@ -35,9 +35,14 @@ basic func __EVAL__ ($f as frozen #(Typed $expr $type)) {
 };
 
 // Pronounced as: "$expr [should] be[come] type"
-basic func ($expr as type): $type {Typed expr type};
-basic func ($expr as {_} ): $type {(_ => Typed expr type) (defrost expr: type)}; // allows for stuff like '{123}: any Int'
+basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
+basic func ($expr as type ): $type {Typed expr type};
+basic func ($expr as {_}  ): $type {(_ => Typed expr type) (defrost expr: type)}; // allows for stuff like '{123}: any Int'
 
 basic func ($expr as type) matches $type {True};
 basic func ($expr as {_} ) matches $type {defrost expr matches type};
 basic func _               matches $type {False};
+
+basic func (Typed #$var #$type) = ($val as type) {
+	ASSIGN var (Typed val type)
+};
