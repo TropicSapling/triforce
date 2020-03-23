@@ -3,8 +3,9 @@
 // --------------------------------------------------
 
 // TODO: Put the basic things that are needed for the prelude but shouldn't be visible from the
-//       outside inside a module 'Foundation'. This can be done by writing the module stuff
+//       outside inside a category 'Foundation'. This can be done by writing the category stuff
 //       by hand using anonymous functions, or by generating these anonymous functions.
+// OR:   Alternatively, put everything inside 'Prelude' category and then expose Prelude.
 
 // TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
 (impure $(let basic        $var = $val;) => scope) (       ($var as frozen code) $val => ($`var` => scope) val)
@@ -25,3 +26,18 @@ let basic impure impure basic func ($pattern as frozen) ($body as {_}); = $patte
 basic func declare ($var as frozen code) {
 	decl $`var` in scope
 };
+
+basic func Typed $expr $type {expr};
+
+// TODO: make it work for all functions
+basic func __EVAL__ ($f as frozen #(Typed $expr $type)) {
+	Typed (f expr) type
+};
+
+// Pronounced as: "$expr [should] be[come] type"
+basic func ($expr as type): $type {Typed expr type};
+basic func ($expr as {_} ): $type {(_ => Typed expr type) (defrost expr: type)}; // allows for stuff like '{123}: any Int'
+
+basic func ($expr as type) matches $type {True};
+basic func ($expr as {_} ) matches $type {defrost expr matches type};
+basic func _               matches $type {False};
