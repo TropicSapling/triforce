@@ -43,6 +43,6 @@ basic func ($expr as type) matches $type {True};
 basic func ($expr as {_} ) matches $type {defrost expr matches type};
 basic func _               matches $type {False};
 
-basic func (Typed #$var #$type) = ($val as type) {
+basic func (Typed #($var as frozen code) #$type) = ($val as type) {
 	ASSIGN var (Typed val type)
 };

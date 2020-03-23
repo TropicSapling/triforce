@@ -44,6 +44,7 @@ P+ is for...
 		- i.e. if we `let f = Something`, then `let f _ = SomethingElse` redefines `f` while ``` let `f _` = SomethingElse ``` becomes `let Something = SomethingElse`
 		- this is because `<pattern to define>` is taken as `frozen code`
 		- the surrounding backticks force evaluation even when frozen
+	- `<pattern to match>` is always fully evaluated, even if it's inside a frozen block
 9. Functions are *pure* and *open* by default.
 	- pure functions cannot use mutable patterns defined outside
 		- ex: `let g = $x => x;` - OK
@@ -314,8 +315,6 @@ P+ is for...
     - **NOTE:** Functions are *not* defined inside functions they are passed to (except inside the variable). This means that `let f = g;` is different from `g;` in that the latter returns and therefore defines the function `g` in the scope while the former does not.
 
 17. `caller` is a reserved keyword for the caller of the current function.
-
-21. The compiler will try to run as much as possible during compilation unless otherwise specified.
 
 25. `op <operator>[\n op <operator>...]` defines operators, which are defined to be characters placeable right next to separate functions.
     - I.e. `op ;` allows `($expr; =>);`.
