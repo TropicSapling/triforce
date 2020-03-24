@@ -266,6 +266,8 @@ P+ is for...
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
 7. `frozenraw [code] <expr>` is identical to `frozen` except it's unhygienic.
 	- i.e. assuming `func f _ {frozenraw (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
+	- note: removes *all* all-encompassing parentheses, so even `frozenraw (((((1 + 2)))))` becomes `1 + 2`
+		- it does this even for input `as frozenraw`
 8. `stringify <code>` converts `<code>` to a string
 	- TODO: only allow frozen code as input?
 9. `codify <string>` converts `<string>` to code

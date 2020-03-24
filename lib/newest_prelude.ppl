@@ -11,6 +11,9 @@
 (impure $(let basic        $var = $val;) => scope) (       ($var as frozen code) $val => ($`var` => scope) val)
 (impure $(let basic impure $var = $val;) => scope) (impure ($var as frozen code) $val => ($`var` => scope) val)
 
+// TODO: 'let [($a as ...), ($b as ...), ...] = <value>;' function which allows both multiple
+//       definitions at once and destructuring of the value.
+
 // Normal 'frozen' keyword only freezes until 'expr' gets used again.
 // Use '{expr}' to permafrost 'expr'.
 let basic {($expr as frozen)} _ = closed $expr _ => expr;
@@ -20,8 +23,8 @@ let basic defrost ($pfexpr as {_}) = $pfexpr => pfexpr _;
 // We could've just used 'frozen' here. However, using permafrost forces the user to explicitly
 // write '{}', thereby making them aware of the code not being evaluated until later.
 // It's convention to make this explicit as long as it doesn't negatively affect user experience.
-let basic               basic func ($pattern as frozen) ($body as {_}); = $pattern $body => frozenraw (let basic        $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
-let basic impure impure basic func ($pattern as frozen) ($body as {_}); = $pattern $body => frozenraw (let basic impure $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic               basic func ($pattern as frozen code) ($body as {_}); = $pattern $body => frozenraw (let basic        $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic impure impure basic func ($pattern as frozen code) ($body as {_}); = $pattern $body => frozenraw (let basic impure $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
 
 basic func declare ($var as frozen code) {
 	decl $`var` in scope
@@ -29,8 +32,14 @@ basic func declare ($var as frozen code) {
 
 basic func Typed $expr $type {expr};
 
+List #$first (List _ (List #$want (List _ (List #$last)))) // WIP
+
+basic func __EVAL__ $f {
+	let () = __ARGS__; // WIP
+};
+
 // TODO: make it work for all functions
-basic func __EVAL__ ($f as frozen #(Typed $expr $type)) {
+basic func __EVAL__ ($f as frozen __ARGS__ [#$first, ..., #(Typed $expr $type), ..., #$last]) { // WIP
 	Typed (f expr) type
 };
 
