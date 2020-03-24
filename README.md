@@ -261,7 +261,7 @@ P+ is for...
 3. `ATTRIBUTE <attr> <id>` tells the compiler that `<id>` has attribute `<attr>` and returns `<id>`.
 	- precedence is specified using attributes
 4. `ASSIGN <var> <val>` does *unchecked* assignment.
-5. `__EVAL__` is a special function, more info in example 4.
+5. `__CATCH__` is a special function, more info in example 4.
 6. `frozen [code] <expr>` delays evaluation of `<expr>` until it has left the current scope.
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
 7. `frozenraw [code] <expr>` is identical to `frozen` except it's unhygienic.
