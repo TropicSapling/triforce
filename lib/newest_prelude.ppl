@@ -49,14 +49,14 @@ basic func ($var as REF (Typed _ #$type)) = ($val as type) {
 	ASSIGN var (Typed val type)
 };
 
-func ($var as ref to any Number restricted to any Number) += $val {
+func ($var as ref to 1|2|3 allowing change to 1|2|3 + val) += $val {
 	var = var + val;
 };
 
-func ref to ($val as frozen code) restricted to ($restriction as frozen code) {
-	frozen code (REF (Typed val restriction))
+func ref to ($val as frozen code) allowing change to ($sub as frozen code) {
+	frozenraw (REF (Typed val #$super) where sub matches super)
 };
 
 func ref to ($val as frozen code) {
-	ref to val restricted to val
+	ref to val allowing change to val
 };

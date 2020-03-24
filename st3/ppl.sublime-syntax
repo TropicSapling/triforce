@@ -41,7 +41,7 @@ contexts:
     - match: '\b(True|False|this)\b'
       scope: constant.language.rust
 
-    - match: '\b(as|in|box|any(\s+of)?|ALL_ARGS|ALL_ARGS_BUT_ONE|ALL_ARGS_PLACEHOLDERS|APPLIED_ARGS|ATTRIBUTE|scope|stringify|codify|decl)\b'
+    - match: '\b(as|in|box|any(\s+of)?|ALL_ARGS|ALL_ARGS_BUT_ONE|ALL_ARGS_PLACEHOLDERS|APPLIED_ARGS|ATTRIBUTE|ASSIGN|REF|scope|stringify|codify|decl|ref to|allowing change to)\b'
       scope: keyword.operator.rust
 
     - match: '\b[A-Z]{{identifier}}'
