@@ -109,7 +109,7 @@ contexts:
       push: op-dollar
     - match: '{{identifier}}'
       scope: entity.name.function.rust
-    - match: '[=:;]'
+    - match: '[=:\[;]'
       pop: true
 
   operators:

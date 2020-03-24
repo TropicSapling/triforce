@@ -32,10 +32,10 @@ basic func declare ($var as frozen code) {
 
 basic func Typed $expr $type {expr};
 
-List #$first (List _ (List #$want (List _ (List #$last)))) // WIP
+List #$first (List _ (List #$want (List _ (List #$last Nothing)))) // WIP
 
 basic func __EVAL__ $f {
-	let () = __ARGS__; // WIP
+	let [List #$first (any List)] = __ARGS__; // WIP
 };
 
 // TODO: make it work for all functions
