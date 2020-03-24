@@ -11,7 +11,7 @@
 (impure $(let basic        $var = $val;) => scope) (       ($var as frozen code) $val => ($`var` => scope) val)
 (impure $(let basic impure $var = $val;) => scope) (impure ($var as frozen code) $val => ($`var` => scope) val)
 
-// TODO: 'let [($a as ...), ($b as ...), ...] = <value>;' function which allows both multiple
+// TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
 
 // Normal 'frozen' keyword only freezes until 'expr' gets used again.
@@ -30,12 +30,18 @@ basic func declare ($var as frozen code) {
 	decl $`var` in scope
 };
 
-basic func Typed $expr $type {expr};
+basic func Typed $expr $type _ {};
 
 List #$first (List _ (List #$want (List _ (List #$last Nothing)))) // WIP
 
-basic func __EVAL__ $f {
-	let [List #$first (any List)] = __ARGS__; // WIP
+basic func __CATCH__ $f {
+	let indexes = indexes of (any Typed) in (APPLIED_ARGS f);
+	let [Typed $expr $type] = remove from (APPLIED_ARGS f) at indexes;
+
+	Typed (f (APPLIED_ARGS f)[..])
+
+	let var: any Number = 123;
+	var = return_str var "hello" var; // ??? need to change how variables work; storage in memory
 };
 
 // TODO: make it work for all functions
