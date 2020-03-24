@@ -77,7 +77,7 @@ contexts:
 
     - match: '\bdeclare|let(\s+basic(\s+impure)?)?\b'
       scope: storage.type.rust
-      push: let-id-search
+      push: let-id-search-start
 
     - match: 'category|object'
       scope: storage.type.rust
@@ -99,6 +99,10 @@ contexts:
       scope: entity.name.function.rust
     - match: '[{\[;]'
       pop: true
+
+  let-id-search-start:
+    - match: '\s+[\(]*'
+      set: let-id-search
 
   let-id-search:
     - include: universal

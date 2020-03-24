@@ -23,15 +23,14 @@ let basic defrost ($pfexpr as {_}) = $pfexpr => pfexpr _;
 // We could've just used 'frozen' here. However, using permafrost forces the user to explicitly
 // write '{}', thereby making them aware of the code not being evaluated until later.
 // It's convention to make this explicit as long as it doesn't negatively affect user experience.
-let basic               basic func ($pattern as frozen code) ($body as {_}); = $pattern $body => frozenraw (let basic        $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
-let basic impure impure basic func ($pattern as frozen code) ($body as {_}); = $pattern $body => frozenraw (let basic impure $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic         basic func ($pattern as frozen code) ($body as {_});  = $pattern $body => frozenraw (let basic        $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic (impure basic func ($pattern as frozen code) ($body as {_});) = $pattern $body => frozenraw (let basic impure $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
 
 basic func declare ($var as frozen code) {
 	decl $`var` in scope
 };
 
 basic func Typed $expr $type _ {};
-
 // If all pattern matching fails, throw away type restriction
 basic func __CATCH__ (Typed #$expr _) {expr};
 
@@ -45,11 +44,11 @@ basic func ($expr as {_} ) matches $type {defrost expr matches type};
 basic func _               matches $type {False};
 
 // 'REF' acts similarly to 'frozen code' when it comes to evaluation
-basic func ($var as REF (Typed _ #$type)) = ($val as type) {
+impure basic func ($var as REF (Typed _ #$type)) = ($val as type) {
 	ASSIGN var (Typed val type)
 };
 
-func ($var as ref to 1|2|3 allowing change to 1|2|3 + val) += $val {
+impure func ($var as ref to 1|2|3 allowing change to 1|2|3 + val) += $val {
 	var = var + val;
 };
 
