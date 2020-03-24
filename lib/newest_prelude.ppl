@@ -32,22 +32,8 @@ basic func declare ($var as frozen code) {
 
 basic func Typed $expr $type _ {};
 
-List #$first (List _ (List #$want (List _ (List #$last Nothing)))) // WIP
-
-basic func __CATCH__ $f {
-	let indexes = indexes of (any Typed) in (APPLIED_ARGS f);
-	let [Typed $expr $type] = remove from (APPLIED_ARGS f) at indexes;
-
-	Typed (f (APPLIED_ARGS f)[..])
-
-	let var: any Number = 123;
-	var = return_str var "hello" var; // ??? need to change how variables work; storage in memory
-};
-
-// TODO: make it work for all functions
-basic func __EVAL__ ($f as frozen __ARGS__ [#$first, ..., #(Typed $expr $type), ..., #$last]) { // WIP
-	Typed (f expr) type
-};
+// If all pattern matching fails, throw away type restriction
+basic func __CATCH__ (Typed #$expr _) {expr};
 
 // Pronounced as: "$expr [should] be[come] type"
 basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
@@ -58,6 +44,19 @@ basic func ($expr as type) matches $type {True};
 basic func ($expr as {_} ) matches $type {defrost expr matches type};
 basic func _               matches $type {False};
 
-basic func (Typed #($var as frozen code) #$type) = ($val as type) {
+// 'REF' acts similarly to 'frozen code' when it comes to evaluation
+basic func ($var as REF (Typed _ #$type)) = ($val as type) {
 	ASSIGN var (Typed val type)
+};
+
+func ($var as ref to any Number restricted to any Number) += $val {
+	var = var + val;
+};
+
+func ref to ($val as frozen code) restricted to ($restriction as frozen code) {
+	frozen code (REF (Typed val restriction))
+};
+
+func ref to ($val as frozen code) {
+	ref to val restricted to val
 };
