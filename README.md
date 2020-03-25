@@ -272,8 +272,11 @@ P+ is for...
 	- TODO: only allow frozen code as input?
 9. `codify <string>` converts `<string>` to code
 10. `codify (stringify <code>)` <=> `<code>`
-11. `continue from <function> or alt <expr>` continues pattern matching if possible, else evaluates `<expr>`.
-	- if `<function>` is `caller` it will continue from the caller
+11. `continue matching [for <function>]` continues pattern matching if possible.
+		- if `<function>` isn't specified it will default to the current function
+		- if `<function>` is `caller` it will continue matching for the caller
+		- if it's not possible to continue, there will be an error
+			- note that `__CATCH__` can be used to prevent this
 
 #### Misc
 1. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
