@@ -48,14 +48,14 @@ impure basic func ($var as REF (Typed _ #$type)) = ($val as type) {
 	ASSIGN var (Typed val type)
 };
 
-impure func ($var as ref to 1|2|3 allowing change to 1|2|3 + val) += $val {
+impure func ($var as ref to 1|2|3 allowing 1|2|3 + val) += $val {
 	var = var + val;
 };
 
-func ref to ($val as frozen code) allowing change to ($sub as frozen code) {
+func ref to ($val as frozen code) allowing ($sub as frozen code) {
 	frozenraw (REF (Typed val #$super) where sub matches super)
 };
 
 func ref to ($val as frozen code) {
-	ref to val allowing change to val
+	ref to val allowing val
 };
