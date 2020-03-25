@@ -97,7 +97,7 @@ func ($x as any Number) * (#($y)%) {
 // that works with numbers. This works because
 // i.e. '120% * 5%' fails all pattern matching
 // but still matches the below catcher pattern.
-func __CATCH__ ($(_ op _) as frozen #($x)% #($y)%) {
+func __CATCH__ ($(_ op _) as #($x)% #($y)%) {
     (((x / 100) op (y / 100)) * 100)%
 }
 
@@ -105,6 +105,26 @@ func __CATCH__ ($(_ op _) as frozen #($x)% #($y)%) {
 // the above __CATCH__ overload
 120% * 5% == 6%
 120% + 5% == 125%
+
+// Running '__CATCH__' as if it was a normal
+// function is allowed only for testing.
+// Doing this will get you a warning on
+// debug-mode and an error on release-mode.
+__CATCH__ (5% * 120%) == 6%
+
+// Below we instead catch all matching terms
+// *before* any other pattern matching is
+// done by using 'frozen'.
+//
+// This results in every single function
+// being catched before evaluation.
+func __CATCH__ ($f as frozen) {
+	println "nope!";
+};
+
+println "Hello world!"; // prints "nope!"
+9 + 10 == 21;           // prints "nope!"
+9 + 10 == 19;           // prints "nope!"
 
 // -------------------------------------------
 // |                EXAMPLE 5                |
