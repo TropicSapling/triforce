@@ -496,3 +496,9 @@ shape = Circle 150; // ok
 
 let shape3: Circle 100 = Circle 100; // ok
 shape3 = Circle 150; // ERROR
+
+--------------------------------------------------
+
+impure func ($var as ref to 1|2|3 allowing 1|2|3 + val) += $val {
+	var = var + val;
+};

@@ -34,6 +34,9 @@ basic func Typed $expr $type _ {};
 // If all pattern matching fails, throw away type restriction
 basic func __CATCH__ (Typed #$expr _) {expr};
 
+declare :;
+declare matches;
+
 // Pronounced as: "$expr [should] be[come] type"
 basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 basic func ($expr as type ): $type {Typed expr type};
@@ -46,10 +49,6 @@ basic func _               matches $type {False};
 // 'REF' acts similarly to 'frozen code' when it comes to evaluation
 impure basic func ($var as REF (Typed _ #$type)) = ($val as type) {
 	ASSIGN var (Typed val type)
-};
-
-impure func ($var as ref to 1|2|3 allowing 1|2|3 + val) += $val {
-	var = var + val;
 };
 
 func ref to ($val as frozen code) allowing ($sub as frozen code) {
