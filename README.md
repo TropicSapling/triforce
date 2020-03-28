@@ -190,7 +190,7 @@ P+ is for...
 1. P+ uses eager evaluation.
 2. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
 3. The compiler will try to run as much as possible during compilation unless otherwise specified.
-4. There are 2 stages of evaluation:
+4. There are 3 stages of evaluation:
 	1. Patterns are "expanded"
 		- i.e. if we `let f = $x $y => ...` then `f` is expanded to `f $x $y`
 	2. Synonyms are "unwinded" (see "Synonyms and Shadows")
@@ -214,12 +214,12 @@ P+ is for...
 7. See "Example code snippets" §1 for an example of equality.
 
 #### Synonyms and Shadows
-1. 2 patterns `f $x` and `$y g` are *synonymous* iff all below criteria are met:
-	- They have the same amount of parameters
-	- They have the same `<pattern to match>`:s
-	- We `let f $x = $y g`
-		- We say that `f` is *"unwinded"* to `g` when evaluated
-			- i.e. `f 123` becomes `123 g`
+1. 2 patterns `f $x` and `$y g` are *synonymous* iff we `let f $x = $y g` or the other way around.
+	- We say that `f` is *unwinded* to `g` when evaluated
+		- I.e. `f 123` becomes `123 g` (if all patterns match)
+		- Unwinding keeps going on until an atomic pattern is reached
+	- If we instead `let f $x = $y => ...`, then `f $x` gives the anonymous function `$y => ...` a name
+		- We say that `f $x` is *atomic*
 2. A newly defined pattern will *shadow* another iff all below criteria are met:
 	- They have the same amount of parameters   in the same order
 	- They have the same `<pattern to match>`:s in the same order
