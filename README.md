@@ -193,14 +193,14 @@ P+ is for...
 4. There are 3 stages of evaluation:
 	1. Patterns are "expanded"
 		- i.e. if we `let f = $x $y => ...` then `f` is expanded to `f $x $y`
-	2. Synonyms are "unwinded" (see "Synonyms and Shadows")
+	2. Synonyms are deconstructed (see "Synonyms and Shadows")
 	3. Function application is evaluated
 5. `frozen` and `frozenraw` prevents evaluation from going past stage 1.
 
 #### Equality
 1. 2 finally evaluated values are equal if they refer to the same named function and they have the same applied args.
 	- This means anonymous functions are incomparable
-	- A value is first finally evaluated when all synonyms have been "unwinded"
+	- A value is first finally evaluated when all synonyms have been deconstructed
 	- What it means for them to "refer" to the same function is that they are both partial applications of the exact same function
 	- See "Example code snippets" §5 for more info
 2. 2 placeholder-values are always equal.
@@ -215,9 +215,9 @@ P+ is for...
 
 #### Synonyms and Shadows
 1. 2 patterns `f $x` and `$y g` are *synonymous* iff we `let f $x = $y g` or the other way around.
-	- We say that `f` is *unwinded* to `g` when evaluated
+	- We say that `f` is *deconstructed* to `g` when evaluated
 		- I.e. `f 123` becomes `123 g` (if all patterns match)
-		- Unwinding keeps going on until an atomic pattern is reached
+		- Deconstruction keeps going on until an atomic pattern is reached
 	- If we instead `let f $x = $y => ...`, then `f $x` gives the anonymous function `$y => ...` a name
 		- We say that `f $x` is *atomic*
 2. A newly defined pattern will *shadow* another iff all below criteria are met:
