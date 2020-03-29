@@ -23,15 +23,13 @@
 // - 'raw' is now a subtype of 'frozen' and 'permafrosted'
 //   - maybe even its own thing?
 
-// Useless, but looks nice when writing definitions.
+// Useless, but looks nice sometimes.
+// Convention to use this whenever $expr spans multiple lines.
+// Also use this for the classics 'func', 'if', etc.
 let basic {$expr} = $expr => expr;
 
-let basic         basic func ($pattern as permafrosted) ($body as frozen);  = $pattern $body => frozen raw (let basic        $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
-let basic (impure basic func ($pattern as permafrosted) ($body as frozen);) = $pattern $body => frozen raw (let basic impure $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
-
-basic func declare ($var as permafrosted) {
-	decl $`var` in scope
-};
+let basic         basic func ($pattern as permafrosted) ($body as frozen);  = $pattern $body => frozen raw (let basic        `pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
+let basic (impure basic func ($pattern as permafrosted) ($body as frozen);) = $pattern $body => frozen raw (let basic impure `pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
 
 basic func Typed $expr $type _ {};
 // If all pattern matching fails, throw away type restriction
@@ -41,11 +39,76 @@ basic func __CATCH__ (Typed #$expr _) {expr};
 basic func ($expr as type ): $type {Typed expr type};
 basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 
-basic func ($expr as type) matches $type {True};
-basic func _               matches $type {False};
+basic func List $item ($tail as List _ _) _ {};
+
+// TODO: List '[]' syntax, list access
+
+// This sets the default list to 'List' and returns 'scope'
+SET_DEFAULT_LIST List
+
+basic func rec basic func ($pattern as permafrosted raw) ($body as frozen); {
+	frozen raw {
+		let basic `pattern` = {
+			basic func $f `pattern` {
+				let basic `pattern` = f f;
+				body
+			};
+			
+			($f pattern) ($f pattern) // becomes '($f fib $n) ($f fib $n)' => '(($f fib $n) fib $n)' if pattern = 'fib $n'
+		};
+	}
+};
+
+basic func impure rec basic func ($pattern as permafrosted raw) ($body as frozen); {
+	frozen raw {
+		let basic impure `pattern` = {
+			impure basic func $f `pattern` {
+				let basic `pattern` = f f;
+				body
+			};
+			
+			($f pattern) ($f pattern)
+		};
+	}
+};
+
+// Complete *total* functions: allows easy attributes, recursion & types
+// - a total function must:
+//		- have no infinite loops
+//		- cause no side-effects
+//		- use no outside/free patterns
+// Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
+basic func ##($attrs as permafrosted List _ _) func ($pattern as permafrosted) ($typed_body as frozen); {
+	frozen raw {
+		// This built-in tells compiler 'pattern' has attributes 'attrs'
+		// and returns 'pattern' as permafrosted. The attributes must
+		// be given using the default list.
+		rec basic func `SET_ATTRIBUTES attrs pattern` {typed_body: ~Undefined};
+	}
+};
+
+// Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
+basic func ##($attrs as permafrosted List _ _) partial func ($pattern as frozen) ($typed_body as frozen); {
+	frozen raw {
+		rec basic func `SET_ATTRIBUTES attrs pattern` {typed_body};
+	}
+};
+
+basic func         func ($pattern as frozen) ($typed_body as frozen); {[]         func pattern body;};
+basic func partial func ($pattern as frozen) ($typed_body as frozen); {[] partial func pattern body;};
+
+// The legendary SEMICOLON
+##[precedence below _]
+func $expr; {
+	scope
+};
+
+func declare ($var as permafrosted) {
+	decl $`var` in scope
+};
 
 // 'REF' acts similarly to 'permafrosted' when it comes to evaluation
-impure basic func ($var as REF (Typed _ #$type)) = ($val as type) {
+impure func ($var as REF (Typed _ #$type)) = ($val as type) {
 	ASSIGN var (Typed val type)
 };
 
@@ -56,3 +119,11 @@ func ref to $val allowing $sub {
 func ref to $val {
 	ref to val allowing val
 };
+
+// TODO: Booleans
+
+func ($expr as type) matches $type {True};
+func _               matches $type {False};
+
+// TODO: Generalise into 'apply $f to itself $n times'
+func apply $f to itself {f f};
