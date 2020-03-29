@@ -8,25 +8,28 @@
 // OR:   Alternatively, put everything inside 'Prelude' category and then expose Prelude.
 
 // TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
-(impure $(let basic        $var = $val;) => scope) (       ($var as frozen code) $val => ($`var` => scope) val)
-(impure $(let basic impure $var = $val;) => scope) (impure ($var as frozen code) $val => ($`var` => scope) val)
+(impure $(let basic        $var = $val;) => scope) (       ($var as permafrosted) $val => ($`var` => scope) val)
+(impure $(let basic impure $var = $val;) => scope) (impure ($var as permafrosted) $val => ($`var` => scope) val)
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
 
-// Normal 'frozen' keyword only freezes until 'expr' gets used again.
-// Use '{expr}' to permafrost 'expr'.
-let basic {($expr as frozen)} _ = closed $expr _ => expr;
-// Defrost with 'defrost {expr}'.
-let basic defrost ($pfexpr as {_}) = $pfexpr => pfexpr _;
+// TODO: Put below info in README:
+// - 'permafrosted' is like 'frozen' except the thing stays frozen even after evaluation
+//   - is now built-in
+//   - evaluate fully using 'defrost'
+// - '{}' no longer does anything
+// - `` forces evaluation for both 'frozen' and 'permafrosted'
+// - 'raw' is now a subtype of 'frozen' and 'permafrosted'
+//   - maybe even its own thing?
 
-// We could've just used 'frozen' here. However, using permafrost forces the user to explicitly
-// write '{}', thereby making them aware of the code not being evaluated until later.
-// It's convention to make this explicit as long as it doesn't negatively affect user experience.
-let basic         basic func ($pattern as frozen code) ($body as {_});  = $pattern $body => frozenraw (let basic        $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
-let basic (impure basic func ($pattern as frozen code) ($body as {_});) = $pattern $body => frozenraw (let basic impure $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+// Useless, but looks nice when writing definitions.
+let basic {$expr} = $expr => expr;
 
-basic func declare ($var as frozen code) {
+let basic         basic func ($pattern as permafrosted) ($body as frozen);  = $pattern $body => frozen raw (let basic        $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
+let basic (impure basic func ($pattern as permafrosted) ($body as frozen);) = $pattern $body => frozen raw (let basic impure $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
+
+basic func declare ($var as permafrosted) {
 	decl $`var` in scope
 };
 
@@ -34,27 +37,22 @@ basic func Typed $expr $type _ {};
 // If all pattern matching fails, throw away type restriction
 basic func __CATCH__ (Typed #$expr _) {expr};
 
-declare :;
-declare matches;
-
 // Pronounced as: "$expr [should] be[come] type"
-basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 basic func ($expr as type ): $type {Typed expr type};
-basic func ($expr as {_}  ): $type {(_ => Typed expr type) (defrost expr: type)}; // allows for stuff like '{123}: any Int'
+basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 
 basic func ($expr as type) matches $type {True};
-basic func ($expr as {_} ) matches $type {defrost expr matches type};
 basic func _               matches $type {False};
 
-// 'REF' acts similarly to 'frozen code' when it comes to evaluation
+// 'REF' acts similarly to 'permafrosted' when it comes to evaluation
 impure basic func ($var as REF (Typed _ #$type)) = ($val as type) {
 	ASSIGN var (Typed val type)
 };
 
-func ref to ($val as frozen code) allowing ($sub as frozen code) {
+func ref to $val allowing $sub {
 	frozenraw (REF (Typed val #$super) where sub matches super)
 };
 
-func ref to ($val as frozen code) {
+func ref to $val {
 	ref to val allowing val
 };
