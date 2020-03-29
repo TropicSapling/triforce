@@ -164,8 +164,8 @@ basic func $attr_list partial func ($pattern as frozen) ($typed_body as frozen b
 	)
 };
 
-basic func         func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {[]         func pattern body;};
-basic func partial func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {[] partial func pattern body;};
+basic func         func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {[]         func pattern typed_body;};
+basic func partial func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {[] partial func pattern typed_body;};
 
 // The legendary SEMICOLON
 @(precedence below _) // this is a function and not a list of attrs, needs fixing

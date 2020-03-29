@@ -20,8 +20,8 @@
 //   - evaluate fully using 'defrost'
 // - '{}' no longer does anything
 // - `` forces evaluation for both 'frozen' and 'permafrosted'
-// - 'raw' is now a subtype of 'frozen' and 'permafrosted'
-//   - maybe even its own thing?
+// - 'raw' is now its own thing
+//   - can still be used together with 'frozen' and 'permafrosted'
 
 // Useless, but looks nice sometimes.
 // Convention to use this whenever $expr spans multiple lines.
@@ -88,14 +88,14 @@ basic func ##($attrs as permafrosted List _ _) func ($pattern as permafrosted) (
 };
 
 // Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
-basic func ##($attrs as permafrosted List _ _) partial func ($pattern as frozen) ($typed_body as frozen); {
+basic func ##($attrs as permafrosted List _ _) partial func ($pattern as permafrosted) ($typed_body as frozen); {
 	frozen raw {
 		rec basic func `SET_ATTRIBUTES attrs pattern` {typed_body};
 	}
 };
 
-basic func         func ($pattern as frozen) ($typed_body as frozen); {[]         func pattern body;};
-basic func partial func ($pattern as frozen) ($typed_body as frozen); {[] partial func pattern body;};
+basic func         func ($pattern as permafrosted) ($typed_body as frozen); {[]         func `pattern` {typed_body};};
+basic func partial func ($pattern as permafrosted) ($typed_body as frozen); {[] partial func `pattern` {typed_body};};
 
 // The legendary SEMICOLON
 ##[precedence below _]
@@ -113,7 +113,7 @@ impure func ($var as REF (Typed _ #$type)) = ($val as type) {
 };
 
 func ref to $val allowing $sub {
-	frozenraw (REF (Typed val #$super) where sub matches super)
+	frozen raw (REF (Typed val #$super) where sub matches super)
 };
 
 func ref to $val {
