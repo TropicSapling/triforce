@@ -97,7 +97,7 @@ func ($x as any Number) * (#($y)%) {
 // that works with numbers. This works because
 // i.e. '120% * 5%' fails all pattern matching
 // but still matches the below catcher pattern.
-func __CATCH__ ($(_ op _) as #($x)% #($y)%) {
+func __CATCH__ ($(_ op _) as #(#($x)%) #(#($y)%)) {
     (((x / 100) op (y / 100)) * 100)%
 }
 
