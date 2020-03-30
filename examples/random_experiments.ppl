@@ -86,7 +86,7 @@ fibMemo $n => (fibY using memo) n;
 -------------------------
 
 // returns f c + a = f 456 + 123 = fu 123 nc 456 + 123
-(($(f $b) as fu #($(a $f $x) as #123 $f $x) nc $b) $c => f c + a) (fu 123 nc) 456
+(($(f $b) as fu #($(a $f $x) as #(123) $f $x) nc $b) $c => f c + a) (fu 123 nc) 456
 
 // returns f c + n = f 456 + 122 = fu 123 nc 456 + 122
 // '122' is here below syntax sugar for 'PlusOne #121'

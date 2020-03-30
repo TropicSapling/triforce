@@ -226,12 +226,12 @@ P+ is for...
 	- They have the same name
 
 #### Syntax sugar
-1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1 ...])`
+1. `[#]$(<pattern to define>)` <=> `[#]($(<pattern to define>) as _)` <=> `[#]($(<pattern to define>) as $#0 [$#1 ...])`
 	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> ...]`
 	- If the pattern isn't a variable, the amount of `$` after `as` will match the amount of parameters of the pattern
 		- i.e. `$(pattern taking $x and $y)` <=> `($(pattern taking $x and $y) as $#0 $#1)`
 
-2. `(<pattern to match>)`   <=> `($_ as <pattern to match>)`    <=> `(_ as <pattern to match>)`
+2. `[#](<pattern to match>)`   <=> `[#]($_ as <pattern to match>)`    <=> `[#](_ as <pattern to match>)`
 	- Note that `$_` and `_` are not generally equivalent; this is a special case
 
 3. `$(<variable to define>) as <pattern to match>` <=> `$(<variable to define> _ [_ ...]) as <pattern to match>`
