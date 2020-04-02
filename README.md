@@ -268,10 +268,12 @@ P+ is for...
 	- i.e. assuming `func f _ {frozenraw (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
 	- note: removes *all* all-encompassing parentheses, so even `frozenraw (((((1 + 2)))))` becomes `1 + 2`
 		- it does this even for input `as frozenraw`
-8. `stringify <code>` converts `<code>` to a string
-	- TODO: only allow frozen code as input?
-9. `codify <string>` converts `<string>` to code
-10. `codify (stringify <code>)` <=> `<code>`
+8. `listify permafrosted <code>` converts `<code>` to an AST in the form of a multi-dimensional list
+	- each item in the list is either a token `String` or a list of tokens
+	- the form of the AST will be stable once the language is stable
+9. `codify <AST>` converts `<AST>` to permafrosted code
+	- `defrost` to run the code
+10. `codify (listify permafrosted <code>)` <=> `permafrosted <code>`
 11. `continue matching [for <function>]` continues pattern matching if possible.
 		- if `<function>` isn't specified it will default to the current function
 		- if `<function>` is `caller` it will continue matching for the caller

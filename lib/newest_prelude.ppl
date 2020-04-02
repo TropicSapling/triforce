@@ -126,4 +126,5 @@ func ($expr as type) matches $type {True};
 func _               matches $type {False};
 
 // TODO: Generalise into 'apply $f to itself $n times'
+// TODO: Move out of prelude into std lib
 func apply $f to itself {f f};
