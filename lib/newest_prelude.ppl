@@ -46,7 +46,14 @@ basic func List $item ($tail as List _ _) _ {};
 // This sets the default list to 'List' and returns 'scope'
 SET_DEFAULT_LIST List
 
-basic func rec basic func ($pattern as permafrosted raw) ($body as frozen); {
+// Marker for unchecked input
+// File reading, user input, etc. should use this
+// Always ensure 'raw' input is ~UncheckedInput
+// TODO: Make '__CATCH__' for this or not?
+basic func UncheckedInput _ {};
+
+// Does not accept unchecked input for security reasons
+basic func rec basic func ($pattern as permafrosted raw ~UncheckedInput) ($body as frozen); {
 	frozen raw {
 		let basic `pattern` = {
 			basic func $f `pattern` {
@@ -59,7 +66,7 @@ basic func rec basic func ($pattern as permafrosted raw) ($body as frozen); {
 	}
 };
 
-basic func impure rec basic func ($pattern as permafrosted raw) ($body as frozen); {
+basic func impure rec basic func ($pattern as permafrosted raw ~UncheckedInput) ($body as frozen); {
 	frozen raw {
 		let basic impure `pattern` = {
 			impure basic func $f `pattern` {
