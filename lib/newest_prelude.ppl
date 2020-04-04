@@ -39,12 +39,7 @@ basic func __CATCH__ (Typed #$expr _) {expr};
 basic func ($expr as type ): $type {Typed expr type};
 basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 
-basic func List $item ($tail as List _ _) _ {};
-
-// TODO: List '[]' syntax, list access
-
-// This sets the default list to 'List' and returns 'scope'
-SET_DEFAULT_LIST List
+basic func type of (_ named $type) {type}; // TODO: fix
 
 // Marker for unchecked input
 // File reading, user input, etc. should use this
@@ -52,12 +47,33 @@ SET_DEFAULT_LIST List
 // TODO: Make '__CATCH__' for this or not?
 basic func UncheckedInput _ {};
 
+// Pronounced as: "let $var be $type and equal $val"
+// let impure $var = $val also works (thanks to 'raw')
+basic func let ($var as permafrosted raw ~UncheckedInput): $type = $val {
+	frozen raw (let basic `var` = val: type;)
+};
+
+basic func let ($var as permafrosted): auto = $val {
+	frozen raw (let `var`: type of val = val;)
+};
+
+basic func let ($var as permafrosted) = $val {
+	frozen raw (let `var`: val = val;)
+};
+
+basic func List $item ($tail as List _ _) _ {};
+
+// TODO: List '[]' syntax, list access
+
+// This sets the default list to 'List' and returns 'scope'
+SET_DEFAULT_LIST List
+
 // Does not accept unchecked input for security reasons
 basic func rec basic func ($pattern as permafrosted raw ~UncheckedInput) ($body as frozen); {
 	frozen raw {
-		let basic `pattern` = {
+		let `pattern` = {
 			basic func $f `pattern` {
-				let basic `pattern` = f f;
+				let `pattern` = f f;
 				body
 			};
 			
@@ -68,9 +84,9 @@ basic func rec basic func ($pattern as permafrosted raw ~UncheckedInput) ($body 
 
 basic func impure rec basic func ($pattern as permafrosted raw ~UncheckedInput) ($body as frozen); {
 	frozen raw {
-		let basic impure `pattern` = {
+		let impure `pattern` = {
 			impure basic func $f `pattern` {
-				let basic `pattern` = f f;
+				let `pattern` = f f;
 				body
 			};
 			
