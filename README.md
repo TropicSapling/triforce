@@ -260,6 +260,8 @@ P+ is for...
 2. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
 3. `ATTRIBUTE <attr> <id>` tells the compiler that `<id>` has attribute `<attr>` and returns `<id>`.
 	- precedence is specified using attributes
+4. `CONSTRUCTOR_FOR <val>` gives you the constructor for `<val>`.
+	- i.e. `let player = Player 50 100; CONSTRUCTOR FOR player` evaluates to `Player $health $max_health`
 4. `ASSIGN <var> <val>` does *unchecked* assignment.
 5. `__CATCH__` is a special function, more info in example 4.
 6. `frozen [code] <expr>` delays evaluation of `<expr>` until it has left the current scope.

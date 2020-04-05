@@ -39,7 +39,8 @@ basic func __CATCH__ (Typed #$expr _) {expr};
 basic func ($expr as type ): $type {Typed expr type};
 basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 
-basic func type of (_ named $type) {type (ALL_ARGS_BUT_ONE type)}; // TODO: fix
+// TODO: 'CONSTRUCTOR_FOR 123' = ???
+basic func type of $obj {(CONSTRUCTOR_FOR obj) (ALL_ARGS_BUT_ONE (CONSTRUCTOR_FOR obj))};
 
 // Marker for unchecked input
 // File reading, user input, etc. should use this
