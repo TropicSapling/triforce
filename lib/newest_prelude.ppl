@@ -136,7 +136,26 @@ func ref to $val {
 	ref to val allowing val
 };
 
-// TODO: Booleans
+func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
+
+func object $obj ($fields as any List); {
+	// TODO
+};
+
+func category ($cat as permafrosted) ($contents as any List) {
+	frozen raw (let `cat` = contents; contents)
+};
+
+// Currently doesn't do anything more than checking
+// that what you're exporting is a list, which is
+// useless since 'category' does that later anyway
+func export ($exports as any List) {
+	exports
+};
+
+category Bool {
+	// TODO
+};
 
 func ($expr as type) matches $type {True};
 func _               matches $type {False};
