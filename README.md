@@ -314,6 +314,8 @@ P+ is for...
 
 6. *See examples file, picture coming soon...*
 
+7. *See examples file, picture coming soon...*
+
 *Source code for examples available in [readme_examples.ppl](examples/readme_examples.ppl).*
 
 ### [OLD] Syntax

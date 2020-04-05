@@ -190,3 +190,59 @@ let potato3 = (
 
 potato == potato2
 potato != potato3 // the Potato:es were created using different constructors, so they are different
+
+// -------------------------------------------
+// |                EXAMPLE 7                |
+// -------------------------------------------
+
+// Pattern matching order:
+// - Most specific patterns are checked first.
+// - More general patterns are checked second.
+// - If order can't be decided based on this,
+//   follow the order in which the patterns
+//   are defined.
+// 
+// The most specific pattern is the one with
+// the smallest or-patterns.
+// - '_' is an or-pattern of everything,
+//   and therefore the biggest or-pattern
+// 
+// Pattern matching stops when a match is found.
+// If no match is found, there's an error.
+
+object Player [
+	$name   as any String,
+	$health as any Number
+];
+
+// Note how this is shorthand for 'f ($x as _)'
+func f $x {
+	println "last";
+};
+
+func f ($x as Player "Steve" 25..75) {
+	println "fourth";
+};
+
+func f ($x as any Player) {
+	println "fifth"
+};
+
+func f ($x as Player "Steve" 55..75) {
+	println "first";
+};
+
+func f ($x as Player "Steve"|"Alex" 50..70) {
+	println "third";
+};
+
+func f ($x as Player "Steve" 50..70) {
+	println "second";
+};
+
+f (Player "Steve" 80) // prints "fifth"
+f (Player "Steve" 60) // prints "first"
+f (Player "Steve" 50) // prints "second"
+f (Player "Alex"  40) // prints "fifth"
+f (Player "Alex"  60) // prints "third"
+f Potato              // prints "last"
