@@ -39,8 +39,9 @@ basic func __CATCH__ (Typed #$expr _) {expr};
 basic func ($expr as type ): $type {Typed expr type};
 basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 
-// TODO: 'CONSTRUCTOR_FOR 123' = ???
-basic func type of $obj {(CONSTRUCTOR_FOR obj) (ALL_ARGS_BUT_ONE (CONSTRUCTOR_FOR obj))};
+// TODO: getting category of value and doing 'any <category>'
+// i.e. 'type of Player 50 100' => 'Player _ _'
+basic func type of (_ constructed using $constructor) {constructor (ALL_ARGS_BUT_ONE constructor)};
 
 // Marker for unchecked input
 // File reading, user input, etc. should use this

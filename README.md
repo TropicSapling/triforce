@@ -60,7 +60,7 @@ P+ is for...
 	- for an example, see "Example code snippets" §2
 
 #### Patterns (variables but better)
-1. `<pattern def>` = `($(<pattern to define>) as <pattern to match>)` where
+1. `<pattern def>` = `($(<pattern to define>) as <pattern to match> [constructed using <constructor pattern>])` where
 	- `<pattern to define>` = ` <dname start>  [(<pattern def>)|<dname continuation> ...] [<dname end>]` where
 		- `<dname start>`, `dname continuation`, `<dname end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
 	- `<pattern to match>`  = `[<mname start>] [(<pattern def>)|<mname continuation>|$(<var>|#<n>)|#<pattern def> ...] [<mname end>]` where
@@ -74,6 +74,9 @@ P+ is for...
 		- if we `let f = $x $y $z => ...` then `$a as f #_ #_` <=> `$a as f _ _`
 			- **note:** this equivalence does not hold for `$a as frozen f #_ #_ #_` and `$a as frozen f _ _ _`
 		- for more info on `#<pattern def>`, see "Example code snippets" §4
+	- `<constructor pattern>` is like `<pattern to match>` except `#` is not allowed and it works a bit differently
+		- i.e. if `Player $health $max_health` is defined, then `Player 50 100 constructed using $constructor` defines `$constructor` as `Player`
+			- `Player 50 100 constructed using Player $a $b` also works, but defines nothing
 	- patterns named `_` (written like `($_ as ...)`) are called unnamed patterns and will not be defined
 
 2. Call structure for ex. def. `$(example pattern taking (_ as _) and (_ as _)) as _`:
@@ -260,8 +263,6 @@ P+ is for...
 2. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
 3. `ATTRIBUTE <attr> <id>` tells the compiler that `<id>` has attribute `<attr>` and returns `<id>`.
 	- precedence is specified using attributes
-4. `CONSTRUCTOR_FOR <val>` gives you the constructor for `<val>`.
-	- i.e. `let player = Player 50 100; CONSTRUCTOR FOR player` evaluates to `Player $health $max_health`
 4. `ASSIGN <var> <val>` does *unchecked* assignment.
 5. `__CATCH__` is a special function, more info in example 4.
 6. `frozen [code] <expr>` delays evaluation of `<expr>` until it has left the current scope.
