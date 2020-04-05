@@ -14,15 +14,6 @@
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
 
-// TODO: Put below info in README:
-// - 'permafrosted' is like 'frozen' except the thing stays frozen even after evaluation
-//   - is now built-in
-//   - evaluate fully using 'defrost'
-// - '{}' no longer does anything
-// - `` forces evaluation for both 'frozen' and 'permafrosted'
-// - 'raw' is now its own thing
-//   - can still be used together with 'frozen' and 'permafrosted'
-
 // Useless, but looks nice sometimes.
 // Convention to use this whenever $expr spans multiple lines.
 // Also use this for the classics 'func', 'if', etc.

@@ -35,16 +35,16 @@ P+ is for...
 2. `<input pars>` = `(<par1>) [(<par2>) ...]`
 3. `<input args>` = `<arg1> [<arg2> ...]`
 4. Every parameter is a *pattern def*.
-5. All functions are closures.
+5. All functions are closures (capturing their original environment).
 6. If not enough input args are given, the function is partially applied.
 7. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined).
 	- This is what it means to say that a function returns `<function body>`
 8. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>`, `<pattern to define>` and `<pattern to match>`.
 	- Note that surrounding backticks (``` \`\` ```) are necessary when applying inside `<pattern to define>`
 		- i.e. if we `let f = Something`, then `let f _ = SomethingElse` redefines `f` while ``` let `f _` = SomethingElse ``` becomes `let Something = SomethingElse`
-		- this is because `<pattern to define>` is taken as `frozen code`
-		- the surrounding backticks force evaluation even when frozen
-	- `<pattern to match>` is always fully evaluated, even if it's inside a frozen block
+		- this is because `<pattern to define>` is taken as `permafrosted`
+		- the surrounding backticks force evaluation even when `frozen` or `permafrosted`
+	- `<pattern to match>` is always fully evaluated, even if it's inside a `frozen` or `permafrosted` block
 9. Functions are *pure* and *open* by default.
 	- pure functions cannot use mutable patterns defined outside
 		- ex: `let g = $x => x;` - OK
@@ -198,7 +198,7 @@ P+ is for...
 		- i.e. if we `let f = $x $y => ...` then `f` is expanded to `f $x $y`
 	2. Synonyms are deconstructed (see "Synonyms and Shadows")
 	3. Function application is evaluated
-5. `frozen` and `frozenraw` prevents evaluation from going past stage 1.
+5. `frozen` and `permafrosted` prevents evaluation from going past stage 1.
 
 #### Equality
 1. 2 finally evaluated values are equal if they refer to the same named function and they have the same applied args.
@@ -213,7 +213,7 @@ P+ is for...
 	- They consist of the same values in the same order
 	- They were both formed as a result of known-to-be-equal pseudo-values being combined in some way with *known* terms (see "Misc" §11)
 5. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
-6. Comparison involving `frozen[raw] [code]` values will compare the values as if they were strings.
+6. Comparison involving `frozen` or `permafrosted` values will compare the values as if they were strings.
 7. See "Example code snippets" §1 for an example of equality.
 
 #### Synonyms and Shadows
@@ -245,7 +245,7 @@ P+ is for...
 		- Due to this equivalence, you are still allowed to use `scope` within a pure function (?)
 
 5. `$(<pattern to define>) as frozen [<pattern to match>] [becoming <pattern to match>]` can be used to delay evaluation of input until inside the scope where the pattern is defined:
-	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as {#1}) => x _: 2) {<expr>}`
+	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as permafrosted 1) => defrost x: 2) {<expr>}`
 	- `$(...) as frozen [becoming ...]`           <=> `$(...) as frozen _ [becoming ...]`
 
 6. `decl $(<pattern to declare>) [...] in <scope>` allows use of declared patterns before they have been defined in `<scope>`.
@@ -265,19 +265,21 @@ P+ is for...
 	- precedence is specified using attributes
 4. `ASSIGN <var> <val>` does *unchecked* assignment.
 5. `__CATCH__` is a special function, more info in example 4.
-6. `frozen [code] <expr>` delays evaluation of `<expr>` until it has left the current scope.
+6. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
-7. `frozenraw [code] <expr>` is identical to `frozen` except it's unhygienic.
-	- i.e. assuming `func f _ {frozenraw (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
-	- note: removes *all* all-encompassing parentheses, so even `frozenraw (((((1 + 2)))))` becomes `1 + 2`
-		- it does this even for input `as frozenraw`
-8. `listify permafrosted <code>` converts `<code>` to an AST in the form of a multi-dimensional list
+7. `permafrosted` is like `frozen` except the thing stays frozen even after evaluation
+	- evaluate fully using `defrost`
+8. `raw <expr>` is identical to `<expr>` except it's unhygienic.
+	- i.e. assuming `func f _ {frozen raw (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
+	- note: removes *all* all-encompassing parentheses, so even `raw (((((1 + 2)))))` becomes `1 + 2`
+		- it does this even for input `as raw`
+9. `listify permafrosted <code>` converts `<code>` to an AST in the form of a multi-dimensional list
 	- each item in the list is either a token `String` or a list of tokens
 	- the form of the AST will be stable once the language is stable
-9. `codify <AST>` converts `<AST>` to permafrosted code
+10. `codify <AST>` converts `<AST>` to permafrosted code
 	- `defrost` to run the code
-10. `codify (listify permafrosted <code>)` <=> `permafrosted <code>`
-11. `continue matching [for <function>]` continues pattern matching if possible.
+11. `codify (listify permafrosted <code>)` <=> `permafrosted <code>`
+12. `continue matching [for <function>]` continues pattern matching if possible.
 		- if `<function>` isn't specified it will default to the current function
 		- if `<function>` is `caller` it will continue matching for the caller
 		- if it's not possible to continue, there will be an error
