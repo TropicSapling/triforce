@@ -139,7 +139,15 @@ func ref to $val {
 func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
 
 func object $obj ($fields as any List); {
-	// TODO
+	frozen raw (func `obj` `codify (fieldify fields)` _ {};)
+};
+
+// i.e. 'fieldify [$a as 123, $b as 456]' => AST representing code '($a as 123) ($b as 456)'
+func fieldify ([])                  {listify permafrosted}; // AST representing code ''
+func fieldify ($fields as any List) {
+	let AST = listify permafrosted `fields[0]`; // note how the field is parenthesised (add 'raw' to avoid this)
+	AST += fieldify fields[1..]; // '+=' special function for AST lists
+	AST
 };
 
 func category ($cat as permafrosted) ($contents as any List) {
