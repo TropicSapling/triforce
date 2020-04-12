@@ -245,7 +245,7 @@ P+ is for...
 		- Due to this equivalence, you are still allowed to use `scope` within a pure function (?)
 
 5. `$(<pattern to define>) as frozen [<pattern to match>] [becoming <pattern to match>]` can be used to delay evaluation of input until inside the scope where the pattern is defined:
-	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as permafrosted 1) => defrost x: 2) {<expr>}`
+	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as permafrosted 1) => defrosted x: 2) {<expr>}`
 	- `$(...) as frozen [becoming ...]`           <=> `$(...) as frozen _ [becoming ...]`
 
 6. `decl $(<pattern to declare>) [...] in <scope>` allows use of declared patterns before they have been defined in `<scope>`.
@@ -268,17 +268,17 @@ P+ is for...
 6. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
 7. `permafrosted` is like `frozen` except the thing stays frozen even after evaluation
-	- evaluate fully using `defrost`
+	- evaluate fully using `defrosted`
 8. `raw <expr>` is identical to `<expr>` except it's unhygienic.
 	- i.e. assuming `func f _ {frozen raw (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
 	- note: removes *all* all-encompassing parentheses, so even `raw (((((1 + 2)))))` becomes `1 + 2`
 		- it does this even for input `as raw`
-9. `listify permafrosted <code>` converts `<code>` to an AST in the form of a multi-dimensional list
+9. `listified permafrosted <code>` converts `<code>` to an AST in the form of a multi-dimensional list
 	- each item in the list is either a token `String` or a list of tokens
 	- the form of the AST will be stable once the language is stable
-10. `codify <AST>` converts `<AST>` to permafrosted code
-	- `defrost` to run the code
-11. `codify (listify permafrosted <code>)` <=> `permafrosted <code>`
+10. `codified <AST>` converts `<AST>` to permafrosted code
+	- `defrosted` to run the code
+11. `codified (listify permafrosted <code>)` <=> `permafrosted <code>`
 12. `continue matching [for <function>]` continues pattern matching if possible.
 		- if `<function>` isn't specified it will default to the current function
 		- if `<function>` is `caller` it will continue matching for the caller

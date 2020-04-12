@@ -14,6 +14,13 @@
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
 
+// TODO: Declare operators somehow:
+// - {}
+// - []
+// - ;
+// - +-*/%
+// - etc.
+
 // Useless, but looks nice sometimes.
 // Convention to use this whenever $expr spans multiple lines.
 // Also use this for the classics 'func', 'if', etc.
@@ -42,15 +49,15 @@ basic func UncheckedInput _ {};
 
 // Pronounced as: "let $var be $type and equal $val"
 // let impure $var = $val also works (thanks to 'raw')
-basic func let ($var as permafrosted raw ~UncheckedInput): $type = $val {
+basic func let ($var as permafrosted raw ~UncheckedInput): $type = $val; {
 	frozen raw (let basic `var` = val: type;)
 };
 
-basic func let ($var as permafrosted): auto = $val {
+basic func let ($var as permafrosted): auto = $val; {
 	frozen raw (let `var`: type of val = val;)
 };
 
-basic func let ($var as permafrosted) = $val {
+basic func let ($var as permafrosted) = $val; {
 	frozen raw (let `var`: val = val;)
 };
 
@@ -139,14 +146,14 @@ func ref to $val {
 func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
 
 func object $obj ($fields as any List); {
-	frozen raw (func `obj` `codify (fieldify fields)` _ {};)
+	frozen raw (func `obj` `codified (fieldified fields)` _ {};)
 };
 
-// i.e. 'fieldify [$a as 123, $b as 456]' => AST representing code '($a as 123) ($b as 456)'
-func fieldify ([])                  {listify permafrosted}; // AST representing code ''
-func fieldify ($fields as any List) {
-	let AST = listify permafrosted `fields[0]`; // note how the field is parenthesised (add 'raw' to avoid this)
-	AST += fieldify fields[1..]; // '+=' special function for AST lists
+// i.e. 'fieldified [$a as 123, $b as 456]' => AST representing code '($a as 123) ($b as 456)'
+func fieldified ([])                  {listified permafrosted}; // AST representing code ''
+func fieldified ($fields as any List) {
+	let AST = listified permafrosted `fields[0]`; // note how the field is parenthesised (add 'raw' to avoid this)
+	AST += fieldified fields[1..]; // '+=' special function for AST lists
 	AST
 };
 
