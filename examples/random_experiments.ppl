@@ -517,3 +517,49 @@ a = 789; // ERROR
 [a, b] = [789, 1578]
 
 [a, b] = [789, 678] // ERROR: second is not double of first
+
+--------------------------------------------------
+
+func extract from $list using $extractor {
+	let extracts: any List = [];
+	for each item in list {
+		let extract = extractor index item;
+		if extract != Nothing {
+			extracts += extract;
+		};
+	};
+
+	extracts
+};
+
+func extractor $index $item {
+	if index mod 2 == 0 && item > 1 {
+		item * item
+	}
+};
+
+extract from [1, 2, 3, 4, 5] using extractor // [9, 25]
+
+func index of $needle in $list {
+	extract from list using $index $item => {
+		if item == needle then index
+	}
+};
+
+--------------------------------------------------
+
+// par_type is "lower bound", a.k.a. par_type matches actual_par_type
+// return_type is "upper bound" / actual return type
+($f as ($par as par_type) #($arg2 as arg2_type) ($par3 as par3_type) becoming return_type)
+
+// Example
+func f ($x as any Int) {
+	x + 1
+}: any Int;
+
+// "Can I give the function f a positive Int, and get back an Int?"
+func apply ($f as ($par as 0..) becoming any Int) and multiply {
+	f 123 * f 456
+}: any Int;
+
+apply f and multiply; // => (123 + 1) * (456 + 1) => 124 * 457 => 56668
