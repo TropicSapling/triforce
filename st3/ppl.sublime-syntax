@@ -27,6 +27,8 @@ contexts:
       scope: punctuation.definition.comment.example-c
       push: line_comment
 
+    - include: block-comments
+
     # Keywords.
     # Note that blackslashes don't need to be escaped within single quoted
     # strings in YAML. When using single quoted strings, only single quotes
@@ -35,13 +37,13 @@ contexts:
     - match: '\b(if|then|else|for\s+each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where|matches|is|prerun|run|export(\s+all)?|import|expose)\b'
       scope: keyword.control.rust
 
-    - match: '\bclosed|impure|ref\s+to|allowing|((frozen|permafrosted)(\s+raw)?|becoming|constructed\s+using|defrosted)\b'
+    - match: '\b(closed|impure|implicitly|ref\s+to|allowing|(frozen|permafrosted)(\s+raw)?|becoming|returning|constructed\s+using|defrosted|auto)\b'
       scope: storage.type.rust
 
     - match: '\b(True|False|this|caller)\b'
       scope: constant.language.rust
 
-    - match: '\b(as|in|any(\s+of)?|ALL_ARGS|ALL_ARGS_BUT_ONE|ALL_ARGS_PLACEHOLDERS|APPLIED_ARGS|SET_ATTRIBUTES|SET_DEFAULT_LIST|ASSIGN|REF|scope|listified|codified|decl)\b'
+    - match: '\b(as|in|any(\s+of)?|ALL_ARGS|ALL_ARGS_BUT_ONE|ALL_ARGS_PLACEHOLDERS|APPLIED_ARGS|SET_ATTRIBUTES|SET_DEFAULT_LIST|ASSIGN|scope|listified|codified|decl)\b'
       scope: keyword.operator.rust
 
     - match: '\b[A-Z]{{identifier}}'
@@ -51,11 +53,9 @@ contexts:
     - match: '\b(-)?[0-9.]+\b'
       scope: constant.numeric.example-c
 
-    - match: '=>'
-      scope: keyword.operator.rust
-
     - include: operators
 
+    # Punctuation
     - match: ';'
       scope: punctuation.terminator.rust
 
@@ -65,12 +65,14 @@ contexts:
     - match: '\.'
       scope: punctuation.accessor.dot.rust
 
+    # Blocks & groups
     - match: '(?=\{)'
       push: block
 
     - match: '(?=\()'
       push: group
 
+    # Declarations & definitions
     - match: '\b((rec\s+)?basic\s+)?(partial\s+)?func\b'
       scope: storage.type.rust
       push: func-id-search
@@ -87,6 +89,16 @@ contexts:
     - match: '`'
       scope: markup.italic
       push: eval-group
+
+  block-comments:
+    - match: '/\*'
+      scope: punctuation.definition.comment.rust
+      push:
+        - meta_scope: comment.block.rust
+        - match: '\*/'
+          scope: punctuation.definition.comment.rust
+          pop: true
+        - include: block-comments
   
   func-id-search:
     - include: universal
