@@ -8,8 +8,8 @@
 // OR:   Alternatively, put everything inside 'Prelude' category and then expose Prelude.
 
 // TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
-(impure $(let basic        $var = $val;) => scope) (       ($var as permafrosted) $val => ($`var` => scope) val)
-(impure $(let basic impure $var = $val;) => scope) (impure ($var as permafrosted) $val => ($`var` => scope) val)
+(impure $(let basic        $var = $val;) => scope) (       ($var as implicitly permafrosted) $val => ($`var` => scope) val)
+(impure $(let basic impure $var = $val;) => scope) (impure ($var as implicitly permafrosted) $val => ($`var` => scope) val)
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
@@ -26,8 +26,8 @@
 // Also use this for the classics 'func', 'if', etc.
 let basic {$expr} = $expr => expr;
 
-let basic         basic func ($pattern as permafrosted) ($body as frozen);  = $pattern $body => frozen raw (let basic        `pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
-let basic (impure basic func ($pattern as permafrosted) ($body as frozen);) = $pattern $body => frozen raw (let basic impure `pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
+let basic         basic func ($pattern as implicitly permafrosted) ($body as implicitly frozen);  = $pattern $body => frozen raw (let basic        `pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
+let basic (impure basic func ($pattern as implicitly permafrosted) ($body as implicitly frozen);) = $pattern $body => frozen raw (let basic impure `pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
 
 basic func Typed $expr $type _ {};
 // If all pattern matching fails, throw away type restriction
@@ -49,15 +49,15 @@ basic func UncheckedInput _ {};
 
 // Pronounced as: "let $var be $type and equal $val"
 // let impure $var = $val also works (thanks to 'raw')
-basic func let ($var as permafrosted raw ~UncheckedInput): $type = $val; {
+basic func let ($var as implicitly permafrosted raw ~UncheckedInput): $type = $val; {
 	frozen raw (let basic `var` = val: type;)
 };
 
-basic func let ($var as permafrosted): auto = $val; {
+basic func let ($var as implicitly permafrosted): auto = $val; {
 	frozen raw (let `var`: type of val = val;)
 };
 
-basic func let ($var as permafrosted) = $val; {
+basic func let ($var as implicitly permafrosted) = $val; {
 	frozen raw (let `var`: val = val;)
 };
 
@@ -69,7 +69,7 @@ basic func List $item ($tail as List _ _) _ {};
 SET_DEFAULT_LIST List
 
 // Does not accept unchecked input for security reasons
-basic func rec basic func ($pattern as permafrosted raw ~UncheckedInput) ($body as frozen); {
+basic func rec basic func ($pattern as implicitly permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
 	frozen raw {
 		let `pattern` = {
 			basic func $f `pattern` {
@@ -82,7 +82,7 @@ basic func rec basic func ($pattern as permafrosted raw ~UncheckedInput) ($body 
 	}
 };
 
-basic func impure rec basic func ($pattern as permafrosted raw ~UncheckedInput) ($body as frozen); {
+basic func impure rec basic func ($pattern as implicitly permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
 	frozen raw {
 		let impure `pattern` = {
 			impure basic func $f `pattern` {
@@ -101,7 +101,7 @@ basic func impure rec basic func ($pattern as permafrosted raw ~UncheckedInput) 
 //		- cause no side-effects
 //		- use no outside/free patterns
 // Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
-basic func ##($attrs as permafrosted List _ _) func ($pattern as permafrosted) ($typed_body as frozen); {
+basic func ##($attrs as implicitly permafrosted List _ _) func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
 	frozen raw {
 		// This built-in tells compiler 'pattern' has attributes 'attrs'
 		// and returns 'pattern' as permafrosted. The attributes must
@@ -111,14 +111,14 @@ basic func ##($attrs as permafrosted List _ _) func ($pattern as permafrosted) (
 };
 
 // Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
-basic func ##($attrs as permafrosted List _ _) partial func ($pattern as permafrosted) ($typed_body as frozen); {
+basic func ##($attrs as implicitly permafrosted List _ _) partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
 	frozen raw {
 		rec basic func `SET_ATTRIBUTES attrs pattern` {typed_body};
 	}
 };
 
-basic func         func ($pattern as permafrosted) ($typed_body as frozen); {[]         func `pattern` {typed_body};};
-basic func partial func ($pattern as permafrosted) ($typed_body as frozen); {[] partial func `pattern` {typed_body};};
+basic func         func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {[]         func `pattern` {typed_body};};
+basic func partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {[] partial func `pattern` {typed_body};};
 
 // The legendary SEMICOLON
 ##[precedence below _]
@@ -126,17 +126,17 @@ func $expr; {
 	scope
 };
 
-func declare ($var as permafrosted) {
+func declare ($var as implicitly permafrosted) {
 	decl $`var` in scope
 };
 
-// 'REF' acts similarly to 'permafrosted' when it comes to evaluation
-impure func ($var as REF (Typed _ #$type)) = ($val as type) {
+// '->' means 'pointer/ref to' and acts similarly to 'permafrosted' when it comes to evaluation
+impure func ($var as implicitly ->(Typed _ #$type)) = ($val as type) {
 	ASSIGN var (Typed val type)
 };
 
 func ref to $val allowing $sub {
-	frozen raw (REF (Typed val #$super) where sub matches super)
+	frozen raw (->(Typed val #$super) where sub matches super)
 };
 
 func ref to $val {
@@ -153,15 +153,15 @@ func fieldified ($fields as any List) {
 	AST
 };
 
-func object ($obj as permafrosted) ($fields as any List); {
+func object ($obj as implicitly permafrosted) ($fields as any List); {
 	frozen raw (func `obj` `codified (fieldified fields)` _ {};)
 };
 
-func object ($obj as permafrosted); {
+func object ($obj as implicitly permafrosted); {
 	frozen raw (object `obj` [])
 };
 
-func category ($cat as permafrosted) ($contents as any List) {
+func category ($cat as implicitly permafrosted) ($contents as any List) {
 	frozen raw (let `cat` = contents; contents)
 };
 

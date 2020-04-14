@@ -118,7 +118,7 @@ __CATCH__ (5% * 120%) == 6%
 //
 // This results in every single function
 // being catched before evaluation.
-func __CATCH__ ($f as frozen) {
+func __CATCH__ ($f as implicitly frozen) {
 	println "nope!";
 };
 

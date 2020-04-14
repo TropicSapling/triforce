@@ -499,7 +499,7 @@ shape3 = Circle 150; // ERROR
 
 --------------------------------------------------
 
-impure func ($var as ref to 1|2|3 allowing 1|2|3 + val) += $val {
+impure func ($var as implicitly ref to 1|2|3 allowing 1|2|3 + val) += $val {
 	var = var + val;
 };
 
@@ -549,17 +549,22 @@ func index of $needle in $list {
 --------------------------------------------------
 
 // par_type is "lower bound", a.k.a. par_type matches actual_par_type
-// return_type is "upper bound" / actual return type
-($f as ($par as par_type) #($arg2 as arg2_type) ($par3 as par3_type) becoming return_type)
+// return_type is what's returned, which matches actual_return_type
+($f as ($par as par_type) #($arg2 as arg2_type) ($par3 as par3_type) returning return_type)
 
 // Example
-func f ($x as any Int) {
-	x + 1
+func add ($x as any Int) and ($y as any Int) {
+	x + y
 }: any Int;
 
 // "Can I give the function f a positive Int, and get back an Int?"
-func apply ($f as ($par as 0..) becoming any Int) and multiply {
-	f 123 * f 456
+func apply ($f as ($par as 0..) ($par2 as 0..) returning any Int) and multiply {
+	(f 123 456) * (f 456 789)
 }: any Int;
 
-apply f and multiply; // => (123 + 1) * (456 + 1) => 124 * 457 => 56668
+// Alternatively, if 'Func' was defined somehow:
+func apply ($f as Func[0.., 0..] returning any Int) and multiply {
+	(f 123 456) * (f 456 789)
+}: any Int;
+
+apply (add $a and $b) and multiply; // => (123 + 456) * (456 + 789) => 579 * 1245 => 720855
