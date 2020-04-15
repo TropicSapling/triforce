@@ -568,3 +568,28 @@ func apply ($f as Func[0.., 0..] returning any Int) and multiply {
 }: any Int;
 
 apply (add $a and $b) and multiply; // => (123 + 456) * (456 + 789) => 579 * 1245 => 720855
+
+--------------------------------------------------
+
+// AST
+
+object Object [
+	$field  as any Field
+	$field2 as any Field
+];
+
+=>
+
+[
+	"object",
+	"Object",
+	[
+		"List",
+		["as", "$field", ["any", "Field"]],
+		[
+			"List",
+			["as", "$field2", ["any", "Field"]],
+			Nothing
+		]
+	]
+]

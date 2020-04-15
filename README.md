@@ -271,6 +271,7 @@ P+ is for...
 4. `ASSIGN <var> <val>` does *unchecked* assignment.
 5. `__CATCH__` is a special function, more info in example 4.
 6. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
+	- similar to Lisp quoting
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
 7. `permafrosted` is like `frozen` except the thing stays frozen even after evaluation
 	- evaluate fully using `defrosted`

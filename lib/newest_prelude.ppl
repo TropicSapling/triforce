@@ -61,6 +61,8 @@ basic func let ($var as implicitly permafrosted) = $val; {
 	frozen raw (let `var`: val = val;)
 };
 
+basic func Nothing _ {};
+
 basic func List $item ($tail as List _ _) _ {};
 
 // TODO: List '[]' syntax, list access
@@ -145,16 +147,19 @@ func ref to $val {
 
 func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
 
-// i.e. 'fieldified [$a as 123, $b as 456]' => AST representing code '($a as 123) ($b as 456)'
-func fieldified ([])                  {listified permafrosted}; // AST representing code ''
+// ex: 'fieldified [$a as 123, $b as any Int]' => AST: [["as", "$a", "123"], ["as", "$b", ["any", "Int"]]]
 func fieldified ($fields as any List) {
-	let AST = listified permafrosted `fields[0]`; // note how the field is parenthesised (add 'raw' to avoid this)
-	AST += fieldified fields[1..]; // '+=' special function for AST lists
-	AST
+	let AST = [];
+
+	for each field in fields {
+		AST += listified permafrosted `field`; // note how the field is parenthesised (add 'raw' to avoid this)
+	};
+
+	AST // = [["as", "$field", "<type>"], ["as", "$field2", "<type2>"], ...]
 };
 
 func object ($obj as implicitly permafrosted) ($fields as any List); {
-	frozen raw (func `obj` `codified (fieldified fields)` _ {};)
+	frozen raw (func `obj` `raw codified fieldified fields` _ {};)
 };
 
 func object ($obj as implicitly permafrosted); {
