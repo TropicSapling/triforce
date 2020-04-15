@@ -8,8 +8,8 @@
 // OR:   Alternatively, put everything inside 'Prelude' category and then expose Prelude.
 
 // TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
-(impure $(let basic        $var = $val;) => scope) (       ($var as implicitly permafrosted) $val => ($`var` => scope) val)
-(impure $(let basic impure $var = $val;) => scope) (impure ($var as implicitly permafrosted) $val => ($`var` => scope) val)
+(impure $(let basic        $var = $val;) => scope) (       ($var as implicitly permafrosted) $val => (impure $`var` => scope) val)
+(impure $(let basic impure $var = $val;) => scope) (impure ($var as implicitly permafrosted) $val => (impure $`var` => scope) val)
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
@@ -126,11 +126,11 @@ basic func partial func ($pattern as implicitly permafrosted) ($typed_body as im
 
 // The legendary SEMICOLON
 ##[precedence below _]
-func $expr; {
+impure func $expr; {
 	scope
 };
 
-func declare ($var as implicitly permafrosted) {
+impure func declare ($var as implicitly permafrosted) {
 	decl $`var` in scope
 };
 

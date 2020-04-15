@@ -247,7 +247,7 @@ P+ is for...
 
 4. `scope` can be used to avoid making your program look like Lisp:
 	- `(<input pars> => scope) <input args> <rest of scope>` <=> `(<input pars> ($scope as frozen) => scope) <input args> (<rest of scope>)`
-		- Due to this equivalence, you are still allowed to use `scope` within a pure function (?)
+		- Note that if you want to allow `impure` scopes, the function evaluating `scope` must be marked `impure`
 
 5. `$(<pattern to define>) as frozen [<pattern to match>] [becoming <pattern to match>]` can be used to delay evaluation of input until inside the scope where the pattern is defined:
 	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as permafrosted 1) => defrosted x: 2) {<expr>}`
