@@ -37,9 +37,11 @@ basic func __CATCH__ (Typed #$expr _) {expr};
 basic func ($expr as type ): $type {Typed expr type};
 basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 
+basic func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
+
 // TODO: getting category of value and doing 'any <category>'
 // i.e. 'type of Player 50 100' => 'Player _ _'
-basic func type of (_ constructed using $constructor) {constructor (ALL_ARGS_BUT_ONE constructor)};
+basic func type of (_ constructed using $constructor) {any constructor};
 
 // Marker for unchecked input
 // File reading, user input, etc. should use this
@@ -63,7 +65,7 @@ basic func let ($var as implicitly permafrosted) = $val; {
 
 basic func Nothing _ {};
 
-basic func List $item ($tail as List _ _) _ {};
+basic func List $item ($tail as any List) _ {};
 
 // TODO: List '[]' syntax, list access
 
@@ -103,7 +105,7 @@ basic func impure rec basic func ($pattern as implicitly permafrosted raw ~Unche
 //		- cause no side-effects
 //		- use no outside/free patterns
 // Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
-basic func ##($attrs as implicitly permafrosted List _ _) func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
+basic func ##($attrs as implicitly permafrosted any List) func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
 	frozen raw {
 		// This built-in tells compiler 'pattern' has attributes 'attrs'
 		// and returns 'pattern' as permafrosted. The attributes must
@@ -113,7 +115,7 @@ basic func ##($attrs as implicitly permafrosted List _ _) func ($pattern as impl
 };
 
 // Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
-basic func ##($attrs as implicitly permafrosted List _ _) partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
+basic func ##($attrs as implicitly permafrosted any List) partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
 	frozen raw {
 		rec basic func `SET_ATTRIBUTES attrs pattern` {typed_body};
 	}
@@ -145,11 +147,20 @@ func ref to $val {
 	ref to val allowing val
 };
 
-func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
+func ($expr as type) matches $type {True};
+func _               matches $type {False};
+
+func while ($cond as any Bool) ($body as implicitly frozen) {
+	...
+};
+
+func for each $item in ($list as any List) ($body as implicitly frozen) {
+	...
+};
 
 // ex: 'fieldified [$a as 123, $b as any Int]' => AST: [["as", "$a", "123"], ["as", "$b", ["any", "Int"]]]
 func fieldified ($fields as any List) {
-	let AST = [];
+	let AST: any List = [];
 
 	for each field in fields {
 		AST += listified permafrosted `field`; // note how the field is parenthesised (add 'raw' to avoid this)
@@ -177,12 +188,14 @@ func export ($exports as any List) {
 	exports
 };
 
-category Bool {
-	// TODO
+func expose ($cat as any List) {
+	frozen raw (
+		let `cat[0]` = cat[0]; // using '``' to clarify the name is the evaluated cat[0] rather than 'cat[0]'
+		if cat length > 1 {
+			expose cat[1..];
+		};
+	)
 };
-
-func ($expr as type) matches $type {True};
-func _               matches $type {False};
 
 // TODO: Generalise into 'apply $f to itself $n times'
 // TODO: Move out of prelude into std lib
