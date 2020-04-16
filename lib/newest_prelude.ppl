@@ -158,11 +158,11 @@ func ref to $val {
 func True  _ {};
 func False _ {};
 
-func (True)  && ($b as any Bool)           {b};
-func (False) && (frozen becoming any Bool) {False};
+func (True)  && ($b as any Bool)                      {b};
+func (False) && (implicitly frozen becoming any Bool) {False};
 
-func (True)  || (frozen becoming any Bool) {False};
-func (False) || ($b as any Bool)           {b};
+func (True)  || (implicitly frozen becoming any Bool) {False};
+func (False) || ($b as any Bool)                      {b};
 
 func !(True)  {False};
 func !(False) {True};
