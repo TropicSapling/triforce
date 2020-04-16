@@ -7,6 +7,10 @@
 //       by hand using anonymous functions, or by generating these anonymous functions.
 // OR:   Alternatively, put everything inside 'Prelude' category and then expose Prelude.
 
+// -------------------------
+// |   CATEGORY: Basics    |
+// -------------------------
+
 // TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
 (impure $(let basic        $var = $val;) => scope) (       ($var as implicitly permafrosted) $val => (impure $`var` => scope) val)
 (impure $(let basic impure $var = $val;) => scope) (impure ($var as implicitly permafrosted) $val => (impure $`var` => scope) val)
@@ -147,8 +151,46 @@ func ref to $val {
 	ref to val allowing val
 };
 
+// -------------------------
+// |    CATEGORY: Bool     |
+// -------------------------
+
+func True  _ {};
+func False _ {};
+
+func (True)  && ($b as any Bool)           {b};
+func (False) && (frozen becoming any Bool) {False};
+
+func (True)  || (frozen becoming any Bool) {False};
+func (False) || ($b as any Bool)           {b};
+
+func !(True)  {False};
+func !(False) {True};
+
+// -------------------------
+// | CATEGORY: Comparison  |
+// -------------------------
+
+func $a == $a {True};
+func _  == _  {False};
+func $a != $b {!(a == b)};
+
 func ($expr as type) matches $type {True};
 func _               matches $type {False};
+
+// -------------------------
+// |   CATEGORY: Control   |
+// -------------------------
+
+// ex: 'if x == 123 {456} else {789}'
+func if (True)  ($body as implicitly frozen)                                   {body};
+func if (False) ($body as implicitly frozen)                                   {scope};
+func if (True)  ($body as implicitly frozen) else ($expr as implicitly frozen) {body};
+func if (False) ($body as implicitly frozen) else ($expr as implicitly frozen) {expr};
+
+// ex: 'if x == 123 then 456 else 789'
+func if $cond then ($body as implicitly frozen)                                   {if cond {body}};
+func if $cond then ($body as implicitly frozen) else ($expr as implicitly frozen) {if cond {body} else {expr}};
 
 func while ($cond as any Bool) ($body as implicitly frozen) {
 	...
@@ -157,6 +199,10 @@ func while ($cond as any Bool) ($body as implicitly frozen) {
 func for each $item in ($list as any List) ($body as implicitly frozen) {
 	...
 };
+
+// -------------------------
+// |  CATEGORY: Category   |
+// -------------------------
 
 // ex: 'fieldified [$a as 123, $b as any Int]' => AST: [["as", "$a", "123"], ["as", "$b", ["any", "Int"]]]
 func fieldified ($fields as any List) {
