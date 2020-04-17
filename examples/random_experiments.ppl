@@ -593,3 +593,15 @@ object Object [
 		]
 	]
 ]
+
+--------------------------------------------------
+
+func __EVAL__ (List #$item #$tail) {
+	let arr_ptr = malloc 24;
+
+	ASSIGN arr_ptr        List_ID;
+	ASSIGN (arr_ptr + 8)  item;
+	ASSIGN (arr_ptr + 16) tail;
+
+	arr_ptr
+};
