@@ -605,3 +605,18 @@ func __EVAL__ (List #$item #$tail) {
 
 	arr_ptr
 };
+
+--------------------------------------------------
+
+// Use 'implicitly' for more implicit stuff like below?
+
+// replicate : a -> Vect n a
+// replicate { n = Z }   val = []
+// replicate { n = S k } val = val :: replicate val
+
+func replicate $val {[]}                   : any List;
+func replicate $val {val :: replicate val} : any List;
+
+let list: (implicitly any List where this length == 1) = replicate 123; // => 123 :: []
+
+// Also would be nice to make it easier to have the same return type for several function variants
