@@ -613,6 +613,8 @@ func __EVAL__ (List #$item #$tail) {
 // replicate : a -> Vect n a
 // replicate { n = Z }   val = []
 // replicate { n = S k } val = val :: replicate val
+// 
+// from https://www.type-driven.org.uk/edwinb/papers/idris2.pdf
 
 func replicate $val {[]}                   : any List;
 func replicate $val {val :: replicate val} : any List;
@@ -620,3 +622,8 @@ func replicate $val {val :: replicate val} : any List;
 let list: (implicitly any List where this length == 1) = replicate 123; // => 123 :: []
 
 // Also would be nice to make it easier to have the same return type for several function variants
+
+--------------------------------------------------
+
+// Deno-style importing?
+import { serve } from "https://deno.land/std@0.50.0/http/server.ts";
