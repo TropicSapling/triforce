@@ -627,3 +627,12 @@ let list: (implicitly any List where this length == 1) = replicate 123; // => 12
 
 // Deno-style importing?
 import { serve } from "https://deno.land/std@0.50.0/http/server.ts";
+
+--------------------------------------------------
+
+// Reactive expressions
+// Runs once first, then re-runs whenever a variable has been updated
+reactive: if count >= 10 {
+	println "count is dangerously high!";
+	count = 9;
+};
