@@ -55,6 +55,8 @@
 - Allow indentation as replacement for parentheses `()`?
 - Mixfix parsing: http://www.cse.chalmers.se/~nad/publications/danielsson-norell-mixfix.pdf
   - Here it says even parentheses `()` can be defined as a function this way?!
+- https://www.reddit.com/r/ProgrammingLanguages/comments/hl04eq/this_talk_by_nicholas_matsakis_is_the_best/
+  - Better compiler structure; instead of lex-parse-compile, only compile small parts at a time
 
 ## lists
 - memory layout
