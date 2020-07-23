@@ -4,8 +4,12 @@ P+ is for...
 * Power
 * Productivity
 
-... and most importantly:
-* **It makes sense.**
+... and more, including a focus on consistent & sensible design!
+
+*Well, at least this is my vision for the language. Not its current state, sorry :P*
+
+### Some quick info before you start reading the rest
+Currently, this README pretty much only consists of a language specification. Similarly to most language specifications, it's rather hard to understand and you'll probably have a hard time learning the language by reading it. It also has the extra perk of not even being written well enough to precisely describe the language! And did I mention that I'm also changing it all the time? Really, the specification is just here for the developers to remember everything. But, you can always attempt to read the rest anyway if you want xD
 
 ## Features
 #### Definitions
