@@ -4,9 +4,23 @@ P+ is for...
 * Power
 * Productivity
 
-... and more, including a focus on consistent & sensible design!
+... which we aim to achieve through:
+- a consistent, sensible and well-thought-out language design
+- a small, generalised and extensible core language, including support for powerful macro-like functions
+- an advanced type system, including dependent types
+- the ability to both work on a high level and a lower level close to hardware
+- more things yet to be figured out...
 
-*Well, at least this is my vision for the language. Not its current state, sorry :P*
+Obviously, some compromises are going to have to be made as well. The compilation process is probably going to be rather slow, for example.
+
+### A word on the name
+I've been thinking recently about perhaps renaming P+ to Triforce. I like that name better and it still fits with the "trifecta". There are some issues with that though which I'll need to think through:
+- There is already an esoteric language named Triforce
+- "Triforce" is less well-suited for search queries, since it will get confused with Zelda-related things
+- Nintendo may object to us using the triforce for our logo
+- Perhaps some more things
+
+Why I'm thinking of changing the name? Well, I simply prefer the name Triforce over P+.
 
 ### Some quick info before you start reading the rest
 Currently, this README pretty much only consists of a language specification. Similarly to most language specifications, it's rather hard to understand and you'll probably have a hard time learning the language by reading it. It also has the extra perk of not even being written well enough to precisely describe the language! And did I mention that I'm also changing it all the time? Really, the specification is just here for the developers to remember everything. But, you can always attempt to read the rest anyway if you want xD
