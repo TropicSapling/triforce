@@ -1,4 +1,5 @@
 # P+ programming language
+![banner](banner.JPG)
 P+ is for...
 * Performance
 * Power
