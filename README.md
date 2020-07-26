@@ -1,5 +1,5 @@
 # P+ programming language
-![banner](banner.JPG)
+![banner](img/banner.JPG)
 P+ is for...
 * Performance
 * Power
@@ -323,19 +323,19 @@ Currently, this README pretty much only consists of a language specification. Si
 
 #### Example code snippets
 1.
-![ex1](ex1.PNG)
+![Example 1](img/ex1.PNG)
 
 2.
-![ex2](ex2.PNG)
+![Example 2](img/ex2.PNG)
 
 3.
-![ex3](ex3.PNG)
+![Example 3](img/ex3.PNG)
 
 4.
-![ex4](ex4.PNG)
+![Example 4](img/ex4.PNG)
 
 5.
-![ex5](ex5.PNG)
+![Example 5](img/ex5.PNG)
 
 6. *See examples file, picture coming soon...*
 
