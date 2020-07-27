@@ -69,6 +69,10 @@ basic func let ($var as implicitly permafrosted) = $val; {
 
 basic func Nothing _ {};
 
+// Useful for distinguishing 'Nothing' from 'Wrapped Nothing'
+// See https://www.reddit.com/r/ProgrammingLanguages/comments/hy6emx/explicit_nullability_vs_optionals/fzarbwu/
+basic func Wrapped $obj _ {};
+
 basic func List $item ($tail as any List) _ {};
 
 // TODO: List '[]' syntax, list access

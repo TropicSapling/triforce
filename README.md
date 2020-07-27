@@ -252,6 +252,15 @@ Currently, this README pretty much only consists of a language specification. Si
 	- They have the same `<pattern to match>`:s in the same order
 	- They have the same name
 
+#### Symbols
+1. Symbols part of the same *symgroup* that are next to eachother form a token.
+2. Every *symindie* is its own token.
+3. `decl symgroup  <symbol> [<symbol> [...]] for <scope>` declares a symbol group for the scope.
+	- `<scope>` can of course be the special `scope` keyword
+4. `decl symindies <symbol> [<symbol> [...]] for <scope>` declares one or more symbol independents for the scope.
+5. There are 2 built-in symgroups: alphanumeric and whitespace.
+6. There are 2 built-in symindies: `(` and `)`.
+
 #### Syntax sugar
 1. `[#]$(<pattern to define>)` <=> `[#]($(<pattern to define>) as _)` <=> `[#]($(<pattern to define>) as $#0 [$#1 [...]])`
 	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> [...]]`
@@ -320,6 +329,7 @@ Currently, this README pretty much only consists of a language specification. Si
 7. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
     - I.e. `if True then do_something` is assumed to mean the fully applied `if $cond then $body` function rather than a partially applied `if $cond then $expr else $expr`.
 8. An expression, or term, is said to be *known* to the compiler if the compiler sees it as a specific value rather than a pseudo-value.
+9. `caller` is a reserved keyword for the caller of the current function.
 
 #### Example code snippets
 1.
@@ -344,19 +354,12 @@ Currently, this README pretty much only consists of a language specification. Si
 *Source code for examples available in [readme_examples.ppl](examples/readme_examples.ppl).*
 
 ### [OLD] Syntax
-5. Function names can only contain *either* characters *or* operators.
-
 12. Functions return *partially* if passed as args to a non-evaluating function.
     - I.e. `f (g $x => x)` partially returns `(g $x => x)`.
     - **NOTE:** This does *not* apply to anonymous functions. I.e. `f ($x => x)` does *not* partially return `($x => x)`.
 
 13. Functions are *only* defined in the scope they were created and scopes in which they (possibly partially) have been returned to.
     - **NOTE:** Functions are *not* defined inside functions they are passed to (except inside the variable). This means that `let f = g;` is different from `g;` in that the latter returns and therefore defines the function `g` in the scope while the former does not.
-
-17. `caller` is a reserved keyword for the caller of the current function.
-
-25. `op <operator>[\n op <operator> [...]]` defines operators, which are defined to be characters placeable right next to separate functions.
-    - I.e. `op ;` allows `($expr; =>);`.
 
 --------
 
