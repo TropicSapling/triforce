@@ -352,14 +352,6 @@ Currently, this README pretty much only consists of a language specification. Si
 
 *Source code for examples available in [readme_examples.ppl](examples/readme_examples.ppl).*
 
-### [OLD] Syntax
-12. Functions return *partially* if passed as args to a non-evaluating function.
-    - I.e. `f (g $x => x)` partially returns `(g $x => x)`.
-    - **NOTE:** This does *not* apply to anonymous functions. I.e. `f ($x => x)` does *not* partially return `($x => x)`.
-
-13. Functions are *only* defined in the scope they were created and scopes in which they (possibly partially) have been returned to.
-    - **NOTE:** Functions are *not* defined inside functions they are passed to (except inside the variable). This means that `let f = g;` is different from `g;` in that the latter returns and therefore defines the function `g` in the scope while the former does not.
-
 --------
 
 ### <s>Data types [OUTDATED]

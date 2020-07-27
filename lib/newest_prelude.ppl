@@ -205,6 +205,16 @@ func for each $item in ($list as any List) ($body as implicitly frozen) {
 };
 
 // -------------------------
+// |   CATEGORY: Number    |
+// -------------------------
+
+func $n..$m {
+	n|(n + 1)|...|m
+};
+
+func $n +- $m {n-m..n+m};
+
+// -------------------------
 // |  CATEGORY: Category   |
 // -------------------------
 
