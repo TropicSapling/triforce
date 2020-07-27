@@ -23,6 +23,9 @@ I've been thinking recently about perhaps renaming P+ to Triforce. I like that n
 
 Why I'm thinking of changing the name? Well, I simply prefer the name Triforce over P+.
 
+### Learning the language
+I'm currently working on a wiki for this language which will explain some things about the language in a more understandable way than this README does. The wiki is currently very incomplete however, so you can't really learn much from it yet. But it's not really a good idea to start learning this language at this moment anyway, since there's not much stability right now and the latest working compiler is not even able to compile more than a small subset of an old version of the language.
+
 ### Some quick info before you start reading the rest
 Currently, this README pretty much only consists of a language specification. Similarly to most language specifications, it's rather hard to understand and you'll probably have a hard time learning the language by reading it. It also has the extra perk of not even being written well enough to precisely describe the language! And did I mention that I'm also changing it all the time? Really, the specification is just here for the developers to remember everything. But, you can always attempt to read the rest anyway if you want xD
 
