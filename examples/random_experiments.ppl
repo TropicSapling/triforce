@@ -621,6 +621,9 @@ func replicate $val {val :: replicate val} : any List;
 
 let list: (implicitly any List where this length == 1) = replicate 123; // => 123 :: []
 
+// Or maybe that's a bad idea? Better to only use 'implicitly' when truly necessary?
+// https://contributors.scala-lang.org/t/can-we-wean-scala-off-implicit-conversions/4388
+
 // Also would be nice to make it easier to have the same return type for several function variants
 
 --------------------------------------------------
