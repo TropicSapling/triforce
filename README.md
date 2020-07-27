@@ -261,6 +261,10 @@ Currently, this README pretty much only consists of a language specification. Si
 5. There are 2 built-in symgroups: alphanumeric and whitespace.
 6. There are 2 built-in symindies: `(` and `)`.
 
+#### Comments
+1. `// [<one line comment>]`
+2. `/* [<multi-line comment>] */`
+
 #### Syntax sugar
 1. `[#]$(<pattern to define>)` <=> `[#]($(<pattern to define>) as _)` <=> `[#]($(<pattern to define>) as $#0 [$#1 [...]])`
 	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> [...]]`
@@ -347,9 +351,11 @@ Currently, this README pretty much only consists of a language specification. Si
 5.
 ![Example 5](img/ex5.PNG)
 
-6. *See examples file, picture coming soon...*
+6.
+![Example 6](img/ex6.PNG)
 
-7. *See examples file, picture coming soon...*
+7.
+![Example 7](img/ex7.PNG)
 
 *Source code for examples available in [readme_examples.ppl](examples/readme_examples.ppl).*
 
@@ -510,25 +516,6 @@ Currently, this README pretty much only consists of a language specification. Si
 
 --------
 
-### Defining [OUTDATED]
-* `#def '<code>' as '<code>'` (will support regex in the future using `#{<regex>}`, as well as `%{(property|properties|var)}`)
-* `#if <condition>`
-* `#else`
-* `#elif <condition>`
-* `#ifdef <const>`
-* `#ifndef <const>`
-* `#endif`
-
---------
-
-### Special [OUTDATED]
-* `goto <label>`
-* ``#import (('|")<path>('|")|`<`<std lib path>`>`) [as <name>]``
-* `#export <function1>[, <function2>...]`
-* `eval '<code>'`
-
---------
-
 ### Built-in global variables [OUTDATED]
 * `__OS`
 * `__path`
@@ -537,17 +524,6 @@ Currently, this README pretty much only consists of a language specification. Si
 * `__line`
 * `__item`
 * `__app`
-
---------
-
-### </s>Comments
-* `// <One line comment>`
-
-```
-/* <Multi
-line
-comment> */
-```
 
 --------
 
