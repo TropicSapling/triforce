@@ -26,8 +26,8 @@ Why I'm thinking of changing the name? Well, I simply prefer the name Triforce o
 ### Some quick info before you start reading the rest
 Currently, this README pretty much only consists of a language specification. Similarly to most language specifications, it's rather hard to understand and you'll probably have a hard time learning the language by reading it. It also has the extra perk of not even being written well enough to precisely describe the language! And did I mention that I'm also changing it all the time? Really, the specification is just here for the developers to remember everything. But, you can always attempt to read the rest anyway if you want xD
 
-## Features
-#### Definitions
+## Spec
+### Definitions
 <sup>Keywords surrounded by</sup>
 * <sub>brackets (`[]`) are *optional*</sub>
 * <sub>angle brackets (`<>`) **must** be replaced by a name of your choice</sub>
@@ -43,14 +43,13 @@ Currently, this README pretty much only consists of a language specification. Si
 
 --------
 
-### Spec
-#### Programs
+### Programs
 1. So far a program only consists of 1 file, but that will change in the future, and so will likely below points.
 2. A program is just one single anonymous function (counting `<input args>` to it).
 3. The compiler will evaluate this function as much as it can during compilation, and then convert the remnants into the specified output format.
 	- Normally this is machine code
 
-#### Anonymous functions
+### Anonymous functions
 1. Structure: `(<input pars> => <function body>) <input args>`.
 2. `<input pars>` = `(<par1>) [(<par2>) [...]]`
 3. `<input args>` = `<arg1> [<arg2> [...]]`
@@ -79,7 +78,7 @@ Currently, this README pretty much only consists of a language specification. Si
 	- this means the compiler won't check the function body until it's in its final scope
 	- for an example, see "Example code snippets" §2
 
-#### Patterns (variables but better)
+### Patterns (variables but better)
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match> [constructed using <constructor pattern>])` where
 	- `<pattern to define>` = ` <dname start>  [{(<pattern def>)|<dname continuation>} [...]] [<dname end>]` where
 		- `<dname start>`, `dname continuation`, `<dname end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
@@ -126,14 +125,14 @@ Currently, this README pretty much only consists of a language specification. Si
 	- This means that anywhere it says `<function>` in this README it's actually `<function/pattern-becoming-function>`
 	- TODO: check if there are any exceptions to this
 
-#### Pattern parsing algorithm
+### Pattern parsing algorithm
 1. Choose a `$(<...>)` and move to its outside.
 	- NOTE: If the pattern is after 'as', choose a `#(<...>)` here instead (? TODO)
 2. If inside another `$(<...>)`, move to its outside, and then keep leaving scopes until you find `as`.
    If not, keep leaving scopes until you find `=>`.
 3. Your pattern is defined after this `as` or `=>`.
 
-#### Pattern matching
+### Pattern matching
 1. When a pattern name is used, the compiler will try to find a matching pattern definition. If it can't find any match, it reports a compile error.
 
 2. If 2 or more variables in the same function have the same name they will be pattern matched to be equal.
@@ -170,7 +169,7 @@ Currently, this README pretty much only consists of a language specification. Si
 	- `$x as ~Undefined` overrides this and specifies that `x` must *not* be `Undefined`
 		- useful for ensuring something is total: `this_should_be_total: ~Undefined`
 
-#### Values
+### Values
 1. Partially applied functions and patterns are treated as values.
 	- called *objects* when of the form `<Capitalized Name> [<pars>] _`
 2. There exists a special `Undefined` value, which will be inserted into compilation or-patterns whenever a value might not come to exist during runtime. This happens if:
@@ -184,7 +183,7 @@ Currently, this README pretty much only consists of a language specification. Si
 	- Numbers, strings, etc. are defined as partially applied functions or patterns
 4. Values are differentiated using pattern matching (as described under "Patterns" and "Pattern matching").
 
-#### Pseudo-values
+### Pseudo-values
 1. Pseudo-values are similar to values but act a bit differently, and include:
 	- and/or-patterns
 		- ex: `1|2|3 & 2|3|4`
@@ -211,7 +210,7 @@ Currently, this README pretty much only consists of a language specification. Si
 5. And/Or-patterns are further described in "Pattern matching" §3
 6. Placeholder-values are further described in "Patterns" §5
 
-#### Evaluation
+### Evaluation
 1. P+ uses eager evaluation.
 2. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
 3. The compiler will try to run as much as possible during compilation unless otherwise specified.
@@ -222,7 +221,7 @@ Currently, this README pretty much only consists of a language specification. Si
 	3. Function application is evaluated
 5. `frozen` and `permafrosted` prevents evaluation from going past stage 1.
 
-#### Equality
+### Equality
 1. 2 finally evaluated values are equal if they refer to the same named function and they have the same applied args.
 	- This means anonymous functions are incomparable
 	- A value is first finally evaluated when all synonyms have been deconstructed
@@ -240,7 +239,7 @@ Currently, this README pretty much only consists of a language specification. Si
 7. Comparison involving `frozen` or `permafrosted` values will compare the values as if they were strings.
 8. See "Example code snippets" §1 for an example of equality.
 
-#### Synonyms and Shadows
+### Synonyms and Shadows
 1. 2 patterns `f $x` and `$y g` are *synonymous* iff we `let f $x = $y g` or the other way around.
 	- We say that `f` is *deconstructed* to `g` when evaluated
 		- I.e. `f 123` becomes `123 g` (if all patterns match)
@@ -252,7 +251,7 @@ Currently, this README pretty much only consists of a language specification. Si
 	- They have the same `<pattern to match>`:s in the same order
 	- They have the same name
 
-#### Symbols
+### Symbols
 1. Symbols part of the same *symgroup* that are next to eachother form a token.
 2. Every *symindie* is its own token.
 3. `decl symgroup  <symbol> [<symbol> [...]] for <scope>` declares a symbol group for the scope.
@@ -261,11 +260,11 @@ Currently, this README pretty much only consists of a language specification. Si
 5. There are 2 built-in symgroups: alphanumeric and whitespace.
 6. There are 2 built-in symindies: `(` and `)`.
 
-#### Comments
+### Comments
 1. `// [<one line comment>]`
 2. `/* [<multi-line comment>] */`
 
-#### Syntax sugar
+### Syntax sugar
 1. `[#]$(<pattern to define>)` <=> `[#]($(<pattern to define>) as _)` <=> `[#]($(<pattern to define>) as $#0 [$#1 [...]])`
 	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> [...]]`
 	- If the pattern isn't a variable, the amount of `$` after `as` will match the amount of parameters of the pattern
@@ -289,7 +288,7 @@ Currently, this README pretty much only consists of a language specification. Si
 	- Note that they must still be defined somewhere in `<scope>`
 	- See "Example code snippets" §3 for an example
 
-#### Built-in "functions"
+### Built-in "functions"
 1. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.
 	- ex: `ALL_ARGS (f $n $str) == [any Nat, any String]`
 		- except array is special: `f [any Nat, any String] == f (any Nat) (any String)`
@@ -323,7 +322,7 @@ Currently, this README pretty much only consists of a language specification. Si
 		- if it's not possible to continue, there will be an error
 			- note that `__CATCH__` can be used to prevent this
 
-#### Misc
+### Misc
 1. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
 2. `(<expr>)` *always* has higher precedence than `<expr>`.
 3. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
@@ -335,26 +334,14 @@ Currently, this README pretty much only consists of a language specification. Si
 8. An expression, or term, is said to be *known* to the compiler if the compiler sees it as a specific value rather than a pseudo-value.
 9. `caller` is a reserved keyword for the caller of the current function.
 
-#### Example code snippets
-1.
+## Other random stuff
+### Example code snippets
 ![Example 1](img/ex1.PNG)
-
-2.
 ![Example 2](img/ex2.PNG)
-
-3.
 ![Example 3](img/ex3.PNG)
-
-4.
 ![Example 4](img/ex4.PNG)
-
-5.
 ![Example 5](img/ex5.PNG)
-
-6.
 ![Example 6](img/ex6.PNG)
-
-7.
 ![Example 7](img/ex7.PNG)
 
 *Source code for examples available in [readme_examples.ppl](examples/readme_examples.ppl).*
