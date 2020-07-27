@@ -27,7 +27,7 @@ Why I'm thinking of changing the name? Well, I simply prefer the name Triforce o
 Currently, this README pretty much only consists of a language specification. Similarly to most language specifications, it's rather hard to understand and you'll probably have a hard time learning the language by reading it. It also has the extra perk of not even being written well enough to precisely describe the language! And did I mention that I'm also changing it all the time? Really, the specification is just here for the developers to remember everything. But, you can always attempt to read the rest anyway if you want xD
 
 ## Spec
-### Definitions
+#### Definitions
 <sup>Keywords surrounded by</sup>
 * <sub>brackets (`[]`) are *optional*</sub>
 * <sub>angle brackets (`<>`) **must** be replaced by a name of your choice</sub>
