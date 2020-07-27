@@ -1,22 +1,24 @@
-// Syntax sugar
-$a                 <=> ($a as _) // 'a' can be called like 'a arg1 arg2 ...'
-$(f $a $b ...)     <=> ($(f $a $b ...) as #0 #1 ...)
-(x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
-
-// Requirements for *complete* functions (*basic* functions don't allow these easily)
-- Attributes
-- Recursion
-- Types
-
-////////////////////////////////////////////////////////////////
-
-($(let basic $var = $val;) => scope) (($var as frozen) $val => (var => scope) val)
+// TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
+(impure $(let basic $var = $val;) => scope) (impure ($var as frozen) $val => (var => scope) val)
+(impure $(let pure  $var = $val;) => scope) (       ($var as frozen) $val => (var => scope) val)
 
 // Normal 'frozen' keyword only freezes until 'expr' gets used again.
-// Use '{expr}' to freeze expression and make it stay frozen. Unfreeze with '{expr} _'.
-let basic $({$expr as frozen} _) = $expr _ => expr;
+// Use '{expr}' to permafrost 'expr'. Defrost with 'defrost {expr}'.
+let basic $({($expr as frozen)} _)           = closed $expr   _ => expr;
+let basic $(permafrosted ($input as frozen)) =        $input    => frozen ($(`input` _));
+let basic $(defrost (permafrosted $pfexpr))  =        $pfexpr   => pfexpr _;
 
-let basic $(basic func ($pattern as frozen) $(body _);) = $pattern $(body _) => frozen (let basic $pattern = ALL_ARGS pattern => body _;);
+// We could've just used 'frozen' here. However, using permafrost forces the user to explicitly
+// write '{}', thereby making them aware of the code not being evaluated until later.
+// It's convention to make this explicit as long as it doesn't negatively affect user experience.
+let basic $(       basic func ($pattern as frozen) `permafrosted $body`;) = $pattern $body => frozenraw (let pure  $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+let basic $(impure basic func ($pattern as frozen) `permafrosted $body`;) = $pattern $body => frozenraw (let basic $`pattern` = ALL_ARGS_PLACEHOLDERS pattern => defrost body;);
+
+// NOTE: Basic functions:
+// - must be defined in order
+// - don't allow easy attributes
+// - don't allow easy recursion
+// - don't allow easy return type checking
 
 basic func Nothing $f $x {scope};
 
@@ -24,8 +26,10 @@ basic func remaining args of $f {
 	ALL_ARGS f length - APPLIED_ARGS f length
 };
 
+basic func call $f {f (ALL_ARGS f)};
+
 // Boxes
-basic func category of ($wrapper (ALL_ARGS wrapper)) {wrapper};
+basic func category of ($wrapper (ALL_ARGS_PLACEHOLDERS wrapper)) {wrapper};
 basic func unbox $b {APPLIED_ARGS b};
 
 // Bool True|False
@@ -35,11 +39,11 @@ basic func Bool False _  $y {y};
 let basic $True  = Bool True;
 let basic $False = Bool False;
 
-basic func (True)   && (True)   {True};
-basic func (Bool _) && (Bool _) {False};
+basic func (True)  && ($b as           Bool _) {b};
+basic func (False) && (frozen becoming Bool _) {False};
 
-basic func (False)  || (False)  {False};
-basic func (Bool _) || (Bool _) {False};
+basic func (True)  || (frozen becoming Bool _) {False};
+basic func (False) || ($b as           Bool _) {b};
 
 basic func !(True)  {False};
 basic func !(False) {True};
@@ -48,142 +52,123 @@ basic func $a == $a {True};
 basic func _  == _  {False};
 basic func $a != $b {!(a == b)};
 
-// if_then_else
-basic func if (True)    $body            {body};
-basic func if (False)   _                {scope};
-basic func if (Bool $b) $body else $expr {b body expr};
+// if _ _ else
+// ex: 'if x == 123 {456} else {789}'
+basic func if (True)  `permafrosted $body`                           {defrost body};
+basic func if (False) `permafrosted $body`                           {scope};
+basic func if (True)  `permafrosted $body` else `permafrosted $expr` {defrost body};
+basic func if (False) `permafrosted $body` else `permafrosted $expr` {defrost expr};
 
-basic func if (True)    then $body            {body};
-basic func if (False)   then _                {scope};
-basic func if (Bool $b) then $body else $expr {b body expr};
+// if _ then _ else _
+// ex: 'if x == 123 then 456 else 789'
+basic func if $cond then ($body as frozen)                        {if cond {body}};
+basic func if $cond then ($body as frozen) else ($expr as frozen) {if cond {body} else {expr}};
 
 // Type checking
-basic func any $b {b (ALL_ARGS b)};
+basic func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
 
-basic func if fulfilling (True)         $body {body};
-basic func if fulfilling (frozen $cond) _     {
-	if !cond {
-		// continue to next function def if there is one, else panic
-		continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify {cond}]))
-	} else {
-		panic (format_err "Contract is not a Bool")
-	};
+basic func if fulfilling (True)                       `permafrosted $body` {body};
+basic func if fulfilling ($contract as frozen Bool _) `permafrosted $body` {
+	// continue to next function def if there is one, else panic
+	continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify {contract}]))
 };
 
-basic func if fulfilling (True)  $body else report _             {body};
-basic func if fulfilling (False) _     else report (String $msg) {
+basic func if fulfilling (True)  `permafrosted $body` else report _             {body};
+basic func if fulfilling (False) `permafrosted $body` else report (String $msg) {
 	continue from caller or alt prerun panic (format_err (String msg))
 };
 
-// TODO: Fix so that stuff below works with new syntax
-
-$f using $closure => if fulfilling remaining args of closure == 1 (
-	f ((closure _) f)
-);
-
-memo _ => (
-	$f $next $x => f (next) x
-);
-
-fibY $next $n => if n < 2 (
-	1
-) else next (next) (n - 2) + next (next) (n - 1);
-
-// Better version?
-basic func fibR $fibR $n {
-	if n < 2 {
-		1
-	} else {
-		fibR (fibR) (n - 2) + fibR (fibR) (n - 1)
-	}
+basic func $this fulfilling ($contract as frozen Bool _) {
+	// Note that the structure of this function allows 'this' to be used inside of the contract
+	if !contract {
+		continue from caller or alt prerun panic (format_err (format "Failed to fulfill condition '{}'" [stringify {contract}]))
+	};
 };
 
-fibR (fibR) 123
+// 'arr: any Array where this length == 7' sounds better than 'arr: any Array fulfilling this length == 7'
+let basic $where = fulfilling;
 
-// test impl
-basic func rec func $pattern ($body _); {
-	frozen (
-		let basic pattern = (
-			basic func $f pattern {
-				let basic $pattern = (f) f;
-				body _
+// Pronounced as: "$expr [should] be[come] type"
+basic func (Typed $expr _     ): $type {expr: type}; // allows for stuff like '(123: 0..): any Int'
+basic func ($expr as type     ): $type {Typed expr type};
+basic func `permafrosted $expr`: $type {(_ => Typed expr type) (defrost expr: type)}; // allows for stuff like '{123}: any Int'
+
+basic func ($expr as type     ) matches $type {True};
+basic func `permafrosted $expr` matches $type {defrost expr matches type};
+basic func _                    matches $type {False};
+
+// TODO:
+// Fix permafrost, either by adding here or by
+// changing lang spec so that frozen/permafrost/etc.
+// are automatically fixed for synonyms
+let basic $expr is $type = $expr matches $type;
+
+// 'transparent _' makes this function run if all previous pattern matches failed
+basic func Typed $expr $type (transparent _) {expr};
+
+// TODO: Generalise into 'apply $f to itself $n times'
+basic func apply $f to itself {f f};
+
+basic func $f using $closure {
+	if fulfilling remaining args of closure == 1 {
+		f ((closure _) f)
+	};
+};
+
+basic func @($attr as frozen) ($id as frozen) {
+	ATTRIBUTE attr id // this built-in tells compiler 'id' has attribute 'attr' and returns 'id'
+}; // use '##' instead if you decide to use '@' for pointers
+
+basic func rec func ($pattern as frozen) `permafrosted $body`; {
+	frozenraw (
+		let basic $`pattern` = (
+			basic func $f `pattern` {
+				let basic $`pattern` = f f;
+				defrost body
 			};
 			
-			($f pattern) ($f pattern) // becomes '($f fib $n) fib $n' if pattern = 'fib $n'
+			($f pattern) ($f pattern) // becomes '($f fib $n) ($f fib $n)' => '(($f fib $n) fib $n)' if pattern = 'fib $n'
 		);
 	)
 };
 
-rec func fib $n {
-	if n < 2 {
-		1
-	} else {
-		fib (n - 2) + fib (n - 1)
-	}
+basic func impure rec func ($pattern as frozen) `permafrosted $body`; {
+	frozenraw (
+		let basic $`pattern` = (
+			impure basic func $f `pattern` {
+				let basic $`pattern` = f f;
+				defrost body
+			};
+			
+			($f pattern) ($f pattern) // becomes '($f fib $n) ($f fib $n)' => '(($f fib $n) fib $n)' if pattern = 'fib $n'
+		);
+	)
 };
 
-=>
+// Complete *total* functions: allows easy attributes, recursion & types (TODO: allow out-of-order definitions as well)
+// - a total function must:
+//		- have no infinite loops
+//		- cause no side-effects
+//		- use no outside/free patterns
+// Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
+basic func $attr_list func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {
+	frozenraw (
+		rec func (attr_list pattern) (typed_body: ~Undefined);
+	)
+};
 
-let basic fib $n = (
-	basic func $f fib $n {
-		let basic $(fib $n) = (f) f;
-		if n < 2 {
-			1
-		} else {
-			fib (n - 2) + fib (n - 1)
-		}
-	};
+// Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
+basic func $attr_list partial func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {
+	frozenraw (
+		rec func (attr_list pattern) (typed_body);
+	)
+};
 
-	($f fib) fib $n
-);
+basic func         func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {[]         func pattern typed_body;};
+basic func partial func ($pattern as frozen) ($typed_body as frozen becoming {#_}); {[] partial func pattern typed_body;};
 
-fib 5
-
-fibMemo $n => (fibY using memo) n;
-
-basic func @($attr as frozen) $(id as frozen) {
-	ATTRIBUTE attr id // this built-in tells compiler 'id' has attribute 'attr' and returns 'id'
-}; // use '##' instead if you decide to use '@' for pointers
-
-@(precedence below _) func $expr; {
+// The legendary SEMICOLON
+@(precedence below _) // this is a function and not a list of attrs, needs fixing
+func $expr; {
 	scope
-}: auto;
-
--------------------------------------------------
-
-// Parsing instructions
-(($(add (4) to ($(a) as 7)) as #a #0) => add 4 to 7) ($x _ => x + 4)
-
-1. Choose a $(...) and move to its outside
-2. If inside another $(...), move to its outside, and then keep leaving scopes until you find 'as'
-   If not, keep leaving scopes until you find '=>'
-3. Your variable is defined after this 'as' or '=>'
-
----------------------
-
-Let f $x, $a f $b be patterns/functions
-
-Then:
-      f <=>      f $x
-$a f <=> $a f $b
-
-let f = $x => ...;
-<=>
-let f $x = $x => ...;
-
-This is because there is no pattern matching before ‘as’. So doing ‘$x’ there serves no other purpose than naming the pattern / which order args come in.
-
-Both patterns and anonymous functions can be passed around as values.
-
-‘$x => ...` is almost equivalent to ‘$x’.
-
-All inputs to functions are parenthesised. They are also evaluated unless frozen.
-
----------------------
-
-Number literals can be linked to types for a certain scope. This allows changing the link for different scope, a.k.a. changing the representation (between for example machine and natural numbers).
-
-// default representation, change part
-// after ‘=‘ to change representation
-let __NUMBERS__ = any Nat;
-let __STRINGS__ = any String;
+};

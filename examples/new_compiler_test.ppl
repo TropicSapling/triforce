@@ -411,12 +411,12 @@ func $a plus $b returns a + b: Int;
 
 let untyped (untyped func (frozen $pattern) returns $body;) = $pattern $body => frozen (let untyped pattern = ALL_ARGS pattern => body;);
 
-// 'transparent _' makes this function run if it fails all pattern matches
 untyped func (Typed $expr _): $type returns expr: type; // allows for stuff like '(123: 0..): Int'
 untyped func           $expr: $type returns if fulfilling expr is type (
 	Typed expr type
 );
 
+// 'transparent _' makes this function run if all previous pattern matches failed
 untyped func Typed $expr $type (transparent _) returns expr; // is 'transparent' needed?
 
 untyped func (frozen $var): $type = $new_val returns __ASSIGN__ var (new_val: type);

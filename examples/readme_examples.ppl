@@ -1,0 +1,248 @@
+// -------------------------------------------
+// |                EXAMPLE 1                |
+// -------------------------------------------
+
+// - n == n is True
+// - The remaining terms of LHS & RHS are known
+// => Compiler can determine if True or False
+(n - 1)            * 2 + 2 == n * 2
+Undefined|0|1|...  * 2 + 2 == 0|2|4...
+// Potential Undefined(s) found!
+// Add Undefined to or-pattern, then
+// start over with values not leading to Undefined:
+          0|1|...  * 2 + 2 ==   2|4|...
+          0|2|...      + 2 ==   2|4|...
+          2|4|...          ==   2|4|...
+// LHS == RHS since:
+// - Compiler can determine if True or False
+// - LHS & RHS or-patterns consist of the same values in the same order
+=> Undefined|True
+
+// - n == n2 is True|False
+// => Compiler *cannot* determine if True or False
+(n - 1)            * 2 + 2 == n2 * 2
+Undefined|0|1|...  * 2 + 2 == 0|2|4...
+// Potential Undefined(s) found!
+// Since the compiler cannot determine anything more,
+// and it's irrelevant if there are more potential Undefineds,
+// it stops here and returns:
+=> Undefined|True|False
+
+// -------------------------------------------
+// |                EXAMPLE 2                |
+// -------------------------------------------
+
+// 'closed' prevents the compiler from looking at the function body
+// before the function is in its final scope.
+// 'impure' allows the function to be non-pure.
+$x => (
+	($y $z => (
+		// Final scope
+		// 'z' is defined here, so all is fine
+
+		(_ => y x) _ // just to show final scope isn't necessarily call scope
+	)) (closed impure $a => x++ * z a) 123 // 'impure' allows change of 'x', so all is fine
+)
+
+$x => (
+	($y => (
+		// Final scope
+		// ERROR: 'z' is undefined
+		
+		($z => y x) 123 // just to show final scope isn't necessarily call scope
+	)) (closed impure $a => x++ * z a) // 'impure' allows change of 'x', so all is fine
+)
+
+$x => (
+	($y $z => (
+		// Final scope
+		
+		(_ => y x) _ // just to show final scope isn't necessarily call scope
+	)) ($a => x++ * z a) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern being changed
+)
+
+// -------------------------------------------
+// |                EXAMPLE 3                |
+// -------------------------------------------
+
+// Declarations to allow use of patterns before they have been defined
+decl $x $y $z in (
+	println x;
+	let x = 123;
+)
+
+// -------------------------------------------
+// |                EXAMPLE 4                |
+// -------------------------------------------
+
+// Example of a cool thing using #-defs
+// '#($y)%' defines 'y' inside function body as '5' in this case
+// You could also do '#($y as 5)%' if you only want to allow that input
+func (any Number)% _ {};
+
+func ($x as any Number) * (#($y)%) {
+    x * y / 100
+};
+
+120 * 5% == 6
+
+// This special function catches matching
+// terms in the scope its defined for.
+// It only catches the terms if they are
+// used in a place where all pattern
+// matching has failed.
+//
+// Here we are making it possible to do
+// <x>% <op> <y>% for every existing operator
+// that works with numbers. This works because
+// i.e. '120% * 5%' fails all pattern matching
+// but still matches the below catcher pattern.
+func __CATCH__ ($(_ op _) as #(#($x)%) #(#($y)%)) {
+    (((x / 100) op (y / 100)) * 100)%
+}
+
+// The 2 lines below work thanks to
+// the above __CATCH__ overload
+120% * 5% == 6%
+120% + 5% == 125%
+
+// Running '__CATCH__' as if it was a normal
+// function is allowed only for testing.
+// Doing this will get you a warning on
+// debug-mode and an error on release-mode.
+__CATCH__ (5% * 120%) == 6%
+
+// Below we instead catch all matching terms
+// *before* any other pattern matching is
+// done by using 'frozen'.
+//
+// This results in every single function
+// being catched before evaluation.
+func __CATCH__ ($f as implicitly frozen) {
+	println "nope!";
+};
+
+println "Hello world!"; // prints "nope!"
+9 + 10 == 21;           // prints "nope!"
+9 + 10 == 19;           // prints "nope!"
+
+// -------------------------------------------
+// |                EXAMPLE 5                |
+// -------------------------------------------
+
+// Examples of referring to the same function or not
+func f ($x as any String) $y {println 123};
+func f ($x as any Int)    $y {println 123};
+
+f      != f      // ERROR! Unable to determine function being referred to
+f "hi" != f 789
+
+func    g ($x as any Int) $y {println 123};
+func $y g ($x as any Int)    {println 123};
+
+g 789 == g 789
+g 789 != $y g 789
+
+// Here the second function shadows the first
+func h ($x as any Int) $y {println 123};
+func h ($x as any Int) $y {println 456};
+
+h 1 == h 1
+h 1 != h 2
+
+// Note! Full application this time
+h 1 2 == 456
+
+// Other comparison examples
+let    id    = $x => x;
+let    plus1 = $x => id x + 1
+let    f     = plus1;
+let $x g     = f;
+
+f <=> f $x
+
+// g <=> f <=> plus1 is just shorthand for g == f && f == plus1
+g <=> f <=> plus1 // because 'g' is just a synonym for 'f' which is a synonym for 'plus1'
+
+g != id
+
+// All 4 lines below error! Anonymous functions are not comparable
+f $x      != ($x => f x)
+plus1     != ($x => id x + 1)
+id        != ($x => x)
+($x => x) != ($x => x)
+
+123 g <=> f 123 <=> plus1 123 <=> id 123 + 1 <=> 123 + 1 <=> 124 // since all evaluate to 124
+
+// -------------------------------------------
+// |                EXAMPLE 6                |
+// -------------------------------------------
+
+func Potato _ {};
+
+let potato  = Potato;
+let potato2 = Potato;
+let potato3 = (
+	func Potato _ {};
+
+	Potato
+);
+
+potato == potato2
+potato != potato3 // the Potato:es were created using different constructors, so they are different
+
+// -------------------------------------------
+// |                EXAMPLE 7                |
+// -------------------------------------------
+
+// Pattern matching order:
+// - Most specific patterns are checked first.
+// - More general patterns are checked second.
+// - If order can't be decided based on this,
+//   follow the order in which the patterns
+//   are defined.
+// 
+// The most specific pattern is the one with
+// the smallest or-patterns.
+// - '_' is an or-pattern of everything,
+//   and therefore the biggest or-pattern
+// 
+// Pattern matching stops when a match is found.
+// If no match is found, there's an error.
+
+object Player [
+	$name   as any String,
+	$health as any Number
+];
+
+// Note how this is shorthand for 'f ($x as _)'
+func f $x {
+	println "last";
+};
+
+func f ($x as Player "Steve" 25..75) {
+	println "fourth";
+};
+
+func f ($x as any Player) {
+	println "fifth"
+};
+
+func f ($x as Player "Steve" 55..75) {
+	println "first";
+};
+
+func f ($x as Player "Steve"|"Alex" 50..70) {
+	println "third";
+};
+
+func f ($x as Player "Steve" 50..70) {
+	println "second";
+};
+
+f (Player "Steve" 80) // prints "fifth"
+f (Player "Steve" 60) // prints "first"
+f (Player "Steve" 50) // prints "second"
+f (Player "Alex"  40) // prints "fifth"
+f (Player "Alex"  60) // prints "third"
+f Potato              // prints "last"

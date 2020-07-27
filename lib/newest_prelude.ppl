@@ -1,0 +1,262 @@
+// --------------------------------------------------
+// |                  THE PRELUDE                   |
+// --------------------------------------------------
+
+// TODO: Put the basic things that are needed for the prelude but shouldn't be visible from the
+//       outside inside a category 'Foundation'. This can be done by writing the category stuff
+//       by hand using anonymous functions, or by generating these anonymous functions.
+// OR:   Alternatively, put everything inside 'Prelude' category and then expose Prelude.
+
+// -------------------------
+// |   CATEGORY: Basics    |
+// -------------------------
+
+// TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
+(impure $(let basic        $var = $val;) => scope) (       ($var as implicitly permafrosted) $val => (impure $`var` => scope) val)
+(impure $(let basic impure $var = $val;) => scope) (impure ($var as implicitly permafrosted) $val => (impure $`var` => scope) val)
+
+// TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
+//       definitions at once and destructuring of the value.
+
+// TODO: Declare operators somehow:
+// - {}
+// - []
+// - ;
+// - +-*/%
+// - etc.
+
+// Useless, but looks nice sometimes.
+// Convention to use this whenever $expr spans multiple lines.
+// Also use this for the classics 'func', 'if', etc.
+let basic {$expr} = $expr => expr;
+
+let basic         basic func ($pattern as implicitly permafrosted) ($body as implicitly frozen);  = $pattern $body => frozen raw (let basic        `pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
+let basic (impure basic func ($pattern as implicitly permafrosted) ($body as implicitly frozen);) = $pattern $body => frozen raw (let basic impure `pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
+
+basic func Typed $expr $type _ {};
+// If all pattern matching fails, throw away type restriction
+basic func __CATCH__ (Typed #$expr _) {expr};
+
+// Pronounced as: "$expr [should] be[come] type"
+basic func ($expr as type ): $type {Typed expr type};
+basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
+
+basic func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
+
+// TODO: getting category of value and doing 'any <category>'
+// i.e. 'type of Player 50 100' => 'Player _ _'
+basic func type of (_ constructed using $constructor) {any constructor};
+
+// Marker for unchecked input
+// File reading, user input, etc. should use this
+// Always ensure 'raw' input is ~UncheckedInput
+// TODO: Make '__CATCH__' for this or not?
+basic func UncheckedInput _ {};
+
+// Pronounced as: "let $var be $type and equal $val"
+// let impure $var = $val also works (thanks to 'raw')
+basic func let ($var as implicitly permafrosted raw ~UncheckedInput): $type = $val; {
+	frozen raw (let basic `var` = val: type;)
+};
+
+basic func let ($var as implicitly permafrosted): auto = $val; {
+	frozen raw (let `var`: type of val = val;)
+};
+
+basic func let ($var as implicitly permafrosted) = $val; {
+	frozen raw (let `var`: val = val;)
+};
+
+basic func Nothing _ {};
+
+// Useful for distinguishing 'Nothing' from 'Wrapped Nothing'
+// See https://www.reddit.com/r/ProgrammingLanguages/comments/hy6emx/explicit_nullability_vs_optionals/fzarbwu/
+basic func Wrapped $obj _ {};
+
+basic func List $item ($tail as any List) _ {};
+
+// TODO: List '[]' syntax, list access
+
+// This sets the default list to 'List' and returns 'scope'
+SET_DEFAULT_LIST List
+
+// Does not accept unchecked input for security reasons
+basic func rec basic func ($pattern as implicitly permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
+	frozen raw {
+		let `pattern` = {
+			basic func $f `pattern` {
+				let `pattern` = f f;
+				body
+			};
+			
+			($f pattern) ($f pattern) // becomes '($f fib $n) ($f fib $n)' => '(($f fib $n) fib $n)' if pattern = 'fib $n'
+		};
+	}
+};
+
+basic func impure rec basic func ($pattern as implicitly permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
+	frozen raw {
+		let impure `pattern` = {
+			impure basic func $f `pattern` {
+				let `pattern` = f f;
+				body
+			};
+			
+			($f pattern) ($f pattern)
+		};
+	}
+};
+
+// Complete *total* functions: allows easy attributes, recursion & types
+// - a total function must:
+//		- have no infinite loops
+//		- cause no side-effects
+//		- use no outside/free patterns
+// Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
+basic func ##($attrs as implicitly permafrosted any List) func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
+	frozen raw {
+		// This built-in tells compiler 'pattern' has attributes 'attrs'
+		// and returns 'pattern' as permafrosted. The attributes must
+		// be given using the default list.
+		rec basic func `SET_ATTRIBUTES attrs pattern` {typed_body: ~Undefined};
+	}
+};
+
+// Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
+basic func ##($attrs as implicitly permafrosted any List) partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
+	frozen raw {
+		rec basic func `SET_ATTRIBUTES attrs pattern` {typed_body};
+	}
+};
+
+basic func         func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {[]         func `pattern` {typed_body};};
+basic func partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {[] partial func `pattern` {typed_body};};
+
+// The legendary SEMICOLON
+##[precedence below _]
+impure func $expr; {
+	scope
+};
+
+impure func declare ($var as implicitly permafrosted) {
+	decl $`var` in scope
+};
+
+// '->' means 'pointer/ref to' and acts similarly to 'permafrosted' when it comes to evaluation
+impure func ($var as implicitly ->(Typed _ #$type)) = ($val as type) {
+	ASSIGN var (Typed val type)
+};
+
+func ref to $val allowing $sub {
+	frozen raw (->(Typed val #$super) where sub matches super)
+};
+
+func ref to $val {
+	ref to val allowing val
+};
+
+// -------------------------
+// |    CATEGORY: Bool     |
+// -------------------------
+
+func True  _ {};
+func False _ {};
+
+func (True)  && ($b as any Bool)                      {b};
+func (False) && (implicitly frozen becoming any Bool) {False};
+
+func (True)  || (implicitly frozen becoming any Bool) {False};
+func (False) || ($b as any Bool)                      {b};
+
+func !(True)  {False};
+func !(False) {True};
+
+// -------------------------
+// | CATEGORY: Comparison  |
+// -------------------------
+
+func $a == $a {True};
+func _  == _  {False};
+func $a != $b {!(a == b)};
+
+func ($expr as type) matches $type {True};
+func _               matches $type {False};
+
+// -------------------------
+// |   CATEGORY: Control   |
+// -------------------------
+
+// ex: 'if x == 123 {456} else {789}'
+func if (True)  ($body as implicitly frozen)                                   {body};
+func if (False) ($body as implicitly frozen)                                   {scope};
+func if (True)  ($body as implicitly frozen) else ($expr as implicitly frozen) {body};
+func if (False) ($body as implicitly frozen) else ($expr as implicitly frozen) {expr};
+
+// ex: 'if x == 123 then 456 else 789'
+func if $cond then ($body as implicitly frozen)                                   {if cond {body}};
+func if $cond then ($body as implicitly frozen) else ($expr as implicitly frozen) {if cond {body} else {expr}};
+
+func while ($cond as any Bool) ($body as implicitly frozen) {
+	...
+};
+
+func for each $item in ($list as any List) ($body as implicitly frozen) {
+	...
+};
+
+// -------------------------
+// |   CATEGORY: Number    |
+// -------------------------
+
+func $n..$m {
+	n|(n + 1)|...|m
+};
+
+func $n +- $m {n-m..n+m};
+
+// -------------------------
+// |  CATEGORY: Category   |
+// -------------------------
+
+// ex: 'fieldified [$a as 123, $b as any Int]' => AST: [["as", "$a", "123"], ["as", "$b", ["any", "Int"]]]
+func fieldified ($fields as any List) {
+	let AST: any List = [];
+
+	for each field in fields {
+		AST += listified permafrosted `field`; // note how the field is parenthesised (add 'raw' to avoid this)
+	};
+
+	AST // = [["as", "$field", "<type>"], ["as", "$field2", "<type2>"], ...]
+};
+
+func object ($obj as implicitly permafrosted) ($fields as any List); {
+	frozen raw (func `obj` `raw codified fieldified fields` _ {};)
+};
+
+func object ($obj as implicitly permafrosted); {
+	frozen raw (object `obj` [])
+};
+
+func category ($cat as implicitly permafrosted) ($contents as any List) {
+	frozen raw (let `cat` = contents; contents)
+};
+
+// Currently doesn't do anything more than checking
+// that what you're exporting is a list, which is
+// useless since 'category' does that later anyway
+func export ($exports as any List) {
+	exports
+};
+
+func expose ($cat as any List) {
+	frozen raw (
+		let `cat[0]` = cat[0]; // using '``' to clarify the name is the evaluated cat[0] rather than 'cat[0]'
+		if cat length > 1 {
+			expose cat[1..];
+		};
+	)
+};
+
+// TODO: Generalise into 'apply $f to itself $n times'
+// TODO: Move out of prelude into std lib
+func apply $f to itself {f f};
