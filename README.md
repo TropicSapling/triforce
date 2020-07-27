@@ -337,11 +337,17 @@ Currently, this README pretty much only consists of a language specification. Si
 ## Other random stuff
 ### Example code snippets
 ![Example 1](img/ex1.PNG)
+
 ![Example 2](img/ex2.PNG)
+
 ![Example 3](img/ex3.PNG)
+
 ![Example 4](img/ex4.PNG)
+
 ![Example 5](img/ex5.PNG)
+
 ![Example 6](img/ex6.PNG)
+
 ![Example 7](img/ex7.PNG)
 
 *Source code for examples available in [readme_examples.ppl](examples/readme_examples.ppl).*
