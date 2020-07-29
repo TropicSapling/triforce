@@ -1,3 +1,3 @@
-[*.{c,ppl}]
+[*.{c,ppl,tri}]
 indent_style = tab
 indent_size = 4
