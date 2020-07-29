@@ -1,6 +1,7 @@
 [
 	{ "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Parentheses.sublime-macro"}, "context":
 		[
+			{ "key": "selector", "operator": "equal", "operand": "source.triforce"},
 			{ "key": "setting.auto_indent", "operator": "equal", "operand": true },
 			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
 			{ "key": "preceding_text", "operator": "regex_contains", "operand": "\\($", "match_all": true },
@@ -9,6 +10,7 @@
 	},
 	{ "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Brackets.sublime-macro"}, "context":
 		[
+			{ "key": "selector", "operator": "equal", "operand": "source.triforce"},
 			{ "key": "setting.auto_indent", "operator": "equal", "operand": true },
 			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
 			{ "key": "preceding_text", "operator": "regex_contains", "operand": "\\[$", "match_all": true },
@@ -17,6 +19,7 @@
 	},
 	{ "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Braces.sublime-macro"}, "context":
 		[
+			{ "key": "selector", "operator": "equal", "operand": "source.triforce"},
 			{ "key": "setting.auto_indent", "operator": "equal", "operand": true },
 			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
 			{ "key": "preceding_text", "operator": "regex_contains", "operand": "\\{$", "match_all": true },
@@ -26,6 +29,7 @@
 
 	{ "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Parentheses Without Semicolon.sublime-macro"}, "context":
 		[
+			{ "key": "selector", "operator": "equal", "operand": "source.triforce"},
 			{ "key": "setting.auto_indent", "operator": "equal", "operand": true },
 			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
 			{ "key": "preceding_text", "operator": "regex_contains", "operand": "\\($", "match_all": true },
@@ -34,6 +38,7 @@
 	},
 	{ "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Brackets Without Semicolon.sublime-macro"}, "context":
 		[
+			{ "key": "selector", "operator": "equal", "operand": "source.triforce"},
 			{ "key": "setting.auto_indent", "operator": "equal", "operand": true },
 			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
 			{ "key": "preceding_text", "operator": "regex_contains", "operand": "\\[$", "match_all": true },
@@ -42,6 +47,7 @@
 	},
 	{ "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Braces Without Semicolon.sublime-macro"}, "context":
 		[
+			{ "key": "selector", "operator": "equal", "operand": "source.triforce"},
 			{ "key": "setting.auto_indent", "operator": "equal", "operand": true },
 			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
 			{ "key": "preceding_text", "operator": "regex_contains", "operand": "\\{$", "match_all": true },
@@ -51,6 +57,7 @@
 
 	{ "keys": ["{"], "command": "insert_snippet", "args": {"contents": "{$0}"}, "context":
 		[
+			{ "key": "selector", "operator": "equal", "operand": "source.triforce"},
 			{ "key": "setting.auto_match_enabled", "operator": "equal", "operand": true },
 			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
 			{ "key": "following_text", "operator": "regex_contains", "operand": "^(?:\t| |\\)|]|;|\\}|$)", "match_all": true }

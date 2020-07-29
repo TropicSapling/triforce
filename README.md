@@ -1,5 +1,6 @@
 # Triforce programming language
 ![banner](img/banner.PNG)
+
 Triforce is a programming language emphasizing performance, power and productivity.
 
 The main goals of the language include:
@@ -330,6 +331,7 @@ Currently, this README pretty much only consists of a language specification. Si
     - I.e. `if True then do_something` is assumed to mean the fully applied `if $cond then $body` function rather than a partially applied `if $cond then $expr else $expr`.
 8. An expression, or term, is said to be *known* to the compiler if the compiler sees it as a specific value rather than a pseudo-value.
 9. `caller` is a reserved keyword for the caller of the current function.
+10. The file extension for the language is `.tri`.
 
 ## Other random stuff
 ### Example code snippets
