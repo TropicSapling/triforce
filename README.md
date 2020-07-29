@@ -1,18 +1,15 @@
 # Triforce programming language
 ![banner](img/banner.PNG)
-P+ is for...
-* Performance
-* Power
-* Productivity
+Triforce is a programming language emphasizing performance, power and productivity.
 
-... which we aim to achieve through:
+The main goals of the language include:
 - a consistent, sensible and well-thought-out language design
 - a small, generalised and extensible core language, including support for powerful macro-like functions
 - an advanced type system, including dependent types
 - the ability to both work on a high level and a lower level close to hardware
 - more things yet to be figured out...
 
-Obviously, some compromises are going to have to be made as well. The compilation process is probably going to be rather slow, for example.
+Obviously, some compromises are going to have to be made in order to achieve these goals. The compilation process is probably going to be rather slow, for example.
 
 ### A word on the name
 The language is currently in the process of being renamed from P+ to Triforce. I like that name better and it still fits with the "trifecta". There are some issues with that though which I'll need to think through:
