@@ -1,27 +1,22 @@
-# P+ programming language
-![banner](img/banner.JPG)
-P+ is for...
-* Performance
-* Power
-* Productivity
+# Triforce programming language
+![banner](img/banner.PNG)
 
-... which we aim to achieve through:
+Triforce is a programming language emphasizing performance, power and productivity.
+
+The main goals of the language include:
 - a consistent, sensible and well-thought-out language design
 - a small, generalised and extensible core language, including support for powerful macro-like functions
 - an advanced type system, including dependent types
 - the ability to both work on a high level and a lower level close to hardware
 - more things yet to be figured out...
 
-Obviously, some compromises are going to have to be made as well. The compilation process is probably going to be rather slow, for example.
+Obviously, some compromises are going to have to be made in order to achieve these goals. The compilation process is probably going to be rather slow, for example.
 
 ### A word on the name
-I've been thinking recently about perhaps renaming P+ to Triforce. I like that name better and it still fits with the "trifecta". There are some issues with that though which I'll need to think through:
+The language is currently in the process of being renamed from P+ to Triforce. I like that name better and it still fits with the "trifecta". There are some issues with that though which I'll need to think through:
 - There is already an esoteric language named Triforce
 - "Triforce" is less well-suited for search queries, since it will get confused with Zelda-related things
 - Nintendo may object to us using the triforce for our logo
-- Perhaps some more things
-
-Why I'm thinking of changing the name? Well, I simply prefer the name Triforce over P+.
 
 ### Learning the language
 I'm currently working on a wiki for this language which will explain some things about the language in a more understandable way than this README does. The wiki is currently very incomplete however, so you can't really learn much from it yet. But it's not really a good idea to start learning this language at this moment anyway, since there's not much stability right now and the latest working compiler is not even able to compile more than a small subset of an old version of the language.
@@ -120,7 +115,7 @@ Currently, this README pretty much only consists of a language specification. Si
 			- ex. of both: `1 f $y 3`
 
 6. Patterns only consisting of names are called *variables*.
-	- This means variables are a subset of patterns in P+
+	- This means variables are a subset of patterns in Triforce
 		- Whenever we talk about patterns, we're including variables
 	- I.e. `$(example pattern)` is a variable, while `$(example pattern taking $x)` is not
 
@@ -214,7 +209,7 @@ Currently, this README pretty much only consists of a language specification. Si
 6. Placeholder-values are further described in "Patterns" §5
 
 ### Evaluation
-1. P+ uses eager evaluation.
+1. Triforce uses eager evaluation.
 2. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
 3. The compiler will try to run as much as possible during compilation unless otherwise specified.
 4. There are 3 stages of evaluation:
@@ -336,6 +331,7 @@ Currently, this README pretty much only consists of a language specification. Si
     - I.e. `if True then do_something` is assumed to mean the fully applied `if $cond then $body` function rather than a partially applied `if $cond then $expr else $expr`.
 8. An expression, or term, is said to be *known* to the compiler if the compiler sees it as a specific value rather than a pseudo-value.
 9. `caller` is a reserved keyword for the caller of the current function.
+10. The file extension for the language is `.tri`.
 
 ## Other random stuff
 ### Example code snippets
@@ -482,7 +478,7 @@ Currently, this README pretty much only consists of a language specification. Si
 * `<function>([parameters])` or `<function> <parameter>` or `<parameter> <function> <parameter>`
 * `return [from <function>] <value>` (**NOTE:** You can't return from just any function, it needs to call the function you're currently in either directly or indirectly)
 * Functions return the result of the last statement by default; no need to use `return` unless you want to return from somewhere else.
-* P+ allows ad-hoc polymorphism; you can create multiple functions with the same name but with different parameters.
+* Triforce allows ad-hoc polymorphism; you can create multiple functions with the same name but with different parameters.
 * Operator overloading is supported; for example, doing `func +(...)` would overload the `+` operator.
 
 --------

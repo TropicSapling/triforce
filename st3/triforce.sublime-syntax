@@ -1,10 +1,10 @@
 %YAML 1.2
 ---
 # See http://www.sublimetext.com/docs/3/syntax.html
-name: P+
+name: Triforce
 file_extensions:
-  - ppl
-scope: source.rust
+  - tri
+scope: source.triforce
 variables:
   identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+|([!<>\-+%/*^&|@~?.]|==|##)[!<>\-+%/*^&|@~?.=#]*))' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
   escaped_byte: '\\(x\h{2}|n|r|t|0|"|''|\\)'
@@ -37,7 +37,7 @@ contexts:
     - match: '\b(if|then|else|for\s+each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where|matches|is|prerun|run|export(\s+all)?|import|expose)\b'
       scope: keyword.control.rust
 
-    - match: '\b(closed|impure|implicitly|ref\s+to|allowing|(frozen|permafrosted)(\s+raw)?|becoming|returning|constructed\s+using|defrosted|auto)\b'
+    - match: '\b(closed|impure|implicitly|ref\s+to|allowing|frozen|permafrosted|raw|becoming|returning|constructed\s+using|defrosted|auto)\b'
       scope: storage.type.rust
 
     - match: '\b(True|False|this|caller)\b'
