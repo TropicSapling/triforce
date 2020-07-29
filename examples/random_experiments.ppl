@@ -631,6 +631,12 @@ let list: (implicitly any List where this length == 1) = replicate 123; // => 12
 // Deno-style importing?
 import { serve } from "https://deno.land/std@0.50.0/http/server.ts";
 
+// Also maybe something similar to Deno safe-by-default permissions?
+// https://deno.land/manual/getting_started/permissions
+
+// Maybe also make the permissions more customisable?
+// Ability to add your own permissions?
+
 --------------------------------------------------
 
 // Reactive expressions
