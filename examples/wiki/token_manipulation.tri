@@ -1,0 +1,26 @@
+decl symblock enclosed by /* */ with escaper \ in scope // automatically nestable, since enclosers are different
+decl symblock enclosed by "  "  with escaper \ in scope // "escape like \"this\""
+
+// The behaviour of symblocks need to be defined before they are used!
+// Anything between the enclosers of a symblock can be captured for function input.
+// The captured symbols will be implicitly permafrosted, which must be marked.
+// Below we define multi-line comments to do nothing:
+func /*(implicitly permafrosted)*/ {
+	// we leave the function body empty, as we want comments to be ignored
+};
+
+/*
+    This comment will be ignored.
+*/
+
+decl symgroup  + - * / in scope // ex tokens: `+`, `++`, `+-`, `**`
+decl symindies { } [ ] in scope // ex tokens: `{`, `}`, `[`, `]`
+
+// Symblocks and symindies have some similarities... might be merged in the future
+
+// Now we can define a number range function!
+func $n..$m {
+	n|(n + 1)|...|m
+};
+
+15..25 // => `15|16|...|25`
