@@ -252,11 +252,14 @@ Currently, this README pretty much only consists of a language specification. Si
 ### Symbols
 1. Symbols part of the same *symgroup* that are next to eachother form a token.
 2. Every *symindie* is its own token.
-3. `decl symgroup  <symbol> [<symbol> [...]] for <scope>` declares a symbol group for the scope.
+3. A *symblock* is a block of symbols enclosed by 2 enclosers, forming a token.
+4. `decl symgroup  <symbol> [<symbol> [...]] in <scope>` declares a symbol group in the scope.
 	- `<scope>` can of course be the special `scope` keyword
-4. `decl symindies <symbol> [<symbol> [...]] for <scope>` declares one or more symbol independents for the scope.
-5. There are 2 built-in symgroups: alphanumeric and whitespace.
-6. There are 2 built-in symindies: `(` and `)`.
+5. `decl symindies <symbol> [<symbol> [...]] in <scope>` declares one or more symbol independents in the scope.
+6. `decl symblock enclosed by <symbol> <symbol> [with escaper <symbol>] in <scope>`
+7. There are 2 built-in symgroups: default and whitespace.
+8. There are 2 built-in symindies: `(` and `)`.
+9. There is 1 built-in symblock: linecomment
 
 ### Comments
 1. `// [<one line comment>]`
@@ -335,19 +338,19 @@ Currently, this README pretty much only consists of a language specification. Si
 
 ## Other random stuff
 ### Example code snippets
-![Example 1](img/ex1.PNG)
+![Example 1](img/ex/ex1.PNG)
 
-![Example 2](img/ex2.PNG)
+![Example 2](img/ex/ex2.PNG)
 
-![Example 3](img/ex3.PNG)
+![Example 3](img/ex/ex3.PNG)
 
-![Example 4](img/ex4.PNG)
+![Example 4](img/ex/ex4.PNG)
 
-![Example 5](img/ex5.PNG)
+![Example 5](img/ex/ex5.PNG)
 
-![Example 6](img/ex6.PNG)
+![Example 6](img/ex/ex6.PNG)
 
-![Example 7](img/ex7.PNG)
+![Example 7](img/ex/ex7.PNG)
 
 *Source code for examples available in [readme_examples.ppl](examples/readme_examples.ppl).*
 
