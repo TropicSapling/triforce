@@ -252,11 +252,14 @@ Currently, this README pretty much only consists of a language specification. Si
 ### Symbols
 1. Symbols part of the same *symgroup* that are next to eachother form a token.
 2. Every *symindie* is its own token.
-3. `decl symgroup  <symbol> [<symbol> [...]] for <scope>` declares a symbol group for the scope.
+3. A *symblock* is a block of symbols enclosed by 2 enclosers, forming a token.
+4. `decl symgroup  <symbol> [<symbol> [...]] for <scope>` declares a symbol group for the scope.
 	- `<scope>` can of course be the special `scope` keyword
-4. `decl symindies <symbol> [<symbol> [...]] for <scope>` declares one or more symbol independents for the scope.
-5. There are 2 built-in symgroups: alphanumeric and whitespace.
-6. There are 2 built-in symindies: `(` and `)`.
+5. `decl symindies <symbol> [<symbol> [...]] for <scope>` declares one or more symbol independents for the scope.
+6. `decl symblock enclosed by <symbol> <symbol> [with escaper <symbol>] for <scope>`
+7. There are 2 built-in symgroups: default and whitespace.
+8. There are 2 built-in symindies: `(` and `)`.
+9. There is 1 built-in symblock: linecomment
 
 ### Comments
 1. `// [<one line comment>]`
