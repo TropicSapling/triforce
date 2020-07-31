@@ -8,18 +8,19 @@ The main goals of the language include:
 - a small, generalised and extensible core language, including support for powerful macro-like functions
 - an advanced type system, including dependent types
 - the ability to both work on a high level and a lower level close to hardware
+- safety by default; less safe options will be discouraged and require opt-in
 - more things yet to be figured out...
 
 Obviously, some compromises are going to have to be made in order to achieve these goals. The compilation process is probably going to be rather slow, for example.
 
 ### A word on the name
-The language is currently in the process of being renamed from P+ to Triforce. I like that name better and it still fits with the "trifecta". There are some issues with that though which I'll need to think through:
-- There is already an esoteric language named Triforce
-- "Triforce" is less well-suited for search queries, since it will get confused with Zelda-related things
-- Nintendo may object to us using the triforce for our logo
+The language has recently been renamed from P+ to Triforce, meaning some things are still using the old name or file extension. There are also some (minor?) problems with the name, see issue [#308](https://github.com/TropicSapling/triforce/issues/308).
 
 ### Learning the language
 I'm currently working on a wiki for this language which will explain some things about the language in a more understandable way than this README does. The wiki is currently very incomplete however, so you can't really learn much from it yet. But it's not really a good idea to start learning this language at this moment anyway, since there's not much stability right now and the latest working compiler is not even able to compile more than a small subset of an old version of the language.
+
+### Syntax highlighting
+Currently, there is only syntax highlighting available for Sublime Text 3, which can be found in [the st3 folder.](/st3) If you don't feel like using ST3, you can either try creating your own syntax highlighting for the language, or try using the Swift highlighting (which is, well, better than nothing).
 
 ### Some quick info before you start reading the rest
 Currently, this README pretty much only consists of a language specification. Similarly to most language specifications, it's rather hard to understand and you'll probably have a hard time learning the language by reading it. It also has the extra perk of not even being written well enough to precisely describe the language! And did I mention that I'm also changing it all the time? Really, the specification is just here for the developers to remember everything. But, you can always attempt to read the rest anyway if you want xD
@@ -53,28 +54,29 @@ Currently, this README pretty much only consists of a language specification. Si
 3. `<input args>` = `<arg1> [<arg2> [...]]`
 4. Every parameter is a *pattern def*.
 5. All functions are closures (capturing their original environment).
-6. If not enough input args are given, the function is partially applied.
-7. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined).
+6. An empty `<function body>` is equivalent to `frozen __outer_scope`.
+7. If not enough input args are given, the function is partially applied.
+8. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined).
 	- This is what it means to say that a function returns `<function body>`
-8. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>`, `<pattern to define>` and `<pattern to match>`.
+9. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>`, `<pattern to define>` and `<pattern to match>`.
 	- Note that surrounding backticks (`` \`\` ``) are necessary when applying inside `<pattern to define>`
 		- i.e. if we `let f = Something`, then `let f _ = SomethingElse` redefines `f` while `` let `f _` = SomethingElse `` becomes `let Something = SomethingElse`
 		- this is because `<pattern to define>` is taken as `permafrosted`
 		- the surrounding backticks force evaluation even when `frozen` or `permafrosted`
 	- `<pattern to match>` is always fully evaluated, even if it's inside a `frozen` or `permafrosted` block
-9. Functions are *pure* and *open* by default.
-	- pure functions cannot use mutable patterns defined outside
-		- ex: `let g = $x => x;` - OK
-		- ex: `let f = <...>; let g = $x => f;` - OK
-		- ex: `let f = <...>; let g = $x => f x;` - OK
-		- ex: `let f: auto = <...>; let g = $x => f x; f = <...>;` - ERROR!
-		- ex: `let f: auto = <...>; let g = $x => (f = <...>; f x);` - ERROR!
-	- the body of an open function will be "opened" and checked by the compiler as soon as it is encountered
+10. Functions are *pure* and *open* by default.
+	- A pure function has the following properties:
+		- its return value is the same for the same input
+			- note that the input consists of both the arguments passed and the state of the outer scope
+		- its evaluation has no side effects
+	- The body of an open function will be "opened" and checked by the compiler as soon as it is encountered
 		- this means undefined patterns, incorrect syntax, mismatches, etc. are not allowed
-10. `impure <function>` allows for the function to be non-pure.
-11. `closed <function>` allows for the function to be non-open.
-	- this means the compiler won't check the function body until it's in its final scope
-	- for an example, see "Example code snippets" §2
+11. `impure <function>` allows a function to have side effects.
+12. `unpredictable <function>` allows a function to have side effects and different return values for the same input.
+	- Mainly useful for functions interacting with the outer world (user input, true randomness, etc.)
+13. `closed <function>` allows for the function to be non-open.
+	- This means the compiler won't check the function body until it's in its final scope
+	- For an example, see "Example code snippets" §2
 
 ### Patterns (variables but better)
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match> [constructed using <constructor pattern>])` where
@@ -253,10 +255,9 @@ Currently, this README pretty much only consists of a language specification. Si
 1. Symbols part of the same *symgroup* that are next to eachother form a token.
 2. Every *symindie* is its own token.
 3. A *symblock* is a block of symbols enclosed by 2 enclosers, forming a token.
-4. `decl symgroup  <symbol> [<symbol> [...]] in <scope>` declares a symbol group in the scope.
-	- `<scope>` can of course be the special `scope` keyword
-5. `decl symindies <symbol> [<symbol> [...]] in <scope>` declares one or more symbol independents in the scope.
-6. `decl symblock enclosed by <symbol> <symbol> [with escaper <symbol>] in <scope>`
+4. `decl symgroup  <symbol> [<symbol> [...]];` declares a symbol group in the scope.
+5. `decl symindies <symbol> [<symbol> [...]];` declares one or more symbol independents in the scope.
+6. `decl symblock enclosed by <symbol> <symbol> [with escaper <symbol>];` declares a symbol block in the scope.
 7. There are 2 built-in symgroups: default and whitespace.
 8. There are 2 built-in symindies: `(` and `)`.
 9. There is 1 built-in symblock: linecomment
@@ -277,16 +278,17 @@ Currently, this README pretty much only consists of a language specification. Si
 3. `$(<variable to define>) as <pattern to match>` <=> `$(<variable to define> _ [_ [...]]) as <pattern to match>`
 	- i.e. `$b as Bool _` <=> `$(b _) as Bool _`
 
-4. `scope` can be used to avoid making your program look like Lisp:
-	- `(<input pars> => scope) <input args> <rest of scope>` <=> `(<input pars> ($scope as frozen) => scope) <input args> (<rest of scope>)`
-		- Note that if you want to allow `impure` scopes, the function evaluating `scope` must be marked `impure`
+4. `__outer_scope` can be used to avoid making your program look like Lisp:
+	- `(<input pars> => __outer_scope) <input args> <rest of scope>` <=> `(<input pars> ($__outer_scope as frozen) => __outer_scope) <input args> (<rest of scope>)`
+	- Note that this should be used sparingly, and that the function evaluating `__outer_scope` must be marked as `unpredictable`
+		- unless you're just returning `frozen __outer_scope`, in which case it's equivalent to returning nothing and doesn't need to be marked
 
 5. `$(<pattern to define>) as frozen [<pattern to match>] [becoming <pattern to match>]` can be used to delay evaluation of input until inside the scope where the pattern is defined:
 	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as permafrosted 1) => defrosted x: 2) {<expr>}`
 	- `$<...> as frozen [becoming <...>]`           <=> `$<...> as frozen _ [becoming <...>]`
 
-6. `decl $(<pattern to declare>) [...] in <scope>` allows use of declared patterns before they have been defined in `<scope>`.
-	- Note that they must still be defined somewhere in `<scope>`
+6. `decl $(<pattern to declare>) [...];` allows use of declared patterns before they have been defined.
+	- Note that they must still be defined somewhere in the scope
 	- See "Example code snippets" §3 for an example
 
 ### Built-in "functions"
@@ -340,19 +342,11 @@ Currently, this README pretty much only consists of a language specification. Si
 ### Example code snippets
 ![Example 1](img/ex/ex1.PNG)
 
-![Example 2](img/ex/ex2.PNG)
-
-![Example 3](img/ex/ex3.PNG)
-
 ![Example 4](img/ex/ex4.PNG)
-
-![Example 5](img/ex/ex5.PNG)
 
 ![Example 6](img/ex/ex6.PNG)
 
-![Example 7](img/ex/ex7.PNG)
-
-*Source code for examples available in [readme_examples.ppl](examples/readme_examples.ppl).*
+*More examples can be found in [readme_examples.tri](examples/readme_examples.tri). There you can also find the source code for the pictured examples.*
 
 --------
 

@@ -1,5 +1,5 @@
-decl symblock enclosed by /* */ with escaper \ in scope // automatically nestable, since enclosers are different
-decl symblock enclosed by "  "  with escaper \ in scope // "escape like \"this\""
+decl symblock enclosed by /* */ with escaper \; // automatically nestable, since enclosers are different
+decl symblock enclosed by "  "  with escaper \; // "escape like \"this\""
 
 // The behaviour of symblocks need to be defined before they are used!
 // Anything between the enclosers of a symblock can be captured for function input.
@@ -13,8 +13,11 @@ func /*(implicitly permafrosted)*/ {
     This comment will be ignored.
 */
 
-decl symgroup  + - * / in scope // ex tokens: `+`, `++`, `+-`, `**`
-decl symindies { } [ ] in scope // ex tokens: `{`, `}`, `[`, `]`
+extend symgroup ops with + - * /; // ex tokens: `+`, `++`, `+-`, `**`
+
+// Make everything lists instead?
+
+decl symindies { } [ ]; // ex tokens: `{`, `}`, `[`, `]`
 
 // Symblocks and symindies have some similarities... might be merged in the future
 

@@ -66,10 +66,10 @@ $x => (
 // -------------------------------------------
 
 // Declarations to allow use of patterns before they have been defined
-decl $x $y $z in (
-	println x;
-	let x = 123;
-)
+decl $x $y $z;
+
+println x;
+let x = 123;
 
 // -------------------------------------------
 // |                EXAMPLE 4                |
@@ -118,7 +118,7 @@ __CATCH__ (5% * 120%) == 6%
 //
 // This results in every single function
 // being catched before evaluation.
-func __CATCH__ ($f as implicitly frozen) {
+impure func __CATCH__ ($f as implicitly frozen) {
 	println "nope!";
 };
 
@@ -131,21 +131,21 @@ println "Hello world!"; // prints "nope!"
 // -------------------------------------------
 
 // Examples of referring to the same function or not
-func f ($x as any String) $y {println 123};
-func f ($x as any Int)    $y {println 123};
+impure func f ($x as any String) $y {println 123};
+impure func f ($x as any Int)    $y {println 123};
 
 f      != f      // ERROR! Unable to determine function being referred to
 f "hi" != f 789
 
-func    g ($x as any Int) $y {println 123};
-func $y g ($x as any Int)    {println 123};
+impure func    g ($x as any Int) $y {println 123};
+impure func $y g ($x as any Int)    {println 123};
 
 g 789 == g 789
 g 789 != $y g 789
 
 // Here the second function shadows the first
-func h ($x as any Int) $y {println 123};
-func h ($x as any Int) $y {println 456};
+impure func h ($x as any Int) $y {println 123};
+impure func h ($x as any Int) $y {println 456};
 
 h 1 == h 1
 h 1 != h 2
@@ -182,11 +182,11 @@ func Potato _ {};
 
 let potato  = Potato;
 let potato2 = Potato;
-let potato3 = (
+let potato3 = {
 	func Potato _ {};
 
 	Potato
-);
+};
 
 potato == potato2
 potato != potato3 // the Potato:es were created using different constructors, so they are different
@@ -216,27 +216,27 @@ object Player [
 ];
 
 // Note how this is shorthand for 'f ($x as _)'
-func f $x {
+impure func f $x {
 	println "last";
 };
 
-func f ($x as Player "Steve" 25..75) {
+impure func f ($x as Player "Steve" 25..75) {
 	println "fourth";
 };
 
-func f ($x as any Player) {
+impure func f ($x as any Player) {
 	println "fifth"
 };
 
-func f ($x as Player "Steve" 55..75) {
+impure func f ($x as Player "Steve" 55..75) {
 	println "first";
 };
 
-func f ($x as Player "Steve"|"Alex" 50..70) {
+impure func f ($x as Player "Steve"|"Alex" 50..70) {
 	println "third";
 };
 
-func f ($x as Player "Steve" 50..70) {
+impure func f ($x as Player "Steve" 50..70) {
 	println "second";
 };
 

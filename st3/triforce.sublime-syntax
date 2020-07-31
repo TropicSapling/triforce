@@ -37,13 +37,13 @@ contexts:
     - match: '\b(if|then|else|for\s+each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where|matches|is|prerun|run|export(\s+all)?|import|expose)\b'
       scope: keyword.control.rust
 
-    - match: '\b(closed|impure|implicitly|ref\s+to|allowing|frozen|permafrosted|raw|becoming|returning|constructed\s+using|defrosted|auto)\b'
+    - match: '\b(closed|impure|unpredictable|implicitly|ref\s+to|allowing|frozen|permafrosted|raw|becoming|returning|constructed\s+using|defrosted|auto)\b'
       scope: storage.type.rust
 
     - match: '\b(True|False|this|caller)\b'
       scope: constant.language.rust
 
-    - match: '\b(as|in|any(\s+of)?|ALL_ARGS|ALL_ARGS_BUT_ONE|ALL_ARGS_PLACEHOLDERS|APPLIED_ARGS|SET_ATTRIBUTES|SET_DEFAULT_LIST|ASSIGN|scope|listified|codified|decl(\s+(symgroup|symindies|symblock enclosed by))?|with escaper)\b'
+    - match: '\b(as|in|any(\s+of)?|ALL_ARGS|ALL_ARGS_BUT_ONE|ALL_ARGS_PLACEHOLDERS|APPLIED_ARGS|SET_ATTRIBUTES|SET_DEFAULT_LIST|ASSIGN|__outer_scope|listified|codified)\b'
       scope: keyword.operator.rust
 
     - match: '\b[A-Z]{{identifier}}'
@@ -73,15 +73,18 @@ contexts:
       push: group
 
     # Declarations & definitions
-    - match: '\b((rec\s+)?basic\s+)?(partial\s+)?func\b'
+    - match: '\b(((rec\s+)?basic\s+)?(partial\s+)?func)\b'
       scope: storage.type.rust
       push: func-id-search
 
-    - match: '\bdeclare|let(\s+basic)?(\s+impure)?\b'
+    - match: '\b(decl(\s+(symgroup|symindies|symblock enclosed by))?|with escaper)\b'
+      scope: storage.type.rust
+
+    - match: '\b(decl|let(\s+basic)?(\s+impure)?)\b'
       scope: storage.type.rust
       push: let-id-search-start
 
-    - match: 'category|object'
+    - match: '\b(category|object)\b'
       scope: storage.type.rust
       push: func-id-search
 
