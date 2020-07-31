@@ -28,6 +28,7 @@
   - Hard to make it work for every single type though
 
 ## concurrency
+- https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/
 
 ## functions
 - getting function without calling it?
