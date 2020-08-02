@@ -265,6 +265,7 @@ Currently, this README pretty much only consists of a language specification. Si
 ### Comments
 1. `// [<one line comment>]`
 2. `/* [<multi-line comment>] */`
+	- nestable
 
 ### Syntax sugar
 1. `[#]$(<pattern to define>)` <=> `[#]($(<pattern to define>) as _)` <=> `[#]($(<pattern to define>) as $#0 [$#1 [...]])`

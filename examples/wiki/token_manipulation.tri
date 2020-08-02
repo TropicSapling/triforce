@@ -1,5 +1,8 @@
-decl symblock enclosed by /* */ with escaper \; // automatically nestable, since enclosers are different
-decl symblock enclosed by "  "  with escaper \; // "escape like \"this\""
+decl symblock enclosed by //
+;
+decl symblock enclosed by /* */; // automatically nestable, since enclosers are different
+
+decl symblock enclosed by " " with escaper \ as __default_string__; // "escape like \"this\""
 
 // The behaviour of symblocks need to be defined before they are used!
 // Anything between the enclosers of a symblock can be captured for function input.
@@ -10,7 +13,7 @@ func /*(implicitly permafrosted)*/ {
 };
 
 /*
-    This comment will be ignored.
+    This /*comment*/ will be ignored.
 */
 
 extend symgroup ops with + - * /; // ex tokens: `+`, `++`, `+-`, `**`
