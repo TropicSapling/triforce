@@ -12,7 +12,7 @@
 // -------------------------
 
 // TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
-(unpredictable $(let basic $var = $val;) => __outer_scope) (($var as implicitly permafrosted) $val => (unpredictable $`var` => __outer_scope) val)
+(unpredictable $(let basic $var = $val;) => __outer_scope__) (($var as implicitly permafrosted) $val => (unpredictable $`var` => __outer_scope__) val)
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
@@ -29,7 +29,7 @@
 // Also use this for the classics 'func', 'if', etc.
 let basic {$expr} = $expr => expr;
 
-let basic basic func ($pattern as implicitly permafrosted) ($body as implicitly frozen); = $pattern $body => frozen raw (let basic `pattern` = ALL_ARGS_PLACEHOLDERS pattern => body;);
+let basic basic func ($pattern as implicitly permafrosted) ($body as implicitly frozen); = $pattern $body => frozen raw (let basic `pattern` = __all_args_placeholders__ pattern => body;);
 
 basic func Typed $expr $type _ {};
 // If all pattern matching fails, throw away type restriction
@@ -39,7 +39,7 @@ basic func __CATCH__ (Typed #$expr _) {expr};
 basic func ($expr as type ): $type {Typed expr type};
 basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 
-basic func any $obj {obj (ALL_ARGS_BUT_ONE obj)};
+basic func any $obj {obj (__all_args_but_one__ obj)};
 
 // TODO: getting category of value and doing 'any <category>'
 // i.e. 'type of Player 50 100' => 'Player _ _'
@@ -76,7 +76,7 @@ basic func List $item ($tail as any List) _ {};
 // TODO: List '[]' syntax, list access
 
 // This sets the default list to 'List' and returns nothing
-SET_DEFAULT_LIST List
+__set_default_list__ List
 
 // Does not accept unchecked input for security reasons
 basic func rec basic func ($pattern as implicitly permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
@@ -116,14 +116,14 @@ basic func ##($attrs as implicitly permafrosted any List) func ($pattern as impl
 		// This built-in tells compiler 'pattern' has attributes 'attrs'
 		// and returns 'pattern' as permafrosted. The attributes must
 		// be given using the default list.
-		rec basic func `SET_ATTRIBUTES attrs pattern` {typed_body: ~Undefined};
+		rec basic func `__set_attributes__ attrs pattern` {typed_body: ~Undefined};
 	}
 };
 
 // Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
 basic func ##($attrs as implicitly permafrosted any List) partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
 	frozen raw {
-		rec basic func `SET_ATTRIBUTES attrs pattern` {typed_body};
+		rec basic func `__set_attributes__ attrs pattern` {typed_body};
 	}
 };
 
@@ -136,7 +136,7 @@ func $expr; {};
 
 // '->' means 'pointer/ref to' and acts similarly to 'permafrosted' when it comes to evaluation
 impure func ($var as implicitly ->(Typed _ #$type)) = ($val as type) {
-	ASSIGN var (Typed val type)
+	__assign__ var (Typed val type)
 };
 
 func ref to $val allowing $sub {

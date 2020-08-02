@@ -43,7 +43,7 @@ contexts:
     - match: '\b(True|False|this|caller)\b'
       scope: constant.language.rust
 
-    - match: '\b(as|in|any(\s+of)?|ALL_ARGS|ALL_ARGS_BUT_ONE|ALL_ARGS_PLACEHOLDERS|APPLIED_ARGS|SET_ATTRIBUTES|SET_DEFAULT_LIST|ASSIGN|__outer_scope|listified|codified)\b'
+    - match: '\b(as|in|any(\s+of)?|listified|codified|__all_args__|__all_args_but_one__|__all_args_placeholders__|__applied_args__|__set_attributes__|__set_default_list__|__assign__|__outer_scope__)\b'
       scope: keyword.operator.rust
 
     - match: '\b[A-Z]{{identifier}}'

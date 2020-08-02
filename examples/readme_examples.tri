@@ -97,7 +97,7 @@ func ($x as any Number) * (#($y)%) {
 // that works with numbers. This works because
 // i.e. '120% * 5%' fails all pattern matching
 // but still matches the below catcher pattern.
-func __CATCH__ ($(_ op _) as #(#($x)%) #(#($y)%)) {
+func __catch__ ($(_ op _) as #(#($x)%) #(#($y)%)) {
     (((x / 100) op (y / 100)) * 100)%
 }
 
@@ -118,7 +118,7 @@ __CATCH__ (5% * 120%) == 6%
 //
 // This results in every single function
 // being catched before evaluation.
-impure func __CATCH__ ($f as implicitly frozen) {
+impure func __catch__ ($f as implicitly frozen) {
 	println "nope!";
 };
 
