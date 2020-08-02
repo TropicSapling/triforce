@@ -33,7 +33,7 @@ let basic basic func ($pattern as implicitly permafrosted) ($body as implicitly 
 
 basic func Typed $expr $type _ {};
 // If all pattern matching fails, throw away type restriction
-basic func __CATCH__ (Typed #$expr _) {expr};
+basic func __catch__ (Typed #$expr _) {expr};
 
 // Pronounced as: "$expr [should] be[come] type"
 basic func ($expr as type ): $type {Typed expr type};
@@ -48,7 +48,7 @@ basic func type of (_ constructed using $constructor) {any constructor};
 // Marker for unchecked input
 // File reading, user input, etc. should use this
 // Always ensure 'raw' input is ~UncheckedInput
-// TODO: Make '__CATCH__' for this or not?
+// TODO: Make '__catch__' for this or not?
 basic func UncheckedInput _ {};
 
 // Pronounced as: "let $var be $type and equal $val"
