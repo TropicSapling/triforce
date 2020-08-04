@@ -34,7 +34,7 @@ contexts:
     # strings in YAML. When using single quoted strings, only single quotes
     # need to be escaped: this is done by using two single quotes next to each
     # other.
-    - match: '\b(if|then|else|for\s+each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where|matches|is|prerun|run|export(\s+all)?|import|expose)\b'
+    - match: '\b(if|then|else|for\s+each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where|matches|is|could\s+be|prerun|run|export(\s+all)?|import|expose|print(ln)?)\b'
       scope: keyword.control.rust
 
     - match: '\b(closed|impure|unpredictable|implicitly|ref\s+to|allowing|frozen|permafrosted|raw|becoming|returning|constructed\s+using|defrosted|auto)\b'
@@ -43,7 +43,7 @@ contexts:
     - match: '\b(True|False|this|caller)\b'
       scope: constant.language.rust
 
-    - match: '\b(as|in|any(\s+of)?|ALL_ARGS|ALL_ARGS_BUT_ONE|ALL_ARGS_PLACEHOLDERS|APPLIED_ARGS|SET_ATTRIBUTES|SET_DEFAULT_LIST|ASSIGN|__outer_scope|listified|codified)\b'
+    - match: '\b(as|in|any(\s+of)?|listified|codified)\b'
       scope: keyword.operator.rust
 
     - match: '\b[A-Z]{{identifier}}'
@@ -77,7 +77,7 @@ contexts:
       scope: storage.type.rust
       push: func-id-search
 
-    - match: '\b(decl(\s+(symgroup|symindies|symblock enclosed by))?|with escaper)\b'
+    - match: '\b(decl(\s+(symgroup|symindies|symblock))|enclosed\s+by|with\s+escaper)\b'
       scope: storage.type.rust
 
     - match: '\b(decl|let(\s+basic)?(\s+impure)?)\b'
@@ -92,6 +92,8 @@ contexts:
     - match: '`'
       scope: markup.italic
       push: eval-group
+    - match: '\b__{{identifier}}__\b'
+      scope: markup.heading
 
   block-comments:
     - match: '/\*'

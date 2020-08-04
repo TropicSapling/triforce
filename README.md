@@ -54,7 +54,7 @@ Currently, this README pretty much only consists of a language specification. Si
 3. `<input args>` = `<arg1> [<arg2> [...]]`
 4. Every parameter is a *pattern def*.
 5. All functions are closures (capturing their original environment).
-6. An empty `<function body>` is equivalent to `frozen __outer_scope`.
+6. An empty `<function body>` is equivalent to `frozen __outer_scope__`.
 7. If not enough input args are given, the function is partially applied.
 8. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined).
 	- This is what it means to say that a function returns `<function body>`
@@ -265,6 +265,7 @@ Currently, this README pretty much only consists of a language specification. Si
 ### Comments
 1. `// [<one line comment>]`
 2. `/* [<multi-line comment>] */`
+	- nestable
 
 ### Syntax sugar
 1. `[#]$(<pattern to define>)` <=> `[#]($(<pattern to define>) as _)` <=> `[#]($(<pattern to define>) as $#0 [$#1 [...]])`
@@ -278,10 +279,10 @@ Currently, this README pretty much only consists of a language specification. Si
 3. `$(<variable to define>) as <pattern to match>` <=> `$(<variable to define> _ [_ [...]]) as <pattern to match>`
 	- i.e. `$b as Bool _` <=> `$(b _) as Bool _`
 
-4. `__outer_scope` can be used to avoid making your program look like Lisp:
-	- `(<input pars> => __outer_scope) <input args> <rest of scope>` <=> `(<input pars> ($__outer_scope as frozen) => __outer_scope) <input args> (<rest of scope>)`
-	- Note that this should be used sparingly, and that the function evaluating `__outer_scope` must be marked as `unpredictable`
-		- unless you're just returning `frozen __outer_scope`, in which case it's equivalent to returning nothing and doesn't need to be marked
+4. `__outer_scope__` can be used to avoid making your program look like Lisp:
+	- `(<input pars> => __outer_scope__) <input args> <rest of scope>` <=> `(<input pars> ($__outer_scope__ as frozen) => __outer_scope__) <input args> (<rest of scope>)`
+	- Note that this should be used sparingly, and that the function evaluating `__outer_scope__` must be marked as `unpredictable`
+		- unless you're just returning `frozen __outer_scope__`, in which case it's equivalent to returning nothing and doesn't need to be marked
 
 5. `$(<pattern to define>) as frozen [<pattern to match>] [becoming <pattern to match>]` can be used to delay evaluation of input until inside the scope where the pattern is defined:
 	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as permafrosted 1) => defrosted x: 2) {<expr>}`
@@ -292,18 +293,18 @@ Currently, this README pretty much only consists of a language specification. Si
 	- See "Example code snippets" §3 for an example
 
 ### Built-in "functions"
-1. `ALL_ARGS <function>` returns all possible args that can be applied to the function. `length >= 1`.
-	- ex: `ALL_ARGS (f $n $str) == [any Nat, any String]`
+1. `__all_args__ <function>` returns all possible args that can be applied to the function. `length >= 1`.
+	- ex: `__all_args__ (f $n $str) == [any Nat, any String]`
 		- except array is special: `f [any Nat, any String] == f (any Nat) (any String)`
-	- `ALL_ARGS_BUT_ONE` does the same except doesn't apply the last arg
-		- may be removed in the future in favor of using `ALL_ARGS[..ALL_ARGS.length - 1]`
-	- `ALL_ARGS_PLACEHOLDERS` does the equivalent for placeholder args
-		- ex: `ALL_ARGS_PLACEHOLDERS (f $x $y) == [$x, $y]`
-2. `APPLIED_ARGS <function>` returns the args that have been applied to the function. `length >= 0`.
-3. `ATTRIBUTE <attr> <id>` tells the compiler that `<id>` has attribute `<attr>` and returns `<id>`.
+	- `__all_args_but_one__` does the same except doesn't apply the last arg
+		- may be removed in the future in favor of using `__all_args__[..__all_args__.length - 1]`
+	- `__all_args_placeholders__` does the equivalent for placeholder args
+		- ex: `__all_args_placeholders__ (f $x $y) == [$x, $y]`
+2. `__applied_args__ <function>` returns the args that have been applied to the function. `length >= 0`.
+3. `__set_attributes__ <attr> <id>` tells the compiler that `<id>` has attribute `<attr>` and returns `<id>`.
 	- precedence is specified using attributes
-4. `ASSIGN <var> <val>` does *unchecked* assignment.
-5. `__CATCH__` is a special function, more info in example 4.
+4. `__assign__ <var> <val>` does *unchecked* assignment.
+5. `__catch__` is a special function, more info in example 4.
 6. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
 	- similar to Lisp quoting
 	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
@@ -323,7 +324,7 @@ Currently, this README pretty much only consists of a language specification. Si
 		- if `<function>` isn't specified it will default to the current function
 		- if `<function>` is `caller` it will continue matching for the caller
 		- if it's not possible to continue, there will be an error
-			- note that `__CATCH__` can be used to prevent this
+			- note that `__catch__` can be used to prevent this
 
 ### Misc
 1. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
