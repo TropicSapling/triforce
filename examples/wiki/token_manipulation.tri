@@ -11,7 +11,7 @@ decl symblock __sb_default_str__ enclosed by " " with escaper \; // "escape like
 
 // Just for practice, below we define multi-line comments to print their contents:
 impure func sb_multi_comment ($comment as implicitly permafrosted) {
-	println (stringify comment);
+	println (listified comment)[0]; // prints first and only token in syntax tree
 };
 
 /*
@@ -19,17 +19,14 @@ impure func sb_multi_comment ($comment as implicitly permafrosted) {
     Everything inside, along with the /*enclosers*/, will be printed!
 */
 
-extend symgroup __sg_ops__ with + - * /; // ex tokens: `+`, `++`, `+-`, `**`
-
-// Make everything lists instead?
-
+decl symgroup  + - * /; // ex tokens: `+`, `++`, `+-`, `**`
 decl symindies { } [ ]; // ex tokens: `{`, `}`, `[`, `]`
 
 // Now we can define a number range function!
-func $n..$m {
-	n|(n + 1)|...|m
-};
+func $n +- $m {n-m..n+m};
 
-15..25 // => `15|16|...|25`
+20 +- 5 // => `15..25` => `15|16|...|25`
 
 // *Except for strings. Strings have built-in behaviour tied to `__sb_default_str__`.
+
+// Make everything use lists instead?
