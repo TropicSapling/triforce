@@ -11,6 +11,11 @@
 // |   CATEGORY: Basics    |
 // -------------------------
 
+decl symblock sb_line_comment  enclosed by // \n;
+decl symblock sb_multi_comment enclosed by /* */;
+
+decl symblock __sb_default_str__ enclosed by " " with escaper \;
+
 // TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
 (unpredictable $(let basic $var = $val;) => __outer_scope__) (($var as implicitly permafrosted) $val => (unpredictable $`var` => __outer_scope__) val)
 

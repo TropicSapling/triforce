@@ -256,16 +256,17 @@ Currently, this README pretty much only consists of a language specification. Si
 2. Every *symindie* is its own token.
 3. A *symblock* is a block of symbols enclosed by 2 enclosers, forming a token.
 4. `decl symgroup  <symbol> [<symbol> [...]];` declares a symbol group in the scope.
+	- `\s`, `\t` and `\n` can be used as symbols
 5. `decl symindies <symbol> [<symbol> [...]];` declares one or more symbol independents in the scope.
-6. `decl symblock enclosed by <symbol> <symbol> [with escaper <symbol>];` declares a symbol block in the scope.
-7. There are 2 built-in symgroups: default and whitespace.
+6. `decl symblock <name> enclosed by <encloser> <encloser> [with escaper <escaper>];` declares a symbol block in the scope.
+	- all symbols are allowed for use as enclosers and escapers, but must form one token each
+	- `<name>` can also be anything forming one token
+	- if the 2 enclosers are different, the symblock is automatically nestable
+7. There are 2 built-in symgroups: "default" and "whitespace".
 8. There are 2 built-in symindies: `(` and `)`.
-9. There is 1 built-in symblock: linecomment
-
-### Comments
-1. `// [<one line comment>]`
-2. `/* [<multi-line comment>] */`
-	- nestable
+9. Symblock tokens without defined behaviour are ignored.
+	- define their behaviour using `function <symblock name> (implicitly permafrosted) {...};`
+10. Tokens formed with the use of symgroups or symindies without defined behaviour will cause an error.
 
 ### Syntax sugar
 1. `[#]$(<pattern to define>)` <=> `[#]($(<pattern to define>) as _)` <=> `[#]($(<pattern to define>) as $#0 [$#1 [...]])`
