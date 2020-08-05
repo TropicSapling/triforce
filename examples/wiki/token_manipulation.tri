@@ -19,14 +19,13 @@ impure func sb_multi_comment ($comment as implicitly permafrosted) {
     Everything inside, along with the /*enclosers*/, will be printed!
 */
 
+// Before the below declarations, number ranges require whitespace:
+20 +- 5
+
 decl symgroup  + - * /; // ex tokens: `+`, `++`, `+-`, `**`
 decl symindies { } [ ]; // ex tokens: `{`, `}`, `[`, `]`
 
-// Now we can define a number range function!
-func $n +- $m {n-m..n+m};
-
-20 +- 5 // => `15..25` => `15|16|...|25`
+// Now number ranges can be written without whitespace:
+20+-5
 
 // *Except for strings. Strings have built-in behaviour tied to `__sb_default_str__`.
-
-// Make everything use lists instead?
