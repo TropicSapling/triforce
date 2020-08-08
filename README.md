@@ -54,7 +54,7 @@ Currently, this README pretty much only consists of a language specification. Si
 3. `<input args>` = `<arg1> [<arg2> [...]]`
 4. Every parameter is a *pattern def*.
 5. All functions are closures (capturing their original environment).
-6. An empty `<function body>` is equivalent to `frozen __outer_scope__`.
+6. An empty `<function body>` is equivalent to `frozen __caller_scope__`.
 7. If not enough input args are given, the function is partially applied.
 8. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined).
 	- This is what it means to say that a function returns `<function body>`
@@ -280,10 +280,10 @@ Currently, this README pretty much only consists of a language specification. Si
 3. `$(<variable to define>) as <pattern to match>` <=> `$(<variable to define> _ [_ [...]]) as <pattern to match>`
 	- i.e. `$b as Bool _` <=> `$(b _) as Bool _`
 
-4. `__outer_scope__` can be used to avoid making your program look like Lisp:
-	- `(<input pars> => __outer_scope__) <input args> <rest of scope>` <=> `(<input pars> ($__outer_scope__ as frozen) => __outer_scope__) <input args> (<rest of scope>)`
-	- Note that this should be used sparingly, and that the function evaluating `__outer_scope__` must be marked as `unpredictable`
-		- unless you're just returning `frozen __outer_scope__`, in which case it's equivalent to returning nothing and doesn't need to be marked
+4. `__caller_scope__` can be used to avoid making your program look like Lisp:
+	- `(<input pars> => __caller_scope__) <input args> <rest of scope>` <=> `(<input pars> ($__caller_scope__ as frozen) => __caller_scope__) <input args> (<rest of scope>)`
+	- Note that this should be used sparingly, and that the function evaluating `__caller_scope__` must be marked as `unpredictable`
+		- unless you're just returning `frozen __caller_scope__`, in which case it's equivalent to returning nothing and doesn't need to be marked
 
 5. `$(<pattern to define>) as frozen [<pattern to match>] [becoming <pattern to match>]` can be used to delay evaluation of input until inside the scope where the pattern is defined:
 	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as permafrosted 1) => defrosted x: 2) {<expr>}`

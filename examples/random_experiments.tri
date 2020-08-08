@@ -150,7 +150,7 @@ basic func use $module {
 		)
 	}
 
-	scope
+	__caller_scope__
 };
 
 func even_zero {
@@ -645,3 +645,19 @@ reactive: if count >= 10 {
 	println "count is dangerously high!";
 	count = 9;
 };
+
+--------------------------------------------------
+
+// Python-style list comprehensions?
+// Has optional if-guards, which can define things
+// that are valid in the "scope" to the left.
+[y for each x in nums if g(let y = f(x); y)]
+
+// Python, Rust and others also have Iterables.
+// 
+// In Python you can have "generators", which
+// have identical syntax to list comprehensions
+// except with surrounding parentheses. These
+// are kind of like "lazy" list comprehensions.
+// 
+// Maybe something similar for Triforce?

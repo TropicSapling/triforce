@@ -16,8 +16,8 @@ decl symblock sb_multi_comment enclosed by /* */;
 
 decl symblock __sb_default_str__ enclosed by " " with escaper \;
 
-// TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
-(unpredictable $(let basic $var = $val;) => __outer_scope__) (($var as implicitly permafrosted) $val => (unpredictable $`var` => __outer_scope__) val)
+// TODO: Fix '@(precedence below ;)' for all functions using '__caller_scope__' (including all forms of 'let')
+(unpredictable $(let basic $var = $val;) => __caller_scope__) (($var as implicitly permafrosted) $val => (unpredictable $`var` => __caller_scope__) val)
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
@@ -198,6 +198,9 @@ func if (False) ($body as implicitly frozen) else ($expr as implicitly frozen) {
 // ex: 'if x == 123 then 456 else 789'
 func if $cond then ($body as implicitly frozen)                                   {if cond {body}};
 func if $cond then ($body as implicitly frozen) else ($expr as implicitly frozen) {if cond {body} else {expr}};
+
+// ex: 'return 123 if x == 456 else 789;'
+func ($body as implicitly frozen) if $cond else ($expr as implicitly frozen) {if cond then body else expr};
 
 func while ($cond as any Bool) ($body as implicitly frozen) {
 	...
