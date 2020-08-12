@@ -135,6 +135,10 @@ basic func ##($attrs as implicitly permafrosted any List) partial func ($pattern
 basic func         func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {[]         func `pattern` {typed_body};};
 basic func partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {[] partial func `pattern` {typed_body};};
 
+// TODO: Add ability to provide return type before function body?
+// ----
+// Maybe using '-->' operator? Since '->' is taken for pointers.
+
 // The legendary SEMICOLON
 ##[precedence below _]
 func $expr; {};

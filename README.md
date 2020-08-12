@@ -349,10 +349,12 @@ Currently, this README pretty much only consists of a language specification. Si
 5. Single-line `//` and multi-line `/* */` comments are built-in (to avoid issues with nested strings).
 6. `Maximal munch`/`Longest match` parsing is used to solve ambiguity (unless invalid; then context is used).
 7. In case there's ambiguity between if a fully applied function or another partially applied function was intended, the compiler will assume the fully applied function was intended and give a warning about this.
-    - I.e. `if True then do_something` is assumed to mean the fully applied `if $cond then $body` function rather than a partially applied `if $cond then $expr else $expr`.
+    - I.e. `if True then do_something` is assumed to mean the fully applied `if $cond then $body` function rather than a partially applied `if $cond then $expr else $expr`
 8. An expression, or term, is said to be *known* to the compiler if the compiler sees it as a specific value rather than a pseudo-value.
 9. `caller` is a reserved keyword for the caller of the current function.
 10. The file extension for the language is `.tri`.
+11. Triforce allows ad-hoc polymorphism; you can create multiple functions with the same name but with different parameters.
+	- Meaning function & operator overloading is possible
 
 ## Other random stuff
 ### Example code snippets
@@ -368,11 +370,7 @@ Currently, this README pretty much only consists of a language specification. Si
 
 ### <s>Data types [OUTDATED]
 #### Basic
-* `char`
-* `number`
-* `bool`
 * `(array|list|pointer)[*<n>]`
-* `func`
 
 #### Extras
 * `only [register|stack|heap] [volatile] [unique] [func] (array|list|pointer)[*<n>] [chan]`
@@ -382,10 +380,8 @@ Currently, this README pretty much only consists of a language specification. Si
 * `only [register|stack|heap] [volatile] [unsigned|signed] (int|char) [func] (array|list|pointer)[*<n>] [chan]`
 
 #### Special
-* `void`
 * ``type <custom type> extends <type1>[`|`<type2>`|`<type3>...]``
 * `clang <type> <function name>([<parameters>]) { <C code> }`
-* Not specifying a type for a function parameter allows the parameter to be of any type.
 
 #### Properties
 * `` var`<type>` ``
@@ -407,11 +403,6 @@ Currently, this README pretty much only consists of a language specification. Si
 
 ### Operators [OUTDATED]
 #### Arithmetic
-* `+`
-* `-`
-* `*`
-* `/`
-* `%`
 * `**`
 
 #### Bitwise
@@ -423,34 +414,13 @@ Currently, this README pretty much only consists of a language specification. Si
 * `>>`
 
 #### Compound Assignment
-* `+=`
-* `-=`
-* `*=`
-* `/=`
-* `%=`
 * `&=`
 * `|=`
 * `^=`
 * `<<=`
 * `>>=`
 
-#### Logical
-* `!`
-* `&&`
-* `||`
-
-#### Relational
-* `==`
-* `!=`
-* `>`
-* `<`
-* `>=`
-* `<=`
-
 #### Misc.
-* `? :` (**NOTE:** Might get replaced by `if` in the future, and the `?` might be used for exception handling instead)
-* `->`
-* `[]`
 * `@`
 * `>>>`
 * `<<<`
@@ -473,7 +443,6 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Conditionals [OUTDATED]
-* `if <condition> { <code> } [else if <condition> { <code> } else if...] [else { <code> }]`
 * `match <var> { case <val1>: <code> [case <val2>: <code>...] [default: <code>] }` (equivalent of C's `switch`)
 
 --------
@@ -487,21 +456,13 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Functions [OUTDATED]
-* `func <function>([<parameters>]) [-> <return type>] { <code> }`
-* `<function>([parameters])` or `<function> <parameter>` or `<parameter> <function> <parameter>`
 * `return [from <function>] <value>` (**NOTE:** You can't return from just any function, it needs to call the function you're currently in either directly or indirectly)
-* Functions return the result of the last statement by default; no need to use `return` unless you want to return from somewhere else.
-* Triforce allows ad-hoc polymorphism; you can create multiple functions with the same name but with different parameters.
-* Operator overloading is supported; for example, doing `func +(...)` would overload the `+` operator.
 
 --------
 
 ### Loops [OUTDATED]
-* `while <condition> { <code> }`
-* `foreach <item> in <list> { <code> }`
 * `repeat <n times> { <code> }`
 * `break [<value>] [from <function>]`
-* `continue`
 
 --------
 
@@ -537,9 +498,8 @@ Currently, this README pretty much only consists of a language specification. Si
 10. `|`
 11. `&&`
 12. `||`
-13. `?:`
-14. `=`, `+=`, `-=`, `*=`, `/=`, `%=`, `**=`, `>>=`, `<<=`, `&=`, `^=`, `|=`
-15. `>>>`, `<<<`, `,`, `in`
+13. `=`, `+=`, `-=`, `*=`, `/=`, `%=`, `**=`, `>>=`, `<<=`, `&=`, `^=`, `|=`
+14. `>>>`, `<<<`, `,`, `in`
 
 --------
 </s>
