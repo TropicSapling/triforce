@@ -47,6 +47,8 @@ Currently, this README pretty much only consists of a language specification. Si
 	- Normally this is machine code
 2. Programs are composed as described under "Program composition".
 
+--------
+
 ### Program composition
 ```Rust
 <program>           = <expr>
@@ -61,6 +63,8 @@ Currently, this README pretty much only consists of a language specification. Si
 ```
 
 **Note:** An `<expr>` may evaluate at compile time to a valid, say, `<match pattern>`, and would in such a case be a valid `<match pattern>`. See "Anonymous functions" §9. Syntax sugar changes things a bit too; see "Syntax sugar".
+
+--------
 
 ### Anonymous functions
 1. Structure: `(<input pars> => <function body>) <input args>`.
@@ -91,6 +95,8 @@ Currently, this README pretty much only consists of a language specification. Si
 13. `closed <function>` allows for the function to be non-open.
 	- This means the compiler won't check the function body until it's in its final scope
 	- For an example, see "Example code snippets" §2
+
+--------
 
 ### Patterns (variables but better)
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match> [constructed using <constructor pattern>])` where
@@ -139,12 +145,16 @@ Currently, this README pretty much only consists of a language specification. Si
 	- This means that anywhere it says `<function>` in this README it's actually `<function/pattern-becoming-function>`
 	- TODO: check if there are any exceptions to this
 
+--------
+
 ### Pattern parsing algorithm
 1. Choose a `$(<...>)` and move to its outside.
 	- NOTE: If the pattern is after 'as', choose a `#(<...>)` here instead (? TODO)
 2. If inside another `$(<...>)`, move to its outside, and then keep leaving scopes until you find `as`.
    If not, keep leaving scopes until you find `=>`.
 3. Your pattern is defined after this `as` or `=>`.
+
+--------
 
 ### Pattern matching
 1. When a pattern name is used, the compiler will try to find a matching pattern definition. If it can't find any match, it reports a compile error.
@@ -183,6 +193,8 @@ Currently, this README pretty much only consists of a language specification. Si
 	- `$x as ~Undefined` overrides this and specifies that `x` must *not* be `Undefined`
 		- useful for ensuring something is total: `this_should_be_total: ~Undefined`
 
+--------
+
 ### Values
 1. Partially applied functions and patterns are treated as values.
 	- called *objects* when of the form `<Capitalized Name> [<pars>] _`
@@ -196,6 +208,8 @@ Currently, this README pretty much only consists of a language specification. Si
 3. There are no other values.
 	- Numbers, strings, etc. are defined as partially applied functions or patterns
 4. Values are differentiated using pattern matching (as described under "Patterns" and "Pattern matching").
+
+--------
 
 ### Pseudo-values
 1. Pseudo-values are similar to values but act a bit differently, and include:
@@ -224,6 +238,8 @@ Currently, this README pretty much only consists of a language specification. Si
 5. And/Or-patterns are further described in "Pattern matching" §3
 6. Placeholder-values are further described in "Patterns" §5
 
+--------
+
 ### Evaluation
 1. Triforce uses eager evaluation.
 2. `(<expr>)` returns whatever is left of `<expr>` after evaluation to the outer scope.
@@ -234,6 +250,8 @@ Currently, this README pretty much only consists of a language specification. Si
 	2. Synonyms are deconstructed (see "Synonyms and Shadows")
 	3. Function application is evaluated
 5. `frozen` and `permafrosted` prevents evaluation from going past stage 1.
+
+--------
 
 ### Equality
 1. 2 finally evaluated values are equal if they refer to the same named function and they have the same applied args.
@@ -253,6 +271,8 @@ Currently, this README pretty much only consists of a language specification. Si
 7. Comparison involving `frozen` or `permafrosted` values will compare the values as if they were strings.
 8. See "Example code snippets" §1 for an example of equality.
 
+--------
+
 ### Synonyms and Shadows
 1. 2 patterns `f $x` and `$y g` are *synonymous* iff we `let f $x = $y g` or the other way around.
 	- We say that `f` is *deconstructed* to `g` when evaluated
@@ -264,6 +284,8 @@ Currently, this README pretty much only consists of a language specification. Si
 	- They have the same amount of parameters   in the same order
 	- They have the same `<pattern to match>`:s in the same order
 	- They have the same name
+
+--------
 
 ### Symbols
 1. Symbols part of the same *symgroup* that are next to eachother form a token.
@@ -281,6 +303,8 @@ Currently, this README pretty much only consists of a language specification. Si
 9. Symblock tokens without defined behaviour are ignored.
 	- define their behaviour using `func <symblock name> (implicitly permafrosted) {<...>};`
 10. Tokens formed with the use of symgroups or symindies without defined behaviour will cause an error.
+
+--------
 
 ### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1] [...])`
@@ -306,6 +330,8 @@ Currently, this README pretty much only consists of a language specification. Si
 6. `decl $(<pattern to declare>) [...];` allows use of declared patterns before they have been defined.
 	- Note that they must still be defined somewhere in the scope
 	- See "Example code snippets" §3 for an example
+
+--------
 
 ### Built-in "functions"
 1. `__all_args__ <function>` returns all possible args that can be applied to the function. `length >= 1`.
@@ -341,6 +367,8 @@ Currently, this README pretty much only consists of a language specification. Si
 		- if it's not possible to continue, there will be an error
 			- note that `__catch__` can be used to prevent this
 
+--------
+
 ### Misc
 1. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
 2. `(<expr>)` *always* has higher precedence than `<expr>`.
@@ -355,6 +383,8 @@ Currently, this README pretty much only consists of a language specification. Si
 10. The file extension for the language is `.tri`.
 11. Triforce allows ad-hoc polymorphism; you can create multiple functions with the same name but with different parameters.
 	- Meaning function & operator overloading is possible
+
+--------
 
 ## Other random stuff
 ### Example code snippets
