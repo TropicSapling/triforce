@@ -11,9 +11,9 @@ variables:
   escaped_char: '\\(x\h{2}|n|r|t|0|"|''|\\|u\{\h{1,6}\})'
 contexts:
   main:
-    - include: statements
+    - include: general
 
-  statements:
+  general:
     - include: universal
 
     # Strings begin and end with quotes, and use backslashes as an escape
@@ -187,7 +187,7 @@ contexts:
     - meta_scope: meta.block.rust
     - match: '(?=\})'
       pop: true
-    - include: statements
+    - include: general
 
   group:
     - match: '\)'
@@ -201,18 +201,18 @@ contexts:
     - meta_scope: meta.group.rust
     - match: '(?=\))'
       pop: true
-    - include: statements
+    - include: general
 
   group-tail:
     - meta_scope: meta.group.rust
     - match: '\)'
       scope: punctuation.section.group.end.rust
       pop: true
-    - include: statements
+    - include: general
 
   eval-group:
     - meta_scope: markup.italic
     - match: '`'
       scope: markup.italic
       pop: true
-    - include: statements
+    - include: general

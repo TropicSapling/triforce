@@ -35,7 +35,7 @@ Currently, this README pretty much only consists of a language specification. Si
 * <sub>brackets (`[]`) **and** seperated by bars (`|`) are part of a list of mutually exclusive *optional* keywords</sub>
 
 <sub>The equivalence symbol (`<=>`) means essentially what it does in mathematics.</sub>
-<sub>`<...>` and `[...]` mean something **required** respectively *optional* that fits in.</sub>
+<sub>`<...>` and `[...]` mean something **required** respectively *optional* that fits in (often "repeat what is behind").</sub>
 <sub>``` \` ``` escapes the escaper (i.e. ``` \`\` ``` means you must literally type ``` `` ```).</sub>
 
 <sub>Everything else is **required.**</sub>
@@ -43,10 +43,24 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Programs
-1. So far a program only consists of 1 file, but that will change in the future, and so will likely below points.
-2. A program is just one single anonymous function (counting `<input args>` to it).
-3. The compiler will evaluate this function as much as it can during compilation, and then convert the remnants into the specified output format.
+1. The compiler will evaluate programs as much as it can during compilation, and then convert the remnants into a specified output format.
 	- Normally this is machine code
+2. Programs are composed as described under "Program composition".
+
+### Program composition
+```Rust
+<program>           = <expr>
+<expr>              = {<air> | {<anon func>|<named pattern>} [<expr>] [...] | <applied named pattern>}
+<air>               = {[<ws>] | ([<ws>]) | (([<ws>])) | <...>}
+<ws>                = <whitespace> [...]
+<anon func>         = <pattern def> [...] => <expr>
+<pattern def>       = $(<named pattern>) as <matcher>
+<pattern>           = {<id token> | <pattern def>} [...]
+<matcher>           = [implicitly] [frozen|permafrosted] [raw] <match pattern> [becoming <pattern>] [constructed using <pattern>]
+<match pattern>     = {<id token> | <pattern def> | ${<pattern>|#<num>} | #(<pattern def>)} [...]
+```
+
+**Note:** An `<expr>` may evaluate at compile time to a valid, say, `<match pattern>`, and would in such a case be a valid `<match pattern>`. See "Anonymous functions" §9.
 
 ### Anonymous functions
 1. Structure: `(<input pars> => <function body>) <input args>`.
@@ -269,12 +283,12 @@ Currently, this README pretty much only consists of a language specification. Si
 10. Tokens formed with the use of symgroups or symindies without defined behaviour will cause an error.
 
 ### Syntax sugar
-1. `[#]$(<pattern to define>)` <=> `[#]($(<pattern to define>) as _)` <=> `[#]($(<pattern to define>) as $#0 [$#1 [...]])`
+1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1 [...]])`
 	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> [...]]`
 	- If the pattern isn't a variable, the amount of `$` after `as` will match the amount of parameters of the pattern
 		- i.e. `$(pattern taking $x and $y)` <=> `($(pattern taking $x and $y) as $#0 $#1)`
 
-2. `[#](<pattern to match>)`   <=> `[#]($_ as <pattern to match>)`    <=> `[#](_ as <pattern to match>)`
+2. `(<named pattern>)` <=> `($_ as <named pattern>)` <=> `(_ as <named pattern>)`
 	- Note that `$_` and `_` are not generally equivalent; this is a special case
 
 3. `$(<variable to define>) as <pattern to match>` <=> `$(<variable to define> _ [_ [...]]) as <pattern to match>`

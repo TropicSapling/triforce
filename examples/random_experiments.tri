@@ -1,8 +1,7 @@
 // Syntax sugar
-$a                 <=> ($a as _) // 'a' can be called like 'a arg1 arg2 ...'
-$(f $a $b ...)     <=> ($(f $a $b ...) as $#0 $#1 ...)
-(x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
-// EDIT: should that last sugar be removed? might just be confusing to have it
+$a                 <=> ($a as ...)
+$(f $a $b [...])   <=> ($(f $a $b [...]) as $#0 $#1 [...])
+(named_pattern)    <=> (_ as named_pattern)
 
 --------------------------------------------------
 
