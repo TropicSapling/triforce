@@ -35,7 +35,7 @@ Currently, this README pretty much only consists of a language specification. Si
 * <sub>brackets (`[]`) **and** seperated by bars (`|`) are part of a list of mutually exclusive *optional* keywords</sub>
 
 <sub>The equivalence symbol (`<=>`) means essentially what it does in mathematics.</sub>
-<sub>`<...>` and `[...]` mean something **required** respectively *optional* that fits in (often "repeat what is behind").</sub>
+<sub>`<...>` and `[...]` mean something **required** respectively *optional* that fits in.</sub>
 <sub>``` \` ``` escapes the escaper (i.e. ``` \`\` ``` means you must literally type ``` `` ```).</sub>
 
 <sub>Everything else is **required.**</sub>
@@ -60,12 +60,12 @@ Currently, this README pretty much only consists of a language specification. Si
 <match pattern>     = {<id token> | <pattern def> | ${<pattern>|#<num>} | #(<pattern def>)} [...]
 ```
 
-**Note:** An `<expr>` may evaluate at compile time to a valid, say, `<match pattern>`, and would in such a case be a valid `<match pattern>`. See "Anonymous functions" §9.
+**Note:** An `<expr>` may evaluate at compile time to a valid, say, `<match pattern>`, and would in such a case be a valid `<match pattern>`. See "Anonymous functions" §9. Syntax sugar changes things a bit too; see "Syntax sugar".
 
 ### Anonymous functions
 1. Structure: `(<input pars> => <function body>) <input args>`.
-2. `<input pars>` = `(<par1>) [(<par2>) [...]]`
-3. `<input args>` = `<arg1> [<arg2> [...]]`
+2. `<input pars>` = `(<par1>) [(<par2>)] [...]`
+3. `<input args>` = `<arg1> [<arg2>] [...]`
 4. Every parameter is a *pattern def*.
 5. All functions are closures (capturing their original environment).
 6. An empty `<function body>` is equivalent to `frozen __caller_scope__`.
@@ -94,9 +94,9 @@ Currently, this README pretty much only consists of a language specification. Si
 
 ### Patterns (variables but better)
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match> [constructed using <constructor pattern>])` where
-	- `<pattern to define>` = ` <dname start>  [{(<pattern def>)|<dname continuation>} [...]] [<dname end>]` where
+	- `<pattern to define>` = ` <dname start>  [{(<pattern def>)|<dname continuation>}] [...] [<dname end>]` where
 		- `<dname start>`, `dname continuation`, `<dname end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
-	- `<pattern to match>`  = `[<mname start>] [{(<pattern def>)|<mname continuation>|${<var>|#<n>}|#<pattern def>} [...]] [<mname end>]` where
+	- `<pattern to match>`  = `[<mname start>] [{(<pattern def>)|<mname continuation>|${<var>|#<n>}|#<pattern def>}] [...] [<mname end>]` where
 		- `<mname start>`, `mname continuation`, `<mname end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
 		- `$<var>` is either:
 			- a name for a parameter that is linked to a parameter of the same name in `<pattern to define>`, or
@@ -153,7 +153,7 @@ Currently, this README pretty much only consists of a language specification. Si
 	- i.e. in `$x $y $x => <...>` the 2 `x`s must be equal
 	- the equality function `==` is defined using this
 
-3. An and/or-pattern, `a|b|...|z [& <or-pattern> [& <...>]]`, can be used in pattern matching.
+3. An and/or-pattern, `a|b|...|z [& <or-pattern>] [...]`, can be used in pattern matching.
 	- `a|b|c` <=> `a|a|b|c|b|a` <=> `c|a|b`
 	- `a`, `b`, `c`, `a|b`, `a|c` and `a|b|c` all match `a|b|c`
 	- `a|b|c`, `a|b` and `a|c` *may* match `a`, `b` or `c` (and `a|b|c` *may* match `a|b`)
@@ -269,9 +269,9 @@ Currently, this README pretty much only consists of a language specification. Si
 1. Symbols part of the same *symgroup* that are next to eachother form a token.
 2. Every *symindie* is its own token.
 3. A *symblock* is a block of symbols enclosed by 2 enclosers, forming a token.
-4. `decl symgroup  <symbol> [<symbol> [...]];` declares a symbol group in the scope.
+4. `decl symgroup  <symbol> [...];` declares a symbol group in the scope.
 	- `\s`, `\t` and `\n` can be used as symbols
-5. `decl symindies <symbol> [<symbol> [...]];` declares one or more symbol independents in the scope.
+5. `decl symindies <symbol> [...];` declares one or more symbol independents in the scope.
 6. `decl symblock <name> enclosed by <encloser> <encloser> [with escaper <escaper>];` declares a symbol block in the scope.
 	- all symbols are allowed for use as enclosers and escapers, but must form one token each
 	- `<name>` can also be anything forming one token
@@ -279,19 +279,19 @@ Currently, this README pretty much only consists of a language specification. Si
 7. There are 2 built-in symgroups: "default" and "whitespace".
 8. There are 2 built-in symindies: `(` and `)`.
 9. Symblock tokens without defined behaviour are ignored.
-	- define their behaviour using `function <symblock name> (implicitly permafrosted) {...};`
+	- define their behaviour using `func <symblock name> (implicitly permafrosted) {<...>};`
 10. Tokens formed with the use of symgroups or symindies without defined behaviour will cause an error.
 
 ### Syntax sugar
-1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1 [...]])`
-	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2> [...]]`
+1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1] [...])`
+	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2>] [...]`
 	- If the pattern isn't a variable, the amount of `$` after `as` will match the amount of parameters of the pattern
 		- i.e. `$(pattern taking $x and $y)` <=> `($(pattern taking $x and $y) as $#0 $#1)`
 
 2. `(<named pattern>)` <=> `($_ as <named pattern>)` <=> `(_ as <named pattern>)`
 	- Note that `$_` and `_` are not generally equivalent; this is a special case
 
-3. `$(<variable to define>) as <pattern to match>` <=> `$(<variable to define> _ [_ [...]]) as <pattern to match>`
+3. `$(<variable to define>) as <pattern to match>` <=> `$(<variable to define> _ [...]) as <pattern to match>`
 	- i.e. `$b as Bool _` <=> `$(b _) as Bool _`
 
 4. `__caller_scope__` can be used to avoid making your program look like Lisp:
@@ -301,7 +301,7 @@ Currently, this README pretty much only consists of a language specification. Si
 
 5. `$(<pattern to define>) as frozen [<pattern to match>] [becoming <pattern to match>]` can be used to delay evaluation of input until inside the scope where the pattern is defined:
 	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as permafrosted 1) => defrosted x: 2) {<expr>}`
-	- `$<...> as frozen [becoming <...>]`           <=> `$<...> as frozen _ [becoming <...>]`
+	- `$<...> as frozen [becoming <...>]`         <=> `$<...> as frozen _ [becoming <...>]`
 
 6. `decl $(<pattern to declare>) [...];` allows use of declared patterns before they have been defined.
 	- Note that they must still be defined somewhere in the scope
