@@ -9,6 +9,7 @@ The main goals of the language include:
 - an advanced type system, including dependent types
 - the ability to both work on a high level and a lower level close to hardware
 - safety by default; less safe options will be discouraged and require opt-in
+- readable, understandable code (at least for common situations)
 - more things yet to be figured out...
 
 Obviously, some compromises are going to have to be made in order to achieve these goals. The compilation process is probably going to be rather slow, for example.
