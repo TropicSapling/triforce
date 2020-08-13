@@ -50,16 +50,16 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Program composition
-```Rust
+```XML
 <program>           = <expr>
-<expr>              = {<air> | {<anon func>|<named pattern>} [<expr>] [...] | <applied named pattern>}
+<expr>              = [raw] {<air> | {<anon-func>|<named-pattern>} [<expr>] [...] | <applied-named-pattern> | {frozen|permafrosted} <expr> | defrosted <permafrosted-expr>}
 <air>               = {[<ws>] | ([<ws>]) | (([<ws>])) | <...>}
 <ws>                = <whitespace> [...]
-<anon func>         = <pattern def> [...] => <expr>
-<pattern def>       = $(<named pattern>) as <matcher>
-<pattern>           = {<id token> | <pattern def>} [...]
-<matcher>           = [implicitly] [frozen|permafrosted] [raw] <match pattern> [becoming <pattern>] [constructed using <pattern>]
-<match pattern>     = {<id token> | <pattern def> | ${<pattern>|#<num>} | #(<pattern def>)} [...]
+<anon-func>         = [closed|impure|unpredictable] <pattern-def> [...] => <expr>
+<pattern-def>       = $(<named-pattern>) as <matcher>
+<pattern>           = {<id-token> | <pattern-def>} [...]
+<matcher>           = [implicitly] [frozen|permafrosted] [raw] <match-pattern> [becoming <pattern>] [constructed using <pattern>]
+<match-pattern>     = {<id-token> | <pattern-def> | ${<pattern>|#<num>} | #(<pattern-def>)} [...]
 ```
 
 **Note:** An `<expr>` may evaluate at compile time to a valid, say, `<match pattern>`, and would in such a case be a valid `<match pattern>`. See "Anonymous functions" §9. Syntax sugar changes things a bit too; see "Syntax sugar".
