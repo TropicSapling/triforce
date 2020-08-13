@@ -218,8 +218,19 @@ func for each $item in ($list as any List) ($body as implicitly frozen) {
 // |   CATEGORY: Number    |
 // -------------------------
 
+// Inclusive range
 func $n..$m {
-	n|(n + 1)|...|m
+	if m > n then
+		n|(n + 1)|...|m
+	else if m == n then
+		n
+	else
+		()
+};
+
+// Exclusive range
+func $n..<$m {
+	n..(m - 1)
 };
 
 func $n +- $m {n-m..n+m};
