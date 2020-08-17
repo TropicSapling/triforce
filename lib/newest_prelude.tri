@@ -52,7 +52,7 @@ basic func type of (_ constructed using $constructor) {any constructor};
 
 // Marker for unchecked input
 // File reading, user input, etc. should use this
-// Always ensure 'raw' input is ~UncheckedInput
+// Always ensure raw input is ~UncheckedInput
 // TODO: Make '__catch__' for this or not?
 basic func UncheckedInput _ {};
 
@@ -70,9 +70,7 @@ basic func let ($var as implicitly permafrosted) = $val; {
 	frozen raw (let `var`: val = val;)
 };
 
-basic func Nothing _ {};
-
-// Useful for distinguishing 'Nothing' from 'Wrapped Nothing'
+// Useful for distinguishing '()' from 'Wrapped ()'
 // See https://www.reddit.com/r/ProgrammingLanguages/comments/hy6emx/explicit_nullability_vs_optionals/fzarbwu/
 basic func Wrapped $obj _ {};
 
