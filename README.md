@@ -88,6 +88,7 @@ Currently, this README pretty much only consists of a language specification. Si
 		- its return value is the same for the same input
 			- note that the input consists of both the arguments passed and the state of the outer scope
 		- its evaluation has no side effects
+			- note that debug-mode side effects disappearing in release-mode don't count, allowing i.e. `##[dbg_mode_only] debug <...>` (?)
 	- The body of an open function will be "opened" and checked by the compiler as soon as it is encountered
 		- this means undefined patterns, incorrect syntax, mismatches, etc. are not allowed
 11. `impure <function>` allows a function to have side effects.

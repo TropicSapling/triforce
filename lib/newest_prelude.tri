@@ -29,6 +29,8 @@ decl symblock __sb_default_str__ enclosed by " " with escaper \;
 // - +-*/%
 // - etc.
 
+// TODO: Define 'debug $expr' function similar to Rust's 'dbg!(...)'
+
 // Useless, but looks nice sometimes.
 // Convention to use this whenever $expr spans multiple lines.
 // Also use this for the classics 'func', 'if', etc.
