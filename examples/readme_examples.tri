@@ -215,8 +215,7 @@ object Player [
 	$health as any Number
 ];
 
-// Note how this is shorthand for 'f ($x as _)'
-impure func f $x {
+impure func f ($x as _) {
 	println "last";
 };
 

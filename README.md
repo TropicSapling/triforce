@@ -72,6 +72,8 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Anonymous functions
+![section banner](img/sections/anon_funcs.PNG)
+
 1. Structure: `(<input pars> => <function body>) <input args>`.
 2. `<input pars>` = `(<par1>) [(<par2>)] [...]`
 3. `<input args>` = `<arg1> [<arg2>] [...]`
@@ -107,6 +109,8 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Patterns (variables but better)
+![section banner](img/sections/patterns.PNG)
+
 1. `<pattern def>` = `($(<pattern to define>) as <pattern to match> [constructed using <constructor pattern>])` where
 	- `<pattern to define>` = ` <dname start>  [{(<pattern def>)|<dname continuation>}] [...] [<dname end>]` where
 		- `<dname start>`, `dname continuation`, `<dname end>` are allowed to contain any symbols, including whitespace (TODO: exception for ops)
@@ -165,6 +169,8 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Pattern matching
+![section banner](img/sections/pattern_matching.PNG)
+
 1. When a pattern name is used, the compiler will try to find a matching pattern definition. If it can't find any match, it reports a compile error.
 
 2. If 2 or more variables in the same function have the same name they will be pattern matched to be equal.
@@ -204,6 +210,8 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Values
+![section banner](img/sections/values.PNG)
+
 1. Partially applied functions and patterns are treated as values.
 	- called *objects* when of the form `<Capitalized Name> [<pars>] _`
 2. There exists a special `Undefined` value, which will be inserted into compilation or-patterns whenever a value might not come to exist during runtime. This happens if:
@@ -220,6 +228,8 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Pseudo-values
+![section banner](img/sections/pseudo_values.PNG)
+
 1. Pseudo-values are similar to values but act a bit differently, and include:
 	- and/or-patterns
 		- ex: `1|2|3 & 2|3|4`
@@ -262,6 +272,8 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Equality
+![section banner](img/sections/equality.PNG)
+
 1. 2 finally evaluated values are equal if they refer to the same named function and they have the same applied args.
 	- This means anonymous functions are incomparable
 	- A value is first finally evaluated when all synonyms have been deconstructed
@@ -296,6 +308,8 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Symbols
+![section banner](img/sections/symbols.PNG)
+
 1. Symbols part of the same *symgroup* that are next to eachother form a token.
 2. Every *symindie* is its own token.
 3. A *symblock* is a block of symbols enclosed by 2 enclosers, forming a token.
@@ -338,6 +352,8 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Syntax sugar
+![section banner](img/sections/sugar.PNG)
+
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1] [...])`
 	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2>] [...]`
 	- If the pattern isn't a variable, the amount of `$` after `as` will match the amount of parameters of the pattern
@@ -366,6 +382,8 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Built-in "functions"
+![section banner](img/sections/builtins.PNG)
+
 1. `__all_args__ <function>` returns all possible args that can be applied to the function. `length >= 1`.
 	- ex: `__all_args__ (f $n $str) == [any Nat, any String]`
 		- except array is special: `f [any Nat, any String] == f (any Nat) (any String)`
@@ -402,6 +420,8 @@ Currently, this README pretty much only consists of a language specification. Si
 --------
 
 ### Misc
+![section banner](img/sections/misc.PNG)
+
 1. `_` is a special built-in symbol meaning different things in different contexts, but typically it means "anything".
 2. `(<expr>)` *always* has higher precedence than `<expr>`.
 3. Number literals, char literals and string literals are built-in and bound to library implementations similarly to Agda.
