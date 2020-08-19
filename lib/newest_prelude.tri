@@ -111,10 +111,9 @@ basic func impure rec basic func ($pattern as implicitly permafrosted raw ~Unche
 };
 
 // Complete *total* functions: allows easy attributes, recursion & types
-// - a total function must:
-//		- have no infinite loops
-//		- cause no side-effects
-//		- use no outside/free patterns
+// - a total function must return, meaning it must:
+//		- have no (possibly) infinite loops
+//		- have no possibility of crashing
 // Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
 basic func ##($attrs as implicitly permafrosted any List) func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
 	frozen raw {

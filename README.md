@@ -314,6 +314,29 @@ Currently, this README pretty much only consists of a language specification. Si
 
 --------
 
+### Low level
+1. `<n>{i|u}{8|16|32|64|128|size}` is the syntax for low level integers.
+	- `i` = normal/signed int, `u` = unsigned
+	- the numbers after `{i|u}` specify the bit-size
+		- `size` means pointer-size (usually 32- or 64-bit)
+	- ex: `1_234_567u32`
+	- ex: `987_654_321isize`
+2. `<n>f{32|64}` is the syntax for low level floating point numbers.
+	- the numbers after `f` specify the bit-size
+	- ex: `1234.567f64`
+3. Arithmetic operators are overloaded with built-in low level operations for low level numbers.
+	- i.e. `123isize + 456isize` is the low-level add operation, while `123 + 456` may be defined to be something else
+4. `-><x>` is a pointer to `<x>` (the address of `<x>`)
+5. `{8|16|32|64|128|size}@<addr>` gets data of the specified bit-size located at `<addr>`.
+	- there will also be a higher level `@<ptr>` version in the future
+6. `__push_stack__ <x>` pushes `<x>` to the stack.
+	- TODO: do we need this? or is asm support enough?
+7. `__pop_stack__ <x>` pops from the stack into `<x>`.
+	- TODO: do we need this? or is asm support enough?
+8. `__asm__ (<assembly code block>)` allows you to write inline assembly.
+
+--------
+
 ### Syntax sugar
 1. `$(<pattern to define>)` <=> `($(<pattern to define>) as _)` <=> `($(<pattern to define>) as $#0 [$#1] [...])`
 	- If the pattern is a variable, this allows the input to be any kind of function, which you can call like `<defined pattern> [<arg1>] [<arg2>] [...]`
