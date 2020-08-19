@@ -246,3 +246,52 @@ f (Player "Steve" 50) // prints "second"
 f (Player "Alex"  40) // prints "fifth"
 f (Player "Alex"  60) // prints "third"
 f Potato              // prints "last"
+
+// -------------------------------------------
+// |                EXAMPLE 8                |
+// -------------------------------------------
+
+// Dictionaries/HashMaps + Error Handling example
+
+func test() --> implicitly Wrapped {
+  // Only allowing optional Int values for demonstration purposes.
+  // 'optionally any Int' <=> 'any Int | ()' (read as "any Int or nothing")
+  func lookup $key in $dict --> (implicitly Wrapped) (optionally any Int) {
+    for each [$hash, $val] in dict {
+      if hash of key == hash {
+        return val; // all returns implicitly wrapped by default, making this become 'return (Wrapped val)'
+      };
+    };
+    
+    // '`$expr`' can however be used to bypass the implicit wrapping
+    // '`$expr`' is read as "precisely $expr"
+    
+    return `()`; // "return precisely nothing"; returns unwrapped '()', here meaning no entry was found
+  };
+  
+  // Idk if dictionaries actually will have this syntax,
+  // but let's assume they do for this example.
+  let dict = [["abc", 123], ["def", ()], ["ghi", 456]];
+  
+  println(lookup "abc"     in dict); // prints "Wrapped 123"; entry with value '123' found
+  println(lookup "invalid" in dict); // prints "()"; no entry found
+  println(lookup "def"     in dict); // prints "Wrapped ()"; entry found, but the entry is nothing
+  
+  // '?' can be used to automatically unwrap.
+  // If unwrapping fails, it returns to an error handler.
+  println(lookup "def"     in dict)?; // prints "()"; entry found, but the entry is nothing
+  println(lookup "invalid" in dict)?; // no entry found; returns '`()`' to error handler without printing anything
+  println("This won't get printed because of the above error.");
+};
+
+func handle error () {
+	// Handle the error somehow...
+};
+
+func init() {
+  // If test() succeeds, it returns 'Wrapped ()'.
+  // If it however fails, it returns '()':
+  if test() == () then handle error;
+  
+  // (We could ofc also have chosen to return 'Err $err_info' or similar instead to know better how to handle the error)
+};

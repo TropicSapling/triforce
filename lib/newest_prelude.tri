@@ -239,7 +239,8 @@ func $n +- $m {n-m..n+m};
 // |  CATEGORY: Category   |
 // -------------------------
 
-// ex: 'fieldified [$a as 123, $b as any Int]' => AST: [["as", "$a", "123"], ["as", "$b", ["any", "Int"]]]
+// TODO: Move out of prelude into std lib if possible.
+// Ex: 'fieldified [$a as 123, $b as any Int]' => AST: [["as", "$a", "123"], ["as", "$b", ["any", "Int"]]]
 func fieldified ($fields as any List) {
 	let AST: any List = [];
 
@@ -265,7 +266,7 @@ func category ($cat as implicitly permafrosted) ($contents as any List) {
 // Currently doesn't do anything more than checking
 // that what you're exporting is a list, which is
 // useless since 'category' does that later anyway
-func export ($exports as any List) {
+func export ($exports as any List); {
 	exports
 };
 
@@ -278,6 +279,18 @@ func expose ($cat as any List) {
 	)
 };
 
-// TODO: Generalise into 'apply $f to itself $n times'
-// TODO: Move out of prelude into std lib
-func apply $f to itself {f f};
+// -------------------------
+// |   PROPER CATEGORIES   |
+// -------------------------
+
+category Misc {
+	func optionally ($x as _) {x|()};
+
+	// TODO: Generalise into 'apply $f to itself $n times'
+	// TODO: Move out of prelude into std lib
+	func apply $f to itself {f f};
+
+	export [optionally];
+};
+
+expose Misc;

@@ -43,6 +43,10 @@ Currently, this README pretty much only consists of a language specification. Si
 
 --------
 
+**NOTE:** This specification mainly specifies the built-in parts of the language. See the prelude and libraries for the rest.
+
+--------
+
 ### Programs
 1. The compiler will evaluate programs as much as it can during compilation, and then convert the remnants into a specified output format.
 	- Normally this is machine code
@@ -97,6 +101,8 @@ Currently, this README pretty much only consists of a language specification. Si
 13. `closed <function>` allows for the function to be non-open.
 	- This means the compiler won't check the function body until it's in its final scope
 	- For an example, see "Example code snippets" §2
+14. While functions require at least 1 parameter, `(_ as ()) => <function body>` can be used to emulate a function without parameters.
+	- This is also the recommended way; doing `(_ as ...)` or `(_ as _)` serves different (rare) purposes
 
 --------
 
@@ -316,6 +322,7 @@ Currently, this README pretty much only consists of a language specification. Si
 
 2. `(<named pattern>)` <=> `($_ as <named pattern>)` <=> `(_ as <named pattern>)`
 	- Note that `$_` and `_` are not generally equivalent; this is a special case
+	- Allows for `() => <function body>` (becoming `(_ as ()) => <function body>`)
 
 3. `$(<variable to define>) as <pattern to match>` <=> `$(<variable to define> _ [...]) as <pattern to match>`
 	- i.e. `$b as Bool _` <=> `$(b _) as Bool _`
