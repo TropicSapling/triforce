@@ -78,7 +78,7 @@ let x = 123;
 // Example of a cool thing using #-defs
 // '#($y)%' defines 'y' inside function body as '5' in this case
 // You could also do '#($y as 5)%' if you only want to allow that input
-func (any Number)% _ {};
+func (any Number)% () {};
 
 func ($x as any Number) * (#($y)%) {
     x * y / 100
