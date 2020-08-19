@@ -40,7 +40,7 @@ $x => (
 		// Final scope
 		// 'z' is defined here, so all is fine
 
-		(_ => y x) _ // just to show final scope isn't necessarily call scope
+		(() => y x) () // just to show final scope isn't necessarily call scope
 	)) (closed impure $a => x++ * z a) 123 // 'impure' allows change of 'x', so all is fine
 )
 
@@ -57,7 +57,7 @@ $x => (
 	($y $z => (
 		// Final scope
 		
-		(_ => y x) _ // just to show final scope isn't necessarily call scope
+		(() => y x) () // just to show final scope isn't necessarily call scope
 	)) ($a => x++ * z a) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern being changed
 )
 
@@ -178,12 +178,12 @@ id        != ($x => x)
 // |                EXAMPLE 6                |
 // -------------------------------------------
 
-func Potato _ {};
+func Potato () {};
 
 let potato  = Potato;
 let potato2 = Potato;
 let potato3 = {
-	func Potato _ {};
+	func Potato () {};
 
 	Potato
 };

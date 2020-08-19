@@ -213,7 +213,7 @@ Currently, this README pretty much only consists of a language specification. Si
 ![section banner](img/sections/values.PNG)
 
 1. Partially applied functions and patterns are treated as values.
-	- called *objects* when of the form `<Capitalized Name> [<pars>] _`
+	- called *objects* when of the form `<Capitalized Name> [<pars>] ()`
 2. There exists a special `Undefined` value, which will be inserted into compilation or-patterns whenever a value might not come to exist during runtime. This happens if:
 	- the program specifies it might crash during runtime
 		- ex: `let x = rand any Int; if x == 1337 {panic!}; x` returns `Undefined|(any Int)` during compilation
@@ -398,11 +398,11 @@ Currently, this README pretty much only consists of a language specification. Si
 5. `__catch__` is a special function, more info in example 4.
 6. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
 	- similar to Lisp quoting
-	- i.e. assuming `func f _ {frozen (1 + 2)};`, then `f _ * 3` => `(1 + 2) * 3` => `9`
+	- i.e. assuming `func f() {frozen (1 + 2)};`, then `f() * 3` => `(1 + 2) * 3` => `9`
 7. `permafrosted` is like `frozen` except the thing stays frozen even after evaluation
 	- evaluate fully using `defrosted`
 8. `raw <expr>` is identical to `<expr>` except it's unhygienic.
-	- i.e. assuming `func f _ {frozen raw (1 + 2)};`, then `f _ * 3` => `1 + 2 * 3` => `7`
+	- i.e. assuming `func f() {frozen raw (1 + 2)};`, then `f() * 3` => `1 + 2 * 3` => `7`
 	- note: removes *all* all-encompassing parentheses, so even `raw (((((1 + 2)))))` becomes `1 + 2`
 		- it does this even for input `as raw`
 9. `listified permafrosted <code>` converts `<code>` to an AST in the form of a multi-dimensional list
