@@ -50,7 +50,7 @@ contexts:
       scope: support.function.rust
 
     # Numbers
-    - match: '\b(-)?[0-9_.]+([iuf]+(8|16|32|64|128|size))?\b'
+    - match: '\b(-)?(0[xob])?[0-9a-f_.]+([iuf]+(8|16|32|64|128|size))?\b'
       scope: constant.numeric.example-c
 
     - include: operators

@@ -64,12 +64,29 @@ Currently, this README pretty much only consists of a language specification. Si
 <pattern-def>       = $(<named-pattern>) as <matcher>
 <pattern>           = {<id-token> | <pattern-def>} [...]
 <matcher>           = [implicitly] [frozen|permafrosted] [raw] <match-pattern> [becoming <pattern>] [constructed using <pattern>]
-<match-pattern>     = {<id-token> | <pattern-def> | ${<pattern>|#<num>} | #(<pattern-def>)} [...]
+<match-pattern>     = {<id-token> | <pattern-def> | ${<pattern>|#<int>} | #(<pattern-def>)} [...]
+<int>               = {0|1|2|3|4|5|6|7|8|9}[...]
 ```
 
 **Note:** An `<expr>` may evaluate at compile time to a valid, say, `<match pattern>`, and would in such a case be a valid `<match pattern>`. See "Anonymous functions" §9. Syntax sugar changes things a bit too; see "Syntax sugar".
 
 --------
+
+### Literals
+1. Number structure: `{0|1|2|3|4|5|6|7|8|9}[0|1|2|3|4|5|6|7|8|9|_|.][...]`
+	- `.` is a comma used for fractions
+	- `_` is a separator used to improve readability
+	- ex: `1_234_567.89`
+2. Numbers prefixed with `0x` are hexadecimal and additionally allow `a`, `b`, `c`, `d`, `e` and `f`.
+	- ex: `0x123456789abc`
+3. Numbers prefixed with `0o` are octal and exclude `8` and `9`.
+	- ex: `0o1234567`
+4. Numbers prefixed with `0b` are binary and only allow `0`, `1` and `_`.
+	- ex: `0b00101001_00000110_01010110_10010010`
+5. See "Low level" for low level forms of number literals.
+6. The symblock `__sb_default_str__` is used for string literals.
+	- syntax declared in the prelude: `decl symblock __sb_default_str__ enclosed by " " with escaper \;`
+	- `\n`, `\r`, `\t`, `\0` and `\\` inside of a string mean "newline", "carriage return", "tab", "null" and "backslash" respectively
 
 ### Anonymous functions
 ![section banner](img/sections/anon_funcs.PNG)
@@ -333,6 +350,7 @@ Currently, this README pretty much only consists of a language specification. Si
 	- `i` = normal/signed int, `u` = unsigned
 	- the numbers after `{i|u}` specify the bit-size
 		- `size` means pointer-size (usually 32- or 64-bit)
+		- see [this discussion](https://www.reddit.com/r/ProgrammingLanguages/comments/h0ar7n/which_names_would_you_use_for_your_sized_numeric/ftl849u/?utm_source=reddit&utm_medium=web2x&context=3) on why we use bits rather than bytes
 	- ex: `1_234_567u32`
 	- ex: `987_654_321isize`
 2. `<n>f{32|64}` is the syntax for low level floating point numbers.
@@ -341,7 +359,10 @@ Currently, this README pretty much only consists of a language specification. Si
 3. Arithmetic operators are overloaded with built-in low level operations for low level numbers.
 	- i.e. `123isize + 456isize` is the low-level add operation, while `123 + 456` may be defined to be something else
 4. `-><x>` is a pointer to `<x>` (the address of `<x>`)
-5. `{8|16|32|64|128|size}@<addr>` gets data of the specified bit-size located at `<addr>`.
+	- a pointer is just a low level integer, but usually written in hex form (i.e. `0x123456789abc`)
+5. `{1|2|4|8|16|size}@<addr>` gets data of the specified byte-size located at `<addr>`.
+	- we use bytes rather than bits here to make dereferencing easier
+		- makes it easier because pointer arithmetic uses bytes
 	- there will also be a higher level `@<ptr>` version in the future
 6. `__push_stack__ <x>` pushes `<x>` to the stack.
 	- TODO: do we need this? or is asm support enough?
@@ -378,6 +399,8 @@ Currently, this README pretty much only consists of a language specification. Si
 6. `decl $(<pattern to declare>) [...];` allows use of declared patterns before they have been defined.
 	- Note that they must still be defined somewhere in the scope
 	- See "Example code snippets" §3 for an example
+
+7. Exponentiation for fractional numbers: `123.45E-6` <=> `0.00012345`, and `123.45E+6` <=> `123_450_000`.
 
 --------
 
