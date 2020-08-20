@@ -252,7 +252,7 @@ f Potato              // prints "last"
 
 // Dictionaries/HashMaps + Error Handling example
 
-func test() --> implicitly Wrapped {
+func test() --> (implicitly Wrapped) () {
   // Only allowing optional Int values for demonstration purposes.
   // 'optionally any Int' <=> 'any Int | ()' (read as "any Int or nothing")
   func lookup $key in $dict --> (implicitly Wrapped) (optionally any Int) {
@@ -280,7 +280,8 @@ func test() --> implicitly Wrapped {
   // If unwrapping fails, it returns to an error handler.
   println(lookup "def"     in dict)?; // prints "()"; entry found, but the entry is nothing
   println(lookup "invalid" in dict)?; // no entry found; returns '`()`' to error handler without printing anything
-  println("This won't get printed because of the above error.");
+  
+  (lookup "ghi" in dict)? // returning something fallible requires '?'; else 'Wrapped $val' could be returned which doesn't match '()'
 };
 
 func handle error () {

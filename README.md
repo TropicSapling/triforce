@@ -188,7 +188,7 @@ Currently, this README pretty much only consists of a language specification. Si
 ### Pattern matching
 ![section banner](img/sections/pattern_matching.PNG)
 
-1. When a pattern name is used, the compiler will try to find a matching pattern definition. If it can't find any match, it reports a compile error.
+1. When a pattern name is used, the compiler will try to find a matching pattern definition. If it can't find any match, it reports a compile time error.
 
 2. If 2 or more variables in the same function have the same name they will be pattern matched to be equal.
 	- i.e. in `$x $y $x => <...>` the 2 `x`s must be equal
