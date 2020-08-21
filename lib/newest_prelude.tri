@@ -271,6 +271,13 @@ func export ($exports as any List); {
 
 func expose ($cat as any List) {
 	frozen raw {
+		// Nothing in this block is evaluated until after returning.
+		// This block captures variables, functions, etc.
+		// Captures have precedence over what is defined in __caller_scope__.
+		// I.e. if __caller_scope__ defines another 'cat' that will be ignored.
+		// We could still put something undefined in here though and it would
+		// still compile if __caller_scope__ defines that thing.
+
 		let `cat[0]` = cat[0]; // using '``' to clarify the name is the evaluated cat[0] rather than 'cat[0]'
 		if cat length > 1 {
 			expose cat[1..];
