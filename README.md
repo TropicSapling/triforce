@@ -103,22 +103,22 @@ Currently, this README pretty much only consists of a language specification. Si
 9. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>`, `<pattern to define>` and `<pattern to match>`.
 	- Note that surrounding backticks (`` \`\` ``) are necessary when applying inside `<pattern to define>`
 		- i.e. if we `let f = Something`, then `let f _ = SomethingElse` redefines `f` while `` let `f _` = SomethingElse `` becomes `let Something = SomethingElse`
-		- this is because `<pattern to define>` is taken as `permafrosted`
-		- the surrounding backticks force evaluation even when `frozen` or `permafrosted`
+		- this is because `<pattern to define>` is taken as `implicitly unchecked frozen`
+		- the surrounding backticks escape all implicits, thereby forcing evaluation even when implicitly `frozen` or `permafrosted`
 	- `<pattern to match>` is always fully evaluated, even if it's inside a `frozen` or `permafrosted` block
-10. Functions are *pure* and *open* by default.
+10. Functions are *pure* and *checked* by default.
 	- A pure function has the following properties:
 		- its return value is the same for the same input
 			- note that the input consists of both the arguments passed and the state of the outer scope
 		- its evaluation has no side effects
 			- note that debug-mode side effects disappearing in release-mode don't count, allowing i.e. `##[dbg_mode_only] debug <...>` (?)
-	- The body of an open function will be "opened" and checked by the compiler as soon as it is encountered
+	- The body of a checked function will be checked by the compiler as soon as it is encountered
 		- this means undefined patterns, incorrect syntax, mismatches, etc. are not allowed
 11. `impure <function>` allows a function to have side effects.
 12. `unpredictable <function>` allows a function to have side effects and different return values for the same input.
 	- Mainly useful for functions interacting with the outer world (user input, true randomness, etc.)
-13. `closed <function>` allows for the function to be non-open.
-	- This means the compiler won't check the function body until it's in its final scope
+13. `unchecked <expr>` allows for an expression (i.e. a function) to be non-checked.
+	- This means the compiler won't check the expression until it's in its final scope
 	- For an example, see "Example code snippets" §2
 14. While functions require at least 1 parameter, `(_ as ()) => <function body>` can be used to emulate a function without parameters.
 	- This is also the recommended way; doing `(_ as ...)` or `(_ as _)` serves different (rare) purposes
@@ -429,7 +429,7 @@ Currently, this README pretty much only consists of a language specification. Si
 8. `raw <expr>` is identical to `<expr>` except it's unhygienic.
 	- i.e. assuming `func f() {frozen raw (1 + 2)};`, then `f() * 3` => `1 + 2 * 3` => `7`
 	- note: removes *all* all-encompassing parentheses, so even `raw (((((1 + 2)))))` becomes `1 + 2`
-		- it does this even for input `as raw`
+		- it does this even for input `as implicitly raw`
 9. `listified permafrosted <code>` converts `<code>` to an AST in the form of a multi-dimensional list
 	- each item in the list is either a token `String` or a list of tokens
 	- the form of the AST will be stable once the language is stable

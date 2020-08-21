@@ -22,8 +22,15 @@ decl symindies { } [ ];
 // |   CATEGORY: Basics    |
 // -------------------------
 
-// TODO: Fix '@(precedence below ;)' for all functions using '__caller_scope__' (including all forms of 'let')
-(unpredictable $(let basic $var = $val;) => __caller_scope__) (($var as implicitly permafrosted) $val => (unpredictable $`var` => __caller_scope__) val)
+// Defines a semi-permanent version of 'frozen' that can be defrosted.
+// You could say that 'permafrosted $expr' is '$expr' in the freezer,
+// and 'defrosted $pfexpr' is '$pfexpr' out of the freezer again.
+// The freezer is here a frozen argument slot.
+($permafrosted => __caller_scope__) (($expr   as implicitly frozen    ) () => ()         )
+($defrosted    => __caller_scope__) (($pfexpr as permafrosted #($expr))    => frozen expr)
+
+// TODO: Fix '##(precedence below ;)' for all functions using '__caller_scope__' (including all forms of 'let')
+(unpredictable $(let basic $var = $val;) => __caller_scope__) (($var as implicitly unchecked permafrosted) $val => (unpredictable $`frozen (defrosted var)` => __caller_scope__) val)
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
@@ -42,7 +49,7 @@ decl symindies { } [ ];
 // Also use this for the classics 'func', 'if', etc.
 let basic {$expr} = $expr => expr;
 
-let basic basic func ($pattern as implicitly permafrosted) ($body as implicitly frozen); = $pattern $body => frozen raw (let basic `pattern` = __all_args_placeholders__ pattern => body;);
+let basic basic func ($pattern as implicitly unchecked permafrosted) ($body as implicitly unchecked frozen); = $pattern $body => frozen raw (let basic `pattern` = __all_args_placeholders__ pattern => body;);
 
 basic func Typed $expr $type () {};
 // If all pattern matching fails, throw away type restriction
@@ -66,15 +73,15 @@ basic func UncheckedInput () {};
 
 // Pronounced as: "let $var be $type and equal $val"
 // let impure $var = $val also works (thanks to 'raw')
-basic func let ($var as implicitly permafrosted raw ~UncheckedInput): $type = $val; {
+basic func let ($var as implicitly unchecked permafrosted raw ~UncheckedInput): $type = $val; {
 	frozen raw (let basic `var` = val: type;)
 };
 
-basic func let ($var as implicitly permafrosted): auto = $val; {
+basic func let ($var as implicitly unchecked permafrosted): auto = $val; {
 	frozen raw (let `var`: type of val = val;)
 };
 
-basic func let ($var as implicitly permafrosted) = $val; {
+basic func let ($var as implicitly unchecked permafrosted) = $val; {
 	frozen raw (let `var`: val = val;)
 };
 
@@ -88,7 +95,7 @@ basic func List $item ($tail as any List) () {};
 __set_default_list__ List
 
 // Does not accept unchecked input for security reasons
-basic func rec basic func ($pattern as implicitly permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
+basic func rec basic func ($pattern as implicitly unchecked permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
 	frozen raw {
 		let `pattern` = {
 			basic func $f `pattern` {
@@ -101,7 +108,7 @@ basic func rec basic func ($pattern as implicitly permafrosted raw ~UncheckedInp
 	}
 };
 
-basic func impure rec basic func ($pattern as implicitly permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
+basic func impure rec basic func ($pattern as implicitly unchecked permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
 	frozen raw {
 		let impure `pattern` = {
 			impure basic func $f `pattern` {
@@ -119,7 +126,7 @@ basic func impure rec basic func ($pattern as implicitly permafrosted raw ~Unche
 //		- have no (possibly) infinite loops
 //		- have no possibility of crashing
 // Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
-basic func ##($attrs as implicitly permafrosted any List) func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
+basic func ##($attrs as implicitly unchecked permafrosted any List) func ($pattern as implicitly unchecked permafrosted) ($typed_body as implicitly unchecked frozen); {
 	frozen raw {
 		// This built-in tells compiler 'pattern' has attributes 'attrs'
 		// and returns 'pattern' as permafrosted. The attributes must
@@ -129,14 +136,14 @@ basic func ##($attrs as implicitly permafrosted any List) func ($pattern as impl
 };
 
 // Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
-basic func ##($attrs as implicitly permafrosted any List) partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
+basic func ##($attrs as implicitly unchecked permafrosted any List) partial func ($pattern as implicitly unchecked permafrosted) ($typed_body as implicitly unchecked frozen); {
 	frozen raw {
 		rec basic func `__set_attributes__ attrs pattern` {typed_body};
 	}
 };
 
-basic func         func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {[]         func `pattern` {typed_body};};
-basic func partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {[] partial func `pattern` {typed_body};};
+basic func         func ($pattern as implicitly unchecked permafrosted) ($typed_body as implicitly unchecked frozen); {[]         func `pattern` {typed_body};};
+basic func partial func ($pattern as implicitly unchecked permafrosted) ($typed_body as implicitly unchecked frozen); {[] partial func `pattern` {typed_body};};
 
 // TODO: Add ability to provide return type before function body?
 // ----
@@ -254,15 +261,15 @@ func fieldified ($fields as any List) {
 	AST // = [["as", "$field", "<type>"], ["as", "$field2", "<type2>"], ...]
 };
 
-func object ($obj as implicitly permafrosted) ($fields as any List); {
+func object ($obj as implicitly unchecked permafrosted) ($fields as any List); {
 	frozen raw (func `obj` `raw codified fieldified fields` () {};)
 };
 
-func object ($obj as implicitly permafrosted); {
+func object ($obj as implicitly unchecked permafrosted); {
 	frozen raw (object `obj` [])
 };
 
-func category ($cat as implicitly permafrosted) ($contents as any List) {
+func category ($cat as implicitly unchecked permafrosted) ($contents as any List) {
 	frozen raw (let `cat` = contents; contents)
 };
 

@@ -32,6 +32,8 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
 // |                EXAMPLE 2                |
 // -------------------------------------------
 
+// OUTDATED. 'unchecked' replaces this but acts a bit differently.
+
 // 'closed' prevents the compiler from looking at the function body
 // before the function is in its final scope.
 // 'impure' allows the function to be non-pure.

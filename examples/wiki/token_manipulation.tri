@@ -10,7 +10,7 @@ decl symblock __sb_default_str__ enclosed by " " with escaper \; // "escape like
 // - To do something with captured symbols, use 'stringify <var holding symbols>'.
 
 // Just for practice, below we define multi-line comments to print their contents:
-impure func sb_multi_comment ($comment as implicitly permafrosted) {
+impure func sb_multi_comment ($comment as implicitly unchecked permafrosted) {
 	println (listified comment)[0]; // prints first and only token in syntax tree
 };
 
