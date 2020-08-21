@@ -297,7 +297,7 @@ category Misc {
 	func optionally ($x as _) {x|()};
 
 	// TODO: Move into more fitting category
-	func [                          ] {List () ()};
+	func [                          ] {List $item ()};
 	func [$expr as implicitly frozen] {
 		// We need this object to allow for multi-dimensional Lists
 		object CommaList [
@@ -314,6 +314,8 @@ category Misc {
 
 		expr converted to List
 	};
+
+	// TODO: list[i] access syntax
 
 	// TODO: Generalise into 'apply $f to itself $n times'
 	// TODO: Move out of prelude into std lib
