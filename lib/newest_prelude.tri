@@ -270,12 +270,12 @@ func export ($exports as any List); {
 };
 
 func expose ($cat as any List) {
-	frozen raw (
+	frozen raw {
 		let `cat[0]` = cat[0]; // using '``' to clarify the name is the evaluated cat[0] rather than 'cat[0]'
 		if cat length > 1 {
 			expose cat[1..];
 		};
-	)
+	}
 };
 
 // -------------------------

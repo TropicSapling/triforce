@@ -353,9 +353,11 @@ Currently, this README pretty much only consists of a language specification. Si
 		- see [this discussion](https://www.reddit.com/r/ProgrammingLanguages/comments/h0ar7n/which_names_would_you_use_for_your_sized_numeric/ftl849u/?utm_source=reddit&utm_medium=web2x&context=3) on why we use bits rather than bytes
 	- ex: `1_234_567u32`
 	- ex: `987_654_321isize`
-2. `<n>f{32|64}` is the syntax for low level floating point numbers.
-	- the numbers after `f` specify the bit-size
+2. `<n>f[loat]{32|64}` is the syntax for low level floating point numbers.
+	- the numbers after `f[loat]` specify the bit-size
 	- ex: `1234.567f64`
+	- ex: `0x12float32`
+		- `0x12f32` is instead a valid hexadecimal *integer*
 3. Arithmetic operators are overloaded with built-in low level operations for low level numbers.
 	- i.e. `123isize + 456isize` is the low-level add operation, while `123 + 456` may be defined to be something else
 4. `-><x>` is a pointer to `<x>` (the address of `<x>`)
