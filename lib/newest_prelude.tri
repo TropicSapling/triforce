@@ -8,13 +8,19 @@
 // OR:   Alternatively, put everything inside 'Prelude' category and then expose Prelude.
 
 // -------------------------
-// |   CATEGORY: Basics    |
+// |   CATEGORY: Tokens    |
 // -------------------------
 
 decl symblock sb_line_comment  enclosed by // \n;
 decl symblock sb_multi_comment enclosed by /* */;
 
 decl symblock __sb_default_str__ enclosed by " " with escaper \;
+
+decl symindies { } [ ];
+
+// -------------------------
+// |   CATEGORY: Basics    |
+// -------------------------
 
 // TODO: Fix '@(precedence below ;)' for all functions using '__caller_scope__' (including all forms of 'let')
 (unpredictable $(let basic $var = $val;) => __caller_scope__) (($var as implicitly permafrosted) $val => (unpredictable $`var` => __caller_scope__) val)
@@ -77,8 +83,6 @@ basic func let ($var as implicitly permafrosted) = $val; {
 basic func Wrapped $obj () {};
 
 basic func List $item ($tail as any List) () {};
-
-// TODO: List '[]' syntax, list access
 
 // This sets the default list to 'List' and returns nothing
 __set_default_list__ List
@@ -291,6 +295,25 @@ func expose ($cat as any List) {
 
 category Misc {
 	func optionally ($x as _) {x|()};
+
+	// TODO: Move into more fitting category
+	func [                          ] {List () ()};
+	func [$expr as implicitly frozen] {
+		// We need this object to allow for multi-dimensional Lists
+		object CommaList [
+			$item,
+			$tail as any CommaList
+		];
+
+		func ($x as CommaList #($item) #($tail)), $y { CommaList item (tail, y)        };
+		func ($x as CommaList #($item) #()     ), $y { CommaList item (CommaList y ()) };
+		func ($x                               ), $y { CommaList x    (CommaList y ()) };
+
+		func ($expr as CommaList #($item) #($tail)) converted to (List) { List item (tail converted to List) };
+		func ($expr as CommaList #($item) #()     ) converted to (List) { List item () };
+
+		expr converted to List
+	};
 
 	// TODO: Generalise into 'apply $f to itself $n times'
 	// TODO: Move out of prelude into std lib
