@@ -116,11 +116,11 @@ __catch__ (5% * 120%) == 6%
 
 // Below we instead catch all matching terms
 // *before* any other pattern matching is
-// done by using 'frozen'.
+// done by using 'paused'.
 //
 // This results in every single function
 // being catched before evaluation.
-impure func __catch__ ($f as implicitly frozen) {
+impure func __catch__ ($f as implicitly paused) {
 	println "nope!";
 };
 

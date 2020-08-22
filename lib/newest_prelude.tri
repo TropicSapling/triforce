@@ -1,3 +1,10 @@
+decl symblock sb_line_comment  enclosed by // \n;
+decl symblock sb_multi_comment enclosed by /* */;
+
+decl symblock __sb_default_str__ enclosed by " " with escaper \;
+
+decl symindies { } [ ];
+
 // --------------------------------------------------
 // |                  THE PRELUDE                   |
 // --------------------------------------------------
@@ -8,29 +15,18 @@
 // OR:   Alternatively, put everything inside 'Prelude' category and then expose Prelude.
 
 // -------------------------
-// |   CATEGORY: Tokens    |
-// -------------------------
-
-decl symblock sb_line_comment  enclosed by // \n;
-decl symblock sb_multi_comment enclosed by /* */;
-
-decl symblock __sb_default_str__ enclosed by " " with escaper \;
-
-decl symindies { } [ ];
-
-// -------------------------
 // |   CATEGORY: Basics    |
 // -------------------------
 
-// Defines a semi-permanent version of 'frozen' that can be defrosted.
-// You could say that 'permafrosted $expr' is '$expr' in the freezer,
-// and 'defrosted $pfexpr' is '$pfexpr' out of the freezer again.
-// The freezer is here a frozen argument slot.
-($permafrosted => __caller_scope__) (($expr   as implicitly frozen    ) () => ()         )
-($defrosted    => __caller_scope__) (($pfexpr as permafrosted #($expr))    => frozen expr)
+// Defines a version of 'paused' with toggleable pausing duration.
+// You could say that 'frozen $expr' is '$expr' in the freezer,
+// and 'unfrozen $fexpr' is '$expr' out of the freezer again.
+// The freezer is here an argument slot pausing evaluation.
+($frozen   => __caller_scope__) (($expr  as implicitly paused) () => ()         )
+($unfrozen => __caller_scope__) (($fexpr as frozen #($expr)  )    => paused expr)
 
 // TODO: Fix '##(precedence below ;)' for all functions using '__caller_scope__' (including all forms of 'let')
-(unpredictable $(let basic $var = $val;) => __caller_scope__) (($var as implicitly unchecked permafrosted) $val => (unpredictable $`frozen (defrosted var)` => __caller_scope__) val)
+(unpredictable $(let basic $var = $val;) => __caller_scope__) (($var as implicitly unchecked paused) $val => (unpredictable $`paused var` => __caller_scope__) val)
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
@@ -49,7 +45,7 @@ decl symindies { } [ ];
 // Also use this for the classics 'func', 'if', etc.
 let basic {$expr} = $expr => expr;
 
-let basic basic func ($pattern as implicitly unchecked permafrosted) ($body as implicitly unchecked frozen); = $pattern $body => frozen raw (let basic `pattern` = __all_args_placeholders__ pattern => body;);
+let basic basic func ($pattern as implicitly unchecked paused) ($body as implicitly unchecked paused); = $pattern $body => paused raw (let basic `paused pattern` = __all_args_placeholders__ pattern => body;);
 
 basic func Typed $expr $type () {};
 // If all pattern matching fails, throw away type restriction
@@ -65,24 +61,24 @@ basic func any $obj {obj (__all_args_but_one__ obj)};
 // i.e. 'type of Player 50 100' => 'Player _ _'
 basic func type of (_ constructed using $constructor) {any constructor};
 
-// Marker for unchecked input
+// Marker for unvalidated input
 // File reading, user input, etc. should use this
-// Always ensure raw input is ~UncheckedInput
+// Always ensure raw input is ~UnvalidatedInput
 // TODO: Make '__catch__' for this or not?
-basic func UncheckedInput () {};
+basic func UnvalidatedInput () {};
 
 // Pronounced as: "let $var be $type and equal $val"
 // let impure $var = $val also works (thanks to 'raw')
-basic func let ($var as implicitly unchecked permafrosted raw ~UncheckedInput): $type = $val; {
-	frozen raw (let basic `var` = val: type;)
+basic func let ($var as implicitly unchecked paused raw ~UnvalidatedInput): $type = $val; {
+	paused raw (let basic `paused var` = val: type;)
 };
 
-basic func let ($var as implicitly unchecked permafrosted): auto = $val; {
-	frozen raw (let `var`: type of val = val;)
+basic func let ($var as implicitly unchecked paused): auto = $val; {
+	paused raw (let `paused var`: type of val = val;)
 };
 
-basic func let ($var as implicitly unchecked permafrosted) = $val; {
-	frozen raw (let `var`: val = val;)
+basic func let ($var as implicitly unchecked paused) = $val; {
+	paused raw (let `paused var`: val = val;)
 };
 
 // Useful for distinguishing '()' from 'Wrapped ()'
@@ -95,11 +91,11 @@ basic func List $item ($tail as any List) () {};
 __set_default_list__ List
 
 // Does not accept unchecked input for security reasons
-basic func rec basic func ($pattern as implicitly unchecked permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
-	frozen raw {
-		let `pattern` = {
-			basic func $f `pattern` {
-				let `pattern` = f f;
+basic func rec basic func ($pattern as implicitly unchecked paused raw ~UnvalidatedInput) ($body as implicitly paused); {
+	paused raw {
+		let `paused pattern` = {
+			basic func $f `paused pattern` {
+				let `paused pattern` = f f;
 				body
 			};
 			
@@ -108,11 +104,11 @@ basic func rec basic func ($pattern as implicitly unchecked permafrosted raw ~Un
 	}
 };
 
-basic func impure rec basic func ($pattern as implicitly unchecked permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
-	frozen raw {
-		let impure `pattern` = {
-			impure basic func $f `pattern` {
-				let `pattern` = f f;
+basic func impure rec basic func ($pattern as implicitly unchecked paused raw ~UnvalidatedInput) ($body as implicitly paused); {
+	paused raw {
+		let impure `paused pattern` = {
+			impure basic func $f `paused pattern` {
+				let `paused pattern` = f f;
 				body
 			};
 			
@@ -126,24 +122,23 @@ basic func impure rec basic func ($pattern as implicitly unchecked permafrosted 
 //		- have no (possibly) infinite loops
 //		- have no possibility of crashing
 // Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
-basic func ##($attrs as implicitly unchecked permafrosted any List) func ($pattern as implicitly unchecked permafrosted) ($typed_body as implicitly unchecked frozen); {
-	frozen raw {
+basic func ##($attrs as implicitly unchecked paused any List) func ($pattern as implicitly unchecked paused) ($typed_body as implicitly unchecked paused); {
+	paused raw {
 		// This built-in tells compiler 'pattern' has attributes 'attrs'
-		// and returns 'pattern' as permafrosted. The attributes must
-		// be given using the default list.
-		rec basic func `__set_attributes__ attrs pattern` {typed_body: ~Undefined};
+		// and returns 'pattern'. The attributes must be given using the default list.
+		rec basic func `paused (__set_attributes__ attrs pattern)` {typed_body: ~Undefined};
 	}
 };
 
 // Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
-basic func ##($attrs as implicitly unchecked permafrosted any List) partial func ($pattern as implicitly unchecked permafrosted) ($typed_body as implicitly unchecked frozen); {
-	frozen raw {
-		rec basic func `__set_attributes__ attrs pattern` {typed_body};
+basic func ##($attrs as implicitly unchecked paused any List) partial func ($pattern as implicitly unchecked paused) ($typed_body as implicitly unchecked paused); {
+	paused raw {
+		rec basic func `paused (__set_attributes__ attrs pattern)` {typed_body};
 	}
 };
 
-basic func         func ($pattern as implicitly unchecked permafrosted) ($typed_body as implicitly unchecked frozen); {[]         func `pattern` {typed_body};};
-basic func partial func ($pattern as implicitly unchecked permafrosted) ($typed_body as implicitly unchecked frozen); {[] partial func `pattern` {typed_body};};
+basic func         func ($pattern as implicitly unchecked paused) ($typed_body as implicitly unchecked paused); {[]         func `paused pattern` {typed_body};};
+basic func partial func ($pattern as implicitly unchecked paused) ($typed_body as implicitly unchecked paused); {[] partial func `paused pattern` {typed_body};};
 
 // TODO: Add ability to provide return type before function body?
 // ----
@@ -153,13 +148,13 @@ basic func partial func ($pattern as implicitly unchecked permafrosted) ($typed_
 ##[precedence below _]
 func $expr; {};
 
-// '->' means 'pointer/ref to' and acts similarly to 'permafrosted' when it comes to evaluation
+// '->' means 'pointer/ref to'
 impure func ($var as implicitly ->(Typed _ #$type)) = ($val as type) {
 	__assign__ var (Typed val type)
 };
 
 func ref to $val allowing $sub {
-	frozen raw (->(Typed val #$super) where sub matches super)
+	paused raw (->(Typed val #$super) where sub matches super)
 };
 
 func ref to $val {
@@ -174,9 +169,9 @@ func True  () {};
 func False () {};
 
 func (True)  && ($b as any Bool)                      {b};
-func (False) && (implicitly frozen becoming any Bool) {False};
+func (False) && (implicitly paused becoming any Bool) {False};
 
-func (True)  || (implicitly frozen becoming any Bool) {False};
+func (True)  || (implicitly paused becoming any Bool) {False};
 func (False) || ($b as any Bool)                      {b};
 
 func !(True)  {False};
@@ -204,23 +199,23 @@ func $a could be $b {b matches a};
 // -------------------------
 
 // ex: 'if x == 123 {456} else {789}'
-func if (True)  ($body as implicitly frozen)                                   {body};
-func if (False) ($body as implicitly frozen)                                   {};
-func if (True)  ($body as implicitly frozen) else ($expr as implicitly frozen) {body};
-func if (False) ($body as implicitly frozen) else ($expr as implicitly frozen) {expr};
+func if (True)  ($body as implicitly paused)                                   {body};
+func if (False) ($body as implicitly paused)                                   {};
+func if (True)  ($body as implicitly paused) else ($expr as implicitly paused) {body};
+func if (False) ($body as implicitly paused) else ($expr as implicitly paused) {expr};
 
 // ex: 'if x == 123 then 456 else 789'
-func if $cond then ($body as implicitly frozen)                                   {if cond {body}};
-func if $cond then ($body as implicitly frozen) else ($expr as implicitly frozen) {if cond {body} else {expr}};
+func if $cond then ($body as implicitly paused)                                   {if cond {body}};
+func if $cond then ($body as implicitly paused) else ($expr as implicitly paused) {if cond {body} else {expr}};
 
 // ex: 'return 123 if x == 456 else 789;'
-func ($body as implicitly frozen) if $cond else ($expr as implicitly frozen) {if cond then body else expr};
+func ($body as implicitly paused) if $cond else ($expr as implicitly paused) {if cond then body else expr};
 
-func while ($cond as any Bool) ($body as implicitly frozen) {
+func while ($cond as any Bool) ($body as implicitly paused) {
 	// TODO ...
 };
 
-func for each $item in ($list as any List) ($body as implicitly frozen) {
+func for each $item in ($list as any List) ($body as implicitly paused) {
 	// TODO ...
 };
 
@@ -255,22 +250,22 @@ func fieldified ($fields as any List) {
 	let AST: any List = [];
 
 	for each field in fields {
-		AST += listified permafrosted `field`; // note how the field is parenthesised (add 'raw' to avoid this)
+		AST += listified paused field; // note how the field is parenthesised (add 'raw' to avoid this)
 	};
 
 	AST // = [["as", "$field", "<type>"], ["as", "$field2", "<type2>"], ...]
 };
 
-func object ($obj as implicitly unchecked permafrosted) ($fields as any List); {
-	frozen raw (func `obj` `raw codified fieldified fields` () {};)
+func object ($obj as implicitly unchecked paused) ($fields as any List); {
+	paused raw (func `paused obj` `raw codified fieldified fields` () {};)
 };
 
-func object ($obj as implicitly unchecked permafrosted); {
-	frozen raw (object `obj` [])
+func object ($obj as implicitly unchecked paused); {
+	paused raw (object `paused obj` [])
 };
 
-func category ($cat as implicitly unchecked permafrosted) ($contents as any List) {
-	frozen raw (let `cat` = contents; contents)
+func category ($cat as implicitly unchecked paused) ($contents as any List) {
+	paused raw (let `paused cat` = contents; contents)
 };
 
 // Currently doesn't do anything more than checking
@@ -281,7 +276,7 @@ func export ($exports as any List); {
 };
 
 func expose ($cat as any List) {
-	frozen raw {
+	paused raw {
 		// Nothing in this block is evaluated until after returning.
 		// This block captures variables, functions, etc.
 		// Captures have precedence over what is defined in __caller_scope__.
@@ -305,7 +300,7 @@ category Misc {
 
 	// TODO: Move into more fitting category
 	func [                          ] {List $item ()};
-	func [$expr as implicitly frozen] {
+	func [$expr as implicitly paused] {
 		// We need this object to allow for multi-dimensional Lists
 		object CommaList [
 			$item,
@@ -323,6 +318,10 @@ category Misc {
 	};
 
 	// TODO: list[i] access syntax
+
+	func stringified ($expr as unchecked paused) --> any String {
+		(listified (unchecked paused expr))[0]
+	};
 
 	// TODO: Generalise into 'apply $f to itself $n times'
 	// TODO: Move out of prelude into std lib

@@ -57,13 +57,13 @@ Currently, this README pretty much only consists of a language specification. Si
 ### Program composition
 ```XML
 <program>           = <expr>
-<expr>              = [raw] {<air> | {<anon-func>|<named-pattern>} [<expr>] [...] | <applied-named-pattern> | {frozen|permafrosted} <expr> | defrosted <permafrosted-expr>}
+<expr>              = [raw] {<air> | {<anon-func>|<named-pattern>} [<expr>] [...] | <applied-named-pattern> | paused <expr>}
 <air>               = {[<ws>] | ([<ws>]) | (([<ws>])) | <...>}
 <ws>                = <whitespace> [...]
 <anon-func>         = [closed|impure|unpredictable] <pattern-def> [...] => <expr>
 <pattern-def>       = $(<named-pattern>) as <matcher>
 <pattern>           = {<id-token> | <pattern-def>} [...]
-<matcher>           = [implicitly] [frozen|permafrosted] [raw] <match-pattern> [becoming <pattern>] [constructed using <pattern>]
+<matcher>           = [implicitly] [paused] [raw] <match-pattern> [becoming <pattern>] [constructed using <pattern>]
 <match-pattern>     = {<id-token> | <pattern-def> | ${<pattern>|#<int>} | #(<pattern-def>)} [...]
 <int>               = {0|1|2|3|4|5|6|7|8|9}[...]
 ```
@@ -96,16 +96,16 @@ Currently, this README pretty much only consists of a language specification. Si
 3. `<input args>` = `<arg1> [<arg2>] [...]`
 4. Every parameter is a *pattern def*.
 5. All functions are closures (capturing their original environment).
-6. An empty `<function body>` is equivalent to `frozen __caller_scope__`.
+6. An empty `<function body>` is equivalent to `paused __caller_scope__`.
 7. If not enough input args are given, the function is partially applied.
 8. Once fully applied, functions reduce to `<function body>` (with all `<input pars>` defined).
 	- This is what it means to say that a function returns `<function body>`
 9. Functions and patterns can be (partially) called/applied inside of `<function body>`, `<input args>`, `<pattern to define>` and `<pattern to match>`.
 	- Note that surrounding backticks (`` \`\` ``) are necessary when applying inside `<pattern to define>`
 		- i.e. if we `let f = Something`, then `let f _ = SomethingElse` redefines `f` while `` let `f _` = SomethingElse `` becomes `let Something = SomethingElse`
-		- this is because `<pattern to define>` is taken as `implicitly unchecked frozen`
-		- the surrounding backticks escape all implicits, thereby forcing evaluation even when implicitly `frozen` or `permafrosted`
-	- `<pattern to match>` is always fully evaluated, even if it's inside a `frozen` or `permafrosted` block
+		- this is because `<pattern to define>` is taken as `implicitly unchecked paused`
+		- the surrounding backticks escape all implicits, thereby forcing evaluation even when implicitly `paused`
+	- `<pattern to match>` is always fully evaluated, even if it's inside a `paused` block
 10. Functions are *pure* and *checked* by default.
 	- A pure function has the following properties:
 		- its return value is the same for the same input
@@ -140,7 +140,7 @@ Currently, this README pretty much only consists of a language specification. Si
 		- ex: `(($(add (1) and (2) to ($(a) as 3) plus $b) as $#1 $a $#0 $_) => <...>) ($x $y $z $w => x + y + z + w)` where
 			- `<...>` = `add 1 and 2 to 3 plus 4` => `($x $y $z $w => x + y + z + w) 2 3 1 4` => `2 + 3 + 1 + 4`
 		- if we `let f = $x $y $z => <...>` then `$a as f #_ #_` <=> `$a as f _ _`
-			- **note:** this equivalence does not hold for `$a as frozen f #_ #_ #_` and `$a as frozen f _ _ _`
+			- **note:** this equivalence does not hold for `$a as paused f #_ #_ #_` and `$a as paused f _ _ _`
 		- for more info on `#<pattern def>`, see "Example code snippets" §4
 	- `<constructor pattern>` is like `<pattern to match>` except `#` is not allowed and it works a bit differently
 		- i.e. if `Player $health $max_health` is defined, then `Player 50 100 constructed using $constructor` defines `$constructor` as `Player`
@@ -284,7 +284,7 @@ Currently, this README pretty much only consists of a language specification. Si
 		- i.e. if we `let f = $x $y => <...>` then `f` is expanded to `f $x $y`
 	2. Synonyms are deconstructed (see "Synonyms and Shadows")
 	3. Function application is evaluated
-5. `frozen` and `permafrosted` prevents evaluation from going past stage 1.
+5. `paused` prevents evaluation from going past stage 1.
 
 --------
 
@@ -305,7 +305,7 @@ Currently, this README pretty much only consists of a language specification. Si
 	- They consist of the same values in the same order
 	- They were both formed as a result of known-to-be-equal pseudo-values being combined in some way with *known* terms (see "Misc" §8)
 6. 2 values being equal and 2 values matching are related but not the same, see "Pattern matching" §2
-7. Comparison involving `frozen` or `permafrosted` values will compare the values as if they were strings.
+7. Comparison involving `paused` values will compare the values as if they were strings.
 8. See "Example code snippets" §1 for an example of equality.
 
 --------
@@ -340,7 +340,7 @@ Currently, this README pretty much only consists of a language specification. Si
 7. There are 2 built-in symgroups: "default" and "whitespace".
 8. There are 2 built-in symindies: `(` and `)`.
 9. Symblock tokens without defined behaviour are ignored.
-	- define their behaviour using `func <symblock name> (implicitly permafrosted) {<...>};`
+	- define their behaviour using `func <symblock name> (implicitly unchecked paused) {<...>};`
 10. Tokens formed with the use of symgroups or symindies without defined behaviour will cause an error.
 
 --------
@@ -390,13 +390,13 @@ Currently, this README pretty much only consists of a language specification. Si
 	- i.e. `$b as Bool _` <=> `$(b _) as Bool _`
 
 4. `__caller_scope__` can be used to avoid making your program look like Lisp:
-	- `(<input pars> => __caller_scope__) <input args> <rest of scope>` <=> `(<input pars> ($__caller_scope__ as frozen) => __caller_scope__) <input args> (<rest of scope>)`
+	- `(<input pars> => __caller_scope__) <input args> <rest of scope>` <=> `(<input pars> ($__caller_scope__ as paused) => __caller_scope__) <input args> (<rest of scope>)`
 	- Note that this should be used sparingly, and that the function evaluating `__caller_scope__` must be marked as `unpredictable`
-		- unless you're just returning `frozen __caller_scope__`, in which case it's equivalent to returning nothing and doesn't need to be marked
+		- unless you're just returning `paused __caller_scope__`, in which case it's equivalent to returning nothing and doesn't need to be marked
 
-5. `$(<pattern to define>) as frozen [<pattern to match>] [becoming <pattern to match>]` can be used to delay evaluation of input until inside the scope where the pattern is defined:
-	- `(($x as frozen 1 becoming 2) => x) <expr>` <=> `(($x as permafrosted 1) => defrosted x: 2) {<expr>}`
-	- `$<...> as frozen [becoming <...>]`         <=> `$<...> as frozen _ [becoming <...>]`
+5. `$(<pattern to define>) as implicitly paused [<pattern to match>] [becoming <pattern to match>]` can be used to delay evaluation of input until inside the scope where the pattern is defined:
+	- `(($x as implicitly paused 1 becoming 2) => x) <expr>` <=> `(($x as paused 1) => x: 2) (paused <expr>)`
+	- `$<...> as implicitly paused [becoming <...>]`         <=> `$<...> as implicitly paused _ [becoming <...>]`
 
 6. `decl $(<pattern to declare>) [...];` allows use of declared patterns before they have been defined.
 	- Note that they must still be defined somewhere in the scope
@@ -421,22 +421,20 @@ Currently, this README pretty much only consists of a language specification. Si
 	- precedence is specified using attributes
 4. `__assign__ <var> <val>` does *unchecked* assignment.
 5. `__catch__` is a special function, more info in example 4.
-6. `frozen <expr>` delays evaluation of `<expr>` until it has left the current scope.
-	- similar to Lisp quoting
-	- i.e. assuming `func f() {frozen (1 + 2)};`, then `f() * 3` => `(1 + 2) * 3` => `9`
-7. `permafrosted` is like `frozen` except the thing stays frozen even after evaluation
-	- evaluate fully using `defrosted`
-8. `raw <expr>` is identical to `<expr>` except it's unhygienic.
-	- i.e. assuming `func f() {frozen raw (1 + 2)};`, then `f() * 3` => `1 + 2 * 3` => `7`
+6. `paused <expr>` pauses evaluation of `<expr>` by returning `<expr>` unevaluated.
+	- similar to Lisp's `quote`, but is checked (unless you do `unchecked paused`)
+	- i.e. assuming `func f() {paused (1 + 2)};`, then `f() * 3` => `(1 + 2) * 3` => `9`
+7. `raw <expr>` is identical to `<expr>` except it's unhygienic.
+	- i.e. assuming `func f() {paused raw (1 + 2)};`, then `f() * 3` => `1 + 2 * 3` => `7`
 	- note: removes *all* all-encompassing parentheses, so even `raw (((((1 + 2)))))` becomes `1 + 2`
 		- it does this even for input `as implicitly raw`
-9. `listified permafrosted <code>` converts `<code>` to an AST in the form of a multi-dimensional list
+8. `listified paused <expr>` converts `<expr>` to an AST in the form of a multi-dimensional list
 	- each item in the list is either a token `String` or a list of tokens
 	- the form of the AST will be stable once the language is stable
-10. `codified <AST>` converts `<AST>` to permafrosted code
-	- `defrosted` to run the code
-11. `codified (listify permafrosted <code>)` <=> `permafrosted <code>`
-12. `continue matching [for <function>]` continues pattern matching if possible.
+	- note: `listified unchecked paused <expr>` produces an AST with the entire `<expr>` as 1 token
+9. `codified <AST>` converts `<AST>` to paused code
+10. `codified (listified paused <code>)` <=> `paused <code>`
+11. `continue matching [for <function>]` continues pattern matching if possible.
 		- if `<function>` isn't specified it will default to the current function
 		- if `<function>` is `caller` it will continue matching for the caller
 		- if it's not possible to continue, there will be an error
