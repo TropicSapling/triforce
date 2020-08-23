@@ -18,22 +18,39 @@ decl symindies { } [ ];
 // |   CATEGORY: Basics    |
 // -------------------------
 
-// Defines a version of 'paused' with toggleable pausing duration.
-// You could say that 'frozen $expr' is '$expr' in the freezer,
-// and 'unfrozen $fexpr' is '$expr' out of the freezer again.
-// The freezer is here an argument slot pausing evaluation.
-($frozen   => __caller_scope__) (($expr  as implicitly paused) () => ()         )
-($unfrozen => __caller_scope__) (($fexpr as frozen #($expr)  )    => paused expr)
+// TODO: Fix '##(precedence below ;)' for this and similar functions
+(unpredictable (
+	($global_scope_with_let as implicitly (
+		(unpredictable (
+			$(let basic $var = $val;) => __explicit__
+		)) (
+			unpredictable (
+				($var as implicitly unparsed)
+				($val as _)
+				($scope_with_var as implicitly (
+					(unpredictable (
+						$`var`
 
-// TODO: Fix '##(precedence below ;)' for all functions using '__caller_scope__' (including all forms of 'let')
-(unpredictable $(let basic $var = $val;) => __caller_scope__) (($var as implicitly unchecked paused) $val => (unpredictable $`paused var` => __caller_scope__) val)
+						=> __explicit__
+					)) val
+				))
+
+				=> scope_with_var
+			)
+		)
+	))
+
+	=> global_scope_with_let
+))
+
+// EVERYTHING here and below gets passed as 1 arg to the above anonymous function
+// due to its precedence being below everything (even the semicolon). The result
+// is the global scope with the 'let ... = ...;' function defined.
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
 
 // TODO: Declare operators using symgroups:
-// - {}
-// - []
 // - ;
 // - +-*/%
 // - etc.

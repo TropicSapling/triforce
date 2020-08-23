@@ -32,7 +32,7 @@ Undefined|0|1|...  * 2 + 2 == 0|2|4...
 // |                EXAMPLE 2                |
 // -------------------------------------------
 
-// OUTDATED. 'unchecked' replaces this but acts a bit differently.
+// OUTDATED. Will be either replaced or removed soon.
 
 // 'closed' prevents the compiler from looking at the function body
 // before the function is in its final scope.
@@ -116,11 +116,11 @@ __catch__ (5% * 120%) == 6%
 
 // Below we instead catch all matching terms
 // *before* any other pattern matching is
-// done by using 'paused'.
+// done by using an implicit closure.
 //
 // This results in every single function
 // being catched before evaluation.
-impure func __catch__ ($f as implicitly paused) {
+impure func __catch__ ($f as implicitly _ => __explicit__) {
 	println "nope!";
 };
 
@@ -254,10 +254,10 @@ f Potato              // prints "last"
 
 // Dictionaries/HashMaps + Error Handling example
 
-func test() --> (implicitly Wrapped) () {
+func test() --> implicitly Wrapped (__explicit__ as ()) {
   // Only allowing optional Int values for demonstration purposes.
   // 'optionally any Int' <=> 'any Int | ()' (read as "any Int or nothing")
-  func lookup $key in $dict --> (implicitly Wrapped) (optionally any Int) {
+  func lookup $key in $dict --> implicitly Wrapped (__explicit__ as optionally any Int) {
     for each [$hash, $val] in dict {
       if hash of key == hash {
         return val; // all returns implicitly wrapped by default, making this become 'return (Wrapped val)'
