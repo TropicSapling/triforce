@@ -18,20 +18,19 @@ decl symindies { } [ ];
 // |   CATEGORY: Basics    |
 // -------------------------
 
-// TODO: Fix '##(precedence below ;)' for this and similar functions
+// Definition of 'let basic'.
+// TODO: Fix '##(precedence below ;)' for this and similar functions.
 (unpredictable (
 	($global_scope_with_let as implicitly (
 		(unpredictable (
-			$(let basic $var = $val;) => __explicit__
+			$(let basic $var = $val; $scope_with_var) => __explicit__ // global_scope
 		)) (
 			unpredictable (
 				($var as implicitly unparsed)
 				($val as _)
 				($scope_with_var as implicitly (
 					(unpredictable (
-						$`var`
-
-						=> __explicit__
+						$`var` => __explicit__ // scope
 					)) val
 				))
 
@@ -45,7 +44,7 @@ decl symindies { } [ ];
 
 // EVERYTHING here and below gets passed as 1 arg to the above anonymous function
 // due to its precedence being below everything (even the semicolon). The result
-// is the global scope with the 'let ... = ...;' function defined.
+// is the global scope with the 'let ... = ...; ...' function defined.
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
@@ -62,7 +61,7 @@ decl symindies { } [ ];
 // Also use this for the classics 'func', 'if', etc.
 let basic {$expr} = $expr => expr;
 
-let basic basic func ($pattern as implicitly unchecked paused) ($body as implicitly unchecked paused); = $pattern $body => paused raw (let basic `paused pattern` = __all_args_placeholders__ pattern => body;);
+let basic basic func ($pattern as implicitly unparsed) ($body as implicitly () => __explicit__) ($scope_with_func as implicitly (let basic `pattern` = __all_args_placeholders__ pattern => body(); __explicit__)) = $pattern $body $scope_with_func => scope_with_func;
 
 basic func Typed $expr $type () {};
 // If all pattern matching fails, throw away type restriction
