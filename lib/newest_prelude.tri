@@ -63,6 +63,8 @@ let basic {$expr} = $expr => expr;
 
 let basic basic func ($pattern as implicitly unparsed) ($body as implicitly () => __explicit__) ($scope_with_func as implicitly (let basic `pattern` = __all_args_placeholders__ pattern => body(); __explicit__)) = $pattern $body $scope_with_func => scope_with_func;
 
+// TODO: basic func $pattern where $decls $body
+
 basic func Typed $expr $type () {};
 // If all pattern matching fails, throw away type restriction
 basic func __catch__ (Typed #$expr _) {expr};

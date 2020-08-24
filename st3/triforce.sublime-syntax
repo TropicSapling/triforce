@@ -37,7 +37,7 @@ contexts:
     - match: '\b(if|then|else|for\s+each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where|matches|is|could\s+be|prerun|run|export(\s+all)?|import|expose|print(ln)?)\b'
       scope: keyword.control.rust
 
-    - match: '\b(impure|unpredictable|implicitly|ref\s+to|allowing|unparsed|raw|becoming|constructed\s+using|auto)\b'
+    - match: '\b(impure|unpredictable|implicitly|ref\s+to|allowing|unparsed|parsed|raw|returning|constructed\s+using|auto)\b'
       scope: storage.type.rust
 
     - match: '\b(True|False|this|caller)\b'
