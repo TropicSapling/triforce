@@ -59,9 +59,9 @@ let basic {$expr} = $expr => expr;
 let basic basic func $pattern $body = {
 	($pattern as implic unparsed)
 	($body    as implic cloaked pattern)
-	($(scope with f ret $body) as implic unpredictable $`pattern`)
+	($(scope with fn ret $body) as implic unpredictable $`pattern`)
 
-	=> scope with f ret body
+	=> scope with fn ret body
 };
 
 // TODO: basic func $pattern where $decls $body
@@ -87,17 +87,16 @@ basic func type of (_ constructed using $constructor) {any constructor};
 basic func UnvalidatedInput () {};
 
 // Pronounced as: "let $var be $type and equal $val"
-// let impure $var = $val also works (thanks to 'raw')
-basic func let ($var as implicitly unchecked paused raw ~UnvalidatedInput): $type = $val; {
-	paused raw (let basic `paused var` = val: type;)
+basic func let ($var as implic unparsed): $type = $val; ($(scope with var = $typed_val) as implic unpredictable $`var`) {
+	scope with var = (val: type)
 };
 
-basic func let ($var as implicitly unchecked paused): auto = $val; {
-	paused raw (let `paused var`: type of val = val;)
+basic func let ($var as implic unparsed): auto = $val; ($(scope with var = $typed_val) as implic unpredictable $`var`) {
+	scope with var = (val: type of val)
 };
 
-basic func let ($var as implicitly unchecked paused) = $val; {
-	paused raw (let `paused var`: val = val;)
+basic func let ($var as implic unparsed) = $val; ($(scope with var = $typed_val) as implic unpredictable $`var`) {
+	scope with var = (val: val)
 };
 
 // Useful for distinguishing '()' from 'Wrapped ()'
