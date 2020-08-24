@@ -60,10 +60,10 @@ Currently, this README pretty much only consists of a language specification. Si
 <expr>              = [raw] {<air> | {<anon-func>|<named-pattern>} [<expr>] [...] | <applied-named-pattern> | unparsed <expr> | parsed <unparsed-expr>}
 <air>               = {[<ws>] | ([<ws>]) | (([<ws>])) | <...>}
 <ws>                = <whitespace> [...]
-<anon-func>         = [closed|impure|unpredictable] <pattern-def> [...] => <expr>
+<anon-func>         = [impure|unpredictable] <pattern-def> [...] => <expr>
 <pattern-def>       = $(<named-pattern>) as <matcher>
 <pattern>           = {<id-token> | <pattern-def>} [...]
-<matcher>           = [implicitly] [unparsed] [raw] <match-pattern> [returning <pattern>] [...] [constructed using <pattern>]
+<matcher>           = [implicitly] [unparsed] [raw] [impure|unpredictable] <match-pattern> [returning <pattern>] [...] [constructed using <pattern>]
 <match-pattern>     = {<id-token> | <pattern-def> | ${<pattern>|#<int>} | #(<pattern-def>)} [...]
 <int>               = {0|1|2|3|4|5|6|7|8|9}[...]
 ```
