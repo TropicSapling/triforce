@@ -414,8 +414,6 @@ Currently, this README pretty much only consists of a language specification. Si
 		- except array is special: `f [any Nat, any String] == f (any Nat) (any String)`
 	- `__all_args_but_one__` does the same except doesn't apply the last arg
 		- may be removed in the future in favor of using `__all_args__[..__all_args__.length - 1]`
-	- `__all_args_placeholders__` does the equivalent for placeholder args
-		- ex: `__all_args_placeholders__ (f $x $y) == [$x, $y]`
 2. `__applied_args__ <function>` returns the args that have been applied to the function. `length >= 0`.
 3. `__set_attributes__ <attr> <id>` tells the compiler that `<id>` has attribute `<attr>` and returns `<id>`.
 	- precedence is specified using attributes
@@ -434,7 +432,9 @@ Currently, this README pretty much only consists of a language specification. Si
 	- note: `listified unchecked paused <expr>` produces an AST with the entire `<expr>` as 1 token
 9. `codified <AST>` converts `<AST>` to paused code
 10. `codified (listified paused <code>)` <=> `paused <code>`
-11. `continue matching [for <function>]` continues pattern matching if possible.
+11. `cloaked <pattern>` returns `<pattern>` as anonymous.
+	- ex: `cloaked (function taking $x and $y)` becomes `$x $y`
+12. `continue matching [for <function>]` continues pattern matching if possible.
 		- if `<function>` isn't specified it will default to the current function
 		- if `<function>` is `caller` it will continue matching for the caller
 		- if it's not possible to continue, there will be an error

@@ -58,7 +58,7 @@ let basic {$expr} = $expr => expr;
 // but we leave $pattern and $body for clarity.
 let basic basic func $pattern $body = {
 	($pattern as implic unparsed)
-	($body    as implic __all_args_placeholders__ pattern)
+	($body    as implic cloaked pattern)
 	($(scope with f ret $body) as implic unpredictable $`pattern`)
 
 	=> scope with f ret body
