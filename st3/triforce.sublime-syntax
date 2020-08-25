@@ -6,7 +6,7 @@ file_extensions:
   - tri
 scope: source.triforce
 variables:
-  identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+|(?!-->)([!<>\-+%/*^&|@~?.]|==|##)[!<>\-+%/*^&|@~?.=#]*))' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
+  identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+|([!<>\-+%/*^&|@~?.]|==|##)[!<>\-+%/*^&|@~?.=#]*))' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
   escaped_byte: '\\(x\h{2}|n|r|t|0|"|''|\\)'
   escaped_char: '\\(x\h{2}|n|r|t|0|"|''|\\|u\{\h{1,6}\})'
 contexts:
@@ -37,7 +37,7 @@ contexts:
     - match: '\b(if|then|else|for\s+each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where|matches|is|could\s+be|prerun|run|export(\s+all)?|import|expose|print(ln)?)\b'
       scope: keyword.control.rust
 
-    - match: '\b(impure|unpredictable|implic|ref\s+to|allowing|unparsed|parsed|raw|cloaked|returning|constructed\s+using|auto)\b'
+    - match: '\b(impure|unpredictable|implic|ref\s+to|allowing|unparsed|parsed|raw|cloaked|constructed\s+using|auto)\b'
       scope: storage.type.rust
 
     - match: '\b(True|False|this|caller)\b'
@@ -76,14 +76,14 @@ contexts:
       push: group
 
     # Declarations & definitions
-    - match: '\b(((rec\s+)?basic\s+)?(partial\s+)?func)\b'
+    - match: '\b((partial\s+)?func)\b'
       scope: storage.type.rust
       push: func-id-search
 
     - match: '\b(decl(\s+(symgroup|symindies|symblock))|enclosed\s+by|with\s+escaper)\b'
       scope: storage.type.rust
 
-    - match: '\b(decl|let(\s+basic)?(\s+impure)?)\b'
+    - match: '\b(decl|let)\b'
       scope: storage.type.rust
       push: let-id-search-start
 
@@ -115,10 +115,10 @@ contexts:
     - match: '\$'
       scope: keyword.operator.rust
       push: op-dollar
-    - match: '{{identifier}}'
-      scope: entity.name.function.rust
     - match: '(?=[{\[;]|-->)'
       pop: true
+    - match: '{{identifier}}'
+      scope: entity.name.function.rust
 
   let-id-search-start:
     - match: '\s+[\(]*'
@@ -131,10 +131,10 @@ contexts:
     - match: '\$'
       scope: keyword.operator.rust
       push: op-dollar
-    - match: '{{identifier}}'
-      scope: entity.name.function.rust
     - match: '(?=[=:\[;])'
       pop: true
+    - match: '{{identifier}}'
+      scope: entity.name.function.rust
 
   operators:
     - match: \.{2,3}

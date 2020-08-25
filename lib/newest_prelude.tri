@@ -21,15 +21,29 @@ decl symindies { } [ ];
 // Definition of a basic form of 'let'.
 // TODO: Fix '##(precedence below ;)' for this and similar functions.
 (unpredictable (
-	($(glob scope with letf = $f) as implic unpredictable $(let $var = $val;))
+	// Preceding and trailing pattern can be omitted when matching.
+	// Here we omit the pattern def for the variable scope.
+	// We write 'let $pat = $val;' rather than 'let $pat = $val; $scope'.
+	($(glob scope with letf = $f) as implic unpredictable $(let $pat = $val;))
 
 	=> glob scope with letf = (
 		unpredictable (
-			($var as implic unparsed)
+			($pat as implic () => unparsed)
 			($val as _)
-			($(scope with var = $val) as implic unpredictable $`var`)
+			($(scope with pat = $val) as implic unpredictable $`pat()` => ...)
 
-			=> scope with var = val
+			=> scope with pat = val
+
+			// Example:
+			//    'let n = 1 + 2; println n;'
+			// => 'let (n) = ((1) + (2)); (println (n);)'                                          [code parsed]
+			// => 'let (() => unparsed (n)) = ((1) + (2)); (unpredictable $(n) => (println (n);))' [implicits applied]
+			// => 'let (() => unparsed (n)) = (3); (unpredictable $(n) => (println (n);))'         [args evaluated]
+			// ..                                                                                  [function runs]
+			// => '(unpredictable $(n) => (println (n);)) (3)'                                     [value returned]
+			// 
+			// The first 2 steps can only be done during compilation. The later steps can in this case also be done
+			// during compilation, but may have to be done at runtime in other situations.
 		)
 	)
 ))
@@ -53,17 +67,21 @@ decl symindies { } [ ];
 // Also use this for the classics 'func', 'if', etc.
 let {$expr} = $expr => expr;
 
-// Preceding and trailing pattern defs on the LHS can be omitted.
-// Here we could've omitted it all and just written 'basic func',
-// but we leave $declaration and $body for clarity.
-let basic func $declaration $body = {
-	($declaration  as implic unparsed)
-	($body_closure as implic cloaked pattern)
+// Defines basic function definitions
+let func $declaration --> $ret_type $body = {
+	($decl_closure as implic () => unparsed)
+	($ret_type     as _)
+	($body_closure as (implic cloaked decl_closure()) => ret_type)
 
-	=> let `declaration` = body_closure; $scope
+	=> let `decl_closure` = body_closure; $scope
 };
 
-// TODO: basic func $pattern where $decls $body
+// Defines 'func $declaration $body' (return type unchecked) using our new 'func $declaration --> $ret_type $body'!
+func func ($decl_closure as implic () => unparsed) ($body_closure as (implic cloaked decl_closure()) => ...) --> ... {
+	let `decl_closure` = body_closure; $scope
+}
+
+// TODO: func $declaration where $decls $body
 
 basic func Typed $expr $type () {};
 // If all pattern matching fails, throw away type restriction
