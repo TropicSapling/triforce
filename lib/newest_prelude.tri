@@ -18,10 +18,10 @@ decl symindies { } [ ];
 // |   CATEGORY: Basics    |
 // -------------------------
 
-// Definition of 'let basic'.
+// Definition of a basic form of 'let'.
 // TODO: Fix '##(precedence below ;)' for this and similar functions.
 (unpredictable (
-	($(glob scope with letf = $f) as implic unpredictable $(let basic $var = $val;))
+	($(glob scope with letf = $f) as implic unpredictable $(let $var = $val;))
 
 	=> glob scope with letf = (
 		unpredictable (
@@ -51,17 +51,16 @@ decl symindies { } [ ];
 // Useless, but looks nice sometimes.
 // Convention to use this whenever $expr spans multiple lines.
 // Also use this for the classics 'func', 'if', etc.
-let basic {$expr} = $expr => expr;
+let {$expr} = $expr => expr;
 
 // Preceding and trailing pattern defs on the LHS can be omitted.
 // Here we could've omitted it all and just written 'basic func',
-// but we leave $pattern and $body for clarity.
-let basic basic func $pattern $body = {
-	($pattern as implic unparsed)
-	($body    as implic cloaked pattern)
-	($(scope with fn ret $body) as implic unpredictable $`pattern`)
+// but we leave $declaration and $body for clarity.
+let basic func $declaration $body = {
+	($declaration  as implic unparsed)
+	($body_closure as implic cloaked pattern)
 
-	=> scope with fn ret body
+	=> let `declaration` = body_closure; $scope
 };
 
 // TODO: basic func $pattern where $decls $body
@@ -86,6 +85,7 @@ basic func type of (_ constructed using $constructor) {any constructor};
 // TODO: Make '__catch__' for this or not?
 basic func UnvalidatedInput () {};
 
+// We redefine 'let' as a more advanced form.
 // Pronounced as: "let $var be $type and equal $val"
 basic func let ($var as implic unparsed): $type = $val; ($(scope with var = $typed_val) as implic unpredictable $`var`) {
 	scope with var = (val: type)
