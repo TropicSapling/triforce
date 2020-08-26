@@ -30,7 +30,7 @@ decl symindies { } [ ];
 		unpredictable (
 			($pat as implic () => unparsed)
 			($val as _)
-			($(scope with pat = $val) as implic unpredictable $`pat()` => ...)
+			($(scope with pat = $val) as implic unpredictable $`pat()` => _) // writing '=> _' is optional
 
 			=> scope with pat = val
 
@@ -68,7 +68,7 @@ decl symindies { } [ ];
 let {$expr} = $expr => expr;
 
 // Defines basic function definitions
-let func $declaration --> $ret_type $body = {
+let func $declaration --> $ret_type {$body} = {
 	($decl_closure as implic () => unparsed)
 	($ret_type     as _)
 	($body_closure as (implic cloaked decl_closure()) => ret_type)
@@ -77,7 +77,7 @@ let func $declaration --> $ret_type $body = {
 };
 
 // Defines 'func $declaration $body' (return type unchecked) using our new 'func $declaration --> $ret_type $body'!
-func func ($decl_closure as implic () => unparsed) ($body_closure as (implic cloaked decl_closure()) => ...) --> ... {
+func func ($decl_closure as implic () => unparsed) {($body_closure as (implic cloaked decl_closure()) => _)} --> ... {
 	let `decl_closure` = body_closure; $scope
 }
 
