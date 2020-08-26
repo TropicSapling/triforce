@@ -78,7 +78,7 @@ contexts:
     # Declarations & definitions
     - match: '\b((partial\s+)?func)\b'
       scope: storage.type.rust
-      push: func-id-search
+      push: func-id-search-start
 
     - match: '\b(decl(\s+(symgroup|symindies|symblock))|enclosed\s+by|with\s+escaper)\b'
       scope: storage.type.rust
@@ -89,7 +89,7 @@ contexts:
 
     - match: '\b(category|object)\b'
       scope: storage.type.rust
-      push: func-id-search
+      push: func-id-search-start
 
   universal:
     - match: '`'
@@ -107,6 +107,12 @@ contexts:
           scope: punctuation.definition.comment.rust
           pop: true
         - include: block-comments
+
+  func-id-search-start:
+    - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
+      set: func-id-search
+    - match: ''
+      set: func-id-search
   
   func-id-search:
     - include: universal
@@ -121,7 +127,9 @@ contexts:
       scope: entity.name.function.rust
 
   let-id-search-start:
-    - match: '\s+[\(]*'
+    - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
+      set: let-id-search
+    - match: ''
       set: let-id-search
 
   let-id-search:

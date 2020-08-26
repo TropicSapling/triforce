@@ -30,7 +30,7 @@ decl symindies { } [ ];
 		unpredictable (
 			($pat as implic () => unparsed)
 			($val as _)
-			($(scope with pat = $val) as implic unpredictable $`pat()` => _) // writing '=> _' is optional
+			($(scope with pat = $val) as (implic unpredictable $`pat()`) => _) // writing '=> _' is optional
 
 			=> scope with pat = val
 
@@ -77,31 +77,34 @@ let func $declaration --> $ret_type {$body} = {
 };
 
 // Defines 'func $declaration $body' (return type unchecked) using our new 'func $declaration --> $ret_type $body'!
-func func ($decl_closure as implic () => unparsed) {($body_closure as (implic cloaked decl_closure()) => _)} --> ... {
+func (  func ($decl_closure as implic () => unparsed) {($body_closure as (implic cloaked decl_closure()) => _)}  ) --> _ {
 	let `decl_closure` = body_closure; $scope
 }
 
 // TODO: func $declaration where $decls $body
 
-basic func Typed $expr $type () {};
+// We make this function uncallable by making the last parameter
+// require '~_' ("nothing possible here"), since we want it to
+// be used as an object rather than a function to be called.
+func Typed $expr $type (~_) {}
 // If all pattern matching fails, throw away type restriction
-basic func __catch__ (Typed #$expr _) {expr};
+func __catch__ (Typed #($expr) _) {expr}
 
 // Pronounced as: "$expr [should] be[come] type"
-basic func ($expr as type ): $type {Typed expr type};
-basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
+func ($expr as type   ): $type {Typed expr type};
+func (Typed #($expr) _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 
-basic func any $obj {obj (__all_args_but_one__ obj)};
+func any $obj {obj (__all_args_but_one__ obj)};
 
 // TODO: getting category of value and doing 'any <category>'
 // i.e. 'type of Player 50 100' => 'Player _ _'
-basic func type of (_ constructed using $constructor) {any constructor};
+func type of (_ constructed using $constructor) {any constructor};
 
 // Marker for unvalidated input
 // File reading, user input, etc. should use this
 // Always ensure raw input is ~UnvalidatedInput
 // TODO: Make '__catch__' for this or not?
-basic func UnvalidatedInput () {};
+func UnvalidatedInput (~_) {};
 
 // We redefine 'let' as a more advanced form.
 // Pronounced as: "let $var be $type and equal $val"
@@ -119,9 +122,9 @@ basic func let ($var as implic unparsed) = $val; ($(scope with var = $typed_val)
 
 // Useful for distinguishing '()' from 'Wrapped ()'
 // See https://www.reddit.com/r/ProgrammingLanguages/comments/hy6emx/explicit_nullability_vs_optionals/fzarbwu/
-basic func Wrapped $obj () {};
+func Wrapped $obj (~_) {};
 
-basic func List $item ($tail as any List) () {};
+func List $item ($tail as any List) (~_) {};
 
 // This sets the default list to 'List' and returns nothing
 __set_default_list__ List
@@ -180,17 +183,20 @@ basic func partial func ($pattern as implicitly unchecked paused) ($typed_body a
 // ----
 // Maybe using '-->' operator? Since '->' is taken for pointers.
 
-// The legendary SEMICOLON
+// The legendary SEMICOLON.
+// ------------------------
+// Does nothing but evaluate its argument,
+// as well as making parsing easier.
 ##[precedence below _]
-func $expr; {};
+func $expr; {}
 
 // '->' means 'pointer/ref to'
-impure func ($var as implicitly ->(Typed _ #$type)) = ($val as type) {
+impure func ($var as implicitly ->(Typed _ #($type))) = ($val as type) {
 	__assign__ var (Typed val type)
 };
 
 func ref to $val allowing $sub {
-	paused raw (->(Typed val #$super) where sub matches super)
+	paused raw (->(Typed val #($super)) where sub matches super)
 };
 
 func ref to $val {
@@ -201,59 +207,60 @@ func ref to $val {
 // |    CATEGORY: Bool     |
 // -------------------------
 
-func True  () {};
-func False () {};
+func True  (~_) {}
+func False (~_) {}
 
-func (True)  && ($b as any Bool)                      {b};
-func (False) && (implicitly paused becoming any Bool) {False};
+func (True)  && ($b as any Bool)          {b}
+func (False) && ((implic ()) => any Bool) {False}
 
-func (True)  || (implicitly paused becoming any Bool) {False};
-func (False) || ($b as any Bool)                      {b};
+func (True)  || ((implic ()) => any Bool) {False}
+func (False) || ($b as any Bool)          {b}
 
-func !(True)  {False};
-func !(False) {True};
+func !(True)  {False}
+func !(False) {True}
 
 // -------------------------
 // | CATEGORY: Comparison  |
 // -------------------------
 
-func $a == $a {True};
-func _  == _  {False};
-func $a != $b {!(a == b)};
+func $a == $a {True}
+func _  == _  {False}
+func $a != $b {!(a == b)}
 
-func ($expr as type) matches $type {True};
-func _               matches $type {False};
+func ($expr as type) matches $type {True}
+func _               matches $type {False}
 
 let $expr is $type = $expr matches $type;
 
 // Useful for ruling out potential runtime scenarios at compile time
 // True|False could be True, but !(False could be True)
-func $a could be $b {b matches a};
+func $a could be $b {b matches a}
 
 // -------------------------
 // |   CATEGORY: Control   |
 // -------------------------
 
+// ex: 'if x == 123 {456}'
+func (  if (True)  {($tbody as (implic ()) => _)}  ) {tbody()}
+func (  if (False) {($tbody as (implic ()) => _)}  ) {}
 // ex: 'if x == 123 {456} else {789}'
-func if (True)  ($body as implicitly paused)                                   {body};
-func if (False) ($body as implicitly paused)                                   {};
-func if (True)  ($body as implicitly paused) else ($expr as implicitly paused) {body};
-func if (False) ($body as implicitly paused) else ($expr as implicitly paused) {expr};
+func (  if (True)  {($tbody as (implic ()) => _)} else {($fbody as (implic ()) => _)}  ) {tbody()}
+func (  if (False) {($tbody as (implic ()) => _)} else {($fbody as (implic ()) => _)}  ) {fbody()}
 
 // ex: 'if x == 123 then 456 else 789'
-func if $cond then ($body as implicitly paused)                                   {if cond {body}};
-func if $cond then ($body as implicitly paused) else ($expr as implicitly paused) {if cond {body} else {expr}};
+let if $cond then $tbody             = if $cond {$tbody};
+let if $cond then $tbody else $fbody = if $cond {$tbody} else {$fbody};
 
 // ex: 'return 123 if x == 456 else 789;'
-func ($body as implicitly paused) if $cond else ($expr as implicitly paused) {if cond then body else expr};
+let $tbody if $cond else $fbody = if $cond then $tbody else $fbody;
 
-func while ($cond as any Bool) ($body as implicitly paused) {
+func (  while ($cond as any Bool) {($body as (implic ()) => _)}  ) {
 	// TODO ...
-};
+}
 
-func for each $item in ($list as any List) ($body as implicitly paused) {
+func (  for each $item in ($list as any List) {($body as (implic ()) => _)}  ) {
 	// TODO ...
-};
+}
 
 // -------------------------
 // |   CATEGORY: Number    |
@@ -332,7 +339,7 @@ func expose ($cat as any List) {
 // -------------------------
 
 category Misc {
-	func optionally ($x as _) {x|()};
+	func optionally $x {x|()};
 
 	// TODO: Move into more fitting category
 	func [                          ] {List $item ()};
