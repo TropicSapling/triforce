@@ -91,40 +91,40 @@ func Typed $expr $type (~_) {}
 func __catch__ (Typed #($expr) _) {expr}
 
 // Pronounced as: "$expr [should] be[come] type"
-func ($expr as type   ): $type {Typed expr type};
-func (Typed #($expr) _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
+func ($expr as type   ): $type {Typed expr type}
+func (Typed #($expr) _): $type {expr: type} // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 
-func any $obj {obj (__all_args_but_one__ obj)};
+func any $obj {obj (__all_args_but_one__ obj)}
 
 // TODO: getting category of value and doing 'any <category>'
 // i.e. 'type of Player 50 100' => 'Player _ _'
-func type of (_ constructed using $constructor) {any constructor};
+func type of (_ constructed using $constructor) {any constructor}
 
 // Marker for unvalidated input
 // File reading, user input, etc. should use this
 // Always ensure raw input is ~UnvalidatedInput
-// TODO: Make '__catch__' for this or not?
-func UnvalidatedInput (~_) {};
+func UnvalidatedInput (~_) {}
 
 // We redefine 'let' as a more advanced form.
 // Pronounced as: "let $var be $type and equal $val"
-basic func let ($var as implic unparsed): $type = $val; ($(scope with var = $typed_val) as implic unpredictable $`var`) {
-	scope with var = (val: type)
-};
+func let ($pat as implic () => unparsed): $type = $val; {
+	let `pat` = val: type; $scope
+}
 
-basic func let ($var as implic unparsed): auto = $val; ($(scope with var = $typed_val) as implic unpredictable $`var`) {
-	scope with var = (val: type of val)
-};
+func let ($pat as implic () => unparsed): auto = $val; {
+	let `pat`: type of val = val; $scope
+}
 
-basic func let ($var as implic unparsed) = $val; ($(scope with var = $typed_val) as implic unpredictable $`var`) {
-	scope with var = (val: val)
-};
+// If no type specified, $pat is defined as immutable
+func let ($pat as implic () => unparsed) = $val; {
+	let `pat`: val = val; $scope
+}
 
 // Useful for distinguishing '()' from 'Wrapped ()'
 // See https://www.reddit.com/r/ProgrammingLanguages/comments/hy6emx/explicit_nullability_vs_optionals/fzarbwu/
-func Wrapped $obj (~_) {};
+func Wrapped $obj (~_) {}
 
-func List $item ($tail as any List) (~_) {};
+func List $item ($tail as any List) (~_) {}
 
 // This sets the default list to 'List' and returns nothing
 __set_default_list__ List
