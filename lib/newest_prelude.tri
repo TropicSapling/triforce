@@ -68,6 +68,7 @@ decl symindies { } [ ];
 let {$expr} = $expr => expr;
 
 // Defines basic function definitions
+// TODO: Allow for impure & unpredictable functions
 let func $declaration --> $ret_type {$body} = {
 	($decl_closure as implic () => unparsed)
 	($ret_type     as _)
@@ -80,8 +81,6 @@ let func $declaration --> $ret_type {$body} = {
 func (  func ($decl_closure as implic () => unparsed) {($body_closure as (implic cloaked decl_closure()) => _)}  ) --> _ {
 	let `decl_closure` = body_closure; $scope
 }
-
-// TODO: func $declaration where $decls $body
 
 // We make this function uncallable by making the last parameter
 // require '~_' ("nothing possible here"), since we want it to
@@ -129,32 +128,22 @@ func List $item ($tail as any List) (~_) {}
 // This sets the default list to 'List' and returns nothing
 __set_default_list__ List
 
-// Does not accept unchecked input for security reasons
-basic func rec basic func ($pattern as implicitly unchecked paused raw ~UnvalidatedInput) ($body as implicitly paused); {
-	paused raw {
-		let `paused pattern` = {
-			basic func $f `paused pattern` {
-				let `paused pattern` = f f;
-				body
-			};
-			
-			($f pattern) ($f pattern) // becomes '($f fib $n) ($f fib $n)' => '(($f fib $n) fib $n)' if pattern = 'fib $n'
-		};
-	}
-};
+// Adds the following functionality to 'func':
+//   - Recursion
+//   - 'where' clauses
+func (  func ($decl_closure as implic () => unparsed raw) --> ($ret_type as _) where we ($decls_closure as (implic ()) => ()) {($body_closure as (implic ()) => _)} ) {
+	let `decl_closure` = {
+		decls_closure();
 
-basic func impure rec basic func ($pattern as implicitly unchecked paused raw ~UnvalidatedInput) ($body as implicitly paused); {
-	paused raw {
-		let impure `paused pattern` = {
-			impure basic func $f `paused pattern` {
-				let `paused pattern` = f f;
-				body
-			};
-			
-			($f pattern) ($f pattern)
-		};
-	}
-};
+		func $f `decl_closure()` --> ret_type {
+			let `decl_closure` = f f;
+
+			body_closure()
+		}
+
+		($f decl_closure()) ($f decl_closure()) // becomes '($f fib $n) ($f fib $n)' => '(($f fib $n) fib $n)' if pattern = 'fib $n'
+	}; $scope
+}
 
 // Complete *total* functions: allows easy attributes, recursion & types
 // - a total function must return, meaning it must:
