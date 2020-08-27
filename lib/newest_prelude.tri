@@ -131,7 +131,7 @@ __set_default_list__ List
 // Adds the following functionality to 'func':
 //   - Recursion
 //   - 'where' clauses
-func (  func ($decl_closure as implic () => unparsed raw) --> ($ret_type as _) where we ($decls_closure as (implic ()) => ()) {($body_closure as (implic ()) => _)} ) {
+func (  func ($decl_closure as implic () => unparsed raw) --> ($ret_type as _) where we ($decls_closure as implic () => raw) {($body_closure as (implic ()) => _)} ) {
 	let `decl_closure` = {
 		decls_closure();
 
