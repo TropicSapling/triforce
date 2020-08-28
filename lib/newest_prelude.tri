@@ -28,7 +28,7 @@ decl symindies { } [ ];
 
 	=> glob scope with letf = (
 		unpredictable (
-			($pat as _ implic made () => unparsed EXPLIC)
+			($pat as _ implic made () => UNPARSED EXPLIC)
 			($val as _)
 			($(scope with pat = $val) as _ implic made unpredictable $`pat()` => EXPLIC)
 
@@ -37,8 +37,8 @@ decl symindies { } [ ];
 			// Example:
 			//    'let n = 1 + 2; println n;'
 			// => 'let (n) = ((1) + (2)); (println (n);)'                                          [code parsed]
-			// => 'let (() => unparsed (n)) = ((1) + (2)); (unpredictable $(n) => (println (n);))' [implicits applied]
-			// => 'let (() => unparsed (n)) = (3); (unpredictable $(n) => (println (n);))'         [args evaluated]
+			// => 'let (() => UNPARSED (n)) = ((1) + (2)); (unpredictable $(n) => (println (n);))' [implicits applied]
+			// => 'let (() => UNPARSED (n)) = (3); (unpredictable $(n) => (println (n);))'         [args evaluated]
 			// ..                                                                                  [function runs]
 			// => '(unpredictable $(n) => (println (n);)) (3)'                                     [value returned]
 			// 
@@ -70,7 +70,7 @@ let {$expr} = $expr => expr;
 // Defines basic function definitions
 // TODO: Allow for impure & unpredictable functions
 let func $declaration --> $ret_type {$body} = {
-	($decl_closure as _ implic made () => unparsed EXPLIC)
+	($decl_closure as _ implic made () => UNPARSED EXPLIC)
 	($ret_type     as _)
 	($body_closure as ret_type implic made cloaked decl_closure() => EXPLIC)
 
@@ -78,7 +78,7 @@ let func $declaration --> $ret_type {$body} = {
 };
 
 // Defines 'func $declaration $body' (return type unchecked) using our new 'func $declaration --> $ret_type $body'!
-func (  func ($decl_closure as _ implic made () => unparsed EXPLIC) {($body_closure as _ implic made cloaked decl_closure() => EXPLIC)}  ) --> _ {
+func (  func ($decl_closure as _ implic made () => UNPARSED EXPLIC) {($body_closure as _ implic made cloaked decl_closure() => EXPLIC)}  ) --> _ {
 	let `decl_closure` = body_closure; $scope
 }
 
@@ -106,16 +106,16 @@ func UnvalidatedInput (~_) {}
 
 // We redefine 'let' as a more advanced form.
 // Pronounced as: "let $var be $type and equal $val"
-func let ($pat as _ implic made () => unparsed EXPLIC): $type = $val; {
+func let ($pat as _ implic made () => UNPARSED EXPLIC): $type = $val; {
 	let `pat` = val: type; $scope
 }
 
-func let ($pat as _ implic made () => unparsed EXPLIC): auto = $val; {
+func let ($pat as _ implic made () => UNPARSED EXPLIC): auto = $val; {
 	let `pat`: type of val = val; $scope
 }
 
 // If no type specified, $pat is defined as immutable
-func let ($pat as _ implic made () => unparsed EXPLIC) = $val; {
+func let ($pat as _ implic made () => UNPARSED EXPLIC) = $val; {
 	let `pat`: val = val; $scope
 }
 
@@ -131,7 +131,7 @@ __set_default_list__ List
 // Adds the following functionality to 'func':
 //   - Recursion
 //   - 'where' clauses
-func (  func ($decl_closure as _ implic made () => unparsed raw EXPLIC) --> ($ret_type as _) where we ($decls_closure as _ implic made () => raw EXPLIC) {($body_closure as _ implic made () => EXPLIC)} ) {
+func (  func ($decl_closure as _ implic made () => UNPARSED (raw EXPLIC)) --> ($ret_type as _) where we ($decls_closure as _ implic made () => raw EXPLIC) {($body_closure as _ implic made () => EXPLIC)} ) {
 	let `decl_closure` = {
 		decls_closure();
 
