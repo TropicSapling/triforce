@@ -6,27 +6,27 @@
 // - The remaining terms of LHS & RHS are known
 // => Compiler can determine if True or False
 (n - 1)            * 2 + 2 == n * 2
-Undefined|0|1|...  * 2 + 2 == 0|2|4...
-// Potential Undefined(s) found!
-// Add Undefined to or-pattern, then
-// start over with values not leading to Undefined:
+UNDEFINED|0|1|...  * 2 + 2 == 0|2|4...
+// Potential UNDEFINED(s) found!
+// Add UNDEFINED to or-pattern, then
+// start over with values not leading to UNDEFINED:
           0|1|...  * 2 + 2 ==   2|4|...
           0|2|...      + 2 ==   2|4|...
           2|4|...          ==   2|4|...
 // LHS == RHS since:
 // - Compiler can determine if True or False
 // - LHS & RHS or-patterns consist of the same values in the same order
-=> Undefined|True
+=> UNDEFINED|True
 
 // - n == n2 is True|False
 // => Compiler *cannot* determine if True or False
 (n - 1)            * 2 + 2 == n2 * 2
-Undefined|0|1|...  * 2 + 2 == 0|2|4...
-// Potential Undefined(s) found!
+UNDEFINED|0|1|...  * 2 + 2 == 0|2|4...
+// Potential UNDEFINED(s) found!
 // Since the compiler cannot determine anything more,
 // and it's irrelevant if there are more potential Undefineds,
 // it stops here and returns:
-=> Undefined|True|False
+=> UNDEFINED|True|False
 
 // -------------------------------------------
 // |                EXAMPLE 2                |
@@ -254,10 +254,10 @@ f Potato              // prints "last"
 
 // Dictionaries/HashMaps + Error Handling example
 
-func test() --> implicitly Wrapped (__explicit__ as ()) {
+func test() --> () implic made Wrapped EXPLIC {
   // Only allowing optional Int values for demonstration purposes.
   // 'optionally any Int' <=> 'any Int | ()' (read as "any Int or nothing")
-  func lookup $key in $dict --> implicitly Wrapped (__explicit__ as optionally any Int) {
+  func lookup $key in $dict --> optionally any Int implic made Wrapped EXPLIC {
     for each [$hash, $val] in dict {
       if hash of key == hash {
         return val; // all returns implicitly wrapped by default, making this become 'return (Wrapped val)'

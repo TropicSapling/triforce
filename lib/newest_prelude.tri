@@ -24,13 +24,13 @@ decl symindies { } [ ];
 	// Preceding and trailing pattern can be omitted when matching.
 	// Here we omit the pattern def for the variable scope.
 	// We write 'let $pat = $val;' rather than 'let $pat = $val; $scope'.
-	($(glob scope with letf = $f) as implic unpredictable $(let $pat = $val;))
+	($(glob scope with letf = $f) as _ implic made unpredictable $(let $pat = $val;) => EXPLIC)
 
 	=> glob scope with letf = (
 		unpredictable (
-			($pat as implic () => unparsed)
+			($pat as _ implic made () => unparsed EXPLIC)
 			($val as _)
-			($(scope with pat = $val) as (implic unpredictable $`pat()`) => _) // writing '=> _' is optional
+			($(scope with pat = $val) as _ implic made unpredictable $`pat()` => EXPLIC)
 
 			=> scope with pat = val
 
@@ -70,15 +70,15 @@ let {$expr} = $expr => expr;
 // Defines basic function definitions
 // TODO: Allow for impure & unpredictable functions
 let func $declaration --> $ret_type {$body} = {
-	($decl_closure as implic () => unparsed)
+	($decl_closure as _ implic made () => unparsed EXPLIC)
 	($ret_type     as _)
-	($body_closure as (implic cloaked decl_closure()) => ret_type)
+	($body_closure as ret_type implic made cloaked decl_closure() => EXPLIC)
 
 	=> let `decl_closure` = body_closure; $scope
 };
 
 // Defines 'func $declaration $body' (return type unchecked) using our new 'func $declaration --> $ret_type $body'!
-func (  func ($decl_closure as implic () => unparsed) {($body_closure as (implic cloaked decl_closure()) => _)}  ) --> _ {
+func (  func ($decl_closure as _ implic made () => unparsed EXPLIC) {($body_closure as _ implic made cloaked decl_closure() => EXPLIC)}  ) --> _ {
 	let `decl_closure` = body_closure; $scope
 }
 
@@ -106,16 +106,16 @@ func UnvalidatedInput (~_) {}
 
 // We redefine 'let' as a more advanced form.
 // Pronounced as: "let $var be $type and equal $val"
-func let ($pat as implic () => unparsed): $type = $val; {
+func let ($pat as _ implic made () => unparsed EXPLIC): $type = $val; {
 	let `pat` = val: type; $scope
 }
 
-func let ($pat as implic () => unparsed): auto = $val; {
+func let ($pat as _ implic made () => unparsed EXPLIC): auto = $val; {
 	let `pat`: type of val = val; $scope
 }
 
 // If no type specified, $pat is defined as immutable
-func let ($pat as implic () => unparsed) = $val; {
+func let ($pat as _ implic made () => unparsed EXPLIC) = $val; {
 	let `pat`: val = val; $scope
 }
 
@@ -131,7 +131,7 @@ __set_default_list__ List
 // Adds the following functionality to 'func':
 //   - Recursion
 //   - 'where' clauses
-func (  func ($decl_closure as implic () => unparsed raw) --> ($ret_type as _) where we ($decls_closure as implic () => raw) {($body_closure as (implic ()) => _)} ) {
+func (  func ($decl_closure as _ implic made () => unparsed raw EXPLIC) --> ($ret_type as _) where we ($decls_closure as _ implic made () => raw EXPLIC) {($body_closure as _ implic made () => EXPLIC)} ) {
 	let `decl_closure` = {
 		decls_closure();
 
@@ -199,11 +199,11 @@ func ref to $val {
 func True  (~_) {}
 func False (~_) {}
 
-func (True)  && ($b as any Bool)          {b}
-func (False) && ((implic ()) => any Bool) {False}
+func (True)  && ($b as any Bool)                    {b}
+func (False) && (any Bool implic made () => EXPLIC) {False}
 
-func (True)  || ((implic ()) => any Bool) {False}
-func (False) || ($b as any Bool)          {b}
+func (True)  || (any Bool implic made () => EXPLIC) {False}
+func (False) || ($b as any Bool)                    {b}
 
 func !(True)  {False}
 func !(False) {True}
@@ -230,11 +230,11 @@ func $a could be $b {b matches a}
 // -------------------------
 
 // ex: 'if x == 123 {456}'
-func (  if (True)  {($tbody as (implic ()) => _)}  ) {tbody()}
-func (  if (False) {($tbody as (implic ()) => _)}  ) {}
+func (  if (True)  {($tbody as _ implic made () => EXPLIC)}  ) {tbody()}
+func (  if (False) {($tbody as _ implic made () => EXPLIC)}  ) {}
 // ex: 'if x == 123 {456} else {789}'
-func (  if (True)  {($tbody as (implic ()) => _)} else {($fbody as (implic ()) => _)}  ) {tbody()}
-func (  if (False) {($tbody as (implic ()) => _)} else {($fbody as (implic ()) => _)}  ) {fbody()}
+func (  if (True)  {($tbody as _ implic made () => EXPLIC)} else {($fbody as _ implic made () => EXPLIC)}  ) {tbody()}
+func (  if (False) {($tbody as _ implic made () => EXPLIC)} else {($fbody as _ implic made () => EXPLIC)}  ) {fbody()}
 
 // ex: 'if x == 123 then 456 else 789'
 let if $cond then $tbody             = if $cond {$tbody};
@@ -243,11 +243,11 @@ let if $cond then $tbody else $fbody = if $cond {$tbody} else {$fbody};
 // ex: 'return 123 if x == 456 else 789;'
 let $tbody if $cond else $fbody = if $cond then $tbody else $fbody;
 
-func (  while ($cond as any Bool) {($body as (implic ()) => _)}  ) {
+func (  while ($cond as any Bool) {($body as _ implic made () => EXPLIC)}  ) {
 	// TODO ...
 }
 
-func (  for each $item in ($list as any List) {($body as (implic ()) => _)}  ) {
+func (  for each $item in ($list as any List) {($body as _ implic made () => EXPLIC)}  ) {
 	// TODO ...
 }
 
