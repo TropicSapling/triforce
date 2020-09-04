@@ -660,3 +660,36 @@ reactive: if count >= 10 {
 // are kind of like "lazy" list comprehensions.
 // 
 // Maybe something similar for Triforce?
+
+--------------------------------------------------
+
+// Array programming in Triforce?
+
+// Recursive multi-array for-each
+rec for each [a, b] in [A, B] {
+  R += a + b;
+}
+
+// i.e.
+let X = [[1, 2], [3, 4]];
+let Y = [[5, 6], [7, 8]];
+let R: any List = [];
+rec for each [x, y] in [X, Y] {
+  R += x + y;
+}
+
+println R; // prints "[[6, 8], [10, 12]]"
+
+// Then maybe you could using this define shortcuts for common operations:
+func $arr $op..$op $arr2 {
+  let res: any List = [];
+  
+  rec for each [a, b] in [arr, arr2] {
+    res += a op b;
+  }
+  
+  res
+}
+
+X +..+ Y // => '[[1+5, 2+6], [3+7, 4+8]]'
+X /../ Y // => '[[1/5, 2/6], [3/7, 4/8]]'

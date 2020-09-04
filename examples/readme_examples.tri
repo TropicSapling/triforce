@@ -80,11 +80,11 @@ let x = 123;
 // Example of a cool thing using #-defs
 // '#($y)%' defines 'y' inside function body as '5' in this case
 // You could also do '#($y as 5)%' if you only want to allow that input
-func (any Number)% () {};
+func (any Number)% (~_) {}
 
 func ($x as any Number) * (#($y)%) {
     x * y / 100
-};
+}
 
 120 * 5% == 6
 
@@ -122,11 +122,17 @@ __catch__ (5% * 120%) == 6%
 // being catched before evaluation.
 impure func __catch__ ($f as implicitly _ => __explicit__) {
 	println "nope!";
-};
+}
 
 println "Hello world!"; // prints "nope!"
 9 + 10 == 21;           // prints "nope!"
 9 + 10 == 19;           // prints "nope!"
+
+// NOTE: We could ofc just define '%' as '/ 100'
+// if we don't care about having an object:
+func ($x as any Number)% {x / 100}
+// But I chose to use an object for this example
+// to better showcase features of the language.
 
 // -------------------------------------------
 // |                EXAMPLE 5                |
