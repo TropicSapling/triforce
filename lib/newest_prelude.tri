@@ -263,14 +263,19 @@ func $n..$m {
 		n
 	else
 		()
-};
+}
 
 // Exclusive range
 func $n..<$m {
 	n..(m - 1)
-};
+}
 
-func $n +- $m {n-m..n+m};
+func $n +- $m {n-m..n+m}
+
+// i.e. 'n += m;' => 'n = n + m;'
+macro func $n $op= $m; {
+	`$$n = $$n $$op $$m;`
+}
 
 // -------------------------
 // |  CATEGORY: Category   |
