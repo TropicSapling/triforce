@@ -20,37 +20,40 @@ decl symindies { } [ ];
 
 // Definition of a basic form of 'let'.
 // TODO: Fix '##(precedence below ;)' for this and similar functions.
-(unpredictable (
+// TODO: 'unpredictable'?
+(macro $glob_scope => (
+	``
+
 	// Preceding and trailing pattern can be omitted when matching.
 	// Here we omit the pattern def for the variable scope.
 	// We write 'let $pat = $val;' rather than 'let $pat = $val; $scope'.
-	($(glob scope with letf = $f) as _ implic made unpredictable $(let $pat = $val;) => EXPLIC)
+	($(let $pat = $val;) => (
+		$$(glob_scope)
+	)) (macro $pat $val $scope => (
+		``
 
-	=> glob scope with letf = (
-		unpredictable (
-			($pat as _ implic made () => UNPARSED EXPLIC)
-			($val as _)
-			($(scope with pat = $val) as _ implic made unpredictable $`pat()` => EXPLIC)
+		($($$(pat)) =>
+			$$(scope)
+		) $$(val)
 
-			=> scope with pat = val
+		``
+	))
 
-			// Example:
-			//    'let n = 1 + 2; println n;'
-			// => 'let (n) = ((1) + (2)); (println (n);)'                                          [code parsed]
-			// => 'let (() => UNPARSED (n)) = ((1) + (2)); (unpredictable $(n) => (println (n);))' [implicits applied]
-			// => 'let (() => UNPARSED (n)) = (3); (unpredictable $(n) => (println (n);))'         [args evaluated]
-			// ..                                                                                  [function runs]
-			// => '(unpredictable $(n) => (println (n);)) (3)'                                     [value returned]
-			// 
-			// The first 2 steps can only be done during compilation. The later steps can in this case also be done
-			// during compilation, but may have to be done at runtime in other situations.
-		)
-	)
+	``
 ))
 
-// EVERYTHING here and below gets passed as 1 arg to the above anonymous function
-// due to its precedence being below everything (even the semicolon). The result
-// is the global scope with the 'let ... = ...;' function defined.
+// EVERYTHING here and below gets passed as 1 arg to the above anonymous macro
+// due to its precedence being below everything (even the semicolon).
+// The result is the global scope with the 'let ... = ...;' macro defined.
+
+// Example:
+//    'let n = 1 + 2; println n;'
+// => '($(let $pat = $val;) => (let n = 1 + 2; println n;)) (macro $pat $val $scope => `($($$(pat)) => $$(scope)) $$(val)`)'
+// => '($(n) => println n;) (1 + 2)'
+// => '($(n) => println n;) 3'
+// 
+// The first 2 steps can only be done during compilation. The last step can in this case also be done
+// during compilation, but may have to be done at runtime in other situations.
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.

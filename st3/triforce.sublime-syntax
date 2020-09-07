@@ -37,7 +37,7 @@ contexts:
     - match: '\b(if|then|else|for\s+each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|matches|is|could\s+be|prerun|run|export(\s+all)?|import|expose|print(ln)?)\b'
       scope: keyword.control.rust
 
-    - match: '\b(impure|unpredictable|implic\s+made|ref\s+to|allowing|unparsed|parsed|raw|cloaked|constructed\s+using|auto)\b'
+    - match: '\b(impure|unpredictable|macro|implic\s+made|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)\b'
       scope: storage.type.rust
 
     - match: '\b(True|False|this|caller)\b'
@@ -55,6 +55,9 @@ contexts:
 
     - match: ':|-->'
       scope: punctuation.separator.rust
+
+    - match: '\$\$'
+      scope: source.triforce
 
     - include: operators
 
@@ -92,9 +95,9 @@ contexts:
       push: func-id-search-start
 
   universal:
-    - match: '`'
+    - match: '``'
       scope: markup.italic
-      push: eval-group
+      push: code-group
     - match: '\b__{{identifier}}__\b'
       scope: markup.heading
 
@@ -221,9 +224,9 @@ contexts:
       pop: true
     - include: general
 
-  eval-group:
+  code-group:
     - meta_scope: markup.italic
-    - match: '`'
+    - match: '``'
       scope: markup.italic
       pop: true
     - include: general
