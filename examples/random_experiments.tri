@@ -647,10 +647,15 @@ reactive: if count >= 10 {
 
 --------------------------------------------------
 
-// Python-style list comprehensions?
-// Has optional if-guards, which can define things
-// that are valid in the "scope" to the left.
-[y for each x in nums if g(let y = f(x); y)]
+// List comprehensions?
+
+func transformed $x {
+	let y = f(x);
+
+	y if y correct else () // TODO: should returning '()' stop an item from being added to the list?
+}
+
+let transformed_items = each item in items recollected as transformed item;
 
 // Python, Rust and others also have Iterables.
 // 
@@ -704,3 +709,38 @@ macro func f $x {
 
 	`` $$(f) (() => $$(x)) ``
 }
+
+--------------------------------------------------
+
+// Math equations
+
+let n = any suitable Int; // <=> suitable of ...|-1|0|1|...
+
+2*n + 1 === 9; // equivalent to '(2*n + 1 == 9): True'
+2*n     === 8;
+  n     === 4;
+
+println n; // prints '4'
+
+--------------------------------------------------
+
+func assert_positive($n as 0|1|...) {}
+
+// 'suitable': exclude what doesn't compile
+// 'any suitable Int' <=> 'suitable of any Int'
+func f($x as any suitable Int where this is even) { assert_positive(x) }
+// <=>
+func f($x as 0|2|...) { assert_positive(x) }
+
+f(2);  // ok
+f(-2); // err!
+
+
+// Compare to this, which doesn't compile:
+func f($x as any Int where this is even) { assert_positive(x) }
+// <=>
+func f($x as ...|-2|0|2|...) { assert_positive(x) } // fails assertion!
+
+// Doesn't matter if we call with positive value;
+// assertion still fails before any calls are evaluated.
+f(2); // not evaluated!

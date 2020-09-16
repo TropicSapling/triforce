@@ -232,6 +232,20 @@ func $a could be $b {b matches a}
 // |   CATEGORY: Control   |
 // -------------------------
 
+macro func if $cond then $tbody else $fbody {
+	``
+
+	func if (True)  then $tbody else $fbody {tbody()}
+	func if (False) then $tbody else $fbody {fbody()}
+
+	if $$(cond) then
+		() => $$(tbody)
+	else
+		() => $$(fbody)
+
+	``
+}
+
 // ex: 'if x == 123 {456}'
 func (  if (True)  {($tbody as _ implic made () => EXPLIC)}  ) {tbody()}
 func (  if (False) {($tbody as _ implic made () => EXPLIC)}  ) {}

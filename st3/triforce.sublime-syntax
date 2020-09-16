@@ -34,16 +34,16 @@ contexts:
     # strings in YAML. When using single quoted strings, only single quotes
     # need to be escaped: this is done by using two single quotes next to each
     # other.
-    - match: '\b(if|then|else|for\s+each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|matches|is|could\s+be|prerun|run|export(\s+all)?|import|expose|print(ln)?)\b'
+    - match: '\b(if|then|else|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|matches|is|could\s+be|prerun|run|export(\s+all)?|import|expose|print(ln)?)\b'
       scope: keyword.control.rust
 
-    - match: '\b(impure|unpredictable|macro|implic\s+made|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)\b'
+    - match: '\b(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)\b'
       scope: storage.type.rust
 
     - match: '\b(True|False|this|caller)\b'
       scope: constant.language.rust
 
-    - match: '\b(as|in|any(\s+of)?|optionally|listified|codified|stringified)\b'
+    - match: '\b(as|in|any(\s+suitable|of)?|optionally|recollected|listified|codified|stringified)\b'
       scope: keyword.operator.rust
 
     - match: '\b[A-Z]{{identifier}}'
