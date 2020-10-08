@@ -744,3 +744,30 @@ func f($x as ...|-2|0|2|...) { assert_positive(x) } // fails assertion!
 // Doesn't matter if we call with positive value;
 // assertion still fails before any calls are evaluated.
 f(2); // not evaluated!
+
+--------------------------------------------------
+
+// Haskell looks nice and clean like this...
+fib 0 = 0
+fib 1 = 1
+fib n = fib (n-1) + fib (n-2)
+
+// ... but that's not possible in Triforce.
+
+// But maybe we could use a new '==>' syntax when fitting:
+func fib ($n as any Int) --> any Int {
+	fib (0) ==> 0
+	fib (1) ==> 1
+	fib $n  ==> fib (n-1) + fib(n-2)
+
+	fib n
+}
+
+// Compare to how it looks like without that syntax:
+func fib ($n as any Int) --> any Int {
+	func fib (0) { 0 }
+	func fib (1) { 1 }
+	func fib $n  { fib (n-1) + fib (n-2) }
+
+	fib n
+}
