@@ -756,9 +756,15 @@ fib n = fib (n-1) + fib (n-2)
 
 // But maybe we could use a new '==>' syntax when fitting:
 func fib ($n as any Int) --> any Int {
-	fib (0) ==> 0
-	fib (1) ==> 1
-	fib $n  ==> fib (n-1) + fib(n-2)
+	// Here we put the definitions in a list to separate them,
+	// but semicolons could also be used. That could however
+	// cause some confusion with regards to if something is
+	// returned or not.
+	expose [
+		fib (0) ==> 0,
+		fib (1) ==> 1,
+		fib $n  ==> fib (n-1) + fib(n-2)
+	]
 
 	fib n
 }
