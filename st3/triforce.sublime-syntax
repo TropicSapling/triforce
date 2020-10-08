@@ -56,9 +56,6 @@ contexts:
     - match: ':|-->'
       scope: punctuation.separator.rust
 
-    - match: '\$\$'
-      scope: source.triforce
-
     - include: operators
 
     # Punctuation
@@ -79,7 +76,7 @@ contexts:
       push: group
 
     # Declarations & definitions
-    - match: '\b((partial\s+)?func)\b'
+    - match: '\b((partial\s+)?(multi\s+)?func)\b'
       scope: storage.type.rust
       push: func-id-search-start
 
@@ -98,6 +95,8 @@ contexts:
     - match: '``'
       scope: markup.italic
       push: code-group
+    - match: '\$\$'
+      scope: source.triforce
     - match: '\b__{{identifier}}__\b'
       scope: markup.heading
 
