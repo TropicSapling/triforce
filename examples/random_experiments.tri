@@ -777,3 +777,23 @@ func fib ($n as any Int) --> any Int {
 
 	fib n
 }
+
+// And using this...
+macro func multi func $declaration --> $ret_type {$defs} {
+	``
+
+	let $$(declaration) = {
+		expose [$$(defs)];
+
+		$$(declaration)
+	}: _ => $$(ret_type); // only works if ':' is made a macro
+
+	``
+}
+
+// ... we could write it simpler like this:
+multi func fib ($n as any Int) --> any Int {
+	fib (0) ==> 0,
+	fib (1) ==> 1,
+	fib $n  ==> fib (n-1) + fib(n-2)
+}
