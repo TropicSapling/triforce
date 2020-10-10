@@ -797,3 +797,45 @@ multi func fib ($n as any Int) --> any Int {
 	fib (1) ==> 1,
 	fib $n  ==> fib (n-1) + fib(n-2)
 }
+
+--------------------------------------------------
+
+// Multiple dispatch example
+// Translated from Julia code shown in https://www.youtube.com/watch?v=kc9HwsxE1OY @ 7:02
+
+let any Pet: _ = UNDEFINED; // maybe change to 'declare type Pet'?
+
+object Dog [$name as any String]
+object Cat [$name as any String]
+
+any Pet |= any Dog|Cat;
+
+decl $($a meets $b); // maybe change to 'declare $a meets $b'?
+
+func ($a as any Pet) encounters ($b as any Pet) {
+	let verb = a meets b;
+	println (a.name + " meets " + b.name + " and " + verb);
+}
+
+// Below is pretty verbose... maybe shorten 'as any' somehow?
+($a as any Dog) meets ($b as any Dog) ==> "sniffs";
+($a as any Dog) meets ($b as any Cat) ==> "chases";
+($a as any Cat) meets ($b as any Dog) ==> "hisses";
+($a as any Cat) meets ($b as any Cat) ==> "slinks";
+
+let fido     = Dog "Fido";
+let rex      = Dog "Rex";
+let whiskers = Cat "Whiskers";
+let spots    = Cat "Spots";
+
+fido     encounters rex;
+fido     encounters whiskers;
+whiskers encounters rex;
+whiskers encounters spots;
+
+// $ tric pets.tri
+// 
+// Fido meets Rex and sniffs
+// Fido meets Whiskers and chases
+// Whiskers meets Rex and hisses
+// Whiskers meets Spots and slinks
