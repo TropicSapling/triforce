@@ -350,6 +350,8 @@ func expose ($cat as any List) {
 // -------------------------
 
 category Misc {
+	object Missing; // like '()', but propagates; see https://docs.julialang.org/en/v1/manual/missing/
+
 	func optionally $x {x|()};
 
 	// TODO: Move into more fitting category

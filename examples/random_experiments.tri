@@ -803,7 +803,7 @@ multi func fib ($n as any Int) --> any Int {
 // Multiple dispatch example
 // Translated from Julia code shown in https://www.youtube.com/watch?v=kc9HwsxE1OY @ 7:02
 
-let any Pet: _ = UNDEFINED; // maybe change to 'declare type Pet'?
+let any Pet: _ = UNDEFINED; // maybe change to 'declare type Pet' or 'let any Pet: anything = UNDEFINED'?
 
 object Dog [$name as any String]
 object Cat [$name as any String]
@@ -839,3 +839,30 @@ whiskers encounters spots;
 // Fido meets Whiskers and chases
 // Whiskers meets Rex and hisses
 // Whiskers meets Spots and slinks
+
+--------------------------------------------------
+
+// Imports without optionals
+import [a, b, ...] from "lib.tri";
+import all         from "lib.tri";
+
+// Imports with all optionals
+import [a as x, b as y, ...]                    from "lib.tri" into Lib;
+import all                   except [c, d, ...] from "lib.tri" into Lib;
+
+// Access like:
+println Lib.x;
+println Lib.y; // note: we could ofc also have imported a function and use it
+
+{
+	// Expose for a certain scope...
+	expose Lib;
+
+	// ... and you can simply do this within the scope:
+	println x;
+	println y;
+}
+
+// Note:
+// Conflict with reserved keyword 'as' can probably be resolved
+// by making only '({$(<...>)|_} as <...>)' reserved.
