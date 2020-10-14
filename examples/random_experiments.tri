@@ -842,17 +842,21 @@ whiskers encounters spots;
 
 --------------------------------------------------
 
-// Imports without optionals
-import [a, b, ...] from "lib.tri";
-import all         from "lib.tri";
+// Minimal importing examples
+import [a, b, ...] from "lib";
+import all         from "lib";
 
-// Imports with all optionals
-import [a as x, b as y, ...]                    from "lib.tri" into Lib;
-import all                   except [c, d, ...] from "lib.tri" into Lib;
+// Importing examples showing all features
+import [a as x, B.b as y, all in C, ...] from "lib" into Lib;
+import all except [e1, e2, ...]          from "lib" into Lib;
 
 // Access like:
 println Lib.x;
-println Lib.y; // note: we could ofc also have imported a function and use it
+println Lib.y;
+println Lib.something_in_C;
+println Lib.something_in_lib_thats_not_excepted;
+
+// Note: we can ofc also import functions and call them
 
 {
 	// Expose for a certain scope...
@@ -866,3 +870,43 @@ println Lib.y; // note: we could ofc also have imported a function and use it
 // Note:
 // Conflict with reserved keyword 'as' can probably be resolved
 // by making only '({$(<...>)|_} as <...>)' reserved.
+
+// Idea: also allow all of above but with 'export'? So you can forward exports, like:
+export [AmongUsClient as Client] from "client";
+
+category TranslationOfRustCodeExample {
+	// Rust
+	``
+	extern crate clap;
+	extern crate term_painter;
+
+	use clap::{Arg, App};
+	use term_painter::{ToStyle, Color::*};
+	use kernel32::{GetConsoleMode, SetConsoleMode};
+
+	use std::{
+		fs,
+		fs::File,
+		io::prelude::*,
+		io::ErrorKind,
+		process::Command,
+		path::PathBuf,
+		str
+	};
+	``
+
+	// Triforce
+	import [Arg, App]                       from "clap";
+	import [ToStyle, all in Color]          from "term_painter";
+	import [GetConsoleMode, SetConsoleMode] from "kernel32";
+
+	import [
+		fs,
+		fs.File,
+		all in io.prelude,
+		io.ErrorKind,
+		process.Command,
+		path.PathBuf,
+		str
+	] from "std";
+}
