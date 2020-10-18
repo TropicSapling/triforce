@@ -714,11 +714,11 @@ macro func f $x {
 
 // Math equations
 
-let n = any suitable Int; // <=> suitable of ...|-1|0|1|...
+let n = any suitable int; // <=> suitable of ...|-1|0|1|...
 
-2*n + 1 === 9; // equivalent to '(2*n + 1 == 9): True'
-2*n     === 8;
-  n     === 4;
+2*n + 1 :== 9; // equivalent to '(2*n + 1 == 9): True'
+2*n     :== 8;
+  n     :== 4; // "n should equal 4"
 
 println n; // prints '4'
 
@@ -806,8 +806,8 @@ multi func fib ($n as any Int) --> any Int {
 let pet: _ = UNDEFINED; // maybe change to 'declare type pet' or 'let pet: anything = UNDEFINED'?
 
 // Objects are values with properties
-object Dog [$name as any String]
-object Cat [$name as any String]
+object Dog [$name as string]
+object Cat [$name as string]
 
 pet |= any Dog|Cat;
 
