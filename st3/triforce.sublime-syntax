@@ -7,7 +7,7 @@ file_extensions:
 scope: source.triforce
 variables:
   identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+|([!<>\-+%/*^&|@~?.]|==|##)[!<>\-+%/*^&|@~?.=#]*))'
-  var_identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking'
+  var_identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
   escaped_byte: '\\(x\h{2}|n|r|t|0|"|''|\\)'
   escaped_char: '\\(x\h{2}|n|r|t|0|"|''|\\|u\{\h{1,6}\})'
 contexts:
@@ -30,6 +30,26 @@ contexts:
 
     - include: block-comments
 
+    # Declarations & definitions
+    - match: '\b((partial\s+)?func)\b'
+      scope: storage.type.rust
+      push: func-id-search-start
+
+    - match: '\b(multi\s+func)\b'
+      scope: storage.type.rust
+      push: [multi-func-start, func-id-search-start]
+
+    - match: '\b(decl(\s+(sym(group|indies|block)?))|enclosed\s+by|with\s+escaper|as\s+part\s+of)\b'
+      scope: storage.type.rust
+
+    - match: '\b(decl|let)\b'
+      scope: storage.type.rust
+      push: let-id-search-start
+
+    - match: '\b(category|object)\b'
+      scope: storage.type.rust
+      push: func-id-search-start
+
     # Keywords.
     # Note that blackslashes don't need to be escaped within single quoted
     # strings in YAML. When using single quoted strings, only single quotes
@@ -41,7 +61,7 @@ contexts:
     - match: '\b(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)\b'
       scope: storage.type.rust
 
-    - match: '\b(bool|int|fraction|number|string)\b'
+    - match: '\b(bool|nat|int|fraction|number|string)\b'
       scope: storage.type.rust
 
     - match: '\b(True|False|this|caller)\b'
@@ -84,26 +104,6 @@ contexts:
           scope: punctuation.section.group.end.rust
           pop: true
         - include: general
-
-    # Declarations & definitions
-    - match: '\b((partial\s+)?func)\b'
-      scope: storage.type.rust
-      push: func-id-search-start
-
-    - match: '\b(multi\s+func)\b'
-      scope: storage.type.rust
-      push: [multi-func-start, func-id-search-start]
-
-    - match: '\b(decl(\s+(symgroup|symindies|symblock))|enclosed\s+by|with\s+escaper)\b'
-      scope: storage.type.rust
-
-    - match: '\b(decl|let)\b'
-      scope: storage.type.rust
-      push: let-id-search-start
-
-    - match: '\b(category|object)\b'
-      scope: storage.type.rust
-      push: func-id-search-start
 
   universal:
     - match: '``'

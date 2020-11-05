@@ -5,18 +5,25 @@ decl symblock __sb_default_str__ enclosed by " " with escaper \;
 
 decl symindies { } [ ];
 
-// --------------------------------------------------
-// |                  THE PRELUDE                   |
-// --------------------------------------------------
+decl sym + - * / as part of __sg_default_ops__; // TODO: more ops, more symgroups
 
-// TODO: Put the basic things that are needed for the prelude but shouldn't be visible from the
-//       outside inside a category 'Foundation'. This can be done by writing the category stuff
-//       by hand using anonymous functions, or by generating these anonymous functions.
-// OR:   Alternatively, put everything inside 'Prelude' category and then expose Prelude.
+// ====================================================================================================
+//
+//                                   ##########  THE PRELUDE  ##########
+//
+// ====================================================================================================
 
-// -------------------------
-// |   CATEGORY: Basics    |
-// -------------------------
+// TODO: Put the basic things that are needed for the prelude but shouldn't be
+//       visible from the outside inside a category 'Foundation'. This can be
+//       done by writing the category stuff by hand using anonymous functions,
+//       or by generating these anonymous functions.
+//
+// OR:   Alternatively, put everything inside 'Prelude' category and then
+//       expose Prelude.
+
+// ==================================================
+//            ##### The Fundamentals #####
+// ==================================================
 
 // Definition of a basic form of 'let'.
 // TODO: Fix '##(precedence below ;)' for this and similar functions.
