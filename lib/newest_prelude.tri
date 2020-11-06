@@ -3,9 +3,14 @@ decl symblock sb_multi_comment enclosed by /* */;
 
 decl symblock __sb_default_str__ enclosed by " " with escaper \;
 
-decl symindies { } [ ];
+decl symindies { } [ ] , . :;
+decl symindies + - * /;
+decl symindies @ % ? !;
 
-decl sym + - * / as part of __sg_default_ops__; // TODO: more ops, more symgroups
+// built-in symindies: ( ) ; $ # < = > ~ & |
+// built-in symgroups:
+// - default
+// - whitespace
 
 // ====================================================================================================
 //

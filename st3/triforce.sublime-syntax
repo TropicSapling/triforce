@@ -30,26 +30,6 @@ contexts:
 
     - include: block-comments
 
-    # Declarations & definitions
-    - match: '\b((partial\s+)?func)\b'
-      scope: storage.type.rust
-      push: func-id-search-start
-
-    - match: '\b(multi\s+func)\b'
-      scope: storage.type.rust
-      push: [multi-func-start, func-id-search-start]
-
-    - match: '\b(decl(\s+(sym(group|indies|block)?))|enclosed\s+by|with\s+escaper|as\s+part\s+of)\b'
-      scope: storage.type.rust
-
-    - match: '\b(decl|let)\b'
-      scope: storage.type.rust
-      push: let-id-search-start
-
-    - match: '\b(category|object)\b'
-      scope: storage.type.rust
-      push: func-id-search-start
-
     # Keywords.
     # Note that blackslashes don't need to be escaped within single quoted
     # strings in YAML. When using single quoted strings, only single quotes
@@ -104,6 +84,26 @@ contexts:
           scope: punctuation.section.group.end.rust
           pop: true
         - include: general
+
+    # Declarations & definitions
+    - match: '\b((partial\s+)?func)\b'
+      scope: storage.type.rust
+      push: func-id-search-start
+
+    - match: '\b(multi\s+func)\b'
+      scope: storage.type.rust
+      push: [multi-func-start, func-id-search-start]
+
+    - match: '\b(decl(\s+(sym(indies|block)))|enclosed\s+by|with\s+escaper)\b'
+      scope: storage.type.rust
+
+    - match: '\b(decl|let)\b'
+      scope: storage.type.rust
+      push: let-id-search-start
+
+    - match: '\b(category|object)\b'
+      scope: storage.type.rust
+      push: func-id-search-start
 
   universal:
     - match: '``'

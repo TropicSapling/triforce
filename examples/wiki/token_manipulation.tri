@@ -3,14 +3,13 @@ decl symblock sb_multi_comment enclosed by /* */; // automatically nestable, sin
 
 decl symblock __sb_default_str__ enclosed by " " with escaper \; // "escape like \"this\""
 
-// The behaviour of symblocks default to nothing before they are defined*.
-// But if you want to have some other behaviour, these things are good to know:
+// The behaviour of symblocks default to nothing*.
+// However, by creating a macro function you can define a specific behaviour for a symblock.
 // - Anything between the enclosers of a symblock can be captured for function input.
-// - Captured symbols will be 'UNPARSED', which must be marked.
 // - To do something with captured symbols, use 'stringified <var holding symbols>'.
 
 // Just for practice, below we define multi-line comments to print their contents:
-impure func sb_multi_comment ($comment as UNPARSED) {
+macro func sb_multi_comment $comment {
 	println (stringified comment);
 };
 
@@ -22,7 +21,7 @@ impure func sb_multi_comment ($comment as UNPARSED) {
 // Before the below declarations, number ranges require whitespace:
 20 +- 5
 
-decl symgroup  + - * /; // ex tokens: '+', '++', '+-', '**'
+decl symindies + - * /; // ex tokens: '+', '-', '*', '/'
 decl symindies { } [ ]; // ex tokens: '{', '}', '[', ']'
 
 // Now number ranges can be written without whitespace:
