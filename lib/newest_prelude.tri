@@ -83,18 +83,20 @@ let {$expr} = $expr => expr;
 // Defines basic function definitions
 // TODO: Allow for impure & unpredictable functions
 let func $declaration --> $ret_type {$body} = macro _ _ _ => {
-	// TODO: ret_type checking... eval?...
-
 	``
 
-	let $$(declaration) = $$(cloaked declaration) => $$(body); $scope
+	let $$(declaration) = $$(cloaked declaration) => (($x as ret_type) => x) $$(body); $scope
 
 	``
 };
 
-// Defines 'func $declaration $body' (return type unchecked) using our new 'func $declaration --> $ret_type $body'!
-func (  func ($decl_closure as _ implic made () => UNPARSED EXPLIC) {($body_closure as _ implic made cloaked decl_closure() => EXPLIC)}  ) --> _ {
-	let `decl_closure` = body_closure; $scope
+// Defines 'func $declaration {$body}' (return type unchecked) using our new 'func $declaration --> $ret_type {$body}'!
+func (  func $declaration {$body}  ) --> _ {
+	``
+
+	func $$(declaration) --> _ {$$(body)}
+
+	``
 }
 
 // We make this function uncallable by making the last parameter
