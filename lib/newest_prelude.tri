@@ -31,8 +31,8 @@ decl symindies @ % ? !;
 // ==================================================
 
 // Definition of a basic form of 'let'.
-// TODO: Fix '##(precedence below ;)' for this and similar functions.
 // TODO: 'unpredictable'?
+##(precedence below _)
 (macro $glob_scope => (
 	``
 
@@ -41,15 +41,18 @@ decl symindies @ % ? !;
 	// We write 'let $pat = $val;' rather than 'let $pat = $val; $scope'.
 	($(let $pat = $val;) => (
 		$$(glob_scope)
-	)) (macro $pat $val $scope => (
-		``
+	)) (
+		##(precedence below _)
+		macro $pat $val $scope => (
+			``
 
-		($($$(pat)) =>
-			$$(scope)
-		) $$(val)
+			($($$(pat)) =>
+				$$(scope)
+			) $$(val)
 
-		``
-	))
+			``
+		)
+	)
 
 	``
 ))
@@ -60,7 +63,7 @@ decl symindies @ % ? !;
 
 // Example:
 //    'let n = 1 + 2; println n;'
-// => '($(let $pat = $val;) => (let n = 1 + 2; println n;)) (macro $pat $val $scope => `($($$(pat)) => $$(scope)) $$(val)`)'
+// => '($(let $pat = $val;) => (let n = 1 + 2; println n;)) (macro $pat $val $scope => `` ($($$(pat)) => $$(scope)) $$(val) ``)'
 // => '($(n) => println n;) (1 + 2)'
 // => '($(n) => println n;) 3'
 // 
@@ -69,11 +72,6 @@ decl symindies @ % ? !;
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
-
-// TODO: Declare operators using symgroups:
-// - ;
-// - +-*/%
-// - etc.
 
 // TODO: Define 'debug $expr' function similar to Rust's 'dbg!(...)'
 
@@ -84,12 +82,14 @@ let {$expr} = $expr => expr;
 
 // Defines basic function definitions
 // TODO: Allow for impure & unpredictable functions
-let func $declaration --> $ret_type {$body} = {
-	($decl_closure as _ implic made () => UNPARSED EXPLIC)
-	($ret_type     as _)
-	($body_closure as ret_type implic made cloaked decl_closure() => EXPLIC)
+let func $declaration --> $ret_type {$body} = macro _ _ _ => {
+	// TODO: ret_type checking... eval?...
 
-	=> let `decl_closure` = body_closure; $scope
+	``
+
+	let $$(declaration) = $$(cloaked declaration) => $$(body); $scope
+
+	``
 };
 
 // Defines 'func $declaration $body' (return type unchecked) using our new 'func $declaration --> $ret_type $body'!
