@@ -916,7 +916,7 @@ category TranslationOfRustCodeExample {
 // Notes on structured concurrency.
 // https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/
 
-func do_async_stuff_in($container as any Container) {
+func do_async_stuff_in($container as any AsyncContainer) {
 	container.run_async(() => {
 		// ...
 	});
