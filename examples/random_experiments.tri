@@ -935,3 +935,11 @@ async container $container {
 }
 
 do_stuff_after_async_stuff_done();
+
+--------------------------------------------------
+
+// Prints contents of file.
+// Python-style auto-closes file afterwards.
+with file $file at "path/to/file.ext" open {
+	println(contents of file);
+}
