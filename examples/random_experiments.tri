@@ -855,6 +855,7 @@ println Lib.x;
 println Lib.y;
 println Lib.something_in_C;
 println Lib.something_in_lib_thats_not_excepted;
+println Lib.(function taking 123 and 456);       // equivalent to 'Lib.(function taking $x and $y) 123 456'
 
 // Note: we can ofc also import functions and call them
 
@@ -943,3 +944,11 @@ do_stuff_after_async_stuff_done();
 with file $file at "path/to/file.ext" open {
 	println(contents of file);
 }
+
+--------------------------------------------------
+
+// Adding 'where given' before closure-inputs sometimes improves readability
+
+filter arr where given $item => item is even // read as-is but with '=>' unpronounced
+
+map arr where given $item => item * 2 // read as-is but with '=>' pronounced as "return"
