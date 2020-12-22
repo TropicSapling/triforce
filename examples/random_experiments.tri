@@ -952,3 +952,11 @@ with file $file at "path/to/file.ext" open {
 filter arr where given $item => item is even // read as-is but with '=>' unpronounced
 
 map arr where given $item => item * 2 // read as-is but with '=>' pronounced as "return"
+
+--------------------------------------------------
+
+// Memory problems:
+// - Deref pointers to dealloc memory
+//   - i.e. out of scope, arr resize, @nullptr
+// - Concurrency data races
+// - Memory leaks
