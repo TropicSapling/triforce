@@ -33,9 +33,7 @@ decl symindies @ % ? !;
 // Definition of a basic form of 'let'.
 // TODO: 'unpredictable'?
 ##(precedence below _)
-(macro $glob_scope => (
-	``
-
+(macro $glob_scope => code (
 	// Preceding and trailing pattern can be omitted when matching.
 	// Here we omit the pattern def for the variable scope.
 	// We write 'let $pat = $val;' rather than 'let $pat = $val; $scope'.
@@ -43,18 +41,12 @@ decl symindies @ % ? !;
 		$$(glob_scope)
 	)) (
 		##(precedence below _)
-		macro $pat $val $scope => (
-			``
-
+		macro $pat $val $scope => code (
 			($($$(pat)) =>
 				$$(scope)
 			) $$(val)
-
-			``
 		)
 	)
-
-	``
 ))
 
 // EVERYTHING here and below gets passed as 1 arg to the above anonymous macro
@@ -82,21 +74,20 @@ let {$expr} = $expr => expr;
 
 // Defines basic function definitions
 // TODO: Allow for impure & unpredictable functions
-let func $declaration --> $ret_type {$body} = macro _ _ _ => {
-	``
-
+let func $declaration --> $ret_type {$body} = macro _ _ _ => code {
 	let $$(declaration) = $$(cloaked declaration) => (($x as ret_type) => x) $$(body); $scope
+};
 
-	``
+// Macro functions
+let macro func $declaration --> $ret_type {$body} = macro _ _ _ => code {
+	let $$(declaration) = macro $$(cloaked declaration) => (($x as ret_type) => x) $$(body); $scope
 };
 
 // Defines 'func $declaration {$body}' (return type unchecked) using our new 'func $declaration --> $ret_type {$body}'!
 macro func (  func $declaration {$body}  ) --> _ {
-	``
-
-	func $$(declaration) --> _ {$$(body)}
-
-	``
+	code {
+		func $$(declaration) --> _ {$$(body)}
+	}
 }
 
 // We make this function uncallable by making the last parameter
