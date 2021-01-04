@@ -435,10 +435,12 @@ Currently, this README pretty much only consists of a language specification. Si
 11. `cloaked <pattern>` returns `<pattern>` as anonymous.
 	- ex: `cloaked (function taking $x and $y)` becomes `$x $y`
 12. `continue matching [for <function>]` continues pattern matching if possible.
-		- if `<function>` isn't specified it will default to the current function
-		- if `<function>` is `caller` it will continue matching for the caller
-		- if it's not possible to continue, there will be an error
-			- note that `__catch__` can be used to prevent this
+	- **note:** may be changed to `continue matching;` and be required to be put at end of function
+		- the `for <function>` part could cause some issues and probably is unnecessary now when macros exist
+	- if `<function>` isn't specified it will default to the current function
+	- if `<function>` is `caller` it will continue matching for the caller
+	- if it's not possible to continue, there will be an error
+		- note that `__catch__` can be used to prevent this
 
 --------
 

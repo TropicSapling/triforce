@@ -960,3 +960,43 @@ map arr where given $item => item * 2 // read as-is but with '=>' pronounced as 
 //   - i.e. out of scope, arr resize, @nullptr
 // - Concurrency data races
 // - Memory leaks
+
+--------------------------------------------------
+
+// Extending macro functions
+// -------------------------
+
+// Original definition
+macro func if $cond then $tbody else $fbody {
+	code {
+		func if (True)  then $tbody else $fbody {tbody()}
+		func if (False) then $tbody else $fbody {fbody()}
+
+		if $$(cond) then
+			() => $$(tbody)
+		else
+			() => $$(fbody)
+	}
+}
+
+if True then println "yup" else "nope";
+// =>
+// yup
+
+// Extension:
+macro func if $cond then $tbody else $fbody {
+
+	func if (True)  then _ else _ { println "It's true!";  }
+	func if (False) then _ else _ { println "It's false!"; }
+
+	if (eval cond) then tbody else fbody;
+
+	// This last statement "switches" to the original definition of the function,
+	// thereby allowing for this function to serve as an extension of the original.
+	continue matching;
+}
+
+if True then println "yup" else println "nope";
+// =>
+// It's true!
+// yup
