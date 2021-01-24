@@ -1000,3 +1000,24 @@ if True then println "yup" else println "nope";
 // =>
 // It's true!
 // yup
+
+--------------------------------------------------
+
+// Testing complex functions
+// -------------------------
+
+// Haskell
+f2p :: (a -> (b, c)) -> (a -> b, a -> c)
+f2p f = (fst . f, snd . f)
+
+// Triforce?
+func f2p ($f as $a => [#(#($b), #($c))]) --> [#(#($a => $b), #($a => $c))] {
+	[$a => f(a)[0], $a => f(a)[1]] // or maybe with function composition operator: [[0] ¤ f, [1] ¤ f]
+}
+
+// TODO
+// ----
+// Think more about this:
+// - Does this work out ok? Will $a, $b, $c be defined in return type?
+// - Should syntax be changed? Is it perhaps too verbose?
+//   - maybe syntax sugar or similar for list types?
