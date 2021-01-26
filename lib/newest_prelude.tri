@@ -72,6 +72,8 @@ decl symindies @ % ? !;
 // Also use this for the classics 'func', 'if', etc.
 let {$expr} = $expr => expr;
 
+// TODO: FIX BOILERPLATE CODE BELOW
+
 // Defines basic function definitions
 // TODO: Allow for impure & unpredictable functions
 let func $declaration --> $ret_type {$body} = macro _ _ _ => code {
@@ -87,6 +89,26 @@ let macro func $declaration --> $ret_type {$body} = macro _ _ _ => code {
 macro func (  func $declaration {$body}  ) --> _ {
 	code {
 		func $$(declaration) --> _ {$$(body)}
+	}
+}
+
+macro func (  macro func $declaration {$body}  ) --> _ {
+	code {
+		macro func $$(declaration) --> _ {$$(body)}
+	}
+}
+
+// This definition makes empty function bodies work the way you'd expect.
+// Note: use 'func ... {$_}' when you really mean to do partial application.
+macro func (  func $declaration {}  ) {
+	code {
+		func $$(declaration) {()}
+	}
+}
+
+macro func (  macro func $declaration {}  ) {
+	code {
+		macro func $$(declaration) {()}
 	}
 }
 
