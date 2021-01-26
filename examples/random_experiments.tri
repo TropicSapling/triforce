@@ -1021,3 +1021,14 @@ func f2p ($f as $a => [#(#($b), #($c))]) --> [#(#($a => $b), #($a => $c))] {
 // - Does this work out ok? Will $a, $b, $c be defined in return type?
 // - Should syntax be changed? Is it perhaps too verbose?
 //   - maybe syntax sugar or similar for list types?
+
+--------------------------------------------------
+
+// Sets are usually "automatically" unionised/flattened in Triforce:
+{{1, 2, 3}, {4, 5}} <=> (1|2|3)|(4|5) <=> 1|2|3|4|5
+
+// This is often beneficial, but could sometimes be problematic.
+// Perhaps allowing sets to be represented both as list and or-patterns,
+// and allowing easy conversion between the formats, could be of help?
+orify [[1, 2, 3], [4, 5]] <=> (1|2|3)|(4|5)  <=> 1|2|3|4|5
+orify [[1, 2, 3], [], []] <=> (1|2|3)|(|)|~_ <=> 1|2|3
