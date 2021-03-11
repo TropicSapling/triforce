@@ -35,7 +35,7 @@ contexts:
     # strings in YAML. When using single quoted strings, only single quotes
     # need to be escaped: this is done by using two single quotes next to each
     # other.
-    - match: '\b(if|then|else|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|matches|is|could\s+be|prerun|run|export(\s+all)?|import(\s+all)?|except|from|into|expose|print(ln)?|async\s+container|eval)\b'
+    - match: '\b(if|then|else|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|which|matches|is|could\s+be|prerun|run|export(\s+all)?|import(\s+all)?|except|from|into|expose|print(ln)?|async\s+container|eval|ensure)\b'
       scope: keyword.control.rust
 
     - match: '\b(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)\b'

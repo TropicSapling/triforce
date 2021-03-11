@@ -1032,3 +1032,53 @@ func f2p ($f as $a => [#(#($b), #($c))]) --> [#(#($a => $b), #($a => $c))] {
 // and allowing easy conversion between the formats, could be of help?
 orify [[1, 2, 3], [4, 5]] <=> (1|2|3)|(4|5)  <=> 1|2|3|4|5
 orify [[1, 2, 3], [], []] <=> (1|2|3)|(|)|~_ <=> 1|2|3
+
+--------------------------------------------------
+
+// Allow moving out types into 'where' clauses?
+// Compare the below functions:
+
+func divide even ($a as int which mod 2 == 0) with ($b as int which != 0) --> int {
+	...
+}
+
+func divide even $a with $b --> int
+	where [
+		a: int which mod 2 == 0,
+		b: int which != 0
+	]
+{
+	...
+}
+
+// Also just to demonstrate how flexible the 'where' clause is:
+func divide ($a as even int) with $b --> int
+	where [
+		func even $x {x which mod 2 == 0}, // '=' within here defines rather than assigns
+
+		non_zero_int = int which != 0,
+
+		b: non_zero_int
+	]
+{
+	...
+}
+
+// Note to self: if you for some reason feel like the 'where' clause isn't flexible enough,
+// it's because that didn't work out well with reading things and made little sense.
+// It doesn't make sense to i.e. print something in a 'where [we]' clause because for that
+// you could just do this instead:
+{
+	println "hello";
+
+	func divide even $a with $b --> int {...}
+}
+// The reading also got weird because function declarations are read in a declarative sense,
+// while printing, etc. are read as imperative statements. It would become something like
+// "function divide even a with b returns int" and then suddenly changing to imperative
+// "where we let msg = ...; print msg;" and then back to declarative "has implementation"!
+//
+// Put it all together and you'll remember:
+// "function 'divide even a with b' returns int, where we let msg = ... and print msg, and the function has the implementation:"
+// Compare to the better:
+// "function 'divide even a with b' returns int, where a is an int which is even, and has the implementation:"
