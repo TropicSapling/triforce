@@ -1103,3 +1103,27 @@ func divide even $a with $b --> int
 More comment text here just to check that things work :)
 
 */
+
+println "Some code in-between";
+
+/*
+
+If statements.
+
+```
+if True  then println "yup" else "nope"; // prints "yup"
+if False then println "yup" else "nope"; // prints "nope"
+```
+
+*/
+macro func if $cond then $tbody else $fbody {
+	code {
+		func if (True)  then $tbody else $fbody {tbody()}
+		func if (False) then $tbody else $fbody {fbody()}
+
+		if $$(cond) then
+			() => $$(tbody)
+		else
+			() => $$(fbody)
+	}
+}

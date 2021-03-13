@@ -127,14 +127,18 @@ contexts:
       scope: punctuation.definition.comment.rust
       pop: true
     - include: block-comments
-    - match: '```'
+    - match: '```\n'
       scope: constant.language.rust
       set:
-        - match: '```'
-          scope: constant.language.rust
-          set: block-comment
-        - include: general
-
+        - match: ''
+          set:
+            - match: '(?=```)'
+              set:
+                - match: '```'
+                  scope: constant.language.rust
+                  set: block-comment
+            - meta_scope: markup.raw
+            - include: general
 
   multi-func-start:
     - include: universal
