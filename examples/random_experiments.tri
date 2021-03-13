@@ -1082,3 +1082,24 @@ func divide ($a as even int) with $b --> int
 // "function 'divide even a with b' returns int, where we let msg = ... and print msg, and the function has the implementation:"
 // Compare to the better:
 // "function 'divide even a with b' returns int, where a is an int which is even, and has the implementation:"
+
+--------------------------------------------------
+
+/*
+
+Code blocks in comments (available for ST3):
+
+```
+func divide even $a with $b --> int
+	where [
+		a: int which mod 2 == 0,
+		b: int which != 0
+	]
+{
+	...
+}
+```
+
+More comment text here just to check that things work :)
+
+*/

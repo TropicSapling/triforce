@@ -119,12 +119,22 @@ contexts:
   block-comments:
     - match: '/\*'
       scope: punctuation.definition.comment.rust
-      push:
-        - meta_scope: comment.block.rust
-        - match: '\*/'
-          scope: punctuation.definition.comment.rust
-          pop: true
-        - include: block-comments
+      push: block-comment
+
+  block-comment:
+    - meta_scope: comment.block.rust
+    - match: '\*/'
+      scope: punctuation.definition.comment.rust
+      pop: true
+    - include: block-comments
+    - match: '```'
+      scope: constant.language.rust
+      set:
+        - match: '```'
+          scope: constant.language.rust
+          set: block-comment
+        - include: general
+
 
   multi-func-start:
     - include: universal
