@@ -215,10 +215,10 @@ contexts:
 
   block-comments:
     - match: '<<[<]{1,5}[^<]'
-      scope: cc.constant.language.rust
+      scope: cc.keyword.control.rust
       push:
         - match: '>>[>]{1,5}[^>]'
-          scope: cc.constant.language.rust
+          scope: cc.keyword.control.rust
           pop: true
 #        - meta_scope: markup.list.unnumbered.bullet
 #        - include: general
