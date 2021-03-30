@@ -1,0 +1,117 @@
+{
+    "variables":
+    {
+        "blue": "hsl(190, 81%, 67%)",
+        "orange": "hsl(32, 98%, 56%)",
+        "purple": "hsl(261, 100%, 75%)",
+        "red2": "hsl(338, 95%, 56%)",
+        "yellow": "hsl(54, 70%, 68%)",
+        "yellow2": "hsl(80, 76%, 53%)",
+
+        "yellow5": "hsl(50, 11%, 41%)",
+        "white3": "hsl(60, 30%, 96%)",
+
+        "cc_blue": "hsl(190, 11%, 41%)",
+        "cc_orange": "hsl(32, 11%, 41%)",
+        "cc_purple": "hsl(261, 11%, 41%)",
+        "cc_red2": "hsl(338, 11%, 41%)",
+        "cc_yellow": "hsl(54, 11%, 41%)",
+        "cc_yellow2": "hsl(80, 11%, 41%)"
+    },
+    "rules":
+    [
+        {
+            "name": "String",
+            "scope": "cc.string",
+            "foreground": "var(cc_yellow)"
+        },
+        {
+            "name": "Number",
+            "scope": "cc.constant.numeric",
+            "foreground": "var(cc_purple)"
+        },
+        {
+            "name": "Built-in constant",
+            "scope": "cc.constant.language",
+            "foreground": "var(cc_purple)"
+        },
+        {
+            "name": "User-defined constant",
+            "scope": "cc.constant.character, constant.other",
+            "foreground": "var(cc_purple)"
+        },
+        {
+            "name": "Keyword",
+            "scope": "cc.keyword, cc.keyword.operator.word",
+            "foreground": "var(cc_red2)"
+        },
+        {
+            "name": "Annotation Punctuation",
+            "scope": "cc.punctuation.definition.annotation",
+            "foreground": "var(cc_red2)"
+        },
+        {
+            "name": "Storage",
+            "scope": "cc.storage",
+            "foreground": "var(cc_red2)"
+        },
+        {
+            "name": "Storage type",
+            "scope": "cc.storage.type",
+            "foreground": "var(cc_blue)",
+            "font_style": "italic"
+        },
+        {
+            "name": "Entity name",
+            "scope": "cc.entity.name",
+            "foreground": "var(cc_yellow2)"
+        },
+        {
+            "name": "Function argument",
+            "scope": "cc.variable.parameter",
+            "foreground": "var(cc_orange)",
+            "font_style": "italic"
+        },
+        {
+            "name": "Language variable",
+            "scope": "cc.variable.language",
+            "foreground": "var(cc_orange)",
+            "font_style": "italic"
+        },
+        {
+            "name": "Tag name",
+            "scope": "cc.entity.name.tag",
+            "foreground": "var(cc_red2)"
+        },
+        {
+            "name": "Tag attribute",
+            "scope": "cc.entity.other.attribute-name",
+            "foreground": "var(cc_yellow2)"
+        },
+        {
+            "name": "Function call",
+            "scope": "cc.variable.function, cc.variable.annotation",
+            "foreground": "var(cc_blue)"
+        },
+        {
+            "name": "Library function",
+            "scope": "cc.support.function, cc.support.macro",
+            "foreground": "var(cc_blue)"
+        },
+        {
+            "name": "Library constant",
+            "scope": "cc.support.constant",
+            "foreground": "var(cc_blue)"
+        },
+        {
+            "name": "Library class/type",
+            "scope": "cc.support.type, cc.support.class",
+            "foreground": "var(cc_blue)",
+            "font_style": "italic"
+        },
+        {
+            "scope": "cc.entity.name.filename",
+            "foreground": "var(cc_yellow)"
+        }
+    ]
+}

@@ -1085,8 +1085,7 @@ func divide ($a as even int) with $b --> int
 
 --------------------------------------------------
 
-/*
-
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 Code blocks in comments (available for ST3):
 
 ```
@@ -1101,21 +1100,18 @@ func divide even $a with $b --> int
 ```
 
 More comment text here just to check that things work :)
-
-*/
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 println "Some code in-between";
 
-/*
-
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 If statements.
 
 ```
 if True  then println "yup" else "nope"; // prints "yup"
 if False then println "yup" else "nope"; // prints "nope"
 ```
-
-*/
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 macro func if $cond then $tbody else $fbody {
 	code {
 		func if (True)  then $tbody else $fbody {tbody()}
@@ -1126,4 +1122,97 @@ macro func if $cond then $tbody else $fbody {
 		else
 			() => $$(fbody)
 	}
+}
+
+--------------------------------------------------
+
+decl symblock sb_line_comment   enclosed by // \n;
+decl symblock sb_multi_comment  enclosed by <<< >>>;
+decl symblock sb_header_comment enclosed by === ===;
+
+decl symblock __sb_default_str__ enclosed by " " with escaper \;
+
+decl symindies { } [ ] , . :;
+decl symindies + - * /;
+decl symindies @ % ? !;
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+built-in symindies: ( ) ; $ # < = > ~ & |
+built-in symgroups:
+- default
+- whitespace
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+====================================================================================================
+
+                                  ##########  THE PRELUDE  ##########
+
+====================================================================================================
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+TODO: Put the basic things that are needed for the prelude but shouldn't be
+      visible from the outside inside a category 'Foundation'. This can be
+      done by writing the category stuff by hand using anonymous functions,
+      or by generating these anonymous functions.
+
+OR:   Alternatively, put everything inside 'Prelude' category and then
+      expose Prelude.
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+==================================================
+           ##### The Fundamentals #####
+==================================================
+
+--------------------------------------------------
+
+=====================================================
+Converts the vector into <<< Box<[T]> >>>.
+
+Note that this will drop any excess capacity.
+
+# Examples
+
+<<<<<<<
+let v = vec![1, 2, 3];
+
+let slice = v.into_boxed_slice();
+>>>>>>>
+
+Any excess capacity is removed:
+
+<<<<<<<
+let vec = Vec::with_capacity(10);
+vec.extend([1, 2, 3].iter().cloned());
+
+assert_eq!(vec.capacity(), 10);
+let slice = vec.into_boxed_slice();
+assert_eq!(slice.into_vec().capacity(), 3);
+>>>>>>>
+
+<<<<<<<
+macro func if $cond then $tbody else $fbody {
+	code {
+		func if (True)  then $tbody else $fbody {tbody()}
+		func if (False) then $tbody else $fbody {fbody()}
+
+		if $$(cond) then
+			() => $$(tbody)
+		else
+			() => $$(fbody)
+	}
+}
+>>>>>>>
+=====================================================
+func into_boxed_slice($self) --> Box<[T], A> {
+    unsafe {
+        self.shrink_to_fit();
+        let me  = ManuallyDrop::new(self);
+<<<     let buf = ptr::read(&me.buf);
+        let len = me.len(); >>>
+        buf.into_box(len).assume_init()
+    }
 }

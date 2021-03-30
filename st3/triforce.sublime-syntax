@@ -10,6 +10,7 @@ variables:
   var_identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
   escaped_byte: '\\(x\h{2}|n|r|t|0|"|''|\\)'
   escaped_char: '\\(x\h{2}|n|r|t|0|"|''|\\|u\{\h{1,6}\})'
+  digits: '(0(x[0-9a-f_]+|o[0-7_]+|b[01_]+)|[0-9_]+)'
 contexts:
   main:
     - include: general
@@ -17,18 +18,12 @@ contexts:
   general:
     - include: universal
 
-    # Strings begin and end with quotes, and use backslashes as an escape
-    # character
+    - include: comments
+
+    # Strings begin and end with quotes, and use backslashes as an escape character
     - match: '"'
       scope: punctuation.definition.string.begin.example-c
-      push: double_quoted_string
-
-    # Comments begin with a '//' and finish at the end of the line
-    - match: '//'
-      scope: punctuation.definition.comment.example-c
-      push: line_comment
-
-    - include: block-comments
+      push: double-quoted-string
 
     # Keywords.
     # Note that blackslashes don't need to be escaped within single quoted
@@ -54,7 +49,7 @@ contexts:
       scope: support.function.rust
 
     # Numbers
-    - match: '\b(-)?((0(x[0-9a-f_]+|o[0-7_.]+|b[01_.]+))|[0-9.][0-9_.]*)([iu](8|16|32|64|128|size)|f(loat)?(32|64))?\b'
+    - match: '\b(-)?{{digits}}(.{{digits}})?([iu](8|16|32|64|128|size)|f(loat)?(32|64))?\b'
       scope: constant.numeric.example-c
 
     - include: operators
@@ -105,6 +100,97 @@ contexts:
       scope: storage.type.rust
       push: func-id-search-start
 
+  comments:
+    # Comments begin with a '//' and finish at the end of the line
+    - match: '//'
+      scope: punctuation.definition.comment.example-c
+      push: line_comment
+
+    - include: block-comments
+
+  cc-general:
+    #### COMMENT CODE BLOCKS ####
+
+    - include: cc-universal
+
+    - include: comments
+
+    # Strings
+    - match: '"'
+      scope: cc.punctuation.definition.string.begin.example-c
+      push: cc-double-quoted-string
+
+    # Keywords
+    - match: '\b(if|then|else|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|which|matches|is|could\s+be|prerun|run|export(\s+all)?|import(\s+all)?|except|from|into|expose|print(ln)?|async\s+container|eval|ensure)\b'
+      scope: cc.keyword.control.rust
+
+    - match: '\b(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)\b'
+      scope: cc.storage.type.rust
+
+    - match: '\b(bool|nat|int|fraction|number|string)\b'
+      scope: cc.storage.type.rust
+
+    - match: '\b(True|False|this|caller)\b'
+      scope: cc.constant.language.rust
+
+    - match: '\b(as|(all\s+)?in|any(\s+suitable|of)?|optionally|recollected|listified|codified|stringified)\b'
+      scope: cc.keyword.operator.rust
+
+    - match: '\b[A-Z]{{var_identifier}}?'
+      scope: cc.support.function.rust
+
+    # Numbers
+    - match: '\b(-)?{{digits}}(.{{digits}})?([iu](8|16|32|64|128|size)|f(loat)?(32|64))?\b'
+      scope: cc.constant.numeric.example-c
+
+    - include: cc-operators
+
+    # Punctuation
+    - match: ';'
+      scope: cc.punctuation.terminator.rust
+
+    - match: '[:,]|-->'
+      scope: cc.punctuation.separator.rust
+
+    - match: '\.'
+      scope: cc.punctuation.accessor.dot.rust
+
+    # Blocks & groups
+    - match: '(?=\{)'
+      push: cc-block
+
+    - match: '(?=\()'
+      push: cc-group
+
+    - match: '\['
+      scope: punctuation.section.group.begin.rust
+      push:
+        - meta_scope: meta.group.rust
+        - match: '\]'
+          scope: punctuation.section.group.end.rust
+          pop: true
+        - include: cc-general
+
+    # Declarations & definitions
+    - match: '\b((partial\s+)?func)\b'
+      scope: cc.storage.type.rust
+      push: cc-func-id-search-start
+
+    - match: '\b(multi\s+func)\b'
+      scope: cc.storage.type.rust
+      push: [multi-func-start, cc-func-id-search-start]
+
+    - match: '\b(decl(\s+(sym(indies|block)))|enclosed\s+by|with\s+escaper)\b'
+      scope: cc.storage.type.rust
+
+    - match: '\b(decl|let)\b'
+      scope: cc.storage.type.rust
+      push: cc-let-id-search-start
+
+    - match: '\b(category|object)\b'
+      scope: cc.storage.type.rust
+      push: cc-func-id-search-start
+
   universal:
     - match: '(code)\s+([({])'
       captures:
@@ -116,18 +202,39 @@ contexts:
     - match: '\b__{{identifier}}__\b'
       scope: markup.heading
 
+  cc-universal:
+    - match: '(code)\s+([({])'
+      captures:
+        1: cc.storage.type.rust
+        2: source.triforce
+      push: cc-code-group
+    - match: '\$\$'
+      scope: source.triforce
+    - match: '\b__{{identifier}}__\b'
+      scope: markup.heading
+
   block-comments:
-    - match: '/\*'
+    - match: '<<[<]{1,5}[^<]'
+      scope: cc.constant.language.rust
+      push:
+        - match: '>>[>]{1,5}[^>]'
+          scope: cc.constant.language.rust
+          pop: true
+#        - meta_scope: markup.list.unnumbered.bullet
+#        - include: general
+        - meta_scope: comment.block.rust
+        - include: cc-general
+    - match: '/\*|<<[<]+|==[=]+'
       scope: punctuation.definition.comment.rust
       push: block-comment
 
   block-comment:
     - meta_scope: comment.block.rust
-    - match: '\*/'
+    - match: '\*/|>>[>]+|==[=]+'
       scope: punctuation.definition.comment.rust
       pop: true
     - include: block-comments
-    - match: '```\n'
+    - match: '```'
       scope: constant.language.rust
       set:
         - match: ''
@@ -137,7 +244,7 @@ contexts:
                 - match: '```'
                   scope: constant.language.rust
                   set: block-comment
-            - meta_scope: markup.raw
+            - meta_scope: markup.list.unnumbered.bullet
             - include: general
 
   multi-func-start:
@@ -166,6 +273,24 @@ contexts:
     - match: '{{identifier}}'
       scope: entity.name.function.rust
 
+  cc-func-id-search-start:
+    - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
+      set: cc-func-id-search
+    - match: ''
+      set: cc-func-id-search
+
+  cc-func-id-search:
+    - include: universal
+    - match: '(?=\()'
+      push: cc-group
+    - match: '\$'
+      scope: cc.keyword.operator.rust
+      push: cc-op-dollar
+    - match: '(?=[{\[;]|-->|==>)'
+      pop: true
+    - match: '{{identifier}}'
+      scope: cc.entity.name.function.rust
+
   let-id-search-start:
     - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
       set: let-id-search
@@ -183,6 +308,24 @@ contexts:
       pop: true
     - match: '{{identifier}}'
       scope: entity.name.function.rust
+
+  cc-let-id-search-start:
+    - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
+      set: cc-let-id-search
+    - match: ''
+      set: cc-let-id-search
+
+  cc-let-id-search:
+    - include: universal
+    - match: '(?=\()'
+      push: cc-group
+    - match: '\$'
+      scope: cc.keyword.operator.rust
+      push: cc-op-dollar
+    - match: '(?=[=:\[;])'
+      pop: true
+    - match: '{{identifier}}'
+      scope: cc.entity.name.function.rust
 
   operators:
     - match: \.{2,3}
@@ -205,6 +348,27 @@ contexts:
     - match: '\b_\b'
       scope: keyword.operator.rust
 
+  cc-operators:
+    - match: \.{2,3}
+      scope: cc.keyword.operator.range.rust
+    - match: ':?[!<>=]=|[<>]'
+      scope: cc.keyword.operator.comparison.rust
+    - match: '(?:[-+%/*^&|]|<<|>>)?='
+      scope: cc.keyword.operator.assignment.rust
+    - match: '&&|\|\||!'
+      scope: cc.keyword.operator.logical.rust
+    - match: '[-+%/*]'
+      scope: cc.keyword.operator.arithmetic.rust
+    - match: '[&|^]|<<|>>'
+      scope: cc.keyword.operator.bitwise.rust
+    - match: '[@~?#'']'
+      scope: cc.keyword.operator.rust
+    - match: '\$'
+      scope: cc.keyword.operator.rust
+      push: cc-op-dollar
+    - match: '\b_\b'
+      scope: cc.keyword.operator.rust
+
   op-dollar:
     - include: universal
     - match: '{{identifier}}'
@@ -213,12 +377,28 @@ contexts:
     - match: ''
       pop: true
 
-  double_quoted_string:
+  cc-op-dollar:
+    - include: universal
+    - match: '{{identifier}}'
+      scope: cc.variable.parameter.rust
+      pop: true
+    - match: ''
+      pop: true
+
+  double-quoted-string:
     - meta_scope: string.quoted.double.example-c
     - match: '\\.'
       scope: constant.character.escape.example-c
     - match: '"'
       scope: punctuation.definition.string.end.example-c
+      pop: true
+
+  cc-double-quoted-string:
+    - meta_scope: cc.string.quoted.double.example-c
+    - match: '\\.'
+      scope: cc.constant.character.escape.example-c
+    - match: '"'
+      scope: cc.punctuation.definition.string.end.example-c
       pop: true
 
   line_comment:
@@ -239,6 +419,20 @@ contexts:
     - match: '(?=\})'
       pop: true
     - include: general
+
+  cc-block:
+    - match: '\}'
+      scope: meta.block.rust punctuation.section.block.end.rust
+      pop: true
+    - match: '\{'
+      scope: punctuation.section.block.begin.rust
+      push: [cc-block-body]
+
+  cc-block-body:
+    - meta_scope: meta.block.rust
+    - match: '(?=\})'
+      pop: true
+    - include: cc-general
 
   group:
     - match: '\)'
@@ -267,3 +461,31 @@ contexts:
       scope: markup.italic
       pop: true
     - include: general
+
+  cc-group:
+    - match: '\)'
+      scope: meta.group.rust punctuation.section.group.end.rust
+      pop: true
+    - match: '\('
+      scope: punctuation.section.group.begin.rust
+      push: [cc-group-body]
+
+  cc-group-body:
+    - meta_scope: meta.group.rust
+    - match: '(?=\))'
+      pop: true
+    - include: cc-general
+
+  cc-group-tail:
+    - meta_scope: meta.group.rust
+    - match: '\)'
+      scope: punctuation.section.group.end.rust
+      pop: true
+    - include: cc-general
+
+  cc-code-group:
+    - meta_scope: markup.italic
+    - match: '[)}]'
+      scope: markup.italic
+      pop: true
+    - include: cc-general
