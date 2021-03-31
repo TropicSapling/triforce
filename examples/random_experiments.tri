@@ -1184,14 +1184,14 @@ let slice = v.into_boxed_slice();
 
 Any excess capacity is removed:
 
-<<<<<<<
+```Triforce
 let vec = Vec::with_capacity(10);
 vec.extend([1, 2, 3].iter().cloned());
 
 assert_eq!(vec.capacity(), 10);
 let slice = vec.into_boxed_slice();
 assert_eq!(slice.into_vec().capacity(), 3);
->>>>>>>
+```
 
 <<<<<<<
 macro func if $cond then $tbody else $fbody {

@@ -100,20 +100,26 @@ contexts:
       scope: storage.type.rust
       push: func-id-search-start
 
-  comments:
-    # Comments begin with a '//' and finish at the end of the line
+  line-comments:
+    # Line comments begin with a '//' and finish at the end of the line
     - match: '//'
       scope: punctuation.definition.comment.example-c
-      push: line_comment
+      push: line-comment
 
+  comments:
+    - include: line-comments
     - include: block-comments
 
+  cc-comments:
+    - include: line-comments
+    - include: nestable-block-comments
+
   cc-general:
-    #### COMMENT CODE BLOCKS ####
+    ######## COMMENT CODE BLOCKS ########
 
     - include: cc-universal
 
-    - include: comments
+    - include: cc-comments
 
     # Strings
     - match: '"'
@@ -214,38 +220,49 @@ contexts:
       scope: markup.heading
 
   block-comments:
+    - include: nestable-block-comments
+    - match: '==[=]+'
+      scope: punctuation.definition.comment.rust
+      push: symmetric-block-comment
+
+  nestable-block-comments:
     - match: '<<[<]{1,5}[^<]'
       scope: cc.keyword.control.rust
       push:
         - match: '>>[>]{1,5}[^>]'
           scope: cc.keyword.control.rust
           pop: true
-#        - meta_scope: markup.list.unnumbered.bullet
-#        - include: general
         - meta_scope: comment.block.rust
         - include: cc-general
-    - match: '/\*|<<[<]+|==[=]+'
+    - match: '/\*|<<[<]+'
       scope: punctuation.definition.comment.rust
-      push: block-comment
+      push: nestable-block-comment
 
-  block-comment:
+  nestable-block-comment:
     - meta_scope: comment.block.rust
-    - match: '\*/|>>[>]+|==[=]+'
+    - match: '\*/|>>[>]+'
+      scope: punctuation.definition.comment.rust
+      pop: true
+    - include: nestable-block-comments
+    - include: cc-ticks
+
+  symmetric-block-comment:
+    - meta_scope: comment.block.rust
+    - match: '==[=]+'
       scope: punctuation.definition.comment.rust
       pop: true
     - include: block-comments
+    - include: cc-ticks
+
+  cc-ticks:
     - match: '```'
-      scope: constant.language.rust
-      set:
-        - match: ''
-          set:
-            - match: '(?=```)'
-              set:
-                - match: '```'
-                  scope: constant.language.rust
-                  set: block-comment
-            - meta_scope: markup.list.unnumbered.bullet
-            - include: general
+      scope: cc.keyword.control.rust
+      push:
+      - match: '```'
+        scope: cc.keyword.control.rust
+        pop: true
+      - meta_scope: comment.block.rust
+      - include: cc-general
 
   multi-func-start:
     - include: universal
@@ -401,7 +418,7 @@ contexts:
       scope: cc.punctuation.definition.string.end.example-c
       pop: true
 
-  line_comment:
+  line-comment:
     - meta_scope: comment.line.example-c
     - match: $
       pop: true
