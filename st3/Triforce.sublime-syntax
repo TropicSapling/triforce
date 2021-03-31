@@ -6,63 +6,93 @@ file_extensions:
   - tri
 scope: source.triforce
 variables:
-  identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+|([!<>\-+%/*^&|@~?.]|==|##)[!<>\-+%/*^&|@~?.=#]*))'
+  # Identifiers
+  identifier:     '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+|([!<>\-+%/*^&|@~?.]|==|##)[!<>\-+%/*^&|@~?.=#]*))'
   var_identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
+
+  # Keywords
+  keyword_ctrl:      '(if|then|else|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|which|matches|is|could\s+be|prerun|run|export(\s+all)?|import(\s+all)?|except|from|into|expose|print(ln)?|async\s+container|eval|ensure)'
+  keyword_type:      '(bool|nat|int|fraction|number|string)'
+  keyword_type_spec: '(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)'
+  keyword_const:     '(True|False|this|caller)'
+  keyword_misc:      '(as|(all\s+)?in|any(\s+suitable|of)?|optionally|recollected|listified|codified|stringified)'
+
+  # Declarations
+  decl_sym: '(decl(\s+(sym(indies|block)))|enclosed\s+by|with\s+escaper)'
+
+  # Numbers
+  digits:  '(0(x[0-9a-f_]+|o[0-7_]+|b[01_]+)|[0-9_]+)'
+  numbers: '(-)?{{digits}}(.{{digits}})?([iu](8|16|32|64|128|size)|f(loat)?(32|64))?'
+
+  # Misc.
   escaped_byte: '\\(x\h{2}|n|r|t|0|"|''|\\)'
   escaped_char: '\\(x\h{2}|n|r|t|0|"|''|\\|u\{\h{1,6}\})'
-  digits: '(0(x[0-9a-f_]+|o[0-7_]+|b[01_]+)|[0-9_]+)'
 contexts:
   main:
     - include: general
 
+  ######## BASICALLY UNIVERSAL ########
+
+  truly-universal:
+    - match: '\$\$'
+      scope: source.triforce
+    - match: '\b__{{identifier}}__\b'
+      scope: markup.heading
+
+  universal:
+    - match: '(code)\s+([({])'
+      captures:
+        1: storage.type.triforce
+        2: source.triforce
+      push: code-group
+    - include: truly-universal
+
+  cc-universal:
+    - match: '(code)\s+([({])'
+      captures:
+        1: cc.storage.type.triforce
+        2: source.triforce
+      push: cc-code-group
+    - include: truly-universal
+
+  ######## GENERAL ########
+
   general:
     - include: universal
 
+    # Comments
     - include: comments
 
-    # Strings begin and end with quotes, and use backslashes as an escape character
+    # Strings
     - match: '"'
-      scope: punctuation.definition.string.begin.example-c
+      scope: punctuation.definition.string.begin.triforce
       push: double-quoted-string
 
-    # Keywords.
-    # Note that blackslashes don't need to be escaped within single quoted
-    # strings in YAML. When using single quoted strings, only single quotes
-    # need to be escaped: this is done by using two single quotes next to each
-    # other.
-    - match: '\b(if|then|else|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|which|matches|is|could\s+be|prerun|run|export(\s+all)?|import(\s+all)?|except|from|into|expose|print(ln)?|async\s+container|eval|ensure)\b'
-      scope: keyword.control.rust
+    # Keywords
+    - match: '\b{{keyword_ctrl}}\b'
+      scope: keyword.control.triforce
 
-    - match: '\b(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)\b'
-      scope: storage.type.rust
+    - match: '\b({{keyword_type}}|{{keyword_type_spec}})\b'
+      scope: storage.type.triforce
 
-    - match: '\b(bool|nat|int|fraction|number|string)\b'
-      scope: storage.type.rust
+    - match: '\b{{keyword_const}}\b'
+      scope: constant.language.triforce
 
-    - match: '\b(True|False|this|caller)\b'
-      scope: constant.language.rust
-
-    - match: '\b(as|(all\s+)?in|any(\s+suitable|of)?|optionally|recollected|listified|codified|stringified)\b'
-      scope: keyword.operator.rust
+    - match: '\b{{keyword_misc}}\b'
+      scope: keyword.operator.triforce
 
     - match: '\b[A-Z]{{var_identifier}}?'
-      scope: support.function.rust
+      scope: support.function.triforce
 
     # Numbers
-    - match: '\b(-)?{{digits}}(.{{digits}})?([iu](8|16|32|64|128|size)|f(loat)?(32|64))?\b'
-      scope: constant.numeric.example-c
+    - match: '\b{{numbers}}\b'
+      scope: constant.numeric.triforce
 
+    # Operators
     - include: operators
 
     # Punctuation
-    - match: ';'
-      scope: punctuation.terminator.rust
-
-    - match: '[:,]|-->'
-      scope: punctuation.separator.rust
-
-    - match: '\.'
-      scope: punctuation.accessor.dot.rust
+    - include: punctuation
 
     # Blocks & groups
     - match: '(?=\{)'
@@ -72,94 +102,72 @@ contexts:
       push: group
 
     - match: '\['
-      scope: punctuation.section.group.begin.rust
+      scope: punctuation.section.group.begin.triforce
       push:
-        - meta_scope: meta.group.rust
+        - meta_scope: meta.group.triforce
         - match: '\]'
-          scope: punctuation.section.group.end.rust
+          scope: punctuation.section.group.end.triforce
           pop: true
         - include: general
 
     # Declarations & definitions
     - match: '\b((partial\s+)?func)\b'
-      scope: storage.type.rust
+      scope: storage.type.triforce
       push: func-id-search-start
 
     - match: '\b(multi\s+func)\b'
-      scope: storage.type.rust
+      scope: storage.type.triforce
       push: [multi-func-start, func-id-search-start]
 
-    - match: '\b(decl(\s+(sym(indies|block)))|enclosed\s+by|with\s+escaper)\b'
-      scope: storage.type.rust
+    - match: '\b{{decl_sym}}\b'
+      scope: storage.type.triforce
 
     - match: '\b(decl|let)\b'
-      scope: storage.type.rust
+      scope: storage.type.triforce
       push: let-id-search-start
 
     - match: '\b(category|object)\b'
-      scope: storage.type.rust
+      scope: storage.type.triforce
       push: func-id-search-start
 
-  line-comments:
-    # Line comments begin with a '//' and finish at the end of the line
-    - match: '//'
-      scope: punctuation.definition.comment.example-c
-      push: line-comment
-
-  comments:
-    - include: line-comments
-    - include: block-comments
-
-  cc-comments:
-    - include: line-comments
-    - include: nestable-block-comments
+  ######## GENERAL WITHIN COMMENT CODE BLOCKS ########
 
   cc-general:
-    ######## COMMENT CODE BLOCKS ########
-
     - include: cc-universal
 
+    # Comments
     - include: cc-comments
 
     # Strings
     - match: '"'
-      scope: cc.punctuation.definition.string.begin.example-c
+      scope: cc.punctuation.definition.string.begin.triforce
       push: cc-double-quoted-string
 
     # Keywords
-    - match: '\b(if|then|else|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|which|matches|is|could\s+be|prerun|run|export(\s+all)?|import(\s+all)?|except|from|into|expose|print(ln)?|async\s+container|eval|ensure)\b'
-      scope: cc.keyword.control.rust
+    - match: '\b{{keyword_ctrl}}\b'
+      scope: cc.keyword.control.triforce
 
-    - match: '\b(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)\b'
-      scope: cc.storage.type.rust
+    - match: '\b({{keyword_type}}|{{keyword_type_spec}})\b'
+      scope: cc.storage.type.triforce
 
-    - match: '\b(bool|nat|int|fraction|number|string)\b'
-      scope: cc.storage.type.rust
+    - match: '\b{{keyword_const}}\b'
+      scope: cc.constant.language.triforce
 
-    - match: '\b(True|False|this|caller)\b'
-      scope: cc.constant.language.rust
-
-    - match: '\b(as|(all\s+)?in|any(\s+suitable|of)?|optionally|recollected|listified|codified|stringified)\b'
-      scope: cc.keyword.operator.rust
+    - match: '\b{{keyword_misc}}\b'
+      scope: cc.keyword.operator.triforce
 
     - match: '\b[A-Z]{{var_identifier}}?'
-      scope: cc.support.function.rust
+      scope: cc.support.function.triforce
 
     # Numbers
-    - match: '\b(-)?{{digits}}(.{{digits}})?([iu](8|16|32|64|128|size)|f(loat)?(32|64))?\b'
-      scope: cc.constant.numeric.example-c
+    - match: '\b{{numbers}}\b'
+      scope: cc.constant.numeric.triforce
 
+    # Operators
     - include: cc-operators
 
     # Punctuation
-    - match: ';'
-      scope: cc.punctuation.terminator.rust
-
-    - match: '[:,]|-->'
-      scope: cc.punctuation.separator.rust
-
-    - match: '\.'
-      scope: cc.punctuation.accessor.dot.rust
+    - include: punctuation
 
     # Blocks & groups
     - match: '(?=\{)'
@@ -169,100 +177,104 @@ contexts:
       push: cc-group
 
     - match: '\['
-      scope: punctuation.section.group.begin.rust
+      scope: punctuation.section.group.begin.triforce
       push:
-        - meta_scope: meta.group.rust
+        - meta_scope: meta.group.triforce
         - match: '\]'
-          scope: punctuation.section.group.end.rust
+          scope: punctuation.section.group.end.triforce
           pop: true
         - include: cc-general
 
     # Declarations & definitions
     - match: '\b((partial\s+)?func)\b'
-      scope: cc.storage.type.rust
+      scope: cc.storage.type.triforce
       push: cc-func-id-search-start
 
     - match: '\b(multi\s+func)\b'
-      scope: cc.storage.type.rust
+      scope: cc.storage.type.triforce
       push: [multi-func-start, cc-func-id-search-start]
 
-    - match: '\b(decl(\s+(sym(indies|block)))|enclosed\s+by|with\s+escaper)\b'
-      scope: cc.storage.type.rust
+    - match: '\b{{decl_sym}}\b'
+      scope: cc.storage.type.triforce
 
     - match: '\b(decl|let)\b'
-      scope: cc.storage.type.rust
+      scope: cc.storage.type.triforce
       push: cc-let-id-search-start
 
     - match: '\b(category|object)\b'
-      scope: cc.storage.type.rust
+      scope: cc.storage.type.triforce
       push: cc-func-id-search-start
 
-  universal:
-    - match: '(code)\s+([({])'
-      captures:
-        1: storage.type.rust
-        2: source.triforce
-      push: code-group
-    - match: '\$\$'
-      scope: source.triforce
-    - match: '\b__{{identifier}}__\b'
-      scope: markup.heading
+  ######## COMMENTS ########
 
-  cc-universal:
-    - match: '(code)\s+([({])'
-      captures:
-        1: cc.storage.type.rust
-        2: source.triforce
-      push: cc-code-group
-    - match: '\$\$'
-      scope: source.triforce
-    - match: '\b__{{identifier}}__\b'
-      scope: markup.heading
+  comments:
+    - include: line-comments
+    - include: block-comments
+
+  cc-comments:
+    - include: line-comments
+    - include: nestable-block-comments
+
+  line-comments:
+    # Line comments begin with a '//' and finish at the end of the line
+    - match: '//'
+      scope: punctuation.definition.comment.triforce
+      push: line-comment
 
   block-comments:
     - include: nestable-block-comments
     - match: '==[=]+'
-      scope: punctuation.definition.comment.rust
+      scope: punctuation.definition.comment.triforce
       push: symmetric-block-comment
 
   nestable-block-comments:
     - match: '<<[<]{1,5}[^<]'
-      scope: cc.keyword.control.rust
+      scope: cc.keyword.control.triforce
       push:
         - match: '>>[>]{1,5}[^>]'
-          scope: cc.keyword.control.rust
+          scope: cc.keyword.control.triforce
           pop: true
-        - meta_scope: comment.block.rust
+        - meta_scope: comment.block.triforce
         - include: cc-general
     - match: '/\*|<<[<]+'
-      scope: punctuation.definition.comment.rust
+      scope: punctuation.definition.comment.triforce
       push: nestable-block-comment
 
   nestable-block-comment:
-    - meta_scope: comment.block.rust
+    - meta_scope: comment.block.triforce
     - match: '\*/|>>[>]+'
-      scope: punctuation.definition.comment.rust
+      scope: punctuation.definition.comment.triforce
       pop: true
     - include: nestable-block-comments
     - include: cc-ticks
 
   symmetric-block-comment:
-    - meta_scope: comment.block.rust
+    - meta_scope: comment.block.triforce
     - match: '==[=]+'
-      scope: punctuation.definition.comment.rust
+      scope: punctuation.definition.comment.triforce
       pop: true
     - include: block-comments
     - include: cc-ticks
 
   cc-ticks:
     - match: '```'
-      scope: cc.keyword.control.rust
+      scope: cc.keyword.control.triforce
       push:
       - match: '```'
-        scope: cc.keyword.control.rust
+        scope: cc.keyword.control.triforce
         pop: true
-      - meta_scope: comment.block.rust
+      - meta_scope: comment.block.triforce
       - include: cc-general
+
+  ######## MISCELLANEOUS ########
+
+  punctuation:
+    - match: ';'
+      scope: punctuation.terminator.triforce
+    - match: '[:,]|-->'
+      scope: punctuation.separator.triforce
+    - match: '\.'
+      scope: punctuation.accessor.dot.triforce
 
   multi-func-start:
     - include: universal
@@ -283,12 +295,12 @@ contexts:
     - match: '(?=\()'
       push: group
     - match: '\$'
-      scope: keyword.operator.rust
+      scope: keyword.operator.triforce
       push: op-dollar
     - match: '(?=[{\[;]|-->|==>)'
       pop: true
     - match: '{{identifier}}'
-      scope: entity.name.function.rust
+      scope: entity.name.function.triforce
 
   cc-func-id-search-start:
     - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
@@ -297,16 +309,16 @@ contexts:
       set: cc-func-id-search
 
   cc-func-id-search:
-    - include: universal
+    - include: cc-universal
     - match: '(?=\()'
       push: cc-group
     - match: '\$'
-      scope: cc.keyword.operator.rust
+      scope: cc.keyword.operator.triforce
       push: cc-op-dollar
     - match: '(?=[{\[;]|-->|==>)'
       pop: true
     - match: '{{identifier}}'
-      scope: cc.entity.name.function.rust
+      scope: cc.entity.name.function.triforce
 
   let-id-search-start:
     - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
@@ -319,12 +331,12 @@ contexts:
     - match: '(?=\()'
       push: group
     - match: '\$'
-      scope: keyword.operator.rust
+      scope: keyword.operator.triforce
       push: op-dollar
     - match: '(?=[=:\[;])'
       pop: true
     - match: '{{identifier}}'
-      scope: entity.name.function.rust
+      scope: entity.name.function.triforce
 
   cc-let-id-search-start:
     - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
@@ -333,142 +345,142 @@ contexts:
       set: cc-let-id-search
 
   cc-let-id-search:
-    - include: universal
+    - include: cc-universal
     - match: '(?=\()'
       push: cc-group
     - match: '\$'
-      scope: cc.keyword.operator.rust
+      scope: cc.keyword.operator.triforce
       push: cc-op-dollar
     - match: '(?=[=:\[;])'
       pop: true
     - match: '{{identifier}}'
-      scope: cc.entity.name.function.rust
+      scope: cc.entity.name.function.triforce
 
   operators:
     - match: \.{2,3}
-      scope: keyword.operator.range.rust
+      scope: keyword.operator.range.triforce
     - match: ':?[!<>=]=|[<>]'
-      scope: keyword.operator.comparison.rust
+      scope: keyword.operator.comparison.triforce
     - match: '(?:[-+%/*^&|]|<<|>>)?='
-      scope: keyword.operator.assignment.rust
+      scope: keyword.operator.assignment.triforce
     - match: '&&|\|\||!'
-      scope: keyword.operator.logical.rust
+      scope: keyword.operator.logical.triforce
     - match: '[-+%/*]'
-      scope: keyword.operator.arithmetic.rust
+      scope: keyword.operator.arithmetic.triforce
     - match: '[&|^]|<<|>>'
-      scope: keyword.operator.bitwise.rust
+      scope: keyword.operator.bitwise.triforce
     - match: '[@~?#'']'
-      scope: keyword.operator.rust
+      scope: keyword.operator.triforce
     - match: '\$'
-      scope: keyword.operator.rust
+      scope: keyword.operator.triforce
       push: op-dollar
     - match: '\b_\b'
-      scope: keyword.operator.rust
+      scope: keyword.operator.triforce
 
   cc-operators:
     - match: \.{2,3}
-      scope: cc.keyword.operator.range.rust
+      scope: cc.keyword.operator.range.triforce
     - match: ':?[!<>=]=|[<>]'
-      scope: cc.keyword.operator.comparison.rust
+      scope: cc.keyword.operator.comparison.triforce
     - match: '(?:[-+%/*^&|]|<<|>>)?='
-      scope: cc.keyword.operator.assignment.rust
+      scope: cc.keyword.operator.assignment.triforce
     - match: '&&|\|\||!'
-      scope: cc.keyword.operator.logical.rust
+      scope: cc.keyword.operator.logical.triforce
     - match: '[-+%/*]'
-      scope: cc.keyword.operator.arithmetic.rust
+      scope: cc.keyword.operator.arithmetic.triforce
     - match: '[&|^]|<<|>>'
-      scope: cc.keyword.operator.bitwise.rust
+      scope: cc.keyword.operator.bitwise.triforce
     - match: '[@~?#'']'
-      scope: cc.keyword.operator.rust
+      scope: cc.keyword.operator.triforce
     - match: '\$'
-      scope: cc.keyword.operator.rust
+      scope: cc.keyword.operator.triforce
       push: cc-op-dollar
     - match: '\b_\b'
-      scope: cc.keyword.operator.rust
+      scope: cc.keyword.operator.triforce
 
   op-dollar:
     - include: universal
     - match: '{{identifier}}'
-      scope: variable.parameter.rust
+      scope: variable.parameter.triforce
       pop: true
     - match: ''
       pop: true
 
   cc-op-dollar:
-    - include: universal
+    - include: cc-universal
     - match: '{{identifier}}'
-      scope: cc.variable.parameter.rust
+      scope: cc.variable.parameter.triforce
       pop: true
     - match: ''
       pop: true
 
   double-quoted-string:
-    - meta_scope: string.quoted.double.example-c
+    - meta_scope: string.quoted.double.triforce
     - match: '\\.'
-      scope: constant.character.escape.example-c
+      scope: constant.character.escape.triforce
     - match: '"'
-      scope: punctuation.definition.string.end.example-c
+      scope: punctuation.definition.string.end.triforce
       pop: true
 
   cc-double-quoted-string:
-    - meta_scope: cc.string.quoted.double.example-c
+    - meta_scope: cc.string.quoted.double.triforce
     - match: '\\.'
-      scope: cc.constant.character.escape.example-c
+      scope: cc.constant.character.escape.triforce
     - match: '"'
-      scope: cc.punctuation.definition.string.end.example-c
+      scope: cc.punctuation.definition.string.end.triforce
       pop: true
 
   line-comment:
-    - meta_scope: comment.line.example-c
+    - meta_scope: comment.line.triforce
     - match: $
       pop: true
 
   block:
     - match: '\}'
-      scope: meta.block.rust punctuation.section.block.end.rust
+      scope: meta.block.triforce punctuation.section.block.end.triforce
       pop: true
     - match: '\{'
-      scope: punctuation.section.block.begin.rust
+      scope: punctuation.section.block.begin.triforce
       push: [block-body]
 
   block-body:
-    - meta_scope: meta.block.rust
+    - meta_scope: meta.block.triforce
     - match: '(?=\})'
       pop: true
     - include: general
 
   cc-block:
     - match: '\}'
-      scope: meta.block.rust punctuation.section.block.end.rust
+      scope: meta.block.triforce punctuation.section.block.end.triforce
       pop: true
     - match: '\{'
-      scope: punctuation.section.block.begin.rust
+      scope: punctuation.section.block.begin.triforce
       push: [cc-block-body]
 
   cc-block-body:
-    - meta_scope: meta.block.rust
+    - meta_scope: meta.block.triforce
     - match: '(?=\})'
       pop: true
     - include: cc-general
 
   group:
     - match: '\)'
-      scope: meta.group.rust punctuation.section.group.end.rust
+      scope: meta.group.triforce punctuation.section.group.end.triforce
       pop: true
     - match: '\('
-      scope: punctuation.section.group.begin.rust
+      scope: punctuation.section.group.begin.triforce
       push: [group-body]
 
   group-body:
-    - meta_scope: meta.group.rust
+    - meta_scope: meta.group.triforce
     - match: '(?=\))'
       pop: true
     - include: general
 
   group-tail:
-    - meta_scope: meta.group.rust
+    - meta_scope: meta.group.triforce
     - match: '\)'
-      scope: punctuation.section.group.end.rust
+      scope: punctuation.section.group.end.triforce
       pop: true
     - include: general
 
@@ -481,22 +493,22 @@ contexts:
 
   cc-group:
     - match: '\)'
-      scope: meta.group.rust punctuation.section.group.end.rust
+      scope: meta.group.triforce punctuation.section.group.end.triforce
       pop: true
     - match: '\('
-      scope: punctuation.section.group.begin.rust
+      scope: punctuation.section.group.begin.triforce
       push: [cc-group-body]
 
   cc-group-body:
-    - meta_scope: meta.group.rust
+    - meta_scope: meta.group.triforce
     - match: '(?=\))'
       pop: true
     - include: cc-general
 
   cc-group-tail:
-    - meta_scope: meta.group.rust
+    - meta_scope: meta.group.triforce
     - match: '\)'
-      scope: punctuation.section.group.end.rust
+      scope: punctuation.section.group.end.triforce
       pop: true
     - include: cc-general
 

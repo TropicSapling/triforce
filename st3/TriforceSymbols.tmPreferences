@@ -4,7 +4,7 @@
 	<key>name</key>
 	<string>Triforce Symbols</string>
 	<key>scope</key>
-	<string>entity.name.function.rust</string>
+	<string>entity.name.function.triforce</string>
 	<key>settings</key>
 	<dict>
 		<key>showInSymbolList</key>
