@@ -1126,11 +1126,11 @@ macro func if $cond then $tbody else $fbody {
 
 --------------------------------------------------
 
-decl symblock sb_line_comment   enclosed by // \n;
-decl symblock sb_multi_comment  enclosed by <<< >>>;
-decl symblock sb_header_comment enclosed by === ===;
+decl symblock sb_line_comment   enclosed by //     \n;
+decl symblock sb_multi_comment  enclosed by <<[<]+ >>[>]+; // regex is used to match
+decl symblock sb_header_comment enclosed by ==[=]+ ==[=]+;
 
-decl symblock __sb_default_str__ enclosed by " " with escaper \;
+decl symblock __sb_default_str__ enclosed by " " with escaper \\; // regex here too, so we need to do '\\' instead of '\'
 
 decl symindies { } [ ] , . :;
 decl symindies + - * /;
