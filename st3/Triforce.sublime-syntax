@@ -45,6 +45,7 @@ contexts:
         1: storage.type.triforce
         2: source.triforce
       push: code-group
+    - include: comments
     - include: truly-universal
 
   cc-universal:
@@ -53,15 +54,13 @@ contexts:
         1: cc.storage.type.triforce
         2: source.triforce
       push: cc-code-group
+    - include: cc-comments
     - include: truly-universal
 
   ######## GENERAL ########
 
   general:
     - include: universal
-
-    # Comments
-    - include: comments
 
     # Strings
     - match: '"'
@@ -134,9 +133,6 @@ contexts:
 
   cc-general:
     - include: cc-universal
-
-    # Comments
-    - include: cc-comments
 
     # Strings
     - match: '"'
@@ -227,10 +223,10 @@ contexts:
       push: symmetric-block-comment
 
   nestable-block-comments:
-    - match: '<<[<]{1,5}[^<]'
+    - match: '<<[<]{1,5}(?=[^<])'
       scope: cc.keyword.control.triforce
       push:
-        - match: '>>[>]{1,5}[^>]'
+        - match: '>>[>]{1,5}(?=[^>])'
           scope: cc.keyword.control.triforce
           pop: true
         - meta_scope: comment.block.triforce
