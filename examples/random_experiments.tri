@@ -1126,6 +1126,27 @@ macro func if $cond then $tbody else $fbody {
 
 --------------------------------------------------
 
+func f($inp as number|string) {
+	let a: auto = inp;
+
+	// 'inp' is not changed after being assigned to 'a'
+	// and 'a' is not changed either...
+
+	if inp is number {
+		// ... so inside here it knows 'inp' and 'a' must be numbers
+		let n = a + 123; // and so this is allowed
+
+		// but it still knows of the restriction
+		// so it does allow this:
+		a = "hello";
+		a = 456;
+		// but not this:
+		a = SomeObjectThatsNotANumberNorString;
+	}
+}
+
+--------------------------------------------------
+
 decl symblock sb_line_comment   enclosed by //     \n;
 decl symblock sb_multi_comment  enclosed by <<[<]+ >>[>]+; // regex is used to match
 decl symblock sb_header_comment enclosed by ==[=]+ ==[=]+;
