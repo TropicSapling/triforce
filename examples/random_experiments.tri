@@ -1147,37 +1147,41 @@ func f($inp as number|string) {
 
 --------------------------------------------------
 
-// All indentation before the least-indented characters
+// The below function modifies strings so that all of
+// the indentation before the least-indented characters
 // of the strings are ignored, along with the first & last
 // newlines if they are the only characters on the lines,
-// while the rest of the strings are kept as-is.
-// 
-// Basically, a function which modifies strings as above
-// is implicitly applied to all strings. This function
-// should be available in the standard library as well.
-func naturally reformatted ($str as string) --> string {...}
+// while the rest of the strings are kept as-is. This
+// function will be defined in the prelude.
+func baselined ($str as string) --> string {...}
 
-let str = "This
-           string
-           spans
-           multiple
-           lines";
+let unwanted_str = "This
+                    string
+                    spans
+                    multiple
+                    lines";
 
-let str2 = "
-           macro func if $cond then $tbody else $fbody {
-	           code {
-		           func if (True)  then $tbody else $fbody {tbody()}
-		           func if (False) then $tbody else $fbody {fbody()}
-           
-		           if $$(cond) then
-			           () => $$(tbody)
-		           else
-			           () => $$(fbody)
-	           }
-           }
-           ";
+let str = baselined "This
+                    string
+                    spans
+                    multiple
+                    lines";
 
-let str3 = "
+let str2 = baselined "
+                     macro func if $cond then $tbody else $fbody {
+	                     code {
+		                     func if (True)  then $tbody else $fbody {tbody()}
+		                     func if (False) then $tbody else $fbody {fbody()}
+
+		                     if $$(cond) then
+			                     () => $$(tbody)
+		                     else
+			                     () => $$(fbody)
+	                     }
+                     }
+                     ";
+
+let str3 = baselined "
 	func divide even $a with $b --> int
 		where [
 			a: int which mod 2 == 0,
@@ -1189,6 +1193,13 @@ let str3 = "
 ";
 
 // TODO: raw strings; no escaping required (incl. no escaping of "")
+
+println unwanted_str;
+// This
+//                     string
+//                     spans
+//                     multiple
+//                     lines
 
 println str;
 // This
