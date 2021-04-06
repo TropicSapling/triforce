@@ -1,0 +1,17 @@
+{
+	"color_scheme": "Packages/Color Scheme - Default/Monokai.sublime-color-scheme",
+	"ignored_packages":
+	[
+		"Vintage"
+	],
+	"theme": "Default.sublime-theme",
+
+	"rulers": [90],
+
+	"translate_tabs_to_spaces": true,
+	"detect_indentation": false,
+
+	"ensure_newline_at_eof_on_save": true,
+
+	"auto_complete_commit_on_tab": true
+}
