@@ -1147,12 +1147,10 @@ func f($inp as number|string) {
 
 --------------------------------------------------
 
-// The below function modifies strings so that all of
-// the indentation before the least-indented characters
-// of the strings are ignored, along with the first & last
-// newlines if they are the only characters on the lines,
-// while the rest of the strings are kept as-is. This
-// function will be defined in the prelude.
+// The below function, which will be defined in the prelude, modifies strings as follows:
+// 1. The first line is kept as-is, unless it is only whitespace; then it is removed.
+// 2. On the lines below, all indentation before the least-indented characters is removed.
+// 3. Additionally, the last line is removed if it is only whitespace.
 func baselined ($str as string) --> string {...}
 
 let unwanted_str = "This
@@ -1162,22 +1160,22 @@ let unwanted_str = "This
                     lines";
 
 let str = baselined "This
-                    string
-                    spans
-                    multiple
-                    lines";
+                     string
+                     spans
+                     multiple
+                     lines";
 
 let str2 = baselined "
                      macro func if $cond then $tbody else $fbody {
-	                     code {
-		                     func if (True)  then $tbody else $fbody {tbody()}
-		                     func if (False) then $tbody else $fbody {fbody()}
+                         code {
+                             func if (True)  then $tbody else $fbody {tbody()}
+                             func if (False) then $tbody else $fbody {fbody()}
 
-		                     if $$(cond) then
-			                     () => $$(tbody)
-		                     else
-			                     () => $$(fbody)
-	                     }
+                             if $$(cond) then
+                                 () => $$(tbody)
+                             else
+                                 () => $$(fbody)
+                         }
                      }
                      ";
 
