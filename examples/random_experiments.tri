@@ -1143,6 +1143,15 @@ func f($inp as number|string) {
 		// but not this:
 		a = SomeObjectThatsNotANumberNorString;
 	}
+
+    // Also, function parameters should probably be immutable by default,
+    // similar to how it is with 'let' (this is the case in Rust).
+    // Then the below statement wouldn't be allowed by default:
+    inp = 789;
+
+    // To allow mutation, Rust uses something similar to 'mut $inp'.
+    // Nim simply forces you to do something like 'let inp: auto = inp'.
+    // Btw, supposedly this immutability also increases performance.
 }
 
 --------------------------------------------------
