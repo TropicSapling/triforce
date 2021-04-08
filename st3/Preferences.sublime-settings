@@ -11,6 +11,8 @@
 	"translate_tabs_to_spaces": true,
 	"detect_indentation": false,
 
+	"trim_automatic_white_space": false,
+
 	"ensure_newline_at_eof_on_save": true,
 
 	"auto_complete_commit_on_tab": true

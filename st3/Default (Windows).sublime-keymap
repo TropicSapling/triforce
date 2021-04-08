@@ -1,34 +1,120 @@
 [
-	{ "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Parentheses.sublime-macro"}, "context":
-		[
-			{ "key": "selector", "operator": "equal", "operand": "source.triforce"},
-			{ "key": "setting.auto_indent", "operator": "equal", "operand": true },
-			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
-			{ "key": "preceding_text", "operator": "regex_contains", "operand": "\\($", "match_all": true },
-			{ "key": "following_text", "operator": "regex_contains", "operand": "^\\)", "match_all": true }
-		]
-	},
+    // Auto-indent (parenthesis) block on enter
+    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Parentheses.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "setting.auto_indent", "operator": "equal", "operand": true },
+            { "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
+            { "key": "preceding_text", "operator": "regex_contains", "operand": "\\($", "match_all": true },
+            { "key": "following_text", "operator": "regex_contains", "operand": "^\\)", "match_all": true }
+        ]
+    },
 
-	{ "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Brackets.sublime-macro"}, "context":
-		[
-			{ "key": "selector", "operator": "equal", "operand": "source.triforce"},
-			{ "key": "setting.auto_indent", "operator": "equal", "operand": true },
-			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
-			{ "key": "preceding_text", "operator": "regex_contains", "operand": "\\[$", "match_all": true },
-			{ "key": "following_text", "operator": "regex_contains", "operand": "^\\]", "match_all": true }
-		]
-	},
+    // Auto-indent [bracket] block on enter
+    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Brackets.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "setting.auto_indent", "operator": "equal", "operand": true },
+            { "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
+            { "key": "preceding_text", "operator": "regex_contains", "operand": "\\[$", "match_all": true },
+            { "key": "following_text", "operator": "regex_contains", "operand": "^\\]", "match_all": true }
+        ]
+    },
 
-	{ "keys": ["{"], "command": "insert_snippet", "args": {"contents": "{$0}"}, "context":
-		[
-			{ "key": "selector", "operator": "equal", "operand": "source.triforce"},
-			{ "key": "setting.auto_match_enabled", "operator": "equal", "operand": true },
-			{ "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
-			{ "key": "following_text", "operator": "regex_contains", "operand": "^(?:\t| |\\)|]|;|\\}|$)", "match_all": true }
-		]
-	},
+    // Auto-indent {braces} block on enter
+    { "keys": ["{"], "command": "insert_snippet", "args": {"contents": "{$0}"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "setting.auto_match_enabled", "operator": "equal", "operand": true },
+            { "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
+            { "key": "following_text", "operator": "regex_contains", "operand": "^(?:\t| |\\)|]|;|\\}|$)", "match_all": true }
+        ]
+    },
 
-	// Below 2 are only necessary if your keyboard layout requires it (like mine does)
-	{ "keys": ["ctrl+7"], "command": "toggle_comment", "args": { "block": false } },
-	{ "keys": ["ctrl+shift+7"], "command": "toggle_comment", "args": { "block": true } },
+    // If you have a different keyboard layout, change '7' everywhere below to '/'
+    
+    // Extra keybindings for non-Triforce comments
+    { "keys": ["ctrl+7"], "command": "toggle_comment", "args": { "block": false } },
+    { "keys": ["ctrl+shift+7"], "command": "toggle_comment", "args": { "block": true } },
+
+    // Triforce (un)comment preparation
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Comment Prep.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+        ]
+    },
+    { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Comment Prep.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+        ]
+    },
+
+    // Triforce comment insertion - for space indentation - part 1
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Insert Comment.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
+            { "key": "following_text", "operator": "regex_contains", "operand": "^ {5}", "match_all": true }
+        ]
+    },
+
+    // Triforce comment insertion - for space indentation - part 2
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Insert Shifted Comment.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
+            { "key": "following_text", "operator": "regex_contains", "operand": "^\/\/ >( {6})", "match_all": true }
+        ]
+    },
+
+    // Triforce comment insertion - for tab indentation - part 1
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Tab Insert Comment.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
+            { "key": "following_text", "operator": "regex_contains", "operand": "^\t\t", "match_all": true }
+        ]
+    },
+
+    // Triforce comment insertion - for tab indentation - part 2
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Tab Insert Shifted Comment.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
+            { "key": "following_text", "operator": "regex_contains", "operand": "^\/\/ >\t\t", "match_all": true }
+        ]
+    },
+
+    // Triforce comment addition
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Comment.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
+            { "key": "following_text", "operator": "not_regex_contains", "operand": "^(\t\t| {5})" },
+            { "key": "following_text", "operator": "regex_contains", "operand": "^(?!\/\/ >\t\t|\/\/ >( {6})).*$"}
+        ]
+    },
+    
+    // Triforce uncommenting - for space indentation
+    { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Uncomment.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
+            { "key": "following_text", "operator": "regex_contains", "operand": "^\/\/ > ", "match_all": true }
+        ]
+    },
+    
+    // Triforce uncommenting - for tab indentation
+    { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Tab Uncomment.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
+            { "key": "following_text", "operator": "regex_contains", "operand": "^\/\/ >\t", "match_all": true }
+        ]
+    }
+    
+    // TODO: Improve uncommenting!
+
+    // NOTE: These key bindings are not ideal. A plugin seems to be required to make
+    //       auto-commenting fully work the way I want it.
 ]
