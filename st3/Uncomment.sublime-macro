@@ -3,8 +3,7 @@
     {"command": "move", "args": {"by": "characters", "forward": true, "extend": true}},
     {"command": "move", "args": {"by": "characters", "forward": true, "extend": true}},
     {"command": "move", "args": {"by": "characters", "forward": true, "extend": true}},
-    {"command": "move", "args": {"by": "characters", "forward": true, "extend": true}},
-    {"command": "insert", "args": {"characters": "    "}},
+    {"command": "insert", "args": {"characters": "   "}},
 //  {"command": "next_bookmark"},
 //  {"command": "toggle_bookmark"}
 //  {"command": "single_selection"},
