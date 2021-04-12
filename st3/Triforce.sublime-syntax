@@ -40,6 +40,8 @@ contexts:
       scope: markup.heading
 
   universal:
+    - match: '\\.'
+      scope: constant.character.escape.triforce
     - match: '(code)\s+([({])'
       captures:
         1: storage.type.triforce
@@ -49,6 +51,8 @@ contexts:
     - include: truly-universal
 
   cc-universal:
+    - match: '\\.'
+      scope: cc.constant.character.escape.triforce
     - match: '(code)\s+([({])'
       captures:
         1: cc.storage.type.triforce
@@ -465,13 +469,19 @@ contexts:
       set: cc-func-id-search
   
   func-id-search:
+    - match: '(\\)(.)'
+      captures:
+        1: cc.constant.character.escape.triforce # cc for fade effect
+        2: entity.name.function.triforce
     - include: universal
     - match: '(?=\()'
       push: group
+    - match: '\['
+      push: func-bracket-group
     - match: '\$'
       scope: keyword.operator.triforce
       push: op-dollar
-    - match: '\|'
+    - match: '\?'
       scope: source.triforce
     - match: '(?=[{;]|-->|==>)'
       pop: true
@@ -479,13 +489,19 @@ contexts:
       scope: entity.name.function.triforce
 
   cc-func-id-search:
+    - match: '(\\)(.)'
+      captures:
+        1: cc.constant.character.escape.triforce
+        2: cc.entity.name.function.triforce
     - include: cc-universal
     - match: '(?=\()'
       push: cc-group
+    - match: '\['
+      push: cc-func-bracket-group
     - match: '\$'
       scope: cc.keyword.operator.triforce
       push: cc-op-dollar
-    - match: '\|'
+    - match: '\?'
       scope: source.triforce
     - match: '(?=[{;]|-->|==>)'
       pop: true
@@ -493,32 +509,92 @@ contexts:
       scope: cc.entity.name.function.triforce
   
   func-id-search-group:
+    - match: '(\\)(.)'
+      captures:
+        1: cc.constant.character.escape.triforce # cc for fade effect
+        2: entity.name.function.triforce
     - include: universal
     - match: '(?=\()'
       push: group
+    - match: '\['
+      push: func-bracket-group
     - match: '\$'
       scope: keyword.operator.triforce
       push: op-dollar
-    - match: '\|'
+    - match: '\?'
       scope: source.triforce
     - match: '(?=\))'
       set: func-id-search
-    - match: '{{identifier}}'
+    - match: '{{identifier}}|[{};]'
       scope: entity.name.function.triforce
   
   cc-func-id-search-group:
+    - match: '(\\)(.)'
+      captures:
+        1: cc.constant.character.escape.triforce
+        2: cc.entity.name.function.triforce
     - include: cc-universal
     - match: '(?=\()'
       push: cc-group
+    - match: '\['
+      push: cc-func-bracket-group
     - match: '\$'
       scope: cc.keyword.operator.triforce
       push: cc-op-dollar
-    - match: '\|'
+    - match: '\?'
       scope: source.triforce
     - match: '(?=\))'
-      set: func-id-search
-    - match: '{{identifier}}'
+      set: cc-func-id-search
+    - match: '{{identifier}}|[{};]'
       scope: cc.entity.name.function.triforce
+  
+  func-bracket-group:
+    - match: '\]'
+      scope: meta.group.triforce punctuation.section.group.end.triforce
+      pop: true
+    - match: '\['
+      scope: entity.name.function.triforce
+      push: [func-bracket-group-deep]
+    - match: '\|'
+      scope: source.triforce
+    - match: '([{};]|-->|==>)'
+      scope: entity.name.function.triforce
+    - include: func-id-search
+  
+  cc-func-bracket-group:
+    - match: '\]'
+      scope: cc.meta.group.triforce cc.punctuation.section.group.end.triforce
+      pop: true
+    - match: '\['
+      scope: cc.entity.name.function.triforce
+      push: [cc-func-bracket-group-deep]
+    - match: '\|'
+      scope: source.triforce
+    - match: '([{};]|-->|==>)'
+      scope: cc.entity.name.function.triforce
+    - include: cc-func-id-search
+  
+  func-bracket-group-deep:
+    - match: '\]'
+      scope: entity.name.function.triforce
+      pop: true
+    - match: '\['
+      scope: entity.name.function.triforce
+      push: [func-bracket-group-deep]
+    - match: '([{}\[\];]|-->|==>)'
+      scope: entity.name.function.triforce
+    - include: func-id-search
+  
+  cc-func-bracket-group-deep:
+    - match: '\]'
+      scope: cc.entity.name.function.triforce
+      pop: true
+    - match: '\['
+      scope: cc.entity.name.function.triforce
+      push: [cc-func-bracket-group-deep]
+    - match: '([{}\[\];]|-->|==>)'
+      scope: cc.entity.name.function.triforce
+    - include: cc-func-id-search
   
   obj-id-search-start:
     - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
