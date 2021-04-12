@@ -125,9 +125,13 @@ contexts:
       scope: storage.type.triforce
       push: let-id-search-start
 
-    - match: '\b(category|object)\b'
+    - match: '\bcategory\b'
       scope: storage.type.triforce
       push: func-id-search-start
+    
+    - match: '\bobject\b'
+      scope: storage.type.triforce
+      push: obj-id-search-start
 
   ######## GENERAL WITHIN COMMENT CODE BLOCKS ########
 
@@ -197,9 +201,13 @@ contexts:
       scope: cc.storage.type.triforce
       push: cc-let-id-search-start
 
-    - match: '\b(category|object)\b'
+    - match: '\bcategory\b'
       scope: cc.storage.type.triforce
       push: cc-func-id-search-start
+    
+    - match: '\bobject\b'
+      scope: cc.storage.type.triforce
+      push: cc-obj-id-search-start
 
   ######## COMMENTS ########
 
@@ -412,20 +420,6 @@ contexts:
       pop: true
     - include: cc-general
 
-  group-tail:
-    - meta_scope: meta.group.triforce
-    - match: '\)'
-      scope: punctuation.section.group.end.triforce
-      pop: true
-    - include: general
-
-  cc-group-tail:
-    - meta_scope: meta.group.triforce
-    - match: '\)'
-      scope: punctuation.section.group.end.triforce
-      pop: true
-    - include: cc-general
-
   code-group:
     - meta_scope: markup.italic
     - match: '[)}]'
@@ -477,7 +471,7 @@ contexts:
     - match: '\$'
       scope: keyword.operator.triforce
       push: op-dollar
-    - match: '(?=[{\[;]|-->|==>)'
+    - match: '(?=[{;]|-->|==>)'
       pop: true
     - match: '{{identifier}}'
       scope: entity.name.function.triforce
@@ -489,7 +483,43 @@ contexts:
     - match: '\$'
       scope: cc.keyword.operator.triforce
       push: cc-op-dollar
-    - match: '(?=[{\[;]|-->|==>)'
+    - match: '(?=[{;]|-->|==>)'
+      pop: true
+    - match: '{{identifier}}'
+      scope: cc.entity.name.function.triforce
+  
+  obj-id-search-start:
+    - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
+      set: obj-id-search
+    - match: ''
+      set: obj-id-search
+  
+  cc-obj-id-search-start:
+    - match: '\s+[\(]*  '
+      set: cc-obj-id-search
+    - match: ''
+      set: cc-obj-id-search
+  
+  obj-id-search:
+    - include: universal
+    - match: '(?=\()'
+      push: group
+    - match: '\$'
+      scope: keyword.operator.triforce
+      push: op-dollar
+    - match: '(?=[\[;])'
+      pop: true
+    - match: '{{identifier}}'
+      scope: entity.name.function.triforce
+  
+  cc-obj-id-search:
+    - include: cc-universal
+    - match: '(?=\()'
+      push: cc-group
+    - match: '\$'
+      scope: cc.keyword.operator.triforce
+      push: cc-op-dollar
+    - match: '(?=[\[;])'
       pop: true
     - match: '{{identifier}}'
       scope: cc.entity.name.function.triforce

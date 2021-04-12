@@ -382,8 +382,8 @@ category Misc {
 	func optionally $x {x|()};
 
 	// TODO: Move into more fitting category
-	func [                          ] {List $item ()};
-	func [$expr as implicitly paused] {
+	func [                            ] {List $item ()};
+	func [($expr as implicitly paused)] {
 		// We need this object to allow for multi-dimensional Lists
 		object CommaList [
 			$item,
