@@ -453,14 +453,14 @@ contexts:
     - include: cc-general
 
   func-id-search-start:
-    - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
-      set: func-id-search
+    - match: '\s+[\(]+  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
+      set: func-id-search-group
     - match: ''
       set: func-id-search
 
   cc-func-id-search-start:
-    - match: '\s+[\(]*  '
-      set: cc-func-id-search
+    - match: '\s+[\(]+  '
+      set: cc-func-id-search-group
     - match: ''
       set: cc-func-id-search
   
@@ -471,6 +471,8 @@ contexts:
     - match: '\$'
       scope: keyword.operator.triforce
       push: op-dollar
+    - match: '\|'
+      scope: source.triforce
     - match: '(?=[{;]|-->|==>)'
       pop: true
     - match: '{{identifier}}'
@@ -483,8 +485,38 @@ contexts:
     - match: '\$'
       scope: cc.keyword.operator.triforce
       push: cc-op-dollar
+    - match: '\|'
+      scope: source.triforce
     - match: '(?=[{;]|-->|==>)'
       pop: true
+    - match: '{{identifier}}'
+      scope: cc.entity.name.function.triforce
+  
+  func-id-search-group:
+    - include: universal
+    - match: '(?=\()'
+      push: group
+    - match: '\$'
+      scope: keyword.operator.triforce
+      push: op-dollar
+    - match: '\|'
+      scope: source.triforce
+    - match: '(?=\))'
+      set: func-id-search
+    - match: '{{identifier}}'
+      scope: entity.name.function.triforce
+  
+  cc-func-id-search-group:
+    - include: cc-universal
+    - match: '(?=\()'
+      push: cc-group
+    - match: '\$'
+      scope: cc.keyword.operator.triforce
+      push: cc-op-dollar
+    - match: '\|'
+      scope: source.triforce
+    - match: '(?=\))'
+      set: func-id-search
     - match: '{{identifier}}'
       scope: cc.entity.name.function.triforce
   
