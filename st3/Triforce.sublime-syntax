@@ -485,7 +485,7 @@ contexts:
       scope: source.triforce
     - match: '(?=[{;]|-->|==>)'
       pop: true
-    - match: '{{identifier}}'
+    - match: '{{identifier}}|}'
       scope: entity.name.function.triforce
 
   cc-func-id-search:
@@ -505,7 +505,7 @@ contexts:
       scope: source.triforce
     - match: '(?=[{;]|-->|==>)'
       pop: true
-    - match: '{{identifier}}'
+    - match: '{{identifier}}|}'
       scope: cc.entity.name.function.triforce
   
   func-id-search-group:
