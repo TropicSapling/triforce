@@ -1336,7 +1336,7 @@ func into_boxed_slice($self) --> Box<[T], A> {
 // Optional function parts?
 
 func [macro]? func $declaration [--> $ret_type]? \{$body} {
-    
+    ...
 }
 
 func if $cond [then $tbody | {$tbody}] [else $fbody]? {

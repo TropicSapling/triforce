@@ -485,7 +485,7 @@ contexts:
       scope: source.triforce
     - match: '(?=[{;]|-->|==>)'
       pop: true
-    - match: '{{identifier}}|}'
+    - match: '{{identifier}}|}|]'
       scope: entity.name.function.triforce
 
   cc-func-id-search:
@@ -505,7 +505,7 @@ contexts:
       scope: source.triforce
     - match: '(?=[{;]|-->|==>)'
       pop: true
-    - match: '{{identifier}}|}'
+    - match: '{{identifier}}|}|]'
       scope: cc.entity.name.function.triforce
   
   func-id-search-group:
@@ -525,7 +525,7 @@ contexts:
       scope: source.triforce
     - match: '(?=\))'
       set: func-id-search
-    - match: '{{identifier}}|[{};]'
+    - match: '{{identifier}}|[{;}\]]'
       scope: entity.name.function.triforce
   
   cc-func-id-search-group:
@@ -545,7 +545,7 @@ contexts:
       scope: source.triforce
     - match: '(?=\))'
       set: cc-func-id-search
-    - match: '{{identifier}}|[{};]'
+    - match: '{{identifier}}|[{;}\]]'
       scope: cc.entity.name.function.triforce
   
   func-bracket-group:
@@ -557,7 +557,7 @@ contexts:
       push: [func-bracket-group-deep]
     - match: '\|'
       scope: source.triforce
-    - match: '([{};]|-->|==>)'
+    - match: '([{;]|-->|==>)'
       scope: entity.name.function.triforce
     - include: func-id-search
   
@@ -570,7 +570,7 @@ contexts:
       push: [cc-func-bracket-group-deep]
     - match: '\|'
       scope: source.triforce
-    - match: '([{};]|-->|==>)'
+    - match: '([{;]|-->|==>)'
       scope: cc.entity.name.function.triforce
     - include: cc-func-id-search
   
@@ -581,7 +581,7 @@ contexts:
     - match: '\['
       scope: entity.name.function.triforce
       push: [func-bracket-group-deep]
-    - match: '([{}\[\];]|-->|==>)'
+    - match: '([{;\[\]]|-->|==>)'
       scope: entity.name.function.triforce
     - include: func-id-search
   
@@ -592,7 +592,7 @@ contexts:
     - match: '\['
       scope: cc.entity.name.function.triforce
       push: [cc-func-bracket-group-deep]
-    - match: '([{}\[\];]|-->|==>)'
+    - match: '([{;\[\]]|-->|==>)'
       scope: cc.entity.name.function.triforce
     - include: cc-func-id-search
   
