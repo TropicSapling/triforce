@@ -31,7 +31,11 @@ contexts:
   main:
     - include: general
 
-  ######## BASICALLY UNIVERSAL ########
+  ################################################################################
+  ##                                                                            ##
+  ##                   ========  BASICALLY UNIVERSAL  ========                  ##
+  ##                                                                            ##
+  ################################################################################
 
   truly-universal:
     - match: '\$\$'
@@ -61,7 +65,11 @@ contexts:
     - include: cc-comments
     - include: truly-universal
 
-  ######## GENERAL ########
+  ################################################################################
+  ##                                                                            ##
+  ##                   ==============  GENERAL  ==============                  ##
+  ##                                                                            ##
+  ################################################################################
 
   general:
     - include: universal
@@ -137,7 +145,11 @@ contexts:
       scope: storage.type.triforce
       push: obj-id-search-start
 
-  ######## GENERAL WITHIN COMMENT CODE BLOCKS ########
+  ################################################################################
+  ##                                                                            ##
+  ##                   ============  CC GENERAL  ============                   ##
+  ##                                                                            ##
+  ################################################################################
 
   cc-general:
     - include: cc-universal
@@ -213,7 +225,11 @@ contexts:
       scope: cc.storage.type.triforce
       push: cc-obj-id-search-start
 
-  ######## COMMENTS ########
+  ################################################################################
+  ##                                                                            ##
+  ##                   =============  COMMENTS  =============                   ##
+  ##                                                                            ##
+  ################################################################################
 
   comments:
     - include: line-comments
@@ -278,7 +294,11 @@ contexts:
     - include: block-comments
     - include: cc-ticks
 
-  ######## STRINGS ########
+  ################################################################################
+  ##                                                                            ##
+  ##                   ==============  STRINGS  ==============                  ##
+  ##                                                                            ##
+  ################################################################################
 
   double-quoted-string:
     - meta_scope: string.quoted.double.triforce
@@ -296,7 +316,11 @@ contexts:
       scope: cc.punctuation.definition.string.end.triforce
       pop: true
 
-  ######## OPERATORS ########
+  ################################################################################
+  ##                                                                            ##
+  ##                   =============  OPERATORS  =============                  ##
+  ##                                                                            ##
+  ################################################################################
 
   operators:
     - match: \.{2,3}
@@ -356,7 +380,11 @@ contexts:
     - match: ''
       pop: true
 
-  ######## PUNCTUATION ########
+  ################################################################################
+  ##                                                                            ##
+  ##                   ============  PUNCTUATION  ============                  ##
+  ##                                                                            ##
+  ################################################################################
 
   punctuation:
     - match: ';'
@@ -366,7 +394,11 @@ contexts:
     - match: '\.'
       scope: punctuation.accessor.dot.triforce
 
-  ######## BLOCKS & GROUPS ########
+  ################################################################################
+  ##                                                                            ##
+  ##                   ==========  BLOCKS & GROUPS  ==========                  ##
+  ##                                                                            ##
+  ################################################################################
 
   block:
     - match: '\}'
@@ -438,7 +470,13 @@ contexts:
       pop: true
     - include: cc-general
 
-  ######## DECLARATIONS & DEFINITIONS ########
+  ################################################################################
+  ##                                                                            ##
+  ##                   ====  DECLARATIONS & DEFINITIONS  ====                   ##
+  ##                                                                            ##
+  ################################################################################
+  
+  ############## FUNCTIONS ###############
 
   multi-func-start:
     - include: universal
@@ -595,6 +633,8 @@ contexts:
     - match: '([{;\[\]]|-->|==>)'
       scope: cc.entity.name.function.triforce
     - include: cc-func-id-search
+
+  ############### OBJECTS ################
   
   obj-id-search-start:
     - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
@@ -631,6 +671,8 @@ contexts:
       pop: true
     - match: '{{identifier}}'
       scope: cc.entity.name.function.triforce
+
+  ################# LET ##################
 
   let-id-search-start:
     - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
