@@ -1,34 +1,33 @@
-decl symblock sb_line_comment  enclosed by // \n;
-decl symblock sb_multi_comment enclosed by /* */;
+decl symblock sb_comment enclosed by // \n; // regex is used to match
 
-decl symblock __sb_default_str__ enclosed by " " with escaper \;
+// Regex is used to match here too, so we need to do '\\' instead of '\'
+decl symblock __sb_default_str__ enclosed by " " with escaper \\;
 
 decl symindies { } [ ] , . :;
 decl symindies + - * /;
 decl symindies @ % ? !;
 
-// built-in symindies: ( ) ; $ # < = > ~ & |
-// built-in symgroups:
+// Built-in symindies: ( ) ; $ # < = > ~ & |
+// Built-in symgroups:
 // - default
 // - whitespace
 
-// ====================================================================================================
-//
-//                                   ##########  THE PRELUDE  ##########
-//
-// ====================================================================================================
+// ================================================================================
+// 
+//                          ########  THE PRELUDE  ########
+// 
+// ================================================================================
 
-// TODO: Put the basic things that are needed for the prelude but shouldn't be
-//       visible from the outside inside a category 'Foundation'. This can be
-//       done by writing the category stuff by hand using anonymous functions,
-//       or by generating these anonymous functions.
-//
-// OR:   Alternatively, put everything inside 'Prelude' category and then
-//       expose Prelude.
+// TODO: Put the basic things that are needed for the prelude but shouldn't be visible
+//       from the outside inside a category 'Foundation'. This can be done by writing the
+//       category stuff by hand using anonymous functions, or by generating these
+//       anonymous functions.
+// 
+// OR:   Alternatively, put everything inside 'Prelude' category and then expose Prelude.
 
-// ==================================================
-//            ##### The Fundamentals #####
-// ==================================================
+// ========================================
+//        #### The Fundamentals ####
+// ========================================
 
 // Definition of a basic form of 'let'.
 // TODO: 'unpredictable'?
@@ -377,7 +376,20 @@ func expose ($cat as any List) {
 // -------------------------
 
 category Misc {
-	object Missing; // like '()', but propagates; see https://docs.julialang.org/en/v1/manual/missing/
+    // Like '()', but propagates; see https://docs.julialang.org/en/v1/manual/missing/
+    // Typical pronunciation: "unknown" or "missing".
+	object ???;
+    
+    // This is really just NaN, but renamed since "Not a Number is a number" sounds weird.
+    // Behaves almost like '???', except comparisons follow the NaN specification instead
+    // of propagating the object: UnknownNumber != _ is always True, and all other
+    // comparisons are always False.
+    object UnknownNumber;
+    
+    // Infinity. Follows the floating point specification.
+    object Infinity;
+    
+    // TODO: move 'UnknownNumber' and 'Infinity' to a separate category for numbers
 
 	func optionally $x {x|()};
 
