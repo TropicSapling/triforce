@@ -233,37 +233,38 @@ contexts:
 
   comments:
     - include: line-comments
-    - include: block-comments
-
+    - include: block-comments-fallback
+  
   cc-comments:
-    - include: line-comments
-    - include: nestable-block-comments
+    - include: cc-line-comments
+    - include: block-comments-fallback
 
   line-comments:
+    - match: '/[/]+\s*>'
+      scope: punctuation.definition.comment.triforce
+      push: line-code-comment
+    - match: '/[/]+\s*```'
+      scope: punctuation.definition.comment.triforce
+      push: block-code-comment
+    - match: '//'
+      scope: punctuation.definition.comment.triforce
+      push: line-comment
+  
+  cc-line-comments:
+    - match: '/[/]+\s*(>|```)'
+      scope: punctuation.definition.comment.triforce
     - match: '//'
       scope: punctuation.definition.comment.triforce
       push: line-comment
 
-  block-comments:
-    - include: nestable-block-comments
-    - match: '==[=]+'
+  block-comments-fallback:
+    # Syntax highlighting for these comments will be removed in the future.
+    # This is only here so that old comments still get highlighted.
+    - match: '/\*'
       scope: punctuation.definition.comment.triforce
-      push: symmetric-block-comment
+      push: block-comment-fallback
 
-  nestable-block-comments:
-    - match: '<<[<]{1,5}(?=[^<])'
-      scope: cc.keyword.control.triforce
-      push:
-        - match: '>>[>]{1,5}(?=[^>])'
-          scope: cc.keyword.control.triforce
-          pop: true
-        - meta_scope: comment.block.triforce
-        - include: cc-general
-    - match: '/\*|<<[<]+'
-      scope: punctuation.definition.comment.triforce
-      push: nestable-block-comment
-
-  cc-ticks:
+  ticks-cc-block:
     - match: '```'
       scope: cc.keyword.control.triforce
       push:
@@ -275,24 +276,34 @@ contexts:
 
   line-comment:
     - meta_scope: comment.line.triforce
-    - match: $
+    - match: '$'
       pop: true
+  
+  line-code-comment:
+    - meta_scope: comment.line.triforce
+    - match: '^(?!/[/]+\s*>)'
+      pop: true
+    - match: '^\s*/[/]+\s*>'
+      scope: punctuation.definition.comment.triforce
+    - include: cc-general
+  
+  block-code-comment:
+    - meta_scope: comment.line.triforce
+    - match: '^(?![\s]*//)|^(/[/]+\s*```)'
+      pop: true
+    - match: '^\s*/[/]+'
+      scope: punctuation.definition.comment.triforce
+    - include: cc-general
 
-  nestable-block-comment:
+  block-comment-fallback:
+    # Syntax highlighting for these comments will be removed in the future.
+    # This is only here so that old comments still get highlighted.
     - meta_scope: comment.block.triforce
-    - match: '\*/|>>[>]+'
+    - match: '\*/'
       scope: punctuation.definition.comment.triforce
       pop: true
-    - include: nestable-block-comments
-    - include: cc-ticks
-
-  symmetric-block-comment:
-    - meta_scope: comment.block.triforce
-    - match: '==[=]+'
-      scope: punctuation.definition.comment.triforce
-      pop: true
-    - include: block-comments
-    - include: cc-ticks
+    - include: block-comments-fallback
+    - include: ticks-cc-block
 
   ################################################################################
   ##                                                                            ##
