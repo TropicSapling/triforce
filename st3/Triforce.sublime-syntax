@@ -241,11 +241,40 @@ contexts:
 
   line-comments:
     - match: '/[/]+\s*>'
-      scope: punctuation.definition.comment.triforce
-      push: line-code-comment
+      scope: comment.line.triforce markup.bold
+      push:
+        - meta_scope: comment.line.triforce
+        - include: cc-general
+      with_prototype:
+        - match: '^(?!\s*/[/]+\s*>)'
+          pop: true
+        - match: '/[/]+\s*>'
+          scope: markup.bold
     - match: '/[/]+\s*```'
-      scope: punctuation.definition.comment.triforce
-      push: block-code-comment
+      scope: comment.line.triforce markup.bold
+      push:
+        - meta_scope: comment.line.triforce
+        - include: cc-general
+      with_prototype:
+        - match: '^(\s*/[/]+\s*```)|^(?!\s*//)'
+          scope: markup.bold
+          pop: true
+        - match: '^(\s*/[/]+)'
+          scope: comment.line.triforce markup.bold
+    - match: '(///)\s*(#)(?!#)\s*(?=\S)'
+      captures:
+        1: comment.line.triforce
+        2: punctuation.definition.heading.cc.begin.markdown
+      push:
+        - meta_scope: markup.heading.1.cc.markdown comment.line.triforce
+        - include: atx-heading-terminator
+    - match: '(///)\s*(#{2,6})(?!#)\s*(?=\S)'
+      captures:
+        1: comment.line.triforce
+        2: punctuation.definition.heading.cc.begin.markdown
+      push:
+        - meta_scope: markup.heading.cc.markdown comment.line.triforce
+        - include: atx-heading-terminator
     - match: '//'
       scope: punctuation.definition.comment.triforce
       push: line-comment
@@ -264,36 +293,10 @@ contexts:
       scope: punctuation.definition.comment.triforce
       push: block-comment-fallback
 
-  ticks-cc-block:
-    - match: '```'
-      scope: cc.keyword.control.triforce
-      push:
-      - match: '```'
-        scope: cc.keyword.control.triforce
-        pop: true
-      - meta_scope: comment.block.triforce
-      - include: cc-general
-
   line-comment:
     - meta_scope: comment.line.triforce
     - match: '$'
       pop: true
-  
-  line-code-comment:
-    - meta_scope: comment.line.triforce
-    - match: '^(?!/[/]+\s*>)'
-      pop: true
-    - match: '^\s*/[/]+\s*>'
-      scope: punctuation.definition.comment.triforce
-    - include: cc-general
-  
-  block-code-comment:
-    - meta_scope: comment.line.triforce
-    - match: '^(?![\s]*//)|^(/[/]+\s*```)'
-      pop: true
-    - match: '^\s*/[/]+'
-      scope: punctuation.definition.comment.triforce
-    - include: cc-general
 
   block-comment-fallback:
     # Syntax highlighting for these comments will be removed in the future.
@@ -303,7 +306,13 @@ contexts:
       scope: punctuation.definition.comment.triforce
       pop: true
     - include: block-comments-fallback
-    - include: ticks-cc-block
+  
+  atx-heading-terminator:
+    - match: '[ ]*(#*)[ ]*($\n?)' # \n is optional so ## is matched as end punctuation in new document (at eof)
+      captures:
+        1: punctuation.definition.heading.cc.end.markdown
+        2: meta.whitespace.newline.markdown
+      pop: true
 
   ################################################################################
   ##                                                                            ##
