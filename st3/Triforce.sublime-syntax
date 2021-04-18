@@ -46,7 +46,7 @@ contexts:
   universal:
     - match: '\\.'
       scope: constant.character.escape.triforce
-    - match: '(code)\s+([({])'
+    - match: '(code)\s*([({])'
       captures:
         1: storage.type.triforce
         2: source.triforce
@@ -57,7 +57,7 @@ contexts:
   cc-universal:
     - match: '\\.'
       scope: cc.constant.character.escape.triforce
-    - match: '(code)\s+([({])'
+    - match: '(code)\s*([({])'
       captures:
         1: cc.storage.type.triforce
         2: source.triforce
@@ -248,33 +248,30 @@ contexts:
       with_prototype:
         - match: '^(?!\s*/[/]+\s*>)'
           pop: true
-        - match: '/[/]+\s*>'
-          scope: markup.bold
+        - match: '(?=/[/]+\s*>)'
+          push:
+            - clear_scopes: true
+            - meta_scope: comment.line.triforce markup.bold
+            - match: '/[/]+\s*>'
+              pop: true
     - match: '/[/]+\s*```'
       scope: comment.line.triforce markup.bold
       push:
         - meta_scope: comment.line.triforce
         - include: cc-general
       with_prototype:
-        - match: '^(\s*/[/]+\s*```)|^(?!\s*//)'
-          scope: markup.bold
-          pop: true
-        - match: '^(\s*/[/]+)'
-          scope: comment.line.triforce markup.bold
-    - match: '(///)\s*(#)(?!#)\s*(?=\S)'
-      captures:
-        1: comment.line.triforce
-        2: punctuation.definition.heading.cc.begin.markdown
-      push:
-        - meta_scope: markup.heading.1.cc.markdown comment.line.triforce
-        - include: atx-heading-terminator
-    - match: '(///)\s*(#{2,6})(?!#)\s*(?=\S)'
-      captures:
-        1: comment.line.triforce
-        2: punctuation.definition.heading.cc.begin.markdown
-      push:
-        - meta_scope: markup.heading.cc.markdown comment.line.triforce
-        - include: atx-heading-terminator
+        - match: '^(?=\s*/[/]+\s*```)|^(?!\s*//)'
+          set:
+            - clear_scopes: true
+            - meta_scope: comment.line.triforce markup.bold
+            - match: '\s*/[/]+\s*```|(?!\s*//)'
+              pop: true
+        - match: '^(?=\s*/[/]+)'
+          push:
+            - clear_scopes: true
+            - meta_scope: comment.line.triforce markup.bold
+            - match: '\s*/[/]+'
+              pop: true
     - match: '//'
       scope: punctuation.definition.comment.triforce
       push: line-comment
@@ -297,6 +294,7 @@ contexts:
     - meta_scope: comment.line.triforce
     - match: '$'
       pop: true
+    - include: line-comment-markdown
 
   block-comment-fallback:
     # Syntax highlighting for these comments will be removed in the future.
@@ -307,12 +305,37 @@ contexts:
       pop: true
     - include: block-comments-fallback
   
-  atx-heading-terminator:
-    - match: '[ ]*(#*)[ ]*($\n?)' # \n is optional so ## is matched as end punctuation in new document (at eof)
+  line-comment-markdown:
+    - match: '`'
+      scope: markup.bold
+      embed: cc-general
+      escape: '`'
+      escape_captures:
+        0: comment.line.triforce markup.bold
+    - match: '\*(?!\*)|\*(?=\*\*)'
+      scope: markup.bold
+      push:
+        - meta_scope: markup.italic
+        - match: '\*(?!\*)'
+          scope: markup.bold
+          pop: true
+        - include: line-comment-markdown
+    - match: '\*\*'
+      scope: markup.bold
+      push:
+        - meta_scope: markup.bold
+        - match: '\*\*'
+          scope: markup.bold
+          pop: true
+        - include: line-comment-markdown
+    - match: '(#)(?!#)(.*$)'
       captures:
-        1: punctuation.definition.heading.cc.end.markdown
-        2: meta.whitespace.newline.markdown
-      pop: true
+        1: markup.heading.1 cc.punctuation.definition.heading
+        2: comment.line.triforce markup.bold
+    - match: '(#{2,6})(?!#)(.*$)'
+      captures:
+        1: markup.heading cc.punctuation.definition.heading
+        2: comment.line.triforce markup.bold
 
   ################################################################################
   ##                                                                            ##

@@ -356,7 +356,7 @@ func import ($filepath as any Path) {
 // If this conflicts with built-in 'as', rename to
 // 'import ... and rename to ...'
 func import ($filepath as any Path) as ($name as permafrosted) {
-	category `name` (import filepath)
+	category $$(name) {import filepath}
 };
 
 func expose ($cat as any List) {
@@ -1240,9 +1240,11 @@ println str3;
 
 --------------------------------------------------
 
+// Below is just for testing comments; it's not actual documentation
+
 /// Converts the vector into `Box<[T]>`.
 /// 
-/// Note that this will drop any excess capacity.
+/// ***Note** that this **will** drop any excess capacity.*
 /// 
 /// # Examples
 /// 
