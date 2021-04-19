@@ -240,46 +240,20 @@ contexts:
     - include: block-comments-fallback
 
   line-comments:
-    - match: '/[/]+\s*>'
-      scope: comment.line.triforce markup.bold
-      push:
-        - meta_scope: comment.line.triforce
-        - include: cc-general
-      with_prototype:
-        - match: '^(?!\s*/[/]+\s*>)'
-          pop: true
-        - match: '(?=/[/]+\s*>)'
-          push:
-            - clear_scopes: true
-            - meta_scope: comment.line.triforce markup.bold
-            - match: '/[/]+\s*>'
-              pop: true
-    - match: '/[/]+\s*```'
-      scope: comment.line.triforce markup.bold
-      push:
-        - meta_scope: comment.line.triforce
-        - include: cc-general
-      with_prototype:
-        - match: '^(?=\s*/[/]+\s*```)|^(?!\s*//)'
-          set:
-            - clear_scopes: true
-            - meta_scope: comment.line.triforce markup.bold
-            - match: '\s*/[/]+\s*```|(?!\s*//)'
-              pop: true
-        - match: '^(?=\s*/[/]+)'
-          push:
-            - clear_scopes: true
-            - meta_scope: comment.line.triforce markup.bold
-            - match: '\s*/[/]+'
-              pop: true
     - match: '//'
       scope: punctuation.definition.comment.triforce
       push: line-comment
   
   cc-line-comments:
-    - match: '/[/]+\s*(>|```)'
-      scope: punctuation.definition.comment.triforce
-    - match: '//'
+    - match: '^(?=/[/]+(\s*>)?)'
+      push:
+        - clear_scopes: true
+        - match: '(/[/]+)(\s*>)?'
+          captures:
+            1: comment.line.triforce
+            2: comment.line.triforce markup.bold
+          pop: true
+    - match: '(?<!^|/)//'
       scope: punctuation.definition.comment.triforce
       push: line-comment
 
@@ -294,6 +268,12 @@ contexts:
     - meta_scope: comment.line.triforce
     - match: '$'
       pop: true
+    - match: '>'
+      scope: comment.line.triforce markup.bold
+      embed: cc-general
+      escape: '^(?!\s*/[/]+\s*>)'
+    - match: '^(?!\s*/[/]+)' # pop if escaped here and not actually in comment
+      pop: true
     - include: line-comment-markdown
 
   block-comment-fallback:
@@ -306,12 +286,21 @@ contexts:
     - include: block-comments-fallback
   
   line-comment-markdown:
+    - match: '\\.'
+      scope: cc.constant.character.escape.triforce
+    - match: '```'
+      scope: markup.bold
+      embed: cc-general
+      escape: '^\s*(/[/]+)\s*(```)|^(?!\s*//)'
+      escape_captures:
+        1: comment.line.triforce
+        2: comment.line.triforce markup.bold
     - match: '`'
       scope: markup.bold
       embed: cc-general
-      escape: '`'
+      escape: '(`)'
       escape_captures:
-        0: comment.line.triforce markup.bold
+        1: comment.line.triforce markup.bold
     - match: '\*(?!\*)|\*(?=\*\*)'
       scope: markup.bold
       push:
@@ -498,16 +487,18 @@ contexts:
     - match: '(?=\))'
       pop: true
     - include: cc-general
+  
+  # TODO: split below into group & block to get correct meta.group & meta.block
 
   code-group:
-    - meta_scope: markup.italic
+    - meta_scope: markup.italic meta.block.triforce
     - match: '[)}]'
       scope: markup.italic
       pop: true
     - include: general
 
   cc-code-group:
-    - meta_scope: markup.italic
+    - meta_scope: markup.italic meta.block.triforce
     - match: '[)}]'
       scope: markup.italic
       pop: true
