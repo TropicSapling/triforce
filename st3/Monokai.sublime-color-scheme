@@ -110,13 +110,13 @@
             "font_style": "italic"
         },
         {
-            "name": "markup headings", // idk why but below needs to have 'cc' at the end
-            "scope": "markup.heading.cc punctuation.definition.heading.cc",
+            "name": "markup headings",
+            "scope": "markup.heading cc.punctuation.definition.heading",
             "foreground": "var(cc_orange)"
         },
         {
-            "name": "markup h1", // idk why but below needs to have 'cc' at the end
-            "scope": "markup.heading.1.cc punctuation.definition.heading.cc",
+            "name": "markup h1",
+            "scope": "markup.heading.1 cc.punctuation.definition.heading",
             "foreground": "var(cc_red2)"
         },
         {

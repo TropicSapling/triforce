@@ -1085,33 +1085,29 @@ func divide ($a as even int) with $b --> int
 
 --------------------------------------------------
 
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-Code blocks in comments (available for ST3):
-
-```
-func divide even $a with $b --> int
-	where [
-		a: int which mod 2 == 0,
-		b: int which != 0
-	]
-{
-	...
-}
-```
-
-More comment text here just to check that things work :)
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+/// Code blocks in comments (available for ST3):
+/// 
+/// ```
+/// func divide even $a with $b --> int
+/// 	where [
+/// 		a: int which mod 2 == 0,
+/// 		b: int which != 0
+/// 	]
+/// {
+/// 	...
+/// }
+/// ```
+/// 
+/// More comment text here just to check that things work :)
 
 println "Some code in-between";
 
-<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-If statements.
-
-```
-if True  then println "yup" else "nope"; // prints "yup"
-if False then println "yup" else "nope"; // prints "nope"
-```
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+/// If statements.
+/// 
+/// ```
+/// if True  then println "yup" else "nope"; // prints "yup"
+/// if False then println "yup" else "nope"; // prints "nope"
+/// ```
 macro func if $cond then $tbody else $fbody {
 	code {
 		func if (True)  then $tbody else $fbody {tbody()}

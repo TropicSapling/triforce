@@ -240,15 +240,18 @@ contexts:
     - include: block-comments-fallback
 
   line-comments:
-    - match: '//'
+    - match: '(?=//(?!/))'
       scope: punctuation.definition.comment.triforce
       push: line-comment
+    - match: '(?=///+)'
+      scope: punctuation.definition.comment.triforce
+      push: doc-comment
   
   cc-line-comments:
-    - match: '^(?=/[/]+(\s*>)?)'
+    - match: '^(?=//+(\s*>)?)'
       push:
         - clear_scopes: true
-        - match: '(/[/]+)(\s*>)?'
+        - match: '(//+)(\s*>)?'
           captures:
             1: comment.line.triforce
             2: comment.line.triforce markup.bold
@@ -263,18 +266,26 @@ contexts:
     - match: '/\*'
       scope: punctuation.definition.comment.triforce
       push: block-comment-fallback
+  
+  comment:
+    - match: '$'
+      pop: true
+    - match: '//+\s*(>)'
+      captures:
+        1: comment.line.triforce markup.bold
+      embed: cc-general
+      escape: '^(?!\s*//+\s*>)'
+    - match: '^(?!\s*//+)' # pop if escaped here and not actually in comment
+      pop: true
 
   line-comment:
     - meta_scope: comment.line.triforce
-    - match: '$'
-      pop: true
-    - match: '>'
-      scope: comment.line.triforce markup.bold
-      embed: cc-general
-      escape: '^(?!\s*/[/]+\s*>)'
-    - match: '^(?!\s*/[/]+)' # pop if escaped here and not actually in comment
-      pop: true
-    - include: line-comment-markdown
+    - include: comment
+  
+  doc-comment:
+    - meta_scope: comment.line.triforce
+    - include: comment
+    - include: comment-markdown
 
   block-comment-fallback:
     # Syntax highlighting for these comments will be removed in the future.
@@ -285,13 +296,14 @@ contexts:
       pop: true
     - include: block-comments-fallback
   
-  line-comment-markdown:
+  comment-markdown:
     - match: '\\.'
       scope: cc.constant.character.escape.triforce
-    - match: '```'
-      scope: markup.bold
+    - match: '///+\s*(```)'
+      captures:
+        1: markup.bold
       embed: cc-general
-      escape: '^\s*(/[/]+)\s*(```)|^(?!\s*//)'
+      escape: '^\s*(///+)\s*(```)|^(?!\s*//)'
       escape_captures:
         1: comment.line.triforce
         2: comment.line.triforce markup.bold
@@ -308,7 +320,7 @@ contexts:
         - match: '\*(?!\*)'
           scope: markup.bold
           pop: true
-        - include: line-comment-markdown
+        - include: comment-markdown
     - match: '\*\*'
       scope: markup.bold
       push:
@@ -316,12 +328,12 @@ contexts:
         - match: '\*\*'
           scope: markup.bold
           pop: true
-        - include: line-comment-markdown
-    - match: '(#)(?!#)(.*$)'
+        - include: comment-markdown
+    - match: '///+\s*(#)(?!#)(.*)$'
       captures:
         1: markup.heading.1 cc.punctuation.definition.heading
         2: comment.line.triforce markup.bold
-    - match: '(#{2,6})(?!#)(.*$)'
+    - match: '///+\s*(#{2,6})(?!#)(.*)$'
       captures:
         1: markup.heading cc.punctuation.definition.heading
         2: comment.line.triforce markup.bold
@@ -529,13 +541,13 @@ contexts:
     - include: cc-general
 
   func-id-search-start:
-    - match: '\s+[\(]+  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
+    - match: '\s+\(+  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
       set: func-id-search-group
     - match: ''
       set: func-id-search
 
   cc-func-id-search-start:
-    - match: '\s+[\(]+  '
+    - match: '\s+\(+  '
       set: cc-func-id-search-group
     - match: ''
       set: cc-func-id-search
