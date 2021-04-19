@@ -21,7 +21,7 @@
         ]
     },
 
-    // Auto-indent {braces} block on enter
+    // Auto-pair {braces}, even when '{' is inserted right before ';'
     { "keys": ["{"], "command": "insert_snippet", "args": {"contents": "{$0}"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
@@ -111,9 +111,27 @@
             { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
             { "key": "following_text", "operator": "regex_contains", "operand": "^\/\/>\t", "match_all": true }
         ]
-    }
+    },
     
     // TODO: Improve uncommenting!
+    
+    // Auto-comment on enter after *indented* doc comment ('/// ...' + enter)
+    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Autocomment Indented.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
+            { "key": "preceding_text", "operator": "regex_contains", "operand": "^( {4}|\t)\\s*///.*$", "match_all": true }
+        ]
+    },
+    
+    // Auto-comment on enter after *indented* doc comment ('/// ...' + enter)
+    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Autocomment.sublime-macro"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
+            { "key": "preceding_text", "operator": "regex_contains", "operand": "^\\s*///.*$", "match_all": true }
+        ]
+    }
 
     // NOTE: These key bindings are not ideal. A plugin seems to be required to make
     //       auto-commenting fully work the way I want it.
