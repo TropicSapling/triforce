@@ -1,5 +1,5 @@
 # Syntax highlighting for Sublime Text 3
-![banner](img/st3.PNG)
+![banner](../img/st3.PNG)
 
 This folder contains files for highlighting Triforce files in ST3 (along with some useful keyboard shortcuts, etc.).
 
