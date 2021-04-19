@@ -240,14 +240,15 @@ contexts:
     - include: block-comments-fallback
 
   line-comments:
-    - match: '(?=//(?!/))'
+    - match: '(?=//(?!/))' # regular comments
       scope: punctuation.definition.comment.triforce
       push: line-comment
-    - match: '(?=///+)'
+    - match: '(?=///+)' # doc comments
       scope: punctuation.definition.comment.triforce
       push: doc-comment
   
   cc-line-comments:
+    # Line comments within code comments
     - match: '^(?=//+(\s*>)?)'
       push:
         - clear_scopes: true
@@ -268,9 +269,10 @@ contexts:
       push: block-comment-fallback
   
   comment:
+    # Common syntax for all comments (excl. deprecated block comments)
     - match: '$'
       pop: true
-    - match: '//+\s*(>)'
+    - match: '//+\s*(>)' # code comments
       captures:
         1: comment.line.triforce markup.bold
       embed: cc-general
@@ -285,7 +287,7 @@ contexts:
   doc-comment:
     - meta_scope: comment.line.triforce
     - include: comment
-    - include: comment-markdown
+    - include: comment-markdown # only doc comments support markdown
 
   block-comment-fallback:
     # Syntax highlighting for these comments will be removed in the future.
@@ -297,8 +299,11 @@ contexts:
     - include: block-comments-fallback
   
   comment-markdown:
+    # Escaping
     - match: '\\.'
       scope: cc.constant.character.escape.triforce
+    
+    # Code blocks
     - match: '///+\s*(```)'
       captures:
         1: markup.bold
@@ -307,12 +312,16 @@ contexts:
       escape_captures:
         1: comment.line.triforce
         2: comment.line.triforce markup.bold
+    
+    # Inline code
     - match: '`'
       scope: markup.bold
       embed: cc-general
       escape: '(`)'
       escape_captures:
         1: comment.line.triforce markup.bold
+    
+    # **Bold**
     - match: '\*(?!\*)|\*(?=\*\*)'
       scope: markup.bold
       push:
@@ -321,6 +330,8 @@ contexts:
           scope: markup.bold
           pop: true
         - include: comment-markdown
+    
+    # *Italic*
     - match: '\*\*'
       scope: markup.bold
       push:
@@ -329,6 +340,8 @@ contexts:
           scope: markup.bold
           pop: true
         - include: comment-markdown
+    
+    # Headings
     - match: '///+\s*(#)(?!#)(.*)$'
       captures:
         1: markup.heading.1 cc.punctuation.definition.heading
@@ -567,7 +580,7 @@ contexts:
       push: op-dollar
     - match: '\?'
       scope: source.triforce
-    - match: '(?=[{;]|-->|==>)'
+    - match: '(?=[{;]|-->|==>)' # end of function declaration
       pop: true
     - match: '{{identifier}}|}|]'
       scope: entity.name.function.triforce
@@ -701,7 +714,7 @@ contexts:
     - match: '\$'
       scope: keyword.operator.triforce
       push: op-dollar
-    - match: '(?=[\[;])'
+    - match: '(?=[\[;])' # end of object declaration
       pop: true
     - match: '{{identifier}}'
       scope: entity.name.function.triforce
@@ -739,7 +752,7 @@ contexts:
     - match: '\$'
       scope: keyword.operator.triforce
       push: op-dollar
-    - match: '(?=[=:\[;])'
+    - match: '(?=[=:\[;])' # end of let declaration (sort of; type may follow)
       pop: true
     - match: '{{identifier}}'
       scope: entity.name.function.triforce
