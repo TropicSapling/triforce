@@ -233,11 +233,11 @@ contexts:
 
   comments:
     - include: line-comments
-    - include: block-comments-fallback
+    - include: block-comments
   
   cc-comments:
     - include: cc-line-comments
-    - include: block-comments-fallback
+    - include: block-comments
 
   line-comments:
     - match: '(?=//(?!/))' # regular comments
@@ -261,15 +261,17 @@ contexts:
       scope: punctuation.definition.comment.triforce
       push: line-comment
 
-  block-comments-fallback:
-    # Syntax highlighting for these comments will be removed in the future.
-    # This is only here so that old comments still get highlighted.
+  block-comments:
+    # NOTE: Using IDE keybindings, multiple line comments can function as block comments.
+    #       This is the recommended way, and the below block comments are only supported
+    #       because some people prefer to use them instead. Depending on what consensus
+    #       is reached, they may be removed in the future in favor of minimalism.
     - match: '/\*'
       scope: punctuation.definition.comment.triforce
-      push: block-comment-fallback
+      push: block-comment
   
   comment:
-    # Common syntax for all comments (excl. deprecated block comments)
+    # Common syntax for all comments (excl. deprecated /* block comments */)
     - match: '$'
       pop: true
     - match: '//+\s*(>)' # code comments
@@ -279,24 +281,6 @@ contexts:
       escape: '^(?!\s*//+\s*>)'
     - match: '^(?!\s*//+)' # pop if escaped here and not actually in comment
       pop: true
-
-  line-comment:
-    - meta_scope: comment.line.triforce
-    - include: comment
-  
-  doc-comment:
-    - meta_scope: comment.line.triforce
-    - include: comment
-    - include: comment-markdown # only doc comments support markdown
-
-  block-comment-fallback:
-    # Syntax highlighting for these comments will be removed in the future.
-    # This is only here so that old comments still get highlighted.
-    - meta_scope: comment.block.triforce
-    - match: '\*/'
-      scope: punctuation.definition.comment.triforce
-      pop: true
-    - include: block-comments-fallback
   
   comment-markdown:
     # Escaping
@@ -350,6 +334,23 @@ contexts:
       captures:
         1: markup.heading cc.punctuation.definition.heading
         2: comment.line.triforce markup.bold
+
+  line-comment:
+    - meta_scope: comment.line.triforce
+    - include: comment
+  
+  doc-comment:
+    - meta_scope: comment.line.triforce
+    - include: comment
+    - include: comment-markdown # only doc comments support markdown
+
+  block-comment:
+    # Currently, these comments don't support any advanced features
+    - meta_scope: comment.block.triforce
+    - match: '\*/'
+      scope: punctuation.definition.comment.triforce
+      pop: true
+    - include: block-comments
 
   ################################################################################
   ##                                                                            ##
