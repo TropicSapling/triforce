@@ -1242,11 +1242,16 @@ println str3;
 /// 
 /// ***Note** that this **will** drop any excess capacity.*
 /// 
+/// "Roses are Red,
+/// Violets are Blue,
+/// 
+/// Unexpected '{'
+/// on line 32."
+/// 
 /// # Examples
 /// 
 /// ```
-/// let v = vec![1, 2, 3];
-/// 
+/// let v     = vec![1, 2, 3];
 /// let slice = v.into_boxed_slice();
 /// ```
 /// 
@@ -1292,4 +1297,20 @@ func [macro]? func $declaration [--> $ret_type]? \{$body} {
 
 func if $cond [then $tbody | {$tbody}] [else $fbody]? {
     ...
+}
+
+--------------------------------------------------
+
+/// Calculates the nth fibonacci number.
+/// 
+/// # Examples
+/// > fib 1 == 1
+/// > fib 2 == 1
+/// > fib 3 == 2
+multi func fib ($n as nat) --> nat {
+//> let i: auto = 0; // maybe not loop actually
+    
+    fib (0) ==> 0,
+    fib (1) ==> 1,
+    fib $n  ==> fib (n-1) + fib (n-2)
 }

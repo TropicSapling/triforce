@@ -249,17 +249,21 @@ contexts:
   
   cc-line-comments:
     # Line comments within code comments
-    - match: '^(?=//+(\s*>)?)'
-      push:
-        - clear_scopes: true
-        - match: '(//+)(\s*>)?'
-          captures:
-            1: comment.line.triforce
-            2: comment.line.triforce markup.bold
-          pop: true
+    - include: cleared-line-comments
     - match: '(?<!^|/)//'
       scope: punctuation.definition.comment.triforce
       push: line-comment
+  
+  cleared-line-comments:
+    # Line comments, but scopes are cleared and contents ignored
+    - match: '^(?=\s*//+(\s*>)?)'
+      push:
+        - clear_scopes: true
+        - match: '\s*(//+)(\s*>)?'
+          captures:
+            1: source.triforce comment.line.triforce
+            2: source.triforce comment.line.triforce markup.bold
+          pop: true
 
   block-comments:
     # NOTE: Using IDE keybindings, multiple line comments can function as block comments.
@@ -272,22 +276,20 @@ contexts:
   
   comment:
     # Common syntax for all comments (excl. deprecated /* block comments */)
-    - match: '$'
-      pop: true
     - match: '//+\s*(>)' # code comments
       captures:
         1: comment.line.triforce markup.bold
       embed: cc-general
       escape: '^(?!\s*//+\s*>)'
-    - match: '^(?!\s*//+)' # pop if escaped here and not actually in comment
+    - match: '^(?!\s*//+)'
       pop: true
   
   comment-markdown:
-    # Escaping
+    # \Escaping
     - match: '\\.'
       scope: cc.constant.character.escape.triforce
     
-    # Code blocks
+    # ``` Code blocks ```
     - match: '///+\s*(```)'
       captures:
         1: markup.bold
@@ -297,7 +299,7 @@ contexts:
         1: comment.line.triforce
         2: comment.line.triforce markup.bold
     
-    # Inline code
+    # `Inline code`
     - match: '`'
       scope: markup.bold
       embed: cc-general
@@ -305,7 +307,7 @@ contexts:
       escape_captures:
         1: comment.line.triforce markup.bold
     
-    # **Bold**
+    # *Italic*
     - match: '\*(?!\*)|\*(?=\*\*)'
       scope: markup.bold
       push:
@@ -313,9 +315,10 @@ contexts:
         - match: '\*(?!\*)'
           scope: markup.bold
           pop: true
-        - include: comment-markdown
+        - include: cleared-line-comments
+        - include: doc-comment
     
-    # *Italic*
+    # **Bold**
     - match: '\*\*'
       scope: markup.bold
       push:
@@ -323,7 +326,20 @@ contexts:
         - match: '\*\*'
           scope: markup.bold
           pop: true
-        - include: comment-markdown
+        - include: cleared-line-comments
+        - include: doc-comment
+    
+    # "Quotes"
+    - match: '///+\s*(")'
+      captures:
+        1: markup.bold markup.italic
+      push:
+        - meta_content_scope: markup.italic
+        - match: '"'
+          scope: markup.bold markup.italic
+          pop: true
+        - include: cleared-line-comments
+        - include: doc-comment
     
     # Headings
     - match: '///+\s*(#)(?!#)(.*)$'

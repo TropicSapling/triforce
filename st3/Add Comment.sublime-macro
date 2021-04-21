@@ -1,6 +1,5 @@
 [
 //  {"command": "toggle_bookmark"},
-    {"command": "move_to", "args": {"to": "hardbol"}},
     {"command": "insert", "args": {"characters": "//> "}},
 //  {"command": "next_bookmark"},
 //  {"command": "toggle_bookmark"}
