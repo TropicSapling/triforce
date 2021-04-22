@@ -1,6 +1,6 @@
 [
 //  {"command": "toggle_bookmark"},
-    {"command": "insert", "args": {"characters": "//> "}},
+    {"command": "insert", "args": {"characters": "//>\u00A0"}}, // u00A0 = non-breaking space
 //  {"command": "next_bookmark"},
 //  {"command": "toggle_bookmark"}
 //  {"command": "single_selection"},

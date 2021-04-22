@@ -1302,12 +1302,13 @@ func if $cond [then $tbody | {$tbody}] [else $fbody]? {
 --------------------------------------------------
 
 /// Calculates the nth fibonacci number.
+/// Values above 50 are not accepted since they take forever to calculate.
 /// 
 /// # Examples
 /// > fib 1 == 1
 /// > fib 2 == 1
 /// > fib 3 == 2
-multi func fib ($n as nat) --> nat {
+multi func fib ($n as 0..50) --> nat {
 //> let i: auto = 0; // maybe not loop actually
     
     fib (0) ==> 0,
