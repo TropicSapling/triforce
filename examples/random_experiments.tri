@@ -1402,3 +1402,38 @@ func $$(name) ($($$(var)) as up to 50) $$(ret nat) {
 func fib ($n as 0..50) --> nat {
 	...
 }
+
+--------------------------------------------------
+
+if run (x is a|b|c|d|e|f) {
+	...
+}
+// is equivalent to:
+if run (x == a || x == b || x == c || x == d || x == e || x == f) {
+	...
+}
+
+// NOTE: The 'run' is required. It ensures that all of the checks are done during runtime.
+//       Without it, the compiler will attempt to resolve some things during compilation,
+//       which will get weird because `a`, `b`, `c`, etc. probably don't have 1 known
+//       value until runtime.
+if x is a|b|c|d|e|f {
+	...
+}
+// here the compiler could for example see the above as this:
+if 123|456 is (123|456)|789|12|(345|678)|912|3 { // `a = 123|456`, `b = 789`, etc.
+	...
+}
+// <=>
+if 123|456 is 123|456|789|12|345|678|912|3 {
+	...
+}
+// <=>
+if True {
+	...
+}
+// which is not the expected result! What if `x = 123` at runtime? Then the result should
+// be `False`, but the compiler deduced at compile time that it must be `True`!
+
+// 'run' solves the problem since at runtime only intentional or-patterns can exist
+// and not ones created by the compiler. All values will be known at runtime.
