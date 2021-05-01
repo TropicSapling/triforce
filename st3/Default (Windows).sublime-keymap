@@ -49,6 +49,9 @@
     //       Known limitations:
     //          - Uncommenting can't handle empty, non-indented lines when using tabs
     //          - (Un)commenting can't handle mixed tabs & spaces
+    //       
+    //       It should also be noted that the keybindings seem to work a bit better
+    //       when indenting using tabs compared to spaces.
 
     // If you have a different keyboard layout, change '7' everywhere below to '/'
     

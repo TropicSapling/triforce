@@ -1,17 +1,27 @@
 {
+	// My personal preferences, some of which are recommended for Triforce.
+	// The recommended preferences are marked with [RECOMMENDED].
+	// The remaining preferences can be changed without breaking anything.
+	
 	"auto_complete_commit_on_tab": true,
+	
+	// [RECOMMENDED]
 	"color_scheme": "Packages/Color Scheme - Default/Monokai.sublime-color-scheme",
-	"detect_indentation": false,
+	
 	"ensure_newline_at_eof_on_save": true,
 	"ignored_packages":
 	[
-		"Vintage"
+		"Vintage",
+		"Graphviz"
 	],
+	
 	"rulers":
 	[
-		90
+		90 // [RECOMMENDED]
 	],
+	
 	"theme": "Default.sublime-theme",
-	"translate_tabs_to_spaces": true,
+	
+	// [RECOMMENDED]
 	"trim_automatic_white_space": false
 }

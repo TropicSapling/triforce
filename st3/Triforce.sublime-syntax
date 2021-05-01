@@ -22,7 +22,7 @@ variables:
 
   # Numbers
   digits:  '(0(x[0-9a-f_]+|o[0-7_]+|b[01_]+)|[0-9_]+)'
-  numbers: '(-)?{{digits}}(.{{digits}})?([iu](8|16|32|64|128|size)|f(loat)?(32|64))?'
+  numbers: '(-)?{{digits}}(\.{{digits}})?([iu](8|16|32|64|128|size)|f(loat)?(32|64))?'
 
   # Misc.
   escaped_byte: '\\(x\h{2}|n|r|t|0|"|''|\\)'
@@ -354,6 +354,14 @@ contexts:
   line-comment:
     - meta_scope: comment.line.triforce
     - include: comment
+    
+    # `Inline code`
+    - match: '`'
+      scope: markup.bold
+      embed: cc-general
+      escape: '(`)'
+      escape_captures:
+        1: comment.line.triforce markup.bold
   
   doc-comment:
     - meta_scope: comment.line.triforce
@@ -590,7 +598,7 @@ contexts:
     - include: universal
     - match: '(?=\()'
       push: group
-    - match: '\['
+    - match: '(?=\[)'
       push: func-bracket-group
     - match: '\$'
       scope: keyword.operator.triforce
@@ -610,7 +618,7 @@ contexts:
     - include: cc-universal
     - match: '(?=\()'
       push: cc-group
-    - match: '\['
+    - match: '(?=\[)'
       push: cc-func-bracket-group
     - match: '\$'
       scope: cc.keyword.operator.triforce
@@ -630,7 +638,7 @@ contexts:
     - include: universal
     - match: '(?=\()'
       push: group
-    - match: '\['
+    - match: '(?=\[)'
       push: func-bracket-group
     - match: '\$'
       scope: keyword.operator.triforce
@@ -650,7 +658,7 @@ contexts:
     - include: cc-universal
     - match: '(?=\()'
       push: cc-group
-    - match: '\['
+    - match: '(?=\[)'
       push: cc-func-bracket-group
     - match: '\$'
       scope: cc.keyword.operator.triforce
@@ -667,8 +675,13 @@ contexts:
       scope: meta.group.triforce punctuation.section.group.end.triforce
       pop: true
     - match: '\['
-      scope: entity.name.function.triforce
-      push: [func-bracket-group-deep]
+      scope: punctuation.section.group.begin.triforce
+      push: [func-bracket-group-body]
+  
+  func-bracket-group-body:
+    - meta_scope: meta.group.triforce
+    - match: '(?=\])'
+      pop: true
     - match: '\|'
       scope: source.triforce
     - match: '([{;]|-->|==>)'
@@ -680,33 +693,16 @@ contexts:
       scope: cc.meta.group.triforce cc.punctuation.section.group.end.triforce
       pop: true
     - match: '\['
-      scope: cc.entity.name.function.triforce
-      push: [cc-func-bracket-group-deep]
+      scope: cc.punctuation.section.group.begin.triforce
+      push: [cc-func-bracket-group-body]
+  
+  cc-func-bracket-group-body:
+    - meta_scope: meta.group.triforce
+    - match: '(?=\])'
+      pop: true
     - match: '\|'
       scope: source.triforce
     - match: '([{;]|-->|==>)'
-      scope: cc.entity.name.function.triforce
-    - include: cc-func-id-search
-  
-  func-bracket-group-deep:
-    - match: '\]'
-      scope: entity.name.function.triforce
-      pop: true
-    - match: '\['
-      scope: entity.name.function.triforce
-      push: [func-bracket-group-deep]
-    - match: '([{;\[\]]|-->|==>)'
-      scope: entity.name.function.triforce
-    - include: func-id-search
-  
-  cc-func-bracket-group-deep:
-    - match: '\]'
-      scope: cc.entity.name.function.triforce
-      pop: true
-    - match: '\['
-      scope: cc.entity.name.function.triforce
-      push: [cc-func-bracket-group-deep]
-    - match: '([{;\[\]]|-->|==>)'
       scope: cc.entity.name.function.triforce
     - include: cc-func-id-search
 
