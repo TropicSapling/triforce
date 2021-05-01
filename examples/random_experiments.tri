@@ -1299,7 +1299,8 @@ func [macro]? func $declaration [--> $ret_type]? \{$body} {
 
 // Here, both groups are NOT optional. In fact, the grouping is unnecessary here
 // and might as well have been left out. For that reason, and to avoid confusion,
-// having unnecessary groups like this will give a compiler warning.
+// having unnecessary groups like this will give a compiler warning. The warning
+// will also come along with a suggestion to add '?' to the end.
 func [macro] func $declaration [--> $ret_type] \{$body} {
     ...
 }
