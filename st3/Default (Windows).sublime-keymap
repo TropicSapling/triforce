@@ -39,6 +39,15 @@
         ]
     },
     
+    // Auto-pair `ticks` around selection
+    { "keys": ["`"], "command": "insert_snippet", "args": {"contents": "`${0:$SELECTION}`"}, "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "setting.auto_match_enabled", "operator": "equal", "operand": true },
+            { "key": "selection_empty", "operator": "equal", "operand": false, "match_all": true }
+        ]
+    },
+    
     // ========================================
     //          #### Auto Comment ####
     // ========================================

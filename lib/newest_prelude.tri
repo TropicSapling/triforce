@@ -85,6 +85,7 @@ let macro func $declaration --> $ret_type {$body} = macro _ _ _ => code {
 };
 
 // Defines 'func $declaration {$body}' (return type unchecked) using our new 'func $declaration --> $ret_type {$body}'!
+//> macro func [func $declaration {$body}] --> _ {
 macro func (  func $declaration {$body}  ) --> _ {
 	code {
 		func $$(declaration) --> _ {$$(body)}

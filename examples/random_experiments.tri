@@ -1238,7 +1238,8 @@ println str3;
 
 // Below is just for testing comments; it's not actual documentation
 
-/// Converts the vector into `Box<[T]>`.
+/// Converts the vector into `Box<[T]>`. This first paragraph is the summary. Everything
+/// else will be folded by default once editor support for this is available.
 /// 
 /// ***Note** that this **will** drop any excess capacity.*
 /// 
@@ -1289,15 +1290,66 @@ func into_boxed_slice($self) --> Box<[T], A> {
 
 --------------------------------------------------
 
-// Optional function parts?
+// Function bracket groups. `[group]?` = optional group.
 
+// Here, the first and second groups are optional.
 func [macro]? func $declaration [--> $ret_type]? \{$body} {
     ...
 }
 
-func if $cond [then $tbody | {$tbody}] [else $fbody]? {
+// Here, both groups are NOT optional. In fact, the grouping is unnecessary here
+// and might as well have been left out. For that reason, and to avoid confusion,
+// having unnecessary groups like this will give a compiler warning.
+func [macro] func $declaration [--> $ret_type] \{$body} {
     ...
 }
+
+// Surrounding the entire function name in a group won't give a warning however,
+// since it has an use and can't really cause much confusion. It's equivalent
+// to surrounding with parentheses (except it also defines `[]#0`). This is also
+// recommended over using parentheses since it can't be confused with a parameter,
+// and really the brackets are the "parentheses of function names" you could say.
+func [macro func $declaration --> $ret_type {$body}] {
+    ...
+}
+
+// Now, here comes a more advanced function with 2 nested groups.
+// The first group is required, while the second one is optional.
+
+//> macro func if $cond [then $tbody | {$tbody}] [else $fbody]? {
+macro func if $cond [then $tbody | {$tbody}] [else [$fbody | {$fbody}]]? {
+	// The function bracket groups can be accessed using the syntax `[]#n#m`.
+	// Attempting to index out of bounds gives an error (obviously).
+	// 
+	// Here, `[]#0 is "then ..."|"{...}"` and `[]#1 is ""|"else [...]"`.
+	// - an empty string means the group was not given when the function was called
+	// 
+	// Furthermore, if `[]#1 != ""` then `[]#1#0 is "..."|"{...}"`.
+	// - if `[]#1` wasn't given, `[]#1#0` gives an error
+	// - `[]#0#m` also gives an error since `[]#0` contains no groups
+	
+	// If else-body not provided, set it to `()`
+	let fbody = fbody unless []#1 == "" then ();
+//>	let fbody = fbody unless fbody is UNPROVIDED then ();
+	
+    code {
+		func if (True)  then $tbody else $fbody {tbody()}
+		func if (False) then $tbody else $fbody {fbody()}
+
+		if $$(eval cond) then
+			() => $$(eval tbody) // eval tbody == eval (code {xyz}) == xyz
+		else
+			() => $$(fbody)
+	}
+}
+
+// 6 ways to call the above function:
+// - if $cond then  $tbody
+// - if $cond then  $tbody  else  $fbody
+// - if $cond then  $tbody  else {$fbody}
+// - if $cond      {$tbody}
+// - if $cond      {$tbody} else  $fbody
+// - if $cond      {$tbody} else {$fbody}
 
 --------------------------------------------------
 

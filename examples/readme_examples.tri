@@ -2,6 +2,8 @@
 // |                EXAMPLE 1                |
 // -------------------------------------------
 
+// n: 0.. (dynamically typed)
+
 // - n == n is True
 // - The remaining terms of LHS & RHS are known
 // => Compiler can determine if True or False
@@ -24,7 +26,7 @@ UNDEFINED|0|1|...  * 2 + 2 == 0|2|4...
 UNDEFINED|0|1|...  * 2 + 2 == 0|2|4...
 // Potential UNDEFINED(s) found!
 // Since the compiler cannot determine anything more,
-// and it's irrelevant if there are more potential Undefineds,
+// and it's irrelevant if there are more potential UNDEFINEDs,
 // it stops here and returns:
 => UNDEFINED|True|False
 
