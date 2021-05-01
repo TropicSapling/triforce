@@ -133,7 +133,7 @@ contexts:
     - match: '\b{{decl_sym}}\b'
       scope: storage.type.triforce
 
-    - match: '\b(decl|let)\b'
+    - match: '\b(decl|let(\s+macro)?)\b'
       scope: storage.type.triforce
       push: let-id-search-start
 
@@ -213,7 +213,7 @@ contexts:
     - match: '\b{{decl_sym}}\b'
       scope: cc.storage.type.triforce
 
-    - match: '\b(decl|let)\b'
+    - match: '\b(decl|let(\s+macro)?)\b'
       scope: cc.storage.type.triforce
       push: cc-let-id-search-start
 
@@ -747,13 +747,13 @@ contexts:
   ################# LET ##################
 
   let-id-search-start:
-    - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
+    - match: '\s+\(*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
       set: let-id-search
     - match: ''
       set: let-id-search
 
   cc-let-id-search-start:
-    - match: '\s+[\(]*  '
+    - match: '\s+\(*  '
       set: cc-let-id-search
     - match: ''
       set: cc-let-id-search

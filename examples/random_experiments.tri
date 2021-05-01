@@ -368,6 +368,19 @@ func expose ($cat as any List) {
 	)
 };
 
+// UPDATE 2021-05-02, same function as above but with the new syntax:
+macro func expose ($cat as any List) {
+	let cat = eval cat;
+	
+	code {
+		// using `$$()` to clarify the name is the evaluated `cat[0]` rather than 'cat[0]'
+		let $$(cat[0]) = $$(cat[0]);
+		if $$(cat) length > 1 {
+			expose $$(cat[1..]);
+		};
+	}
+};
+
 // This:
 category Category (
 	object Object  [$a, $b, ..., $z];
@@ -1367,4 +1380,25 @@ multi func fib ($n as 0..50) --> nat {
     fib (0) ==> 0,
     fib (1) ==> 1,
     fib $n  ==> fib (n-1) + fib (n-2)
+}
+
+--------------------------------------------------
+
+// Macros, code and interpolation
+
+let macro name = code {fib};
+let macro var  = code {n};
+
+func up to $n {0..n}
+
+macro func ret $type {
+	code {--> $$(eval type)}
+}
+
+func $$(name) ($($$(var)) as up to 50) $$(ret nat) {
+	...
+}
+// is equivalent to:
+func fib ($n as 0..50) --> nat {
+	...
 }
