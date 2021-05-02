@@ -1437,3 +1437,20 @@ if True {
 
 // 'run' solves the problem since at runtime only intentional or-patterns can exist
 // and not ones created by the compiler. All values will be known at runtime.
+
+// ----------------
+
+// Perhaps it's better to rename `is` to `is [a|an]` to avoid confusion?
+let $x is [a|an] $t = $x matches $t; // TODO: let-bracket-group syntax highlighting!
+
+// And then define a new, different function `is` like this:
+func $x is $y {
+	run (x is a y)
+}
+
+// Then, it's clear: the below sounds weird, so don't use it:
+if x is an a|b|c|d|e|f {...}
+// Instead:
+if x is a|b|c|d|e|f {...}
+// And only use `is [a|an]` with types (then it sounds right!):
+if a is an int|string {...}
