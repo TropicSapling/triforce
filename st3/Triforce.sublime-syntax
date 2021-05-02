@@ -11,7 +11,7 @@ variables:
   var_identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
 
   # Keywords
-  keyword_ctrl:      '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|which|matches|is|could\s+be|prerun|run|export(\s+all)?|import(\s+all)?|except|from|into|expose|print(ln)?|async\s+container|eval|ensure)'
+  keyword_ctrl:      '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|which|matches|is(\s+(a|an))?|could\s+be|prerun|run|export(\s+all)?|import(\s+all)?|except|from|into|expose|print(ln)?|async\s+container|eval|ensure)'
   keyword_type:      '(bool|nat|int|fraction|number|string)'
   keyword_type_spec: '(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)'
   keyword_const:     '(True|False|this|caller)'
@@ -38,30 +38,42 @@ contexts:
   ################################################################################
 
   truly-universal:
-    - match: '\$\$'
-      scope: source.triforce
     - match: '\b__{{identifier}}__\b'
       scope: markup.heading
 
   universal:
     - match: '\\.'
       scope: constant.character.escape.triforce
-    - match: '(code)\s*([({])'
+    - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
+      scope: storage.type.triforce
+      push:
+        - meta_content_scope: markup.italic
+        - match: '\s*[({]'
+          set: code-group
+        - match: '\s*{{identifier}}'
+          scope: markup.italic
+          pop: true
+    - match: '(\$\$)(just)?'
       captures:
-        1: storage.type.triforce
-        2: source.triforce
-      push: code-group
+        2: variable.annotation.triforce
     - include: comments
     - include: truly-universal
 
   cc-universal:
     - match: '\\.'
       scope: cc.constant.character.escape.triforce
-    - match: '(code)\s*([({])'
+    - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
+      scope: cc.storage.type.triforce
+      push:
+        - meta_content_scope: markup.italic
+        - match: '\s*[({]'
+          set: cc-code-group
+        - match: '\s*{{identifier}}'
+          scope: markup.italic
+          pop: true
+    - match: '(\$\$)(just)?'
       captures:
-        1: cc.storage.type.triforce
-        2: source.triforce
-      push: cc-code-group
+        2: cc.variable.annotation.triforce
     - include: cc-comments
     - include: truly-universal
 

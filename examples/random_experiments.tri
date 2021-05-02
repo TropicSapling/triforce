@@ -1386,20 +1386,45 @@ multi func fib ($n as 0..50) --> nat {
 
 // Macros, code and interpolation
 
-let macro name = code {fib};
-let macro var  = code {n};
+// > literally   ident   => (ident_285b52f49ac52637)
+// > literally ((ident)) => (ident_285b52f49ac52637)
+// 
+// > literally just   ident   => ident_285b52f49ac52637
+// > literally just ((ident)) => ident_285b52f49ac52637
+// 
+// > literally unmangled   expr   => (expr)
+// > literally unmangled ((expr)) => (expr)
+// 
+// `literally just` + `literally unmangled` = `literally as is`
+// 
+// > literally as is   expr   => expr
+// > literally as is ((expr)) => expr
+// 
+// Also, mangling is not done on identifiers inserted using `$$(...)`, so assuming:
+// > let x = literally as is ident;
+// Then:
+// > literally (println $$(x)) => (println (ident))
 
-func up to $n {0..n}
+let name = literally as is fib;
+let var  = literally as is n;
 
-macro func ret $type {
-	code {--> $$(eval type)}
+// Without `as is`, `fib` would turn into something like `(fib_317d481089b8c8fe)`
+//> let name = literally fib;
+
+macro func up to ($n as literally as is fifty) {
+	let fifty = 50; 0..(eval n)
 }
 
-func $$(name) ($($$(var)) as up to 50) $$(ret nat) {
+func ret $type {
+	literally as is (--> $$(type))
+}
+
+// `$$just(x)` is shorthand for `$$(literally just $$(x))`
+func $$just(name) ($($$just(var)) as up to fifty) $$just(ret nat) {
 	...
 }
 // is equivalent to:
-func fib ($n as 0..50) --> nat {
+func fib ($(n) as 0..50) --> (nat) {
 	...
 }
 
