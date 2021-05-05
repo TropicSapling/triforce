@@ -21,5 +21,5 @@ Add any other context or screenshots about the feature request here.
 
 **Vote on feature requests with:**
 - :confused: = negative opinion (i.e. "sounds a bit problematic")
-- :balance_scale: = mixed opinion (i.e. "idk, sounds so-so")
+- ~~:balance_scale: = mixed opinion (i.e. "idk, sounds so-so")~~ [GitHub doesn't support this]
 - :+1: = positive opinion (i.e. "sounds good")
