@@ -735,6 +735,16 @@ let n = any suitable int; // <=> suitable of ...|-1|0|1|...
 
 println n; // prints '4'
 
+// Fuzzy Logic example:
+
+func not $x {1 - x}
+
+let x = ...;
+
+x :== not x;
+x :== 1 - x;
+x :== 0.5;
+
 --------------------------------------------------
 
 func assert_positive($n as 0|1|...) {}
@@ -1346,7 +1356,7 @@ macro func if $cond [then $tbody | {$tbody}] [else [$fbody | {$fbody}]]? {
 	let fbody = fbody unless []#1 == "" then ();
 //>	let fbody = fbody unless fbody is UNPROVIDED then ();
 	
-    code {
+	code {
 		func if (True)  then $tbody else $fbody {tbody()}
 		func if (False) then $tbody else $fbody {fbody()}
 
@@ -1439,9 +1449,9 @@ if run (x == a || x == b || x == c || x == d || x == e || x == f) {
 }
 
 // NOTE: The 'run' is required. It ensures that all of the checks are done during runtime.
-//       Without it, the compiler will attempt to resolve some things during compilation,
-//       which will get weird because `a`, `b`, `c`, etc. probably don't have 1 known
-//       value until runtime.
+//		 Without it, the compiler will attempt to resolve some things during compilation,
+//		 which will get weird because `a`, `b`, `c`, etc. probably don't have 1 known
+//		 value until runtime.
 if x is a|b|c|d|e|f {
 	...
 }
@@ -1479,3 +1489,40 @@ if x is an a|b|c|d|e|f {...}
 if x is a|b|c|d|e|f {...}
 // And only use `is [a|an]` with types (then it sounds right!):
 if a is an int|string {...}
+
+--------------------------------------------------
+
+// Fuzzy Logic: `x :== !x` <=> `x :== 1 - x` <=> `x :== 0.5`
+// Arthur Prior:
+// - "This statement is false." <=> "This statement is true and this statement is false."
+// - `x :== !x` <=> `x && x :== !x && x` <=> `x && x :== False` <=> `x :== False`
+
+func "This sentence is not true" is true {
+	//> !("This sentence is not true" is true)
+	if "This sentence is not true" is true then
+		!True :== False
+	else
+		!!True :== True
+}
+
+let the_answer = "This sentence is not true" is true;
+
+the_answer :== UNDEFINED;
+
+--------------------------------------------------
+
+// Recursive variables are rarely useful, but here's an interesting example:
+let n: int = 0;
+let rec x = if n++ < 123 then x + 1 else 0; // x = 123
+
+// More useful are recursive functions...
+let rec fib $n = $n => {
+	if n == 0 then 0 else
+	if n == 1 then 1 else fib (n-1) + fib (n-2)
+};
+
+// ... which are more commonly written like this:
+func fib $n {
+	if n == 0 then 0 else
+	if n == 1 then 1 else fib (n-1) + fib (n-2)
+}
