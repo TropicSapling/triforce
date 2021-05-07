@@ -1536,3 +1536,21 @@ func fib $n {
 	if n == 0 then 0 else
 	if n == 1 then 1 else fib (n-1) + fib (n-2)
 }
+
+--------------------------------------------------
+
+// Know the difference!
+
+{
+	// Defines an *immutable* variable and checks that it is an `int`
+	let var = 123: int;
+//>	let var = "hello world": int; // ERROR!
+
+//>	var = 456; // ERROR!
+
+	// Defines a *mutable* variable that must always stay an `int`
+	let var: int = 123;
+
+	var = 456;
+//>	var = "not an int"; // ERROR!
+}
