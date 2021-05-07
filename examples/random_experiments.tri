@@ -735,6 +735,16 @@ let n = any suitable int; // <=> suitable of ...|-1|0|1|...
 
 println n; // prints '4'
 
+// All of the `:` operators return their second argument,
+// in order to make things like the following work properly:
+x :< y :< z;
+x :> y :> z;
+
+10 :< 15 :< 20; // `:== (15 :< 20)` => OK
+10 :< 20 :< 15; // `:== (20 :< 15)` => ERROR
+
+1 + 2 + 3 :== 3 + 3 :== 6;
+
 // Fuzzy Logic example:
 
 func not $x {1 - x}
@@ -1507,7 +1517,7 @@ func "This sentence is not true" is true {
 
 let the_answer = "This sentence is not true" is true;
 
-the_answer :== UNDEFINED;
+the_answer is ~UNDEFINED: False; // the_answer = UNDEFINED
 
 --------------------------------------------------
 

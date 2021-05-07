@@ -2,7 +2,19 @@
 // |                EXAMPLE 1                |
 // -------------------------------------------
 
-// n: 0.. (dynamically typed)
+// During compilation, the compiler analyses the program and tries to figure out what
+// potential values expressions might evaluate to at runtime. It puts these potential
+// values into or-patterns for each expression.
+// 
+// Some expressions do however never return; instead they crash or loop forever.
+// If the compiler cannot exclude the possibility of this happening for an expression,
+// it will add the special `UNDEFINED` value to its or-pattern.
+// 
+// Below is an example of this.
+
+let ($a as nat) - ($b as nat) = $a $b => a - b unless b > a then panic "below 0!";
+
+let n = nat;
 
 // - n == n is True
 // - The remaining terms of LHS & RHS are known
@@ -29,6 +41,28 @@ UNDEFINED|0|1|...  * 2 + 2 == 0|2|4...
 // and it's irrelevant if there are more potential UNDEFINEDs,
 // it stops here and returns:
 => UNDEFINED|True|False
+
+// Basically, `UNDEFINED` is propagating just like `???`.
+// It can be given to any function and will make it return `UNDEFINED`.
+   UNDEFINED * 2 + 2 == n * 2
+=> UNDEFINED     + 2 == n * 2
+=> UNDEFINED         == n * 2
+=> UNDEFINED
+// Note that this means that you can't directly check if something equals `UNDEFINED`,
+// since `x == UNDEFINED` just returns `UNDEFINED`. However, it is still possible to do
+// it indirectly by doing `!(x is ~UNDEFINED)`. This is because `~UNDEFINED` is built-in
+// to mean an or-pattern excluding `UNDEFINED`. This is necessary because all other
+// or-patterns implicitly include `UNDEFINED`:
+nat :== 0|1|... :== 0|1|...|UNDEFINED;
+// To override this default behaviour, one can add `& ~UNDEFINED` to the or-pattern:
+nat & ~UNDEFINED :== 0|1|... & ~UNDEFINED;
+
+// Really, typing `UNDEFINED` has no good use outside of `~UNDEFINED`. It could be used
+// as an alternative to `???`, but doing so will just cause confusion and problems.
+// For that reason, `UNDEFINED` on its own will probably give a warning on compilation.
+
+// (Also, `~~UNDEFINED` <=> `UNDEFINED` if it wasn't obvious, so `x is ~~UNDEFINED`
+//  will still become `x is UNDEFINED` and then `UNDEFINED`)
 
 // -------------------------------------------
 // |                EXAMPLE 2                |
