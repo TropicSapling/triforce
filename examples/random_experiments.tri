@@ -1566,6 +1566,8 @@ unit kg;
 unit m;
 unit s;
 
+// New units can be created through multiplication and division of existing units.
+
 unit N = kg*m/s^2; // or maybe `s**2` if `^` used for something else
 
 let g = 9.81 <m/s^2>;
@@ -1573,7 +1575,10 @@ let g = 9.81 <m/s^2>;
 let andrew_office_height = 3.5 <m>;
 
 let impact_speed = sqrt (2 * g * andrew_office_height): frac <m/s>;
-//> let impact_speed = sqrt (2 * g + andrew_office_height); // ERROR: unit mismatch
+
+// Adding or subtracting things with different units causes a unit mismatch.
+// Here, we attempt to add `2*g: frac <m/s^2>` and `andrew_office_height: frac <m>`:
+let impact_speed = sqrt (2 * g + andrew_office_height); // ERROR: unit mismatch
 
 // Defining a different, non-unit `m` here. It's in a separate namespace => no conflict.
 let m = 65 <kg>;
