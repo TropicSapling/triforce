@@ -839,8 +839,8 @@ multi func fib ($n as any Int) --> any Int {
 let pet: _ = UNDEFINED; // maybe change to 'declare type pet' or 'let pet: anything = UNDEFINED'?
 
 // Objects are values with properties
-object Dog [$name as string]
-object Cat [$name as string]
+object Dog [$name as str]
+object Cat [$name as str]
 
 pet |= any Dog|Cat;
 
@@ -1155,13 +1155,13 @@ macro func if $cond then $tbody else $fbody {
 
 --------------------------------------------------
 
-func f($inp as number|string) {
+func f($inp as num|str) {
 	let a: auto = inp;
 
 	// 'inp' is not changed after being assigned to 'a'
 	// and 'a' is not changed either...
 
-	if inp is number {
+	if inp is num {
 		// ... so inside here it knows 'inp' and 'a' must be numbers
 		let n = a + 123; // and so this is allowed
 
@@ -1189,7 +1189,7 @@ func f($inp as number|string) {
 // 1. The first line is kept as-is, unless it is only whitespace; then it is removed.
 // 2. On the lines below, all indentation before the least-indented characters is removed.
 // 3. Additionally, the last line is removed if it is only whitespace.
-func baselined ($str as string) --> string {...}
+func baselined ($s as str) --> str {...}
 
 let unwanted_str = "This
                     string
@@ -1197,11 +1197,11 @@ let unwanted_str = "This
                     multiple
                     lines";
 
-let str = baselined "This
-                     string
-                     spans
-                     multiple
-                     lines";
+let str1 = baselined "This
+                      string
+                      spans
+                      multiple
+                      lines";
 
 let str2 = baselined "
                      macro func if $cond then $tbody else $fbody {
@@ -1237,7 +1237,7 @@ println unwanted_str;
 //                     multiple
 //                     lines
 
-println str;
+println str1;
 // This
 // string
 // spans
@@ -1498,7 +1498,7 @@ if x is an a|b|c|d|e|f {...}
 // Instead:
 if x is a|b|c|d|e|f {...}
 // And only use `is [a|an]` with types (then it sounds right!):
-if a is an int|string {...}
+if a is an int|str {...}
 
 --------------------------------------------------
 
@@ -1554,3 +1554,34 @@ func fib $n {
 	var = 456;
 //>	var = "not an int"; // ERROR!
 }
+
+--------------------------------------------------
+
+// Units of measure - sketch based on F#
+// https://docs.microsoft.com/en-us/archive/blogs/andrewkennedy/units-of-measure-in-f-part-one-introducing-units
+
+// Unit decls & defs could be just like `let` except would define the units only within
+// a special unit namespace making them only usable within `<...>`.
+unit kg;
+unit m;
+unit s;
+
+unit N = kg*m/s^2; // or maybe `s**2` if `^` used for something else
+
+let g = 9.81 <m/s^2>;
+
+let andrew_office_height = 3.5 <m>;
+
+let impact_speed = sqrt (2 * g * andrew_office_height): frac <m/s>;
+//> let impact_speed = sqrt (2 * g + andrew_office_height); // ERROR: unit mismatch
+
+// Defining a different, non-unit `m` here. It's in a separate namespace => no conflict.
+let m = 65 <kg>;
+let F = m*g;
+
+F: frac <kg*m/s^2>;
+F: frac <N>;
+
+println F; // "637.65 N" maybe, or maybe without the unit afterwards?
+
+// This is a very incomplete sketch btw. Will need to think it through a lot more.
