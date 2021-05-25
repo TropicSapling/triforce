@@ -12,7 +12,7 @@ variables:
 
   # Keywords
   keyword_ctrl:      '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|which|matches|is(\s+(a|an))?|could\s+be|prerun|run|export(\s+all)?|import(\s+all)?|except|from|into|expose|print(ln)?|async\s+container|eval|ensure)'
-  keyword_type:      '(bool|nat|int|fraction|number|string)'
+  keyword_type:      '(bool|nat|int|frac|num|str)'
   keyword_type_spec: '(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)'
   keyword_const:     '(True|False|this|caller)'
   keyword_misc:      '(as|(all\s+)?in|any(\s+suitable|of)?|optionally|recollected|listified|codified|stringified)'
@@ -47,15 +47,25 @@ contexts:
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
       scope: storage.type.triforce
       push:
-        - meta_content_scope: markup.italic
-        - match: '\s*[({]'
+        - match: '[({]\n'
+          set: code-block
+        - match: '[({]'
           set: code-group
-        - match: '\s*{{identifier}}'
-          scope: markup.italic
+        - match: '{{identifier}}'
+          scope: markup.raw
           pop: true
-    - match: '(\$\$)(just)?'
+    - match: '(\$\$)(just)?[({]'
       captures:
         2: variable.annotation.triforce
+      push:
+        - match: '[)}]'
+          pop: true
+        - match: ''
+          push:
+            - clear_scopes: true
+            - match: '(?=[)}])'
+              pop: true
+            - include: general
     - include: comments
     - include: truly-universal
 
@@ -65,11 +75,12 @@ contexts:
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
       scope: cc.storage.type.triforce
       push:
-        - meta_content_scope: markup.italic
-        - match: '\s*[({]'
+        - match: '[({]\n'
+          set: cc-code-block
+        - match: '[({]'
           set: cc-code-group
-        - match: '\s*{{identifier}}'
-          scope: markup.italic
+        - match: '{{identifier}}'
+          scope: markup.raw
           pop: true
     - match: '(\$\$)(just)?'
       captures:
@@ -145,7 +156,7 @@ contexts:
     - match: '\b{{decl_sym}}\b'
       scope: storage.type.triforce
 
-    - match: '\b(decl|let(\s+macro)?)\b'
+    - match: '\b(decl|let(\s+(macro|rec))?)\b'
       scope: storage.type.triforce
       push: let-id-search-start
 
@@ -315,7 +326,7 @@ contexts:
     - match: '`'
       scope: markup.bold
       embed: cc-general
-      escape: '(`)'
+      escape: '(`)|$'
       escape_captures:
         1: comment.line.triforce markup.bold
     
@@ -371,7 +382,7 @@ contexts:
     - match: '`'
       scope: markup.bold
       embed: cc-general
-      escape: '(`)'
+      escape: '(`)|$'
       escape_captures:
         1: comment.line.triforce markup.bold
   
@@ -419,7 +430,7 @@ contexts:
   operators:
     - match: \.{2,3}
       scope: keyword.operator.range.triforce
-    - match: ':?[!<>=]=|[<>]'
+    - match: ':?([!<>=]=|[<>])'
       scope: keyword.operator.comparison.triforce
     - match: '(?:[-+%/*^&|]|<<|>>)?='
       scope: keyword.operator.assignment.triforce
@@ -440,7 +451,7 @@ contexts:
   cc-operators:
     - match: \.{2,3}
       scope: cc.keyword.operator.range.triforce
-    - match: ':?[!<>=]=|[<>]'
+    - match: ':?([!<>=]=|[<>])'
       scope: cc.keyword.operator.comparison.triforce
     - match: '(?:[-+%/*^&|]|<<|>>)?='
       scope: cc.keyword.operator.assignment.triforce
@@ -553,16 +564,26 @@ contexts:
   # TODO: split below into group & block to get correct meta.group & meta.block
 
   code-group:
-    - meta_scope: markup.italic meta.block.triforce
+    - meta_scope: markup.raw meta.block.triforce
     - match: '[)}]'
-      scope: markup.italic
       pop: true
     - include: general
 
   cc-code-group:
-    - meta_scope: markup.italic meta.block.triforce
+    - meta_scope: markup.raw meta.block.triforce
     - match: '[)}]'
-      scope: markup.italic
+      pop: true
+    - include: cc-general
+  
+  code-block:
+    - meta_content_scope: markup.raw meta.block.triforce
+    - match: '\s*[)}]'
+      pop: true
+    - include: general
+  
+  cc-code-block:
+    - meta_content_scope: markup.raw meta.block.triforce
+    - match: '\s*[)}]'
       pop: true
     - include: cc-general
 
@@ -602,12 +623,19 @@ contexts:
     - match: ''
       set: cc-func-id-search
   
+  # Should clean up below; a lot of boilerplate that can be grouped together
+  
   func-id-search:
     - match: '(\\)(.)'
       captures:
         1: cc.constant.character.escape.triforce # cc for fade effect
         2: entity.name.function.triforce
     - include: universal
+    - match: '"'
+      scope: punctuation.definition.string.begin.triforce
+      push: double-quoted-string
+    - match: '\b{{numbers}}\b'
+      scope: constant.numeric.triforce
     - match: '(?=\()'
       push: group
     - match: '(?=\[)'
@@ -628,6 +656,11 @@ contexts:
         1: cc.constant.character.escape.triforce
         2: cc.entity.name.function.triforce
     - include: cc-universal
+    - match: '"'
+      scope: punctuation.definition.string.begin.triforce
+      push: cc-double-quoted-string
+    - match: '\b{{numbers}}\b'
+      scope: cc.constant.numeric.triforce
     - match: '(?=\()'
       push: cc-group
     - match: '(?=\[)'
@@ -648,6 +681,11 @@ contexts:
         1: cc.constant.character.escape.triforce # cc for fade effect
         2: entity.name.function.triforce
     - include: universal
+    - match: '"'
+      scope: punctuation.definition.string.begin.triforce
+      push: double-quoted-string
+    - match: '\b{{numbers}}\b'
+      scope: constant.numeric.triforce
     - match: '(?=\()'
       push: group
     - match: '(?=\[)'
@@ -668,6 +706,11 @@ contexts:
         1: cc.constant.character.escape.triforce
         2: cc.entity.name.function.triforce
     - include: cc-universal
+    - match: '"'
+      scope: punctuation.definition.string.begin.triforce
+      push: cc-double-quoted-string
+    - match: '\b{{numbers}}\b'
+      scope: cc.constant.numeric.triforce
     - match: '(?=\()'
       push: cc-group
     - match: '(?=\[)'
