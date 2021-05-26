@@ -21,7 +21,7 @@ variables:
   decl_sym: '(decl(\s+(sym(indies|block)))|enclosed\s+by|with\s+escaper)'
 
   # Numbers
-  digits:  '(0(x[0-9a-f_]+|o[0-7_]+|b[01_]+)|[0-9_]+)'
+  digits:  '(0(x[0-9a-fA-F_]+|o[0-7_]+|b[01_]+)|[0-9_]+)'
   numbers: '(-)?{{digits}}(\.{{digits}})?([iu](8|16|32|64|128|size)|f(loat)?(32|64))?'
 
   # Misc.
@@ -156,7 +156,7 @@ contexts:
     - match: '\b{{decl_sym}}\b'
       scope: storage.type.triforce
 
-    - match: '\b(decl|let(\s+(macro|rec))?)\b'
+    - match: '\b(decl|unit|let(\s+(macro|rec))?)\b'
       scope: storage.type.triforce
       push: let-id-search-start
 
@@ -236,7 +236,7 @@ contexts:
     - match: '\b{{decl_sym}}\b'
       scope: cc.storage.type.triforce
 
-    - match: '\b(decl|let(\s+macro)?)\b'
+    - match: '\b(decl|unit|let(\s+macro)?)\b'
       scope: cc.storage.type.triforce
       push: cc-let-id-search-start
 
