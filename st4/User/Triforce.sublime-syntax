@@ -1,6 +1,7 @@
 %YAML 1.2
 ---
-# See http://www.sublimetext.com/docs/3/syntax.html
+# See http://www.sublimetext.com/docs/syntax.html
+version: 2
 name: Triforce
 file_extensions:
   - tri
@@ -319,8 +320,7 @@ contexts:
       embed: cc-general
       escape: '^\s*(///+)\s*(```)|^(?!\s*//)'
       escape_captures:
-        1: comment.line.triforce
-        2: comment.line.triforce markup.bold
+        2: markup.bold
     
     # `Inline code`
     - match: '`'
@@ -328,7 +328,7 @@ contexts:
       embed: cc-general
       escape: '(`)|$'
       escape_captures:
-        1: comment.line.triforce markup.bold
+        1: markup.bold
     
     # *Italic*
     - match: '\*(?!\*)|\*(?=\*\*)'
@@ -384,7 +384,7 @@ contexts:
       embed: cc-general
       escape: '(`)|$'
       escape_captures:
-        1: comment.line.triforce markup.bold
+        1: markup.bold
   
   doc-comment:
     - meta_scope: comment.line.triforce

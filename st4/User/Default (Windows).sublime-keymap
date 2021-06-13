@@ -206,5 +206,8 @@
         [
             { "key": "selector", "operator": "not_equal", "operand": "source.triforce" }
         ]
-    }
+    },
+    
+    // Ctrl+shift+C to copy code with formatting & highlighting (pastable in Word)
+    { "keys": ["ctrl+shift+c"], "command": "copy_as_html" }
 ]
