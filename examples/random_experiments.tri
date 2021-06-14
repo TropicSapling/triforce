@@ -281,21 +281,21 @@ func $this where ($contract as frozen any Bool) {
 
 // Something is an *object* if it's atomic or only contains properties of itself
 object Player [
-  $x      as any Int,
-  $y      as any Int,
-  $health as any Double
+	$x      as any Int,
+	$y      as any Int,
+	$health as any Double
 ];
 
 let HealthContract = frozen (
-  this health > 50.0 &&
-  this health < 100.0
+	this health > 50.0 &&
+	this health < 100.0
 );
 
 // Something is a *category* if it contains objects that aren't properties of itself
 let items = [
-  Dirt,
-  Stone,
-  Wood
+	Dirt,
+	Stone,
+	Wood
 ];
 
 func throw ($item as any of items) from ($player as any Player fulfilling HealthContract) {...};
@@ -484,16 +484,16 @@ any Bool == any of [Bool.True, Bool.False] == Bool.True|Bool.False
 
 // Another example
 category Shape (
-  object Rectangle [
-    $width,
-    $height
-  ];
+	object Rectangle [
+		$width,
+		$height
+	];
 
-  object Circle [
-    $radius
-  ];
-  
-  export all;
+	object Circle [
+		$radius
+	];
+
+	export all;
 );
 
 expose Shape; // so we don't need to type Shape.Circle and Shape.Rectangle all the time
@@ -685,7 +685,7 @@ let transformed_items = each item in items recollected as transformed item;
 
 // Recursive multi-array for-each
 rec for each [a, b] in [A, B] {
-  R += a + b;
+	R += a + b;
 }
 
 // i.e.
@@ -693,20 +693,20 @@ let X = [[1, 2], [3, 4]];
 let Y = [[5, 6], [7, 8]];
 let R: any List = [];
 rec for each [x, y] in [X, Y] {
-  R += x + y;
+	R += x + y;
 }
 
 println R; // prints "[[6, 8], [10, 12]]"
 
 // Then maybe you could using this define shortcuts for common operations:
 func $arr $op..$op $arr2 {
-  let res: any List = [];
-  
-  rec for each [a, b] in [arr, arr2] {
-    res += a op b;
-  }
-  
-  res
+	let res: any List = [];
+
+	rec for each [a, b] in [arr, arr2] {
+		res += a op b;
+	}
+
+	res
 }
 
 X +..+ Y // => '[[1+5, 2+6], [3+7, 4+8]]'
@@ -1173,14 +1173,14 @@ func f($inp as num|str) {
 		a = SomeObjectThatsNotANumberNorString;
 	}
 
-    // Also, function parameters should probably be immutable by default,
-    // similar to how it is with 'let' (this is the case in Rust).
-    // Then the below statement wouldn't be allowed by default:
-    inp = 789;
+	// Also, function parameters should probably be immutable by default,
+	// similar to how it is with 'let' (this is the case in Rust).
+	// Then the below statement wouldn't be allowed by default:
+	inp = 789;
 
-    // To allow mutation, Rust uses something similar to 'mut $inp'.
-    // Nim simply forces you to do something like 'let inp: auto = inp'.
-    // Btw, supposedly this immutability also increases performance.
+	// To allow mutation, Rust uses something similar to 'mut $inp'.
+	// Nim simply forces you to do something like 'let inp: auto = inp'.
+	// Btw, supposedly this immutability also increases performance.
 }
 
 --------------------------------------------------
@@ -1192,30 +1192,30 @@ func f($inp as num|str) {
 func baselined ($s as str) --> str {...}
 
 let unwanted_str = "This
-                    string
-                    spans
-                    multiple
-                    lines";
+					string
+					spans
+					multiple
+					lines";
 
 let str1 = baselined "This
-                      string
-                      spans
-                      multiple
-                      lines";
+					  string
+					  spans
+					  multiple
+					  lines";
 
 let str2 = baselined "
-                     macro func if $cond then $tbody else $fbody {
-                         code {
-                             func if (True)  then $tbody else $fbody {tbody()}
-                             func if (False) then $tbody else $fbody {fbody()}
+					 macro func if $cond then $tbody else $fbody {
+						 code {
+							 func if (True)  then $tbody else $fbody {tbody()}
+							 func if (False) then $tbody else $fbody {fbody()}
 
-                             if $$(cond) then
-                                 () => $$(tbody)
-                             else
-                                 () => $$(fbody)
-                         }
-                     }
-                     ";
+							 if $$(cond) then
+								 () => $$(tbody)
+							 else
+								 () => $$(fbody)
+						 }
+					 }
+					 ";
 
 let str3 = baselined "
 	func divide even $a with $b --> int
@@ -1312,13 +1312,13 @@ println str3;
 /// >     }
 /// > }
 func into_boxed_slice($self) --> Box<[T], A> {
-    unsafe {
-        self.shrink_to_fit();
-        let me  = ManuallyDrop::new(self);
-//>     let buf = ptr::read(&me.buf);
-//>     let len = me.len();
-        buf.into_box(len).assume_init()
-    }
+	unsafe {
+		self.shrink_to_fit();
+		let me  = ManuallyDrop::new(self);
+//>		let buf = ptr::read(&me.buf);
+//>		let len = me.len();
+		buf.into_box(len).assume_init()
+	}
 }
 
 --------------------------------------------------
@@ -1327,7 +1327,7 @@ func into_boxed_slice($self) --> Box<[T], A> {
 
 // Here, the first and second groups are optional.
 func [macro]? func $declaration [--> $ret_type]? \{$body} {
-    ...
+	...
 }
 
 // Here, both groups are NOT optional. In fact, the grouping is unnecessary here
@@ -1335,7 +1335,7 @@ func [macro]? func $declaration [--> $ret_type]? \{$body} {
 // having unnecessary groups like this will give a compiler warning. The warning
 // will also come along with a suggestion to add '?' to the end.
 func [macro] func $declaration [--> $ret_type] \{$body} {
-    ...
+	...
 }
 
 // Surrounding the entire function name in a group won't give a warning however,
@@ -1344,7 +1344,7 @@ func [macro] func $declaration [--> $ret_type] \{$body} {
 // recommended over using parentheses since it can't be confused with a parameter,
 // and really the brackets are the "parentheses of function names" you could say.
 func [macro func $declaration --> $ret_type {$body}] {
-    ...
+	...
 }
 
 // Now, here comes a more advanced function with 2 nested groups.
@@ -1395,11 +1395,11 @@ macro func if $cond [then $tbody | {$tbody}] [else [$fbody | {$fbody}]]? {
 /// > fib 2 == 1
 /// > fib 3 == 2
 multi func fib ($n as 0..50) --> nat {
-//> let i: auto = 0; // maybe not loop actually
-    
-    fib (0) ==> 0,
-    fib (1) ==> 1,
-    fib $n  ==> fib (n-1) + fib (n-2)
+//>	let i: auto = 0; // maybe not loop actually
+	
+	fib (0) ==> 0,
+	fib (1) ==> 1,
+	fib $n  ==> fib (n-1) + fib (n-2)
 }
 
 --------------------------------------------------
