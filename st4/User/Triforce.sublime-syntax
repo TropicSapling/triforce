@@ -12,11 +12,13 @@ variables:
   var_identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
 
   # Keywords
-  keyword_ctrl:      '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|fulfilling|where(\s+we)?|which|matches|is(\s+(a|an))?|could\s+be|prerun|run|export(\s+all)?|import(\s+all)?|except|from|into|expose|print(ln)?|async\s+container|eval|ensure)'
+  keyword_ctrl:      '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|eval|prerun|run|async\s+container)'
+  keyword_check:     '(as|fulfilling|where(\s+we)?|which|matches|is(\s+(a|an))?|could\s+be)'
+  keyword_namespace: '((ex|im)port(\s+all)?|except|from|into|expose)'
   keyword_type:      '(bool|nat|int|frac|num|str)'
   keyword_type_spec: '(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)'
   keyword_const:     '(True|False|this|caller)'
-  keyword_misc:      '(as|(all\s+)?in|any(\s+suitable|of)?|optionally|recollected|listified|codified|stringified)'
+  keyword_misc:      '({{keyword_check}}|{{keyword_namespace}}|(all\s+)?in|any(\s+suitable|of)?|optionally|recollected|listified|codified|stringified|ensure|print(ln)?)'
 
   # Declarations
   decl_sym: '(decl(\s+(sym(indies|block)))|enclosed\s+by|with\s+escaper)'
@@ -114,7 +116,7 @@ contexts:
       scope: constant.language.triforce
 
     - match: '\b{{keyword_misc}}\b'
-      scope: keyword.operator.triforce
+      scope: keyword.other.triforce
 
     - match: '\b[A-Z]{{var_identifier}}?'
       scope: support.function.triforce
@@ -194,7 +196,7 @@ contexts:
       scope: cc.constant.language.triforce
 
     - match: '\b{{keyword_misc}}\b'
-      scope: cc.keyword.operator.triforce
+      scope: cc.keyword.other.triforce
 
     - match: '\b[A-Z]{{var_identifier}}?'
       scope: cc.support.function.triforce

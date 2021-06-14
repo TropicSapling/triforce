@@ -15,7 +15,7 @@
 		"ASP",
 		"Graphviz",
 		"Textile",
-		"Vintage"
+		"Vintage",
 	],
 	
 	"rulers":
@@ -26,5 +26,5 @@
 	"theme": "Default.sublime-theme",
 	
 	// [RECOMMENDED]
-	"trim_automatic_white_space": false
+	"trim_automatic_white_space": false,
 }
