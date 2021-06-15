@@ -7,6 +7,8 @@
 
 	// [RECOMMENDED]
 	"color_scheme": "Packages/Color Scheme - Default/Monokai.sublime-color-scheme",
+	
+	"detect_indentation": false,
 
 	// [RECOMMENDED]
 	"draw_unicode_white_space": "none",
