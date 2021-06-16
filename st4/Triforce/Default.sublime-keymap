@@ -4,7 +4,7 @@
     // ========================================
     
     // Auto-indent (parenthesis) block on enter
-    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Parentheses.sublime-macro"}, "context":
+    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Add Line in Parentheses.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
             { "key": "setting.auto_indent", "operator": "equal", "operand": true },
@@ -15,7 +15,7 @@
     },
 
     // Auto-indent [bracket] block on enter
-    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Line in Brackets.sublime-macro"}, "context":
+    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Add Line in Brackets.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
             { "key": "setting.auto_indent", "operator": "equal", "operand": true },
@@ -69,12 +69,12 @@
     // ====================
 
     // Triforce (un)comment preparation
-    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Comment Prep.sublime-macro"}, "context":
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Comment Prep.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
         ]
     },
-    { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Comment Prep.sublime-macro"}, "context":
+    { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Comment Prep.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
         ]
@@ -85,7 +85,7 @@
     // ====================
 
     // Triforce comment insertion - for space indentation - case 1
-    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Insert Comment.sublime-macro"}, "context":
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Insert Comment.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
             { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
@@ -94,7 +94,7 @@
     },
 
     // Triforce comment insertion - for space indentation - case 2
-    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Insert Shifted Comment.sublime-macro"}, "context":
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Insert Shifted Comment.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
             { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
@@ -103,7 +103,7 @@
     },
 
     // Triforce comment insertion - for tab indentation - case 1
-    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Tab Insert Comment.sublime-macro"}, "context":
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Tab Insert Comment.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
             { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
@@ -112,7 +112,7 @@
     },
 
     // Triforce comment insertion - for tab indentation - case 2
-    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Tab Insert Shifted Comment.sublime-macro"}, "context":
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Tab Insert Shifted Comment.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
             { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
@@ -121,7 +121,7 @@
     },
 
     // Triforce comment addition
-    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Add Comment.sublime-macro"}, "context":
+    { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Add Comment.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
             { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
@@ -135,7 +135,7 @@
     // ====================
     
     // Triforce uncommenting - for space indentation
-    { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Uncomment.sublime-macro"}, "context":
+    { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Uncomment.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
             { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
@@ -144,7 +144,7 @@
     },
     
     // Triforce uncommenting - for tab indentation
-    { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Tab Uncomment.sublime-macro"}, "context":
+    { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Tab Uncomment.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
             { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
@@ -153,7 +153,7 @@
     },
     
     // Triforce uncommenting - for edge case 1
-    { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Uncomment Left Delete.sublime-macro"}, "context":
+    { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Uncomment Left Delete.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" },
             { "key": "preceding_text", "operator": "regex_match", "operand": "^$" },
@@ -175,7 +175,7 @@
     // ====================
     
     // Auto-comment on enter after *indented* doc comment ('/// ...' + enter)
-    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Autocomment Indented.sublime-macro"}, "context":
+    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Autocomment Indented.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce|source.rust" },
             { "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
@@ -184,30 +184,11 @@
     },
     
     // Auto-comment on enter after *unindented* doc comment ('/// ...' + enter)
-    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/User/Autocomment.sublime-macro"}, "context":
+    { "keys": ["enter"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Autocomment.sublime-macro"}, "context":
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce|source.rust" },
             { "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
             { "key": "preceding_text", "operator": "regex_contains", "operand": "^\\s*///.*$", "match_all": true }
         ]
-    },
-    
-    // ====================
-    //     ## Extras ##
-    // ====================
-    
-    // Extra keybindings for non-Triforce comments
-    { "keys": ["ctrl+7"], "command": "toggle_comment", "args": { "block": false }, "context":
-        [
-            { "key": "selector", "operator": "not_equal", "operand": "source.triforce" }
-        ]
-    },
-    { "keys": ["ctrl+shift+7"], "command": "toggle_comment", "args": { "block": true }, "context":
-        [
-            { "key": "selector", "operator": "not_equal", "operand": "source.triforce" }
-        ]
-    },
-    
-    // Ctrl+shift+C to copy code with formatting & highlighting (pastable in Word)
-    { "keys": ["ctrl+shift+c"], "command": "copy_as_html" }
+    }
 ]

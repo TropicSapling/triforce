@@ -1,0 +1,361 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/syntax.html
+version: 2
+name: TriforceCS
+scope: source.triforce
+hidden: true
+contexts:
+  main:
+    - include: cs-general
+
+  ################################################################################
+  ##                                                                            ##
+  ##                   ========  BASICALLY UNIVERSAL  ========                  ##
+  ##                                                                            ##
+  ################################################################################
+
+  cs-universal:
+    - match: '\\.'
+      scope: cs.constant.character.escape.triforce
+    - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
+      scope: cs.storage.type.triforce
+      push:
+        - match: '[({]\n'
+          set: cs-code-block
+        - match: '[({]'
+          set: cs-code-group
+        - match: '{{identifier}}'
+          scope: markup.raw
+          pop: true
+    - match: '(\$\$)(just)?'
+      captures:
+        2: cs.variable.annotation.triforce
+    - include: cs-comments
+    - include: truly-universal
+
+  ################################################################################
+  ##                                                                            ##
+  ##                   ============  CS GENERAL  ============                   ##
+  ##                                                                            ##
+  ################################################################################
+
+  cs-general:
+    - include: cs-universal
+
+    # Strings
+    - match: '"'
+      scope: cs.punctuation.definition.string.begin.triforce
+      push: cs-double-quoted-string
+
+    # Keywords
+    - match: '\b{{keyword_ctrl}}\b'
+      scope: cs.keyword.control.triforce
+
+    - match: '\b({{keyword_type}}|{{keyword_type_spec}})\b'
+      scope: cs.storage.type.triforce
+
+    - match: '\b{{keyword_const}}\b'
+      scope: cs.constant.language.triforce
+
+    - match: '\b{{keyword_misc}}\b'
+      scope: cs.keyword.other.triforce
+
+    - match: '\b[A-Z]{{var_identifier}}?'
+      scope: cs.support.function.triforce
+
+    # Numbers
+    - match: '\b{{numbers}}\b'
+      scope: cs.constant.numeric.triforce
+
+    # Operators
+    - include: cs-operators
+
+    # Punctuation
+    - include: punctuation
+
+    # Blocks & groups
+    - match: '(?=\{)'
+      push: cs-block
+
+    - match: '(?=\()'
+      push: cs-group
+
+    - match: '\['
+      scope: punctuation.section.group.begin.triforce
+      push:
+        - meta_scope: meta.group.triforce
+        - match: '\]'
+          scope: punctuation.section.group.end.triforce
+          pop: true
+        - include: cs-general
+
+    # Declarations & definitions
+    - match: '\b((partial\s+)?func)\b'
+      scope: cs.storage.type.triforce
+      push: cs-func-id-search-start
+
+    - match: '\b(multi\s+func)\b'
+      scope: cs.storage.type.triforce
+      push: [cs-multi-func-start, cs-func-id-search-start]
+
+    - match: '\b{{decl_sym}}\b'
+      scope: cs.storage.type.triforce
+
+    - match: '\b(decl|unit|let(\s+macro)?)\b'
+      scope: cs.storage.type.triforce
+      push: cs-let-id-search-start
+
+    - match: '\bcategory\b'
+      scope: cs.storage.type.triforce
+      push: cs-func-id-search-start
+    
+    - match: '\bobject\b'
+      scope: cs.storage.type.triforce
+      push: cs-obj-id-search-start
+
+  ################################################################################
+  ##                                                                            ##
+  ##                   =============  COMMENTS  =============                   ##
+  ##                                                                            ##
+  ################################################################################
+  
+  cs-comments:
+    - include: cs-line-comments
+    - include: block-comments
+  
+  cs-line-comments:
+    # Line comments within code comments
+    - include: cleared-line-comments
+    - match: '(?<!^|/)//'
+      scope: punctuation.definition.comment.triforce
+      push: line-comment
+
+  ################################################################################
+  ##                                                                            ##
+  ##                   ==============  STRINGS  ==============                  ##
+  ##                                                                            ##
+  ################################################################################
+
+  cs-double-quoted-string:
+    - meta_scope: cs.string.quoted.double.triforce
+    - match: '\\.'
+      scope: cs.constant.character.escape.triforce
+    - match: '"'
+      scope: cs.punctuation.definition.string.end.triforce
+      pop: true
+
+  ################################################################################
+  ##                                                                            ##
+  ##                   =============  OPERATORS  =============                  ##
+  ##                                                                            ##
+  ################################################################################
+
+  cs-operators:
+    - match: \.{2,3}
+      scope: cs.keyword.operator.range.triforce
+    - match: ':?([!<>=]=|[<>])'
+      scope: cs.keyword.operator.comparison.triforce
+    - match: '(?:[-+%/*^&|]|<<|>>)?='
+      scope: cs.keyword.operator.assignment.triforce
+    - match: '&&|\|\||!'
+      scope: cs.keyword.operator.logical.triforce
+    - match: '[-+%/*]'
+      scope: cs.keyword.operator.arithmetic.triforce
+    - match: '[&|^]|<<|>>'
+      scope: cs.keyword.operator.bitwise.triforce
+    - match: '[@~?#'']'
+      scope: cs.keyword.operator.triforce
+    - match: '\$'
+      scope: cs.keyword.operator.triforce
+      push: cs-op-dollar
+    - match: '\b_\b'
+      scope: cs.keyword.operator.triforce
+
+  cs-op-dollar:
+    - include: cs-universal
+    - match: '{{identifier}}'
+      scope: cs.variable.parameter.triforce
+      pop: true
+    - match: ''
+      pop: true
+
+  ################################################################################
+  ##                                                                            ##
+  ##                   ==========  BLOCKS & GROUPS  ==========                  ##
+  ##                                                                            ##
+  ################################################################################
+
+  cs-block:
+    - match: '\}'
+      scope: meta.block.triforce punctuation.section.block.end.triforce
+      pop: true
+    - match: '\{'
+      scope: punctuation.section.block.begin.triforce
+      push: [cs-block-body]
+
+  cs-block-body:
+    - meta_scope: meta.block.triforce
+    - match: '(?=\})'
+      pop: true
+    - include: cs-general
+
+  cs-group:
+    - match: '\)'
+      scope: meta.group.triforce punctuation.section.group.end.triforce
+      pop: true
+    - match: '\('
+      scope: punctuation.section.group.begin.triforce
+      push: [cs-group-body]
+
+  cs-group-body:
+    - meta_scope: meta.group.triforce
+    - match: '(?=\))'
+      pop: true
+    - include: cs-general
+  
+  # TODO: split below into group & block to get correct meta.group & meta.block
+
+  cs-code-group:
+    - meta_scope: markup.raw meta.block.triforce
+    - match: '[)}]'
+      pop: true
+    - include: cs-general
+  
+  cs-code-block:
+    - meta_content_scope: markup.raw meta.block.triforce
+    - match: '\s*[)}]'
+      pop: true
+    - include: cs-general
+
+  ################################################################################
+  ##                                                                            ##
+  ##                   ====  DECLARATIONS & DEFINITIONS  ====                   ##
+  ##                                                                            ##
+  ################################################################################
+  
+  ############## FUNCTIONS ###############
+
+  cs-multi-func-start:
+    - include: cs-universal
+    - match: '[{,]'
+      push: cs-func-id-search-start
+    - match: '}'
+      pop: true
+    - include: cs-general
+
+  cs-func-id-search-start:
+    - match: '\s+\(+  '
+      set: cs-func-id-search-group
+    - match: ''
+      set: cs-func-id-search
+  
+  # Should clean up below; a lot of boilerplate that can be grouped together
+
+  cs-func-id-search:
+    - match: '(\\)(.)'
+      captures:
+        1: cs.constant.character.escape.triforce
+        2: cs.entity.name.function.triforce
+    - include: cs-universal
+    - match: '"'
+      scope: punctuation.definition.string.begin.triforce
+      push: cs-double-quoted-string
+    - match: '\b{{numbers}}\b'
+      scope: cs.constant.numeric.triforce
+    - match: '(?=\()'
+      push: cs-group
+    - match: '(?=\[)'
+      push: cs-func-bracket-group
+    - match: '\$'
+      scope: cs.keyword.operator.triforce
+      push: cs-op-dollar
+    - match: '\?'
+      scope: source.triforce
+    - match: '(?=[{;]|-->|==>)'
+      pop: true
+    - match: '{{identifier}}|}|]'
+      scope: cs.entity.name.function.triforce
+  
+  cs-func-id-search-group:
+    - match: '(\\)(.)'
+      captures:
+        1: cs.constant.character.escape.triforce
+        2: cs.entity.name.function.triforce
+    - include: cs-universal
+    - match: '"'
+      scope: punctuation.definition.string.begin.triforce
+      push: cs-double-quoted-string
+    - match: '\b{{numbers}}\b'
+      scope: cs.constant.numeric.triforce
+    - match: '(?=\()'
+      push: cs-group
+    - match: '(?=\[)'
+      push: cs-func-bracket-group
+    - match: '\$'
+      scope: cs.keyword.operator.triforce
+      push: cs-op-dollar
+    - match: '\?'
+      scope: source.triforce
+    - match: '(?=\))'
+      set: cs-func-id-search
+    - match: '{{identifier}}|[{;}\]]'
+      scope: cs.entity.name.function.triforce
+  
+  cs-func-bracket-group:
+    - match: '\]'
+      scope: cs.meta.group.triforce cs.punctuation.section.group.end.triforce
+      pop: true
+    - match: '\['
+      scope: cs.punctuation.section.group.begin.triforce
+      push: [cs-func-bracket-group-body]
+  
+  cs-func-bracket-group-body:
+    - meta_scope: meta.group.triforce
+    - match: '(?=\])'
+      pop: true
+    - match: '\|'
+      scope: source.triforce
+    - match: '([{;]|-->|==>)'
+      scope: cs.entity.name.function.triforce
+    - include: cs-func-id-search
+
+  ############### OBJECTS ################
+  
+  cs-obj-id-search-start:
+    - match: '\s+[\(]*  '
+      set: cs-obj-id-search
+    - match: ''
+      set: cs-obj-id-search
+  
+  cs-obj-id-search:
+    - include: cs-universal
+    - match: '(?=\()'
+      push: cs-group
+    - match: '\$'
+      scope: cs.keyword.operator.triforce
+      push: cs-op-dollar
+    - match: '(?=[\[;])'
+      pop: true
+    - match: '{{identifier}}'
+      scope: cs.entity.name.function.triforce
+
+  ################# LET ##################
+
+  cs-let-id-search-start:
+    - match: '\s+\(*  '
+      set: cs-let-id-search
+    - match: ''
+      set: cs-let-id-search
+
+  cs-let-id-search:
+    - include: cs-universal
+    - match: '(?=\()'
+      push: cs-group
+    - match: '\$'
+      scope: cs.keyword.operator.triforce
+      push: cs-op-dollar
+    - match: '(?=[=:\[;])'
+      pop: true
+    - match: '{{identifier}}'
+      scope: cs.entity.name.function.triforce

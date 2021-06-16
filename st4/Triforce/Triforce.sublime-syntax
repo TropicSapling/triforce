@@ -6,30 +6,7 @@ name: Triforce
 file_extensions:
   - tri
 scope: source.triforce
-variables:
-  # Identifiers
-  identifier:     '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+|([!<>\-+%/*^&|@~?.]|==|##)[!<>\-+%/*^&|@~?.=#]*))'
-  var_identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
-
-  # Keywords
-  keyword_ctrl:      '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|eval|prerun|run|async\s+container)'
-  keyword_check:     '(as|fulfilling|where(\s+we)?|which|matches|is(\s+(a|an|any)(?!{{identifier}}))?|could\s+be)'
-  keyword_namespace: '((ex|im)port(\s+all)?|except|from|into|expose)'
-  keyword_type:      '(bool|nat|int|frac|num|str)'
-  keyword_type_spec: '(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)'
-  keyword_const:     '(True|False|this|caller)'
-  keyword_misc:      '({{keyword_check}}|{{keyword_namespace}}|(all\s+)?in|any(\s+suitable|of)?|optionally|recollected|listified|codified|stringified|ensure|print(ln)?)'
-
-  # Declarations
-  decl_sym: '(decl(\s+(sym(indies|block)))|enclosed\s+by|with\s+escaper)'
-
-  # Numbers
-  digits:  '(0(x[0-9a-fA-F_]+|o[0-7_]+|b[01_]+)|[0-9_]+)'
-  numbers: '(-)?{{digits}}(\.{{digits}})?([iu](8|16|32|64|128|size)|f(loat)?(32|64))?'
-
-  # Misc.
-  escaped_byte: '\\(x\h{2}|n|r|t|0|"|''|\\)'
-  escaped_char: '\\(x\h{2}|n|r|t|0|"|''|\\|u\{\h{1,6}\})'
+extends: [TriforceCommon.sublime-syntax, TriforceCC.sublime-syntax, TriforceCS.sublime-syntax]
 contexts:
   main:
     - include: general
@@ -39,10 +16,6 @@ contexts:
   ##                   ========  BASICALLY UNIVERSAL  ========                  ##
   ##                                                                            ##
   ################################################################################
-
-  truly-universal:
-    - match: '\b__{{identifier}}__\b'
-      scope: markup.heading
 
   universal:
     - match: '\\.'
@@ -70,25 +43,6 @@ contexts:
               pop: true
             - include: general
     - include: comments
-    - include: truly-universal
-
-  cc-universal:
-    - match: '\\.'
-      scope: cc.constant.character.escape.triforce
-    - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
-      scope: cc.storage.type.triforce
-      push:
-        - match: '[({]\n'
-          set: cc-code-block
-        - match: '[({]'
-          set: cc-code-group
-        - match: '{{identifier}}'
-          scope: markup.raw
-          pop: true
-    - match: '(\$\$)(just)?'
-      captures:
-        2: cc.variable.annotation.triforce
-    - include: cc-comments
     - include: truly-universal
 
   ################################################################################
@@ -173,96 +127,12 @@ contexts:
 
   ################################################################################
   ##                                                                            ##
-  ##                   ============  CC GENERAL  ============                   ##
-  ##                                                                            ##
-  ################################################################################
-
-  cc-general:
-    - include: cc-universal
-
-    # Strings
-    - match: '"'
-      scope: cc.punctuation.definition.string.begin.triforce
-      push: cc-double-quoted-string
-
-    # Keywords
-    - match: '\b{{keyword_ctrl}}\b'
-      scope: cc.keyword.control.triforce
-
-    - match: '\b({{keyword_type}}|{{keyword_type_spec}})\b'
-      scope: cc.storage.type.triforce
-
-    - match: '\b{{keyword_const}}\b'
-      scope: cc.constant.language.triforce
-
-    - match: '\b{{keyword_misc}}\b'
-      scope: cc.keyword.other.triforce
-
-    - match: '\b[A-Z]{{var_identifier}}?'
-      scope: cc.support.function.triforce
-
-    # Numbers
-    - match: '\b{{numbers}}\b'
-      scope: cc.constant.numeric.triforce
-
-    # Operators
-    - include: cc-operators
-
-    # Punctuation
-    - include: punctuation
-
-    # Blocks & groups
-    - match: '(?=\{)'
-      push: cc-block
-
-    - match: '(?=\()'
-      push: cc-group
-
-    - match: '\['
-      scope: punctuation.section.group.begin.triforce
-      push:
-        - meta_scope: meta.group.triforce
-        - match: '\]'
-          scope: punctuation.section.group.end.triforce
-          pop: true
-        - include: cc-general
-
-    # Declarations & definitions
-    - match: '\b((partial\s+)?func)\b'
-      scope: cc.storage.type.triforce
-      push: cc-func-id-search-start
-
-    - match: '\b(multi\s+func)\b'
-      scope: cc.storage.type.triforce
-      push: [cc-multi-func-start, cc-func-id-search-start]
-
-    - match: '\b{{decl_sym}}\b'
-      scope: cc.storage.type.triforce
-
-    - match: '\b(decl|unit|let(\s+macro)?)\b'
-      scope: cc.storage.type.triforce
-      push: cc-let-id-search-start
-
-    - match: '\bcategory\b'
-      scope: cc.storage.type.triforce
-      push: cc-func-id-search-start
-    
-    - match: '\bobject\b'
-      scope: cc.storage.type.triforce
-      push: cc-obj-id-search-start
-
-  ################################################################################
-  ##                                                                            ##
   ##                   =============  COMMENTS  =============                   ##
   ##                                                                            ##
   ################################################################################
 
   comments:
     - include: line-comments
-    - include: block-comments
-  
-  cc-comments:
-    - include: cc-line-comments
     - include: block-comments
 
   line-comments:
@@ -272,43 +142,6 @@ contexts:
     - match: '(?=///+)' # doc comments
       scope: punctuation.definition.comment.triforce
       push: doc-comment
-  
-  cc-line-comments:
-    # Line comments within code comments
-    - include: cleared-line-comments
-    - match: '(?<!^|/)//'
-      scope: punctuation.definition.comment.triforce
-      push: line-comment
-  
-  cleared-line-comments:
-    # Line comments, but scopes are cleared and contents ignored
-    - match: '^(?=\s*//+(\s*>)?)'
-      push:
-        - clear_scopes: true
-        - match: '\s*(//+)(\s*>)?'
-          captures:
-            1: source.triforce comment.line.triforce
-            2: source.triforce comment.line.triforce markup.bold
-          pop: true
-
-  block-comments:
-    # NOTE: Using IDE keybindings, multiple line comments can function as block comments.
-    #       This is the recommended way, and the below block comments are only supported
-    #       because some people prefer to use them instead. Depending on what consensus
-    #       is reached, they may be removed in the future in favor of minimalism.
-    - match: '/\*'
-      scope: punctuation.definition.comment.triforce
-      push: block-comment
-  
-  comment:
-    # Common syntax for all comments (excl. deprecated /* block comments */)
-    - match: '//+\s*(>)' # code comments
-      captures:
-        1: comment.line.triforce markup.bold
-      embed: cc-general
-      escape: '^(?!\s*//+\s*>)'
-    - match: '^(?!\s*//+)'
-      pop: true
   
   comment-markdown:
     # \Escaping
@@ -375,31 +208,11 @@ contexts:
       captures:
         1: markup.heading cc.punctuation.definition.heading
         2: comment.line.triforce markup.bold
-
-  line-comment:
-    - meta_scope: comment.line.triforce
-    - include: comment
-    
-    # `Inline code`
-    - match: '`'
-      scope: markup.bold
-      embed: cc-general
-      escape: '(`)|$'
-      escape_captures:
-        1: markup.bold
   
   doc-comment:
     - meta_scope: comment.line.triforce
     - include: comment
     - include: comment-markdown # only doc comments support markdown
-
-  block-comment:
-    # Currently, these comments don't support any advanced features
-    - meta_scope: comment.block.triforce
-    - match: '\*/'
-      scope: punctuation.definition.comment.triforce
-      pop: true
-    - include: block-comments
 
   ################################################################################
   ##                                                                            ##
@@ -413,14 +226,6 @@ contexts:
       scope: constant.character.escape.triforce
     - match: '"'
       scope: punctuation.definition.string.end.triforce
-      pop: true
-
-  cc-double-quoted-string:
-    - meta_scope: cc.string.quoted.double.triforce
-    - match: '\\.'
-      scope: cc.constant.character.escape.triforce
-    - match: '"'
-      scope: cc.punctuation.definition.string.end.triforce
       pop: true
 
   ################################################################################
@@ -450,27 +255,6 @@ contexts:
     - match: '\b_\b'
       scope: keyword.operator.triforce
 
-  cc-operators:
-    - match: \.{2,3}
-      scope: cc.keyword.operator.range.triforce
-    - match: ':?([!<>=]=|[<>])'
-      scope: cc.keyword.operator.comparison.triforce
-    - match: '(?:[-+%/*^&|]|<<|>>)?='
-      scope: cc.keyword.operator.assignment.triforce
-    - match: '&&|\|\||!'
-      scope: cc.keyword.operator.logical.triforce
-    - match: '[-+%/*]'
-      scope: cc.keyword.operator.arithmetic.triforce
-    - match: '[&|^]|<<|>>'
-      scope: cc.keyword.operator.bitwise.triforce
-    - match: '[@~?#'']'
-      scope: cc.keyword.operator.triforce
-    - match: '\$'
-      scope: cc.keyword.operator.triforce
-      push: cc-op-dollar
-    - match: '\b_\b'
-      scope: cc.keyword.operator.triforce
-
   op-dollar:
     - include: universal
     - match: '{{identifier}}'
@@ -478,28 +262,6 @@ contexts:
       pop: true
     - match: ''
       pop: true
-
-  cc-op-dollar:
-    - include: cc-universal
-    - match: '{{identifier}}'
-      scope: cc.variable.parameter.triforce
-      pop: true
-    - match: ''
-      pop: true
-
-  ################################################################################
-  ##                                                                            ##
-  ##                   ============  PUNCTUATION  ============                  ##
-  ##                                                                            ##
-  ################################################################################
-
-  punctuation:
-    - match: ';'
-      scope: punctuation.terminator.triforce
-    - match: '[:,]|-->'
-      scope: punctuation.separator.triforce
-    - match: '\.'
-      scope: punctuation.accessor.dot.triforce
 
   ################################################################################
   ##                                                                            ##
@@ -515,25 +277,11 @@ contexts:
       scope: punctuation.section.block.begin.triforce
       push: [block-body]
 
-  cc-block:
-    - match: '\}'
-      scope: meta.block.triforce punctuation.section.block.end.triforce
-      pop: true
-    - match: '\{'
-      scope: punctuation.section.block.begin.triforce
-      push: [cc-block-body]
-
   block-body:
     - meta_scope: meta.block.triforce
     - match: '(?=\})'
       pop: true
     - include: general
-
-  cc-block-body:
-    - meta_scope: meta.block.triforce
-    - match: '(?=\})'
-      pop: true
-    - include: cc-general
 
   group:
     - match: '\)'
@@ -543,25 +291,11 @@ contexts:
       scope: punctuation.section.group.begin.triforce
       push: [group-body]
 
-  cc-group:
-    - match: '\)'
-      scope: meta.group.triforce punctuation.section.group.end.triforce
-      pop: true
-    - match: '\('
-      scope: punctuation.section.group.begin.triforce
-      push: [cc-group-body]
-
   group-body:
     - meta_scope: meta.group.triforce
     - match: '(?=\))'
       pop: true
     - include: general
-
-  cc-group-body:
-    - meta_scope: meta.group.triforce
-    - match: '(?=\))'
-      pop: true
-    - include: cc-general
   
   # TODO: split below into group & block to get correct meta.group & meta.block
 
@@ -570,24 +304,12 @@ contexts:
     - match: '[)}]'
       pop: true
     - include: general
-
-  cc-code-group:
-    - meta_scope: markup.raw meta.block.triforce
-    - match: '[)}]'
-      pop: true
-    - include: cc-general
   
   code-block:
     - meta_content_scope: markup.raw meta.block.triforce
     - match: '\s*[)}]'
       pop: true
     - include: general
-  
-  cc-code-block:
-    - meta_content_scope: markup.raw meta.block.triforce
-    - match: '\s*[)}]'
-      pop: true
-    - include: cc-general
 
   ################################################################################
   ##                                                                            ##
@@ -605,25 +327,11 @@ contexts:
       pop: true
     - include: general
 
-  cc-multi-func-start:
-    - include: cc-universal
-    - match: '[{,]'
-      push: cc-func-id-search-start
-    - match: '}'
-      pop: true
-    - include: cc-general
-
   func-id-search-start:
     - match: '\s+\(+  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
       set: func-id-search-group
     - match: ''
       set: func-id-search
-
-  cc-func-id-search-start:
-    - match: '\s+\(+  '
-      set: cc-func-id-search-group
-    - match: ''
-      set: cc-func-id-search
   
   # Should clean up below; a lot of boilerplate that can be grouped together
   
@@ -651,31 +359,6 @@ contexts:
       pop: true
     - match: '{{identifier}}|}|]'
       scope: entity.name.function.triforce
-
-  cc-func-id-search:
-    - match: '(\\)(.)'
-      captures:
-        1: cc.constant.character.escape.triforce
-        2: cc.entity.name.function.triforce
-    - include: cc-universal
-    - match: '"'
-      scope: punctuation.definition.string.begin.triforce
-      push: cc-double-quoted-string
-    - match: '\b{{numbers}}\b'
-      scope: cc.constant.numeric.triforce
-    - match: '(?=\()'
-      push: cc-group
-    - match: '(?=\[)'
-      push: cc-func-bracket-group
-    - match: '\$'
-      scope: cc.keyword.operator.triforce
-      push: cc-op-dollar
-    - match: '\?'
-      scope: source.triforce
-    - match: '(?=[{;]|-->|==>)'
-      pop: true
-    - match: '{{identifier}}|}|]'
-      scope: cc.entity.name.function.triforce
   
   func-id-search-group:
     - match: '(\\)(.)'
@@ -702,31 +385,6 @@ contexts:
     - match: '{{identifier}}|[{;}\]]'
       scope: entity.name.function.triforce
   
-  cc-func-id-search-group:
-    - match: '(\\)(.)'
-      captures:
-        1: cc.constant.character.escape.triforce
-        2: cc.entity.name.function.triforce
-    - include: cc-universal
-    - match: '"'
-      scope: punctuation.definition.string.begin.triforce
-      push: cc-double-quoted-string
-    - match: '\b{{numbers}}\b'
-      scope: cc.constant.numeric.triforce
-    - match: '(?=\()'
-      push: cc-group
-    - match: '(?=\[)'
-      push: cc-func-bracket-group
-    - match: '\$'
-      scope: cc.keyword.operator.triforce
-      push: cc-op-dollar
-    - match: '\?'
-      scope: source.triforce
-    - match: '(?=\))'
-      set: cc-func-id-search
-    - match: '{{identifier}}|[{;}\]]'
-      scope: cc.entity.name.function.triforce
-  
   func-bracket-group:
     - match: '\]'
       scope: meta.group.triforce punctuation.section.group.end.triforce
@@ -744,24 +402,6 @@ contexts:
     - match: '([{;]|-->|==>)'
       scope: entity.name.function.triforce
     - include: func-id-search
-  
-  cc-func-bracket-group:
-    - match: '\]'
-      scope: cc.meta.group.triforce cc.punctuation.section.group.end.triforce
-      pop: true
-    - match: '\['
-      scope: cc.punctuation.section.group.begin.triforce
-      push: [cc-func-bracket-group-body]
-  
-  cc-func-bracket-group-body:
-    - meta_scope: meta.group.triforce
-    - match: '(?=\])'
-      pop: true
-    - match: '\|'
-      scope: source.triforce
-    - match: '([{;]|-->|==>)'
-      scope: cc.entity.name.function.triforce
-    - include: cc-func-id-search
 
   ############### OBJECTS ################
   
@@ -770,12 +410,6 @@ contexts:
       set: obj-id-search
     - match: ''
       set: obj-id-search
-  
-  cc-obj-id-search-start:
-    - match: '\s+[\(]*  '
-      set: cc-obj-id-search
-    - match: ''
-      set: cc-obj-id-search
   
   obj-id-search:
     - include: universal
@@ -788,18 +422,6 @@ contexts:
       pop: true
     - match: '{{identifier}}'
       scope: entity.name.function.triforce
-  
-  cc-obj-id-search:
-    - include: cc-universal
-    - match: '(?=\()'
-      push: cc-group
-    - match: '\$'
-      scope: cc.keyword.operator.triforce
-      push: cc-op-dollar
-    - match: '(?=[\[;])'
-      pop: true
-    - match: '{{identifier}}'
-      scope: cc.entity.name.function.triforce
 
   ################# LET ##################
 
@@ -808,12 +430,6 @@ contexts:
       set: let-id-search
     - match: ''
       set: let-id-search
-
-  cc-let-id-search-start:
-    - match: '\s+\(*  '
-      set: cc-let-id-search
-    - match: ''
-      set: cc-let-id-search
 
   let-id-search:
     - include: universal
@@ -826,15 +442,3 @@ contexts:
       pop: true
     - match: '{{identifier}}'
       scope: entity.name.function.triforce
-
-  cc-let-id-search:
-    - include: cc-universal
-    - match: '(?=\()'
-      push: cc-group
-    - match: '\$'
-      scope: cc.keyword.operator.triforce
-      push: cc-op-dollar
-    - match: '(?=[=:\[;])'
-      pop: true
-    - match: '{{identifier}}'
-      scope: cc.entity.name.function.triforce
