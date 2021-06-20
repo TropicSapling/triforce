@@ -670,6 +670,27 @@ func transformed $x {
 
 let transformed_items = each item in items recollected as transformed item;
 
+let odd_doubles = each x in [1, 2, 3, 4, 5] recollected as x*2 if x odd; // [2, 6, 10]
+
+// Or perhaps this below syntax is better?
+
+func each $item [where|which $filter]? in $arr as $transformation;
+func all [which $filter]? in $arr [$transformation]?;
+
+let odd_doubles = each x where this is odd in [1, 2, 3, 4, 5] as x doubled;
+let odd_doubles = each x which is odd in [1, 2, 3, 4, 5] as x doubled;
+let odd_doubles = all which are odd in [1, 2, 3, 4, 5] doubled;
+
+let arr = each x in [1, 2, 3, 4, 5] as 2*x + 1;
+
+// When just filtering it might sound better with reversed order:
+let arr = all in [1, 2, 3, 4, 5] which are odd;
+
+// And sometimes inverse-filtering using 'excl' sounds better:
+for each m in (matchs excl m where m[0] != i) {
+	...
+}
+
 // Python, Rust and others also have Iterables.
 // 
 // In Python you can have "generators", which
@@ -985,6 +1006,9 @@ with file $file at "path/to/file.ext" open {
 filter arr where given $item => item is even // read as-is but with '=>' unpronounced
 
 map arr where given $item => item * 2 // read as-is but with '=>' pronounced as "return"
+
+// Or maybe it's unnecessary? Most people would probably understand anyway
+// and figure out a fitting way to pronounce things.
 
 --------------------------------------------------
 
