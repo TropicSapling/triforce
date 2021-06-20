@@ -687,7 +687,12 @@ let arr = each x in [1, 2, 3, 4, 5] as 2*x + 1;
 let arr = all in [1, 2, 3, 4, 5] which are odd;
 
 // And sometimes inverse-filtering using 'excl' sounds better:
-for each m in (matchs excl m where m[0] != i) {
+for each m in (matchs excl each m where m[0] != i) {
+	...
+}
+
+// Alternative map syntax that fits better with for-loops:
+for each m in (matchs with each m as 2*m + 1) {
 	...
 }
 
