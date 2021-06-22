@@ -1,25 +1,57 @@
 {
     "variables":
     {
-//        "blue": "hsl(190, 81%, 67%)",    // rgb(103, 216, 239)
-//        "orange": "hsl(32, 98%, 56%)",   // rgb(253, 150, 33)
-//        "purple": "hsl(261, 100%, 75%)", // rgb(172, 128, 255)
-//        "red2": "hsl(338, 95%, 56%)",    // rgb(249, 36, 114)
-//        "yellow": "hsl(54, 70%, 68%)",   // rgb(231, 219, 116)
-//        "yellow2": "hsl(80, 76%, 53%)",  // rgb(166, 226, 44)
+//      "blue": "hsl(190, 81%, 67%)",    // rgb(103, 216, 239)
+//      "orange": "hsl(32, 98%, 56%)",   // rgb(253, 150, 33)
+//      "purple": "hsl(261, 100%, 75%)", // rgb(172, 128, 255)
+//      "red2": "hsl(338, 95%, 56%)",    // rgb(249, 36, 114)
+//      "yellow": "hsl(54, 70%, 68%)",   // rgb(231, 219, 116)
+//      "yellow2": "hsl(80, 76%, 53%)",  // rgb(166, 226, 44)
 
-//        "yellow5": "hsl(50, 11%, 41%)", // rgb(116, 112, 93)
-//        "white3": "hsl(60, 30%, 96%)",  // rgb(248, 248, 242)
+//      "yellow5": "hsl(50, 11%, 41%)", // rgb(116, 112, 93)
+//      "white3": "hsl(60, 30%, 96%)",  // rgb(248, 248, 242)
 
+        // h = hue, s = 11/30 * sat, l = 41%
         "cc_blue": "hsl(190, 30%, 41%)",   // rgb(73, 125, 136)
         "cc_orange": "hsl(32, 36%, 41%)",  // rgb(142, 107, 67)
         "cc_purple": "hsl(261, 37%, 41%)", // rgb(93, 66, 143)
         "cc_red2": "hsl(338, 35%, 41%)",   // rgb(141, 68, 95)
         "cc_yellow": "hsl(54, 26%, 41%)",  // rgb(132, 126, 77)
         "cc_yellow2": "hsl(80, 28%, 41%)", // rgb(114, 134, 75)
+        
+        /*
+        
+        function calc(red, gre, blu) {
+            let r = Math.round(231 + (red/248)*(red - 231));
+            let g = Math.round(219 + (gre/248)*(gre - 219));
+            let b = Math.round(116 + (blu/242)*(blu - 116));
+            
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+        
+        function calcLight(red, gre, blu, light) {
+            let ratio = 1 - light / 96;
+            
+            let r = Math.round(231 + ratio*(red - 231));
+            let g = Math.round(219 + ratio*(gre - 219));
+            let b = Math.round(116 + ratio*(blu - 116));
+            
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+        
+        */
+        "cs_blue": "rgb(178, 216, 237)",    // calc(103, 216, 239)
+        "cs_orange": "rgb(253, 177, 105)",  // calc(253, 150, 33)
+        "cs_purple": "rgb(190, 172, 255)",  // calc(172, 128, 255)
+        "cs_red2": "rgb(239, 143, 115)",    // calcLight(249, 36, 114, 56)
+        "cs_yellow": "rgb(231, 219, 116)",  // calc(231, 219, 116)
+        "cs_yellow2": "rgb(187, 225, 103)", // calc(166, 226, 44)
+        "cs_yellow5": "rgb(177, 171, 107)", // calc(116, 112, 93)
     },
+    
     "rules":
     [
+        ///////////////// CC ///////////////////
         {
             "name": "String",
             "scope": "cc.string",
@@ -37,7 +69,7 @@
         },
         {
             "name": "User-defined constant",
-            "scope": "cc.constant.character, constant.other",
+            "scope": "cc.constant.character, cc.constant.other",
             "foreground": "var(cc_purple)"
         },
         {
@@ -122,6 +154,116 @@
         {
             "scope": "cc.entity.name.filename",
             "foreground": "var(cc_yellow)"
+        },
+        
+        ///////////////// CS ///////////////////
+        {
+            "name": "Comment",
+            "scope": "cs.comment",
+            "foreground": "var(cs_yellow5)"
+        },
+        {
+            "name": "String",
+            "scope": "cs.string",
+            "foreground": "var(cs_yellow)"
+        },
+        {
+            "name": "Number",
+            "scope": "cs.constant.numeric",
+            "foreground": "var(cs_purple)"
+        },
+        {
+            "name": "Built-in constant",
+            "scope": "cs.constant.language",
+            "foreground": "var(cs_purple)"
+        },
+        {
+            "name": "User-defined constant",
+            "scope": "cs.constant.character, cs.constant.other",
+            "foreground": "var(cs_purple)"
+        },
+        {
+            "name": "Keyword",
+            "scope": "cs.keyword, cs.keyword.operator.word",
+            "foreground": "var(cs_red2)"
+        },
+        {
+            "name": "Annotation Punctuation",
+            "scope": "cs.punctuation.definition.annotation",
+            "foreground": "var(cs_red2)"
+        },
+        {
+            "name": "Storage",
+            "scope": "cs.storage",
+            "foreground": "var(cs_red2)"
+        },
+        {
+            "name": "Storage type",
+            "scope": "cs.storage.type",
+            "foreground": "var(cs_blue)",
+            "font_style": "italic",
+        },
+        {
+            "name": "Entity name",
+            "scope": "cs.entity.name",
+            "foreground": "var(cs_yellow2)"
+        },
+        {
+            "name": "Function argument",
+            "scope": "cs.variable.parameter",
+            "foreground": "var(cs_orange)",
+            "font_style": "italic"
+        },
+        {
+            "name": "Language variable",
+            "scope": "cs.variable.language",
+            "foreground": "var(cs_orange)",
+            "font_style": "italic"
+        },
+        {
+            "name": "Tag name",
+            "scope": "cs.entity.name.tag",
+            "foreground": "var(cs_red2)"
+        },
+        {
+            "name": "Tag attribute",
+            "scope": "cs.entity.other.attribute-name",
+            "foreground": "var(cs_yellow2)"
+        },
+        {
+            "name": "Function call",
+            "scope": "cs.variable.function, cs.variable.annotation",
+            "foreground": "var(cs_blue)"
+        },
+        {
+            "name": "Library function",
+            "scope": "cs.support.function, cs.support.macro",
+            "foreground": "var(cs_blue)"
+        },
+        {
+            "name": "Library constant",
+            "scope": "cs.support.constant",
+            "foreground": "var(cs_blue)"
+        },
+        {
+            "name": "Library class/type",
+            "scope": "cs.support.type, cs.support.class",
+            "foreground": "var(cs_blue)",
+            "font_style": "italic"
+        },
+        {
+            "name": "markup headings",
+            "scope": "markup.heading cs.punctuation.definition.heading",
+            "foreground": "var(cs_orange)"
+        },
+        {
+            "name": "markup h1",
+            "scope": "markup.heading.1 cs.punctuation.definition.heading",
+            "foreground": "var(cs_red2)"
+        },
+        {
+            "scope": "cs.entity.name.filename",
+            "foreground": "var(cs_yellow)"
         },
     ]
 }

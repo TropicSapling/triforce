@@ -122,14 +122,39 @@ contexts:
   
   cs-comments:
     - include: cs-line-comments
-    - include: block-comments
+    - include: cs-block-comments
   
   cs-line-comments:
     # Line comments within code comments
-    - include: cleared-line-comments
-    - match: '(?<!^|/)//'
+    - match: '//'
       scope: punctuation.definition.comment.triforce
-      push: line-comment
+      push: cs-line-comment
+  
+  cs-block-comments:
+    # NOTE: Using IDE keybindings, multiple line comments can function as block comments.
+    #       This is the recommended way, and the below block comments are only supported
+    #       because some people prefer to use them instead. Depending on what consensus
+    #       is reached, they may be removed in the future in favor of minimalism.
+    - match: '/\*'
+      scope: punctuation.definition.comment.triforce
+      push: cs-block-comment
+  
+  cs-comment:
+    # Common syntax for all comments (excl. deprecated /* block comments */)
+    - match: '^(?!\s*//+)'
+      pop: true
+
+  cs-line-comment:
+    - meta_scope: cs.comment.line.triforce
+    - include: cs-comment
+
+  cs-block-comment:
+    # Currently, these comments don't support any advanced features
+    - meta_scope: cs.comment.block.triforce
+    - match: '\*/'
+      scope: punctuation.definition.comment.triforce
+      pop: true
+    - include: cs-block-comments
 
   ################################################################################
   ##                                                                            ##
