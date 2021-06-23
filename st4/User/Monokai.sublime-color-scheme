@@ -21,32 +21,43 @@
         
         /*
         
+        let round = Math.round;
+        
         function calc(red, gre, blu) {
-            let r = Math.round(231 + (red/248)*(red - 231));
-            let g = Math.round(219 + (gre/248)*(gre - 219));
-            let b = Math.round(116 + (blu/242)*(blu - 116));
+            let r = round(231 + (red/248)*(red - 231));
+            let g = round(219 + (gre/248)*(gre - 219));
+            let b = round(116 + (blu/242)*(blu - 116));
             
-            return `rgb(${r}, ${g}, ${b})`;
+            return [`rgb(${r}, ${g}, ${b})`, [r, g, b]];
         }
         
         function calcLight(red, gre, blu, light) {
             let ratio = 1 - light / 96;
             
-            let r = Math.round(231 + ratio*(red - 231));
-            let g = Math.round(219 + ratio*(gre - 219));
-            let b = Math.round(116 + ratio*(blu - 116));
+            let r = round(231 + ratio*(red - 231));
+            let g = round(219 + ratio*(gre - 219));
+            let b = round(116 + ratio*(blu - 116));
             
-            return `rgb(${r}, ${g}, ${b})`;
+            return [`rgb(${r}, ${g}, ${b})`, [r, g, b]];
+        }
+        
+        function calcMixed(red, gre, blu, light) {
+            let [r1, g1, b1] = calc(red, gre, blu)[1];
+            let [r2, g2, b2] = calcLight(red, gre, blu, light)[1];
+            
+            let [r, g, b] = [round((r1+r2)/2), round((g1+g2)/2), round((b1+b2)/2)];
+            
+            return [`rgb(${r}, ${g}, ${b})`, [r, g, b]];
         }
         
         */
-        "cs_blue": "rgb(178, 216, 237)",    // calc(103, 216, 239)
-        "cs_orange": "rgb(253, 177, 105)",  // calc(253, 150, 33)
-        "cs_purple": "rgb(190, 172, 255)",  // calc(172, 128, 255)
+        "cs_blue": "rgb(185, 217, 195)",    // calcMixed(103, 216, 239, 67)
+        "cs_orange": "rgb(240, 190, 81)",   // calcLight(253, 150, 33, 56)
+        "cs_purple": "rgb(204, 186, 204)",  // calcMixed(172, 128, 255, 75)
         "cs_red2": "rgb(239, 143, 115)",    // calcLight(249, 36, 114, 56)
         "cs_yellow": "rgb(231, 219, 116)",  // calc(231, 219, 116)
-        "cs_yellow2": "rgb(187, 225, 103)", // calc(166, 226, 44)
-        "cs_yellow5": "rgb(177, 171, 107)", // calc(116, 112, 93)
+        "cs_yellow2": "rgb(202, 222, 84)",  // calcLight(166, 226, 44, 53)
+        "cs_yellow5": "rgb(165, 158, 103)", // calcLight(116, 112, 93, 41)
     },
     
     "rules":
