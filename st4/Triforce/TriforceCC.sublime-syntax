@@ -58,6 +58,9 @@ contexts:
     - match: '\b{{keyword_const}}\b'
       scope: cc.constant.language.triforce
 
+    - match: '(?<!\w|{{keyword_const2}})({{keyword_const2}})(?!\w)'
+      scope: cc.constant.language.triforce
+
     - match: '\b{{keyword_misc}}\b'
       scope: cc.keyword.other.triforce
 
@@ -109,7 +112,7 @@ contexts:
     - match: '\bcategory\b'
       scope: cc.storage.type.triforce
       push: cc-func-id-search-start
-    
+
     - match: '\bobject\b'
       scope: cc.storage.type.triforce
       push: cc-obj-id-search-start
@@ -119,11 +122,11 @@ contexts:
   ##                   =============  COMMENTS  =============                   ##
   ##                                                                            ##
   ################################################################################
-  
+
   cc-comments:
     - include: cc-line-comments
     - include: block-comments
-  
+
   cc-line-comments:
     # Line comments within code comments
     - include: cleared-line-comments
@@ -213,7 +216,7 @@ contexts:
     - match: '(?=\))'
       pop: true
     - include: cc-general
-  
+
   # TODO: split below into group & block to get correct meta.group & meta.block
 
   cc-code-group:
@@ -221,7 +224,7 @@ contexts:
     - match: '[)}]'
       pop: true
     - include: cc-general
-  
+
   cc-code-block:
     - meta_content_scope: markup.raw meta.block.triforce
     - match: '\s*[)}]'
@@ -233,7 +236,7 @@ contexts:
   ##                   ====  DECLARATIONS & DEFINITIONS  ====                   ##
   ##                                                                            ##
   ################################################################################
-  
+
   ############## FUNCTIONS ###############
 
   cc-multi-func-start:
@@ -249,7 +252,7 @@ contexts:
       set: cc-func-id-search-group
     - match: ''
       set: cc-func-id-search
-  
+
   # Should clean up below; a lot of boilerplate that can be grouped together
 
   cc-func-id-search:
@@ -276,7 +279,7 @@ contexts:
       pop: true
     - match: '{{identifier}}|}|]'
       scope: cc.entity.name.function.triforce
-  
+
   cc-func-id-search-group:
     - match: '(\\)(.)'
       captures:
@@ -301,7 +304,7 @@ contexts:
       set: cc-func-id-search
     - match: '{{identifier}}|[{;}\]]'
       scope: cc.entity.name.function.triforce
-  
+
   cc-func-bracket-group:
     - match: '\]'
       scope: cc.meta.group.triforce cc.punctuation.section.group.end.triforce
@@ -309,7 +312,7 @@ contexts:
     - match: '\['
       scope: cc.punctuation.section.group.begin.triforce
       push: [cc-func-bracket-group-body]
-  
+
   cc-func-bracket-group-body:
     - meta_scope: meta.group.triforce
     - match: '(?=\])'
@@ -321,13 +324,13 @@ contexts:
     - include: cc-func-id-search
 
   ############### OBJECTS ################
-  
+
   cc-obj-id-search-start:
     - match: '\s+[\(]*  '
       set: cc-obj-id-search
     - match: ''
       set: cc-obj-id-search
-  
+
   cc-obj-id-search:
     - include: cc-universal
     - match: '(?=\()'

@@ -22,12 +22,12 @@ contexts:
       scope: constant.character.escape.triforce
     # Code strings [WIP]
     - match: '`'
-      scope: string.quoted.double.triforce
+      scope: string.quoted.double.triforce markup.bold
       embed: cs-general
       embed_scope: string.quoted.double.triforce
       escape: '(?<!\\)(`)'
       escape_captures:
-        1: string.quoted.double.triforce
+        1: string.quoted.double.triforce markup.bold
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
       scope: storage.type.triforce
       push:
@@ -75,6 +75,9 @@ contexts:
       scope: storage.type.triforce
 
     - match: '\b{{keyword_const}}\b'
+      scope: constant.language.triforce
+
+    - match: '(?<!\w|{{keyword_const2}})({{keyword_const2}})(?!\w)'
       scope: constant.language.triforce
 
     - match: '\b{{keyword_misc}}\b'
@@ -128,7 +131,7 @@ contexts:
     - match: '\bcategory\b'
       scope: storage.type.triforce
       push: func-id-search-start
-    
+
     - match: '\bobject\b'
       scope: storage.type.triforce
       push: obj-id-search-start
@@ -150,12 +153,12 @@ contexts:
     - match: '(?=///+)' # doc comments
       scope: punctuation.definition.comment.triforce
       push: doc-comment
-  
+
   comment-markdown:
     # \Escaping
     - match: '\\.'
       scope: cc.constant.character.escape.triforce
-    
+
     # ``` Code blocks ```
     - match: '///+\s*(```)'
       captures:
@@ -164,7 +167,7 @@ contexts:
       escape: '^\s*(///+)\s*(```)|^(?!\s*//)'
       escape_captures:
         2: markup.bold
-    
+
     # `Inline code`
     - match: '`'
       scope: markup.bold
@@ -172,7 +175,7 @@ contexts:
       escape: '(`)|$'
       escape_captures:
         1: markup.bold
-    
+
     # *Italic*
     - match: '\*(?!\*)|\*(?=\*\*)'
       scope: markup.bold
@@ -183,7 +186,7 @@ contexts:
           pop: true
         - include: cleared-line-comments
         - include: doc-comment
-    
+
     # **Bold**
     - match: '\*\*'
       scope: markup.bold
@@ -194,7 +197,7 @@ contexts:
           pop: true
         - include: cleared-line-comments
         - include: doc-comment
-    
+
     # "Quotes"
     - match: '///+\s*(")'
       captures:
@@ -206,7 +209,7 @@ contexts:
           pop: true
         - include: cleared-line-comments
         - include: doc-comment
-    
+
     # Headings
     - match: '///+\s*(#)(?!#)(.*)$'
       captures:
@@ -216,7 +219,7 @@ contexts:
       captures:
         1: markup.heading cc.punctuation.definition.heading
         2: comment.line.triforce markup.bold
-  
+
   doc-comment:
     - meta_scope: comment.line.triforce
     - include: comment
@@ -304,7 +307,7 @@ contexts:
     - match: '(?=\))'
       pop: true
     - include: general
-  
+
   # TODO: split below into group & block to get correct meta.group & meta.block
 
   code-group:
@@ -312,7 +315,7 @@ contexts:
     - match: '[)}]'
       pop: true
     - include: general
-  
+
   code-block:
     - meta_content_scope: markup.raw meta.block.triforce
     - match: '\s*[)}]'
@@ -324,7 +327,7 @@ contexts:
   ##                   ====  DECLARATIONS & DEFINITIONS  ====                   ##
   ##                                                                            ##
   ################################################################################
-  
+
   ############## FUNCTIONS ###############
 
   multi-func-start:
@@ -340,9 +343,9 @@ contexts:
       set: func-id-search-group
     - match: ''
       set: func-id-search
-  
+
   # Should clean up below; a lot of boilerplate that can be grouped together
-  
+
   func-id-search:
     - match: '(\\)(.)'
       captures:
@@ -367,7 +370,7 @@ contexts:
       pop: true
     - match: '{{identifier}}|}|]'
       scope: entity.name.function.triforce
-  
+
   func-id-search-group:
     - match: '(\\)(.)'
       captures:
@@ -392,7 +395,7 @@ contexts:
       set: func-id-search
     - match: '{{identifier}}|[{;}\]]'
       scope: entity.name.function.triforce
-  
+
   func-bracket-group:
     - match: '\]'
       scope: meta.group.triforce punctuation.section.group.end.triforce
@@ -400,7 +403,7 @@ contexts:
     - match: '\['
       scope: punctuation.section.group.begin.triforce
       push: [func-bracket-group-body]
-  
+
   func-bracket-group-body:
     - meta_scope: meta.group.triforce
     - match: '(?=\])'
@@ -412,13 +415,13 @@ contexts:
     - include: func-id-search
 
   ############### OBJECTS ################
-  
+
   obj-id-search-start:
     - match: '\s+[\(]*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
       set: obj-id-search
     - match: ''
       set: obj-id-search
-  
+
   obj-id-search:
     - include: universal
     - match: '(?=\()'

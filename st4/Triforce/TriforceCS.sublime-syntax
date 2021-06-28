@@ -58,6 +58,9 @@ contexts:
     - match: '\b{{keyword_const}}\b'
       scope: cs.constant.language.triforce
 
+    - match: '(?<!\w|{{keyword_const2}})({{keyword_const2}})(?!\w)'
+      scope: cs.constant.language.triforce
+
     - match: '\b{{keyword_misc}}\b'
       scope: cs.keyword.other.triforce
 
@@ -109,7 +112,7 @@ contexts:
     - match: '\bcategory\b'
       scope: cs.storage.type.triforce
       push: cs-func-id-search-start
-    
+
     - match: '\bobject\b'
       scope: cs.storage.type.triforce
       push: cs-obj-id-search-start
@@ -119,17 +122,17 @@ contexts:
   ##                   =============  COMMENTS  =============                   ##
   ##                                                                            ##
   ################################################################################
-  
+
   cs-comments:
     - include: cs-line-comments
     - include: cs-block-comments
-  
+
   cs-line-comments:
     # Line comments within code comments
     - match: '//'
       scope: punctuation.definition.comment.triforce
       push: cs-line-comment
-  
+
   cs-block-comments:
     # NOTE: Using IDE keybindings, multiple line comments can function as block comments.
     #       This is the recommended way, and the below block comments are only supported
@@ -138,7 +141,7 @@ contexts:
     - match: '/\*'
       scope: punctuation.definition.comment.triforce
       push: cs-block-comment
-  
+
   cs-comment:
     # Common syntax for all comments (excl. deprecated /* block comments */)
     - match: '^(?!\s*//+)'
@@ -238,7 +241,7 @@ contexts:
     - match: '(?=\))'
       pop: true
     - include: cs-general
-  
+
   # TODO: split below into group & block to get correct meta.group & meta.block
 
   cs-code-group:
@@ -246,7 +249,7 @@ contexts:
     - match: '[)}]'
       pop: true
     - include: cs-general
-  
+
   cs-code-block:
     - meta_content_scope: markup.raw meta.block.triforce
     - match: '\s*[)}]'
@@ -258,7 +261,7 @@ contexts:
   ##                   ====  DECLARATIONS & DEFINITIONS  ====                   ##
   ##                                                                            ##
   ################################################################################
-  
+
   ############## FUNCTIONS ###############
 
   cs-multi-func-start:
@@ -274,7 +277,7 @@ contexts:
       set: cs-func-id-search-group
     - match: ''
       set: cs-func-id-search
-  
+
   # Should clean up below; a lot of boilerplate that can be grouped together
 
   cs-func-id-search:
@@ -301,7 +304,7 @@ contexts:
       pop: true
     - match: '{{identifier}}|}|]'
       scope: cs.entity.name.function.triforce
-  
+
   cs-func-id-search-group:
     - match: '(\\)(.)'
       captures:
@@ -326,7 +329,7 @@ contexts:
       set: cs-func-id-search
     - match: '{{identifier}}|[{;}\]]'
       scope: cs.entity.name.function.triforce
-  
+
   cs-func-bracket-group:
     - match: '\]'
       scope: cs.meta.group.triforce cs.punctuation.section.group.end.triforce
@@ -334,7 +337,7 @@ contexts:
     - match: '\['
       scope: cs.punctuation.section.group.begin.triforce
       push: [cs-func-bracket-group-body]
-  
+
   cs-func-bracket-group-body:
     - meta_scope: meta.group.triforce
     - match: '(?=\])'
@@ -346,13 +349,13 @@ contexts:
     - include: cs-func-id-search
 
   ############### OBJECTS ################
-  
+
   cs-obj-id-search-start:
     - match: '\s+[\(]*  '
       set: cs-obj-id-search
     - match: ''
       set: cs-obj-id-search
-  
+
   cs-obj-id-search:
     - include: cs-universal
     - match: '(?=\()'

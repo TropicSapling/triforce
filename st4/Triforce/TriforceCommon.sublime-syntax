@@ -16,7 +16,8 @@ variables:
   keyword_namespace: '((ex|im)port(\s+all)?|except|from|into|expose)'
   keyword_type:      '(bool|nat|int|frac|num|str)'
   keyword_type_spec: '(impure|unpredictable|macro|implic\s+made|suitable\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|auto)'
-  keyword_const:     '(True|False|this|caller)'
+  keyword_const:     '(True|False|Infinity|UnknownNumber|this|caller)'
+  keyword_const2:    '\?\?\?'
   keyword_misc:      '({{keyword_check}}|{{keyword_namespace}}|with|all|in|excl|any(\s+suitable|of)?|optionally|recollected|listified|codified|stringified|ensure|print(ln)?)'
 
   # Declarations
