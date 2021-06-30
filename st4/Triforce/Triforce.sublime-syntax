@@ -77,8 +77,50 @@ contexts:
     - match: '\b{{keyword_const}}\b'
       scope: constant.language.triforce
 
-    - match: '(?<!\w|{{keyword_const2}})({{keyword_const2}})(?!\w)'
-      scope: constant.language.triforce
+    - match: '((?<=.{80})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{76})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{72})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{68})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{64})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{60})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{56})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{52})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{48})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{44})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{40})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{36})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{32})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{28})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{24})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{20})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{16})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{12})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{8})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<=.{4})(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))
+          {0}|((?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w))'
+      captures:
+        1:  constant.language.triforce         # Note: intentionally in "random" order
+        3:  unique3.constant.language.triforce
+        5:  unique4.constant.language.triforce
+        7:  unique2.constant.language.triforce
+        9:  constant.language.triforce
+        11: unique4.constant.language.triforce
+        13: unique3.constant.language.triforce
+        15: unique2.constant.language.triforce
+        17: constant.language.triforce
+        19: unique3.constant.language.triforce
+        21: unique4.constant.language.triforce
+        23: constant.language.triforce
+        25: unique3.constant.language.triforce
+        27: unique2.constant.language.triforce
+        29: unique4.constant.language.triforce
+        31: constant.language.triforce
+        33: unique3.constant.language.triforce
+        35: unique4.constant.language.triforce
+        37: unique2.constant.language.triforce
+        39: unique3.constant.language.triforce
+        41: unique4.constant.language.triforce
+        43: unique2.constant.language.triforce
 
     - match: '\b{{keyword_misc}}\b'
       scope: keyword.other.triforce

@@ -383,14 +383,14 @@ category Misc {
     
     // This is really just NaN, but renamed since "Not a Number is a number" sounds weird.
     // Behaves almost like '???', except comparisons follow the NaN specification instead
-    // of propagating the object: UnknownNumber != _ is always True, and all other
+    // of propagating the object: UndefNum != _ is always True, and all other
     // comparisons are always False.
-    object UnknownNumber;
+    object UndefNum;
     
     // Infinity. Follows the floating point specification.
     object Infinity;
     
-    // TODO: move 'UnknownNumber' and 'Infinity' to a separate category for numbers
+    // TODO: move 'UndefNum' and 'Infinity' to a separate category for numbers
 
 	func optionally $x {x|()};
 

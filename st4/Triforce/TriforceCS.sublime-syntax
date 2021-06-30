@@ -58,7 +58,7 @@ contexts:
     - match: '\b{{keyword_const}}\b'
       scope: cs.constant.language.triforce
 
-    - match: '(?<!\w|{{keyword_const2}})({{keyword_const2}})(?!\w)'
+    - match: '(?<!\w|{{keyword_const_uniq}})({{keyword_const_uniq}})(?!\w)'
       scope: cs.constant.language.triforce
 
     - match: '\b{{keyword_misc}}\b'

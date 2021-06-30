@@ -11,6 +11,11 @@
 //      "yellow5": "hsl(50, 11%, 41%)", // rgb(116, 112, 93)
 //      "white3": "hsl(60, 30%, 96%)",  // rgb(248, 248, 242)
 
+        // Random variations of purple (max +-64 per tuple item)
+        "purple2": "rgb(157, 92, 255)",
+        "purple3": "rgb(195, 139, 208)",
+        "purple4": "rgb(191, 104, 255)",
+
         // h = hue, s = 11/30 * sat, l = 41%
         "cc_blue": "hsl(190, 30%, 41%)",   // rgb(73, 125, 136)
         "cc_orange": "hsl(32, 36%, 41%)",  // rgb(142, 107, 67)
@@ -62,6 +67,23 @@
     
     "rules":
     [
+        /////////////// NORMAL /////////////////
+        {
+            "name": "Unique2 constant",
+            "scope": "unique2.constant.language",
+            "foreground": "var(purple2)"
+        },
+        {
+            "name": "Unique3 constant",
+            "scope": "unique3.constant.language",
+            "foreground": "var(purple3)"
+        },
+        {
+            "name": "Unique4 constant",
+            "scope": "unique4.constant.language",
+            "foreground": "var(purple4)"
+        },
+
         ///////////////// CC ///////////////////
         {
             "name": "String",
