@@ -1619,3 +1619,36 @@ F: frac <N>;
 println F; // "637.65 N" maybe, or maybe without the unit afterwards?
 
 // This is a very incomplete sketch btw. Will need to think it through a lot more.
+
+--------------------------------------------------
+
+// Concurrency locks/mutexes & semaphores (= more generalised "availability locks")
+
+exclusively  {...} ??? // or maybe just excl {...}? although keyword taken
+synchronized {...} ??? // Java-style
+
+when available {...} ??? // For semaphores. Needs better syntax...
+
+// Or maybe objects should just get locked & unlocked automatically instead?
+// Still though sometimes manual locking & unlocking will be necessary.
+
+--------------------------------------------------
+
+// Something like `@Override` in Java to prevent mistakenly defining new functions
+// when you actually meant to override an already existing function?
+
+// i.e. say we have a multiplication function:
+func (a as num)*(b as num) {...}
+
+// and we want to change its implementation; override it:
+func (a as int)*(b as int) {...}
+// but we accidentally type `int` instead of `num` and end up defining a new function*!
+
+// With `##[Override]` (maybe different syntax though), this would error:
+##[Override]
+func (a as int)*(b as int) {...} // ERROR! Should be `num` not `int`!
+
+// This way we won't unknowingly end up defining a new function when we meant to override!
+
+// *Technically, you may say we're still overriding part of the implementation; the one
+// for integers. But we're not fully overriding.
