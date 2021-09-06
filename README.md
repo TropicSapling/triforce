@@ -1,6 +1,8 @@
 # Triforce programming language
 ![banner](img/banner.PNG)
 
+**Check out the `dev` branch for the most recent developments.**
+
 Triforce is a programming language emphasizing performance, power and productivity.
 
 The main goals of the language include:
