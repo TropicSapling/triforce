@@ -1784,3 +1784,77 @@ func sum $arr {
 func mul $arr {
 	1 * arr[0] *..* arr[last]
 }
+
+--------------------------------------------------
+
+// Code string syntax highlighting testing & comparison
+
+return ```
+	let not_first_arg: auto = False;
+	for each section in function.structure {
+		matches section {
+			FunctionSection::Arg(ref to name, ref to typ) => {
+				if not_first_arg {
+					output += ",";
+				}
+				
+				output += name;
+				output += "_ppl";
+				output += \`:\`;
+				output += &compile_type(typ);
+				
+				not_first_arg = true;
+			},
+			
+			_ => ()
+		}
+	}
+```;
+
+let str = 'let n: int = 123'; // not valid syntax; just for comparison
+let str = `let n: int = 123`;
+let str = "let n: int = 123";
+
+let n = 123: int;
+
+func if (True)  then $tbody else $fbody {tbody()}
+func if (False) then $tbody else $fbody {fbody()}
+
+if $$(eval cond) then
+	() => $$(eval tbody) // eval tbody == eval (code {xyz}) == xyz
+else
+	() => $$(fbody)
+
+```
+let n = 123: int;
+
+func if (True)  then $tbody else $fbody {tbody()}
+func if (False) then $tbody else $fbody {fbody()}
+
+if $$(eval cond) then
+	() => $$(eval tbody) // eval tbody == eval (code {xyz}) == xyz
+else
+	() => $$(fbody)
+```
+
+"""
+let n = 123: int;
+
+func if (True)  then $tbody else $fbody {tbody()}
+func if (False) then $tbody else $fbody {fbody()}
+
+if $$(eval cond) then
+	() => $$(eval tbody) // eval tbody == eval (code {xyz}) == xyz
+else
+	() => $$(fbody)
+"""
+
+macro func let \[$a, $b, $c] = \[$x, $y, $z] {
+	```
+	
+	let $$(a) = $$(x);
+	let $$(b) = $$(y);
+	let $$(c) = $$(z);
+	
+	```
+}
