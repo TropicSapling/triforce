@@ -11,7 +11,7 @@ variables:
   var_identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
 
   # Keywords
-  keyword_ctrl:       '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|eval|prerun|run|async\s+container)'
+  keyword_ctrl:       '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|eval|prerun|run|async\s+scope|spawn)'
   keyword_check:      '(as|fulfilling|where(\s+we)?|which|matches|is(\s+(a|an|any)(?!{{identifier}}))?|are|could\s+be)'
   keyword_namespace:  '((ex|im)port(\s+all)?|except|from|into|expose)'
   keyword_type:       '(bool|nat|int|frac|num|str)'

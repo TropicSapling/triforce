@@ -585,22 +585,22 @@ apply (add $a and $b) and multiply; // => (123 + 456) * (456 + 789) => 579 * 124
 
 // AST
 
-object Object [
-	$field  as any Field
+object Object has [
+	$field  as any Field,
 	$field2 as any Field
 ];
 
 =>
 
 [
-	"object",
-	"Object",
+	`object ... has ...`,
+	`Object`,
 	[
-		"List",
-		["as", "$field", ["any", "Field"]],
+		`List ... ...`,
+		[`... as ...`, [`$`, `field`], [`any ...`, `Field`]],
 		[
-			"List",
-			["as", "$field2", ["any", "Field"]],
+			`List ... ...`,
+			["... as ...", [`$`, `field2`], [`any ...`, `Field`]],
 			Nothing
 		]
 	]
@@ -865,8 +865,8 @@ multi func fib ($n as any Int) --> any Int {
 let pet: _ = UNDEFINED; // maybe change to 'declare type pet' or 'let pet: anything = UNDEFINED'?
 
 // Objects are values with properties
-object Dog [$name as str]
-object Cat [$name as str]
+object Dog has [$name as str]
+object Cat has [$name as str]
 
 pet |= any Dog|Cat;
 
@@ -976,25 +976,40 @@ category TranslationOfRustCodeExample {
 // Notes on structured concurrency.
 // https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/
 
-func do_async_stuff_in($container as any AsyncContainer) {
-	container.run_async(() => {
-		// ...
-	});
+func do big calc concurrently in ($scope as any AsyncScope) {
+	for each n in 0..65535 {
+		// Do each calculation concurrently to speed things up.
+		// `spawn` spawns a new thread (perhaps an actor like in Erlang?).
+		spawn {
+			let slow_calc = n^n;
+			
+			// TODO: figure out how to synchronise printing
+			print "$$(n)^$$(n) = " + slow_calc + ", ";
+		} in scope;
+	}
+	
+	// Function exits here before calculations are finished.
+	// They keep running in the background.
 }
 
-async container $container {
-	container.run_async(some function);
-
-	do_stuff_sync();
-
-	do_async_stuff_in(container);
-
-	container.run_async(another function);
-
-	do_more_stuff_sync();
+async scope $scope {
+	do big calc concurrently in scope;
+	
+	print "\n\nACCEPTING CONNECTIONS.\n\n";
+	
+	while accepting_connections {
+		let incoming_connection = ...;
+		
+		spawn handle_connection(incoming_connection) in scope;
+	}
+	
+	print "\n\nNO LONGER ACCEPTING CONNECTIONS.\n\n";
+	
+	// Big calculations and connection handlers may still be running here.
+	// If so the program will wait until they are done before exiting this block.
 }
 
-do_stuff_after_async_stuff_done();
+print "\n\nALL ASYNC PROCESSES FINISHED!\n\n";
 
 --------------------------------------------------
 
@@ -1321,7 +1336,7 @@ println str3;
 /// Any excess capacity is removed:
 /// 
 /// ```Triforce
-/// let vec = Vec::with_capacity(10);
+/// let vec: auto = Vec::with_capacity(10);
 /// vec.extend([1, 2, 3].iter().cloned());
 /// 
 /// assert_eq!(vec.capacity(), 10);
@@ -1550,9 +1565,9 @@ the_answer is ~UNDEFINED: False; // the_answer = UNDEFINED
 
 --------------------------------------------------
 
-// Recursive variables are rarely useful, but here's an interesting example:
+// Recursive variables are rarely useful, but can for example be used to build lists:
 let n: int = 0;
-let rec x = if n++ < 123 then x + 1 else 0; // x = 123
+let rec arr = [n++] + arr if n < 100 else []; // arr = [0, 1, ..., 99]
 
 // More useful are recursive functions...
 let rec fib $n = $n => {
@@ -1652,3 +1667,120 @@ func (a as int)*(b as int) {...} // ERROR! Should be `num` not `int`!
 
 // *Technically, you may say we're still overriding part of the implementation; the one
 // for integers. But we're not fully overriding.
+
+--------------------------------------------------
+
+// OBJECTS
+// -------
+
+// Objects are values in the form of uncallable functions.
+macro func [object $obj;] {
+	`func [$$(obj)] (~_) {}`
+}
+
+// They are created like this:
+object True;
+object False;
+
+// They may also have properties.
+macro func object $obj has ($properties as any List) {
+	// -- Construct code for object definition --
+	
+	let code_str: auto = `func $$raw(obj)`;
+	
+	properties = eval properties;
+	
+	for each prop in properties {
+		code_str += ` $$(prop)`;
+		
+		// Strip properties of `as ...`, so only `$prop` is left.
+		// Needed for next section.
+		prop = codified (listified `$$(prop)`)[1];
+	}
+	
+	code_str += ` (~_) {}`;
+	
+	// -- Construct code for object property access functions --
+	
+	for each prop in properties {
+		code_str += `macro func ($$raw(obj)`;
+		
+		for each prop in properties {
+			code_str += ` #$$(prop)`;
+		}
+		
+		code_str += `).(\`$$(prop[1..])\`) {\`\$\$$$(prop[1..])\`}`;
+		// TODO: make `$$(...)` escape cs syntax highlighting inside
+	}
+	
+	code_str
+}
+
+func $obj with ($props as any FieldList) { // TODO: define `FieldList`
+	let obj_with_props: auto = obj;
+	
+	for each _ in props {
+		for each prop in props {
+			if prop name == current_prop_name??? { // TODO: define `current_prop_name`
+				obj_with_props = obj_with_props (prop value);
+			}
+		}
+	}
+	
+	obj_with_props
+}
+
+macro func $obj.$field {
+	// TODO ...
+}
+
+// Here is an example object with properties:
+object Cat has [
+	$name as str,
+	$age  as int
+]
+
+// Which macro expands into this:
+func Cat ($name as str) ($age as int) (~_) {}
+
+macro func (Cat #($name) #($age)).(`name`) {`$$(name)`}
+macro func (Cat #($name) #($age)).(`age`)  {`$$(age)`}
+
+// And can then be used to create objects like this:
+let cat = Cat "Whiskers" 7;
+// OR
+let cat = Cat with [age = 7, name = "Whiskers"]; // order doesn't matter here
+// OR
+let cat: auto  = Cat;
+cat.name = "Whiskers";
+cat.age  = 7;
+
+// It's also possible to have unnamed properties:
+object Dog has [str, str]
+
+// And objects with special syntax:
+object (num)%;
+
+let fifty_fifty = 50%;
+
+func sum $arr {
+	0 + arr[0] + ... + arr[arr length - 1]
+}
+
+--------------------------------------------------
+
+func ($list as any List)[last] {
+	list[list length - 1]
+}
+
+// Better (?) syntax for the "fold" function:
+func $start $op (#($arr)[0]) $op..$op (#($arr)[last]);
+
+// Used like this:
+func sum $arr {
+	0 + arr[0] +..+ arr[last]
+}
+
+func mul $arr {
+	1 * arr[0] *..* arr[last]
+}

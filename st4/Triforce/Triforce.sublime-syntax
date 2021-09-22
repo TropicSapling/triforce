@@ -471,7 +471,11 @@ contexts:
     - match: '\$'
       scope: keyword.operator.triforce
       push: op-dollar
-    - match: '(?=[\[;])' # end of object declaration
+    - match: '(has)|(;)|(,)' # end of object declaration
+      captures:
+        1: storage.type.triforce
+        2: punctuation.terminator.triforce
+        3: punctuation.separator.triforce
       pop: true
     - match: '{{identifier}}'
       scope: entity.name.function.triforce

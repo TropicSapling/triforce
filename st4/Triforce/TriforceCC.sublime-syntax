@@ -338,7 +338,11 @@ contexts:
     - match: '\$'
       scope: cc.keyword.operator.triforce
       push: cc-op-dollar
-    - match: '(?=[\[;])'
+    - match: '(has)|(;)|(,)' # end of object declaration
+      captures:
+        1: cc.storage.type.triforce
+        2: punctuation.terminator.triforce
+        3: punctuation.separator.triforce
       pop: true
     - match: '{{identifier}}'
       scope: cc.entity.name.function.triforce
