@@ -1683,7 +1683,7 @@ object True;
 object False;
 
 // They may also have properties.
-macro func object $obj has ($properties as any List) {
+macro func object $obj has ($properties as [_]) {
 	// -- Construct code for object definition --
 	
 	let code_str: auto = `func $$raw(obj)`;
@@ -1763,13 +1763,23 @@ object (num)%;
 
 let fifty_fifty = 50%;
 
-func sum $arr {
-	0 + arr[0] + ... + arr[arr length - 1]
+// You can match objects like this:
+func ($x as num) * (#($y)%) {
+    x * y / 100
 }
+
+func greet senior (Cat with [name = #($name), age = 10..]) {
+	println "Hello Sr. " + name;
+}
+
+greet senior cat; // ERROR: age too low
+
+greet senior (Cat "Ziggy" 11); // Hello Sr. Ziggy
 
 --------------------------------------------------
 
-func ($list as any List)[last] {
+// `[_] == any List`
+func ($list as [_])[last] {
 	list[list length - 1]
 }
 
