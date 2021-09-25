@@ -984,7 +984,7 @@ func do big calc concurrently in ($scope as any AsyncScope) {
 			let slow_calc = n^n;
 			
 			// TODO: figure out how to synchronise printing
-			print "$$(n)^$$(n) = " + slow_calc + ", ";
+			print "${n}^${n} = " + slow_calc + ", ";
 		} in scope;
 	}
 	
@@ -1710,7 +1710,6 @@ macro func object $obj has ($properties as [_]) {
 		}
 		
 		code_str += `).(\`$$(prop[1..])\`) {\`\$\$$$(prop[1..])\`}`;
-		// TODO: make `$$(...)` escape cs syntax highlighting inside
 	}
 	
 	code_str
@@ -1732,6 +1731,8 @@ func $obj with ($props as any FieldList) { // TODO: define `FieldList`
 
 macro func $obj.$field {
 	// TODO ...
+	
+	listified `$$(eval obj)`
 }
 
 // Here is an example object with properties:
@@ -1802,16 +1803,16 @@ func mul $arr {
 return ```
 	let not_first_arg: auto = False;
 	for each section in function.structure {
-		matches section {
+		match section {
 			FunctionSection::Arg(ref to name, ref to typ) => {
 				if not_first_arg {
 					output += ",";
 				}
 				
 				output += name;
-				output += "_ppl";
+				output += "$$(ext)";
 				output += \`:\`;
-				output += &compile_type(typ);
+				output += ->compile_type(typ);
 				
 				not_first_arg = true;
 			},

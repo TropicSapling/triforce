@@ -38,18 +38,6 @@ contexts:
         - match: '{{identifier}}'
           scope: markup.raw
           pop: true
-    - match: '(\$\$)(just)?[({]'
-      captures:
-        2: variable.annotation.triforce
-      push:
-        - match: '[)}]'
-          pop: true
-        - match: ''
-          push:
-            - clear_scopes: true
-            - match: '(?=[)}])'
-              pop: true
-            - include: general
     - include: comments
     - include: truly-universal
 
@@ -280,6 +268,14 @@ contexts:
     - match: '"'
       scope: punctuation.definition.string.end.triforce
       pop: true
+    - match: '(?=\${)'
+      push:
+        - clear_scopes: true
+        - match: '\${'
+          scope: source.triforce
+        - match: '[)}]'
+          pop: true
+        - include: general
 
   ################################################################################
   ##                                                                            ##

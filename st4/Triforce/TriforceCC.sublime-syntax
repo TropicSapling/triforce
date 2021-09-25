@@ -28,9 +28,6 @@ contexts:
         - match: '{{identifier}}'
           scope: markup.raw
           pop: true
-    - match: '(\$\$)(just)?'
-      captures:
-        2: cc.variable.annotation.triforce
     - include: cc-comments
     - include: truly-universal
 
