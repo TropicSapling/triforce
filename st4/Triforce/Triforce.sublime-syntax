@@ -49,6 +49,11 @@ contexts:
 
   general:
     - include: universal
+    
+    # Function calls
+    - match: '​[^​]+​' # note: invisible zero-width space characters
+      # scope: keyword.control.triforce
+      scope: support.function.triforce
 
     # Strings
     - match: '"'
@@ -114,7 +119,8 @@ contexts:
       scope: keyword.other.triforce
 
     - match: '\b[A-Z]{{var_identifier}}?'
-      scope: support.function.triforce
+      # scope: support.function.triforce
+      scope: constant.language.triforce
 
     # Numbers
     - match: '\b{{numbers}}\b'

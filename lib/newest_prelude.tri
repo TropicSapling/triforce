@@ -202,12 +202,14 @@ basic func partial func ($pattern as implicitly unchecked paused) ($typed_body a
 // ----
 // Maybe using '-->' operator? Since '->' is taken for pointers.
 
-// The legendary SEMICOLON.
-// ------------------------
-// Does nothing but evaluate its argument,
-// as well as making parsing easier.
-##[precedence below _]
-func $expr; {}
+/// # The legendary SEMICOLON.
+/// Structures statements for evaluation.
+/// Evaluates `$statement` first and then `$scope`. Returns `$scope`.
+/// 
+/// ## TODO
+/// Move this (or declare above); it's clearly used long before being defined!
+##[precedence below _, right assoc]
+func [$statement;$scope] {scope} // `x; y; z; 123` => `x; (y; (z; 123))` => `123`
 
 // '->' means 'pointer/ref to'
 impure func ($var as implicitly ->(Typed _ #($type))) = ($val as type) {

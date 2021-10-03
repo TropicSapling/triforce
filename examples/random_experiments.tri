@@ -1000,7 +1000,7 @@ async scope $scope {
 	while accepting_connections {
 		let incoming_connection = ...;
 		
-		spawn handle_connection(incoming_connection) in scope;
+		spawn (handle connection (incoming_connection)) in scope;
 	}
 	
 	print "\n\nNO LONGER ACCEPTING CONNECTIONS.\n\n";
@@ -1229,10 +1229,22 @@ func f($inp as num|str) {
 
 --------------------------------------------------
 
-// The below function, which will be defined in the prelude, modifies strings as follows:
-// 1. The first line is kept as-is, unless it is only whitespace; then it is removed.
-// 2. On the lines below, all indentation before the least-indented characters is removed.
-// 3. Additionally, the last line is removed if it is only whitespace.
+/// # Basedlined strings
+/// 
+/// ## Similar concepts in other languages
+/// - *Java*       : [text blocks](https://openjdk.java.net/jeps/378)
+/// - *Scala*      : [multiline strings](https://docs.scala-lang.org/overviews/scala-book/two-notes-about-strings.html)
+/// - *Python*     : [multiline strings](https://docs.python.org/3/library/textwrap.html)
+/// - *Bash*       : [Heredocs](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_07_04)
+/// - *Ruby*       : [Heredocs](https://www.rubyguides.com/2018/11/ruby-heredoc/)
+/// - *Swift*      : [multiline string literals](https://docs.swift.org/swift-book/LanguageGuide/StringsAndCharacters.html#ID286)
+/// - *JavaScript* : [dedent proposal](https://github.com/tc39/proposal-string-dedent)
+/// 
+/// ## Algorithm
+/// The below function, which will be defined in the prelude, modifies strings as follows:
+/// 1. The first line is kept as-is, unless it is only whitespace; then it is removed.
+/// 2. On the lines below, all indentation before the least-indented characters is removed.
+/// 3. Additionally, the last line is removed if it is only whitespace.
 func baselined ($s as str) --> str {...}
 
 let unwanted_str = "This
@@ -1869,3 +1881,62 @@ macro func let \[$a, $b, $c] = \[$x, $y, $z] {
 	
 	```
 }
+
+--------------------------------------------------
+
+func newline count in ($s as str) --> int {
+	count of (all which == '\n' in s)
+}
+
+func ($s as str) without first char --> str {
+	s[1..]
+}
+
+func greet senior (Cat with [name = #($name), age = 10..]) {
+	println "Hello Sr. " + name;
+}
+
+let string = "hello\nworld";
+
+println (newline count in string); // 1
+
+println (string without first char); // ello\nworld
+
+greet senior cat;
+
+for each m in (matchs excl each m where m[0] != i) {
+	...
+}
+
+--------------------------------------------------
+
+// Auto-executing function:
+func just do it {
+	println "just did it";
+}
+
+just do it; // prints "just did it"
+
+let f = () => just do it; // turn back into normal function
+
+f;   // does nothing
+f(); // prints "just did it"
+
+--------------------------------------------------
+
+// If you want to, you can define functions a bit more classical style like this:
+func f([#($par1), #($par2), #($par3)]) {
+	...
+}
+
+// And then you call like this:
+f[x, y, z]
+
+// You can also have named arguments:
+func f([arg1 = #($par1), arg2 = #($par2), arg3 = #($par3)]) {
+	...
+}
+
+f[x, arg3 = z, arg2 = y] // out of order args allowed this way
+
+// I'll admit it looks a bit uglier than the usual `f(par1, par2, par3)` though.
