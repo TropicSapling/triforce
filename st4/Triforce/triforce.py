@@ -71,6 +71,7 @@ class HighlightTriFuncCallCommand(sublime_plugin.TextCommand):
 				if ("comment"                       in scope or
 					"string"                        in scope or
 					"variable"                      in scope or
+					"operator"                      in scope or
 					"entity.name.function.triforce" in scope):
 					continue
 				
