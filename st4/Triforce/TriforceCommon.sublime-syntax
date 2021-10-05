@@ -79,6 +79,8 @@ contexts:
       escape: '^(?!\s*//+\s*>)'
     - match: '^(?!\s*//+)'
       pop: true
+    - match: 'TODO[:.!]?'
+      scope: cc.support.function.triforce
 
   line-comment:
     - meta_scope: comment.line.triforce
