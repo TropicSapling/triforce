@@ -5,6 +5,12 @@ $(f $a $b [...])   <=> ($(f $a $b [...]) as $#0 $#1 [...])
 
 --------------------------------------------------
 
+/// # NOTE
+/// This file is quite messy and contains both old and new syntax.
+/// Most of the new syntax can be found after the first few hundred lines.
+
+--------------------------------------------------
+
 // TODO: Fix so that stuff below works with new syntax
 
 memo _ => (
