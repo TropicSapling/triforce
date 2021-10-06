@@ -1019,13 +1019,18 @@ macro func each $item in ($arr as [_]) as $trans {
 	
 	let res: auto = [];
 	
-	async scope scope {
+	// Here we use a thread pool / worker factory for concurrency.
+	// Upon entering the factory block, an optimal number of threads are created.
+	// They then sit idle until they are assigned work, and join after the block.
+	async factory factory {
 		for each $$(item) in $$(arr) {
-			spawn {
+			// Here we assign work to a worker. Unlike with 'spawn', no new thread
+			// is created here; instead an existing thread is assigned work.
+			assign {
 				exclusively { // lock, alt. you could do Erlang-style messaging
 					res += $$(trans);
 				}
-			} in scope;
+			} to worker in factory;
 		}
 	}
 	
