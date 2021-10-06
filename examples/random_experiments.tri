@@ -992,7 +992,7 @@ func do big calc concurrently in ($scope as any AsyncScope) {
 	// They keep running in the background.
 }
 
-async scope $scope {
+async scope scope {
 	do big calc concurrently in scope;
 	
 	print "\n\nACCEPTING CONNECTIONS.\n\n";
@@ -1010,6 +1010,31 @@ async scope $scope {
 }
 
 print "\n\nALL ASYNC PROCESSES FINISHED!\n\n";
+
+--------------------------------------------------
+
+// Concurrent map
+macro func each $item in ($arr as [_]) as $trans {
+	```
+	
+	let res: auto = [];
+	
+	async scope scope {
+		for each $$(item) in $$(arr) {
+			spawn {
+				exclusively { // lock, alt. you could do Erlang-style messaging
+					res += $$(trans);
+				}
+			} in scope;
+		}
+	}
+	
+	res
+	
+	```
+}
+
+let arr = each x in [1, 2, 3] as 2*x; //> [2, 4, 6]
 
 --------------------------------------------------
 
