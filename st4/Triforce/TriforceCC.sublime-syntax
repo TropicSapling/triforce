@@ -39,6 +39,10 @@ contexts:
 
   cc-general:
     - include: cc-universal
+    
+    # Function calls
+    - match: '​[^​]+​' # note: invisible zero-width space characters
+      scope: cc.support.function.triforce
 
     # Strings
     - match: '"'
@@ -62,7 +66,7 @@ contexts:
       scope: cc.keyword.other.triforce
 
     - match: '\b[A-Z]{{var_identifier}}?'
-      scope: cc.support.function.triforce
+      scope: cc.constant.language.triforce
 
     # Numbers
     - match: '\b{{numbers}}\b'
@@ -106,13 +110,16 @@ contexts:
       scope: cc.storage.type.triforce
       push: cc-let-id-search-start
 
-    - match: '\bcategory\b'
+    - match: '\b(category|async\s+scope)\b'
       scope: cc.storage.type.triforce
       push: cc-func-id-search-start
 
     - match: '\bobject\b'
       scope: cc.storage.type.triforce
       push: cc-obj-id-search-start
+    
+    - match: '\b((?<=each)\s+{{var_identifier}})\b'
+      scope: cc.entity.name.function.triforce
 
   ################################################################################
   ##                                                                            ##

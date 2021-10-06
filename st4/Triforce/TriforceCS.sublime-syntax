@@ -52,6 +52,10 @@ contexts:
 
   cs-general:
     - include: cs-universal
+    
+    # Function calls
+    - match: '​[^​]+​' # note: invisible zero-width space characters
+      scope: cs.support.function.triforce
 
     # Strings
     - match: '"'
@@ -75,7 +79,7 @@ contexts:
       scope: cs.keyword.other.triforce
 
     - match: '\b[A-Z]{{var_identifier}}?'
-      scope: cs.support.function.triforce
+      scope: cs.constant.language.triforce
 
     # Numbers
     - match: '\b{{numbers}}\b'
@@ -119,13 +123,16 @@ contexts:
       scope: cs.storage.type.triforce
       push: cs-let-id-search-start
 
-    - match: '\bcategory\b'
+    - match: '\b(category|async\s+scope)\b'
       scope: cs.storage.type.triforce
       push: cs-func-id-search-start
 
     - match: '\bobject\b'
       scope: cs.storage.type.triforce
       push: cs-obj-id-search-start
+    
+    - match: '\b((?<=each)\s+{{var_identifier}})\b'
+      scope: cs.entity.name.function.triforce
 
   ################################################################################
   ##                                                                            ##

@@ -52,7 +52,6 @@ contexts:
     
     # Function calls
     - match: '​[^​]+​' # note: invisible zero-width space characters
-      # scope: keyword.control.triforce
       scope: support.function.triforce
 
     # Strings
@@ -119,7 +118,6 @@ contexts:
       scope: keyword.other.triforce
 
     - match: '\b[A-Z]{{var_identifier}}?'
-      # scope: support.function.triforce
       scope: constant.language.triforce
 
     # Numbers
@@ -164,13 +162,16 @@ contexts:
       scope: storage.type.triforce
       push: let-id-search-start
 
-    - match: '\bcategory\b'
+    - match: '\b(category|async\s+scope)\b'
       scope: storage.type.triforce
       push: func-id-search-start
 
     - match: '\bobject\b'
       scope: storage.type.triforce
       push: obj-id-search-start
+    
+    - match: '\b((?<=each)\s+{{var_identifier}})\b'
+      scope: entity.name.function.triforce
 
   ################################################################################
   ##                                                                            ##
