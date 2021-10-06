@@ -1781,8 +1781,8 @@ object Cat has [
 // Which macro expands into this:
 func Cat ($name as str) ($age as int) (~_) {}
 
-macro func (Cat #($name) #($age)).(`name`) {`$$(name)`}
-macro func (Cat #($name) #($age)).(`age`)  {`$$(age)`}
+macro func (Cat #$name #$age).(`name`) {`$$(name)`}
+macro func (Cat #$name #$age).(`age`)  {`$$(age)`}
 
 // And can then be used to create objects like this:
 let cat = Cat "Whiskers" 7;
@@ -1806,7 +1806,7 @@ func ($x as num) * (#($y)%) {
     x * y / 100
 }
 
-func greet senior (Cat with [name = #($name), age = 10..]) {
+func greet senior (Cat with [name = #$name, age = 10..]) {
 	println "Hello Sr. " + name;
 }
 
@@ -1821,17 +1821,26 @@ func ($list as [_])[last] {
 	list[list length - 1]
 }
 
-// Better (?) syntax for the "fold" function:
-func $start $op (#($arr)[0]) $op..$op (#($arr)[last]);
+// Better (?) syntax for the "fold"/"reduce" function:
+func [$init_val]? $op (#$arr[0]) $op ... $op (#$arr[last]);
+// Or perhaps a more general version:
+func [$init_val]? $op (#$arr[#$a]) $op ... $op (#$arr[#$b]);
+
+// `$init_val` is optional, but required if you want to support empty lists
 
 // Used like this:
 func sum $arr {
-	0 + arr[0] +..+ arr[last]
+	0 + arr[0] + ... + arr[last] // 0 if list empty
 }
 
 func mul $arr {
-	1 * arr[0] *..* arr[last]
+	arr[0] * ... * arr[last] // error if list empty
 }
+
+// Note that "fold" is still not such a bad name though if you understand it.
+// It's named as such because you "fold" a larger data structure (i.e. a list)
+// repetitively until it becomes one small thing (i.e. a sum). Also, you can't just
+// always fold left because it's efficient, since some operations require right folding.
 
 --------------------------------------------------
 
