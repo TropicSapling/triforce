@@ -1,7 +1,7 @@
 # Triforce programming language
 ![banner](img/banner.PNG)
 
-**Check out the `dev` branch for the most recent developments.**
+**This README is outdated. Check out [random_experiments.tri](examples/random_experiments.tri) and scroll down for sketches of newer language concepts.**
 
 Triforce is a programming language emphasizing performance, power and productivity.
 
