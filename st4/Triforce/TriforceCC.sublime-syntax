@@ -110,7 +110,7 @@ contexts:
       scope: cc.storage.type.triforce
       push: cc-let-id-search-start
 
-    - match: '\b(category|async\s+scope)\b'
+    - match: '\b(category|async\s+(scope|factory))\b'
       scope: cc.storage.type.triforce
       push: cc-func-id-search-start
 

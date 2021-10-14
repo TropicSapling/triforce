@@ -998,15 +998,15 @@ func do big calc concurrently in ($scope as any AsyncScope) {
 	// They keep running in the background.
 }
 
-async scope scope {
-	do big calc concurrently in scope;
+async scope Scope {
+	do big calc concurrently in Scope;
 	
 	print "\n\nACCEPTING CONNECTIONS.\n\n";
 	
 	while accepting_connections {
 		let incoming_connection = ...;
 		
-		spawn (handle connection incoming_connection) in scope;
+		spawn (handle connection incoming_connection) in Scope;
 	}
 	
 	print "\n\nNO LONGER ACCEPTING CONNECTIONS.\n\n";
@@ -1019,6 +1019,30 @@ print "\n\nALL ASYNC PROCESSES FINISHED!\n\n";
 
 --------------------------------------------------
 
+// Sometimes you have an exported function called by a framework,
+// and you want this function to spawn a thread that outlives the function.
+// This works fine if the framework passes an async scope to the function:
+func run within framework and scope ($scope as any AsyncScope) {
+	spawn f in scope;
+}
+
+// But what if it doesn't? What if the framework was not built with concurrency in mind?
+func run within framework {
+	// Well, in that case you can `spawn` inside of an `async escaping` block instead:
+	async escaping {
+		// This block does nothing but alert you that threads that aren't limited to
+		// any async scope/factory are spawned here. These threads simply "escape"
+		// and may not finish until the entire program exits, hence the name.
+		
+		spawn f;
+	}
+}
+
+// NOTE:
+// Of course, `async escaping` should be avoided whenever possible, just like `unsafe`.
+
+--------------------------------------------------
+
 // Concurrent map
 macro func each $item in ($arr as [_]) as $trans {
 	```
@@ -1028,7 +1052,7 @@ macro func each $item in ($arr as [_]) as $trans {
 	// Here we use a thread pool / worker factory for concurrency.
 	// Upon entering the factory block, an optimal number of threads are created.
 	// They then sit idle until they are assigned work, and join after the block.
-	async factory factory {
+	async factory Factory {
 		for each $$(item) in $$(arr) {
 			// Here we assign work to a worker. Unlike with 'spawn', no new thread
 			// is created here; instead an existing thread is assigned work.
@@ -1036,7 +1060,7 @@ macro func each $item in ($arr as [_]) as $trans {
 				exclusively { // lock, alt. you could do Erlang-style messaging
 					res += $$(trans);
 				}
-			} to worker in factory;
+			} to worker in Factory;
 		}
 	}
 	

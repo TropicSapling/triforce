@@ -123,7 +123,7 @@ contexts:
       scope: cs.storage.type.triforce
       push: cs-let-id-search-start
 
-    - match: '\b(category|async\s+scope)\b'
+    - match: '\b(category|async\s+(scope|factory))\b'
       scope: cs.storage.type.triforce
       push: cs-func-id-search-start
 

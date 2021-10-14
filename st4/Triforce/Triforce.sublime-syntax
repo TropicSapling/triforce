@@ -162,7 +162,7 @@ contexts:
       scope: storage.type.triforce
       push: let-id-search-start
 
-    - match: '\b(category|async\s+scope)\b'
+    - match: '\b(category|async\s+(scope|factory))\b'
       scope: storage.type.triforce
       push: func-id-search-start
 
