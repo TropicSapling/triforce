@@ -1038,13 +1038,6 @@ func run within framework {
 	}
 }
 
-// TODO: atomic transactions (see: transactional memory) (note: maybe starvation)?
-// - note: "server" only applies memory changes from one client at a time
-// - note: EVERY variable version is checked and updated (only 1 version per var, even if List?)
-// - note: automatically repeats whole atomic transaction block on fail
-// - note: fail if version wrong for variables read (not necessarily written back)
-// - note: to incr performance, allow user to allow some specific changes?
-
 // NOTE:
 // Of course, `async escaping` should be avoided whenever possible, just like `unsafe`.
 
@@ -1077,6 +1070,19 @@ macro func each $item in ($arr as [_]) as $trans {
 }
 
 let arr = each n in [1, 2, 3] as 2*n; //> [2, 4, 6]
+
+--------------------------------------------------
+
+// TODO: atomic transactions (see: transactional memory) (note: maybe starvation)?
+// - note: "server" only applies memory changes from one client at a time
+// - note: EVERY variable version is checked and updated (only 1 version per var, even if List?)
+// - note: read variables must not be from different versions
+// - note: automatically repeats whole atomic transaction block on fail
+// - note: printing/similar should only be done at commit time (no repeating!)
+// - note: fail if version wrong for variables read (not necessarily written back)
+// - note: to incr performance, allow user to allow some specific changes?
+// - note: see https://en.wikipedia.org/wiki/Software_transactional_memory
+// - note: see https://clojure.org/reference/refs
 
 --------------------------------------------------
 
