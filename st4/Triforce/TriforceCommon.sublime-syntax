@@ -6,12 +6,14 @@ name: TriforceCommon
 scope: source.triforce
 hidden: true
 variables:
+  ######## TODO: CLEANUP OLD SYNTAX ########
+  
   # Identifiers
   identifier:     '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+|([!<>\-+%/*^&|@~?.]|==|##)[!<>\-+%/*^&|@~?.=#]*))'
   var_identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
 
   # Keywords
-  keyword_ctrl:       '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|eval|prerun|run|spawn|assign|to\s+worker\s+in)'
+  keyword_ctrl:       '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|eval|prerun|run|spawn|assign|to\s+worker\s+in|defer)'
   keyword_check:      '(as|fulfilling|where(\s+we)?|which|match(es)?|is(\s+(a|an|any)(?!{{identifier}}))?|are|could\s+be)'
   keyword_namespace:  '((ex|im)port(\s+all)?|except|from|into|expose)'
   keyword_type:       '(bool|nat|int|frac|complex|num|str)'

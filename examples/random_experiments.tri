@@ -1038,6 +1038,13 @@ func run within framework {
 	}
 }
 
+// TODO: atomic transactions (see: transactional memory) (note: maybe starvation)?
+// - note: "server" only applies memory changes from one client at a time
+// - note: EVERY variable version is checked and updated (only 1 version per var, even if List?)
+// - note: automatically repeats whole atomic transaction block on fail
+// - note: fail if version wrong for variables read (not necessarily written back)
+// - note: to incr performance, allow user to allow some specific changes?
+
 // NOTE:
 // Of course, `async escaping` should be avoided whenever possible, just like `unsafe`.
 
@@ -2009,3 +2016,53 @@ func f([arg1 = #($par1), arg2 = #($par2), arg3 = #($par3)]) {
 f[x, arg3 = z, arg2 = y] // out of order args allowed this way
 
 // I'll admit it looks a bit uglier than the usual `f(par1, par2, par3)` though.
+
+--------------------------------------------------
+
+// `defer` can be used to delay things to execute first after* a function returns.
+// Useful for when you want something to run at the end regardless of what happens.
+// Early returns (potentially caused by errors) do not stop deferred expressions
+// from running afterwards. Similar to how `finally {...}` works in Java.
+// 
+// *Actually executes right before returning, but it behaves as if it was after:
+// > let x: int = 0;
+// > defer (x += 1);
+// > return x; // returns 0, not 1
+
+// Example (translated from Go and modified):
+func f() {
+	println "counting";
+	
+	// Lock and unlock upon exit (unnecessary, but just an example).
+	mutex.lock();
+	defer mutex.unlock();
+	
+	for each i in 0..9 {
+		defer (println i);
+	}
+	
+	if return_early {
+		return; // returns early, and then runs all deferred expressions
+	}
+	
+	println "done";
+	
+	// Here the function returns and then runs all deferred expressions.
+}
+
+f();
+// counting
+// done
+// 9
+// 8
+// 7
+// 6
+// 5
+// 4
+// 3
+// 2
+// 1
+// 0
+
+// Note how the most recently deferred expression gets evaluated first.
+// The deferred expressions get pushed onto a stack and then run last-in-first-out.

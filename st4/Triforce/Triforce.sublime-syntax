@@ -8,6 +8,8 @@ file_extensions:
 scope: source.triforce
 extends: [TriforceCommon.sublime-syntax, TriforceCC.sublime-syntax, TriforceCS.sublime-syntax]
 contexts:
+  ######## TODO: CLEANUP OLD SYNTAX ########
+  
   main:
     - include: general
 
