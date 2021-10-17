@@ -119,7 +119,7 @@ contexts:
     - match: '\b{{decl_sym}}\b'
       scope: cs.storage.type.triforce
 
-    - match: '\b(decl|unit|let(\s+macro)?)\b'
+    - match: '\b(decl|unit|(try\s+)?let(\s+mut)?(\s+(macro|rec))?)\b'
       scope: cs.storage.type.triforce
       push: cs-let-id-search-start
 
@@ -217,9 +217,9 @@ contexts:
       scope: cs.keyword.operator.arithmetic.triforce
     - match: '[&|^]|<<|>>'
       scope: cs.keyword.operator.bitwise.triforce
-    - match: '[@~?#'']'
+    - match: '[@~?'']'
       scope: cs.keyword.operator.triforce
-    - match: '\$'
+    - match: '[$#]'
       scope: cs.keyword.operator.triforce
       push: cs-op-dollar
     - match: '\b_\b'

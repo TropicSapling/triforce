@@ -1895,23 +1895,23 @@ func mul $arr {
 // Code string syntax highlighting testing & comparison
 
 return ```
-	let not_first_arg: auto = False;
+	let mut not_first_arg = False;
 	for each section in function.structure {
-		match section {
-			FunctionSection::Arg(ref to name, ref to typ) => {
+		when section is {
+			FunctionSection.Arg (ref to #name) (ref to #type) ==> {
 				if not_first_arg {
 					output += ",";
 				}
 				
 				output += name;
-				output += "$$(ext)";
+				output += "_$$(ext)";
 				output += \`:\`;
-				output += ->compile_type(typ);
+				output += ->(compile type);
 				
 				not_first_arg = true;
 			},
 			
-			_ => ()
+			_ ==> ()
 		}
 	}
 ```;
@@ -2072,3 +2072,41 @@ f();
 
 // Note how the most recently deferred expression gets evaluated first.
 // The deferred expressions get pushed onto a stack and then run last-in-first-out.
+
+--------------------------------------------------
+
+let otherwise = True;
+
+// `try` because pattern match may fail; if so it errors
+try let [#a, #b] = [3, 4];
+
+// Similar to Kotlin's `when x` and Rust's `match x`
+when x is {
+	1     ==> println "x is 1",
+	2     ==> println "x is 2",
+	a|b   ==> println "x is 3 or 4",
+	5..10 ==> println "x is 5, 6, 7, 8, 9, or 10",
+	_     ==> println "x is out of range"
+}
+
+// For types maybe?
+when x is a {
+	str ==> println "x is a string",
+	int ==> println "x is an integer",
+	[_] ==> println "x is a list",
+	
+	_ ==> println "x is something else"
+}
+
+// Similar to Kotlin's `when`
+let res: bool = when {
+	obj == ()  ==> False,
+	obj is str ==> True,
+	
+	otherwise ==> printerr "illegal state"
+};
+
+// Shorthand one-case `when` (like Rust's `if let`):
+try let [#x, #y] = arr in {
+	// This block, where x & y are defined, only runs if pattern match succeeds.
+}

@@ -106,7 +106,7 @@ contexts:
     - match: '\b{{decl_sym}}\b'
       scope: cc.storage.type.triforce
 
-    - match: '\b(decl|unit|let(\s+macro)?)\b'
+    - match: '\b(decl|unit|(try\s+)?let(\s+mut)?(\s+(macro|rec))?)\b'
       scope: cc.storage.type.triforce
       push: cc-let-id-search-start
 
@@ -171,9 +171,9 @@ contexts:
       scope: cc.keyword.operator.arithmetic.triforce
     - match: '[&|^]|<<|>>'
       scope: cc.keyword.operator.bitwise.triforce
-    - match: '[@~?#'']'
+    - match: '[@~?'']'
       scope: cc.keyword.operator.triforce
-    - match: '\$'
+    - match: '[$#]'
       scope: cc.keyword.operator.triforce
       push: cc-op-dollar
     - match: '\b_\b'

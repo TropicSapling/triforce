@@ -160,7 +160,7 @@ contexts:
     - match: '\b{{decl_sym}}\b'
       scope: storage.type.triforce
 
-    - match: '\b(decl|unit|let(\s+(macro|rec))?)\b'
+    - match: '\b(decl|unit|(try\s+)?let(\s+mut)?(\s+(macro|rec))?)\b'
       scope: storage.type.triforce
       push: let-id-search-start
 
@@ -305,9 +305,9 @@ contexts:
       scope: keyword.operator.arithmetic.triforce
     - match: '[&|^]|<<|>>'
       scope: keyword.operator.bitwise.triforce
-    - match: '[@~?#'']'
+    - match: '[@~?'']'
       scope: keyword.operator.triforce
-    - match: '\$'
+    - match: '[$#]'
       scope: keyword.operator.triforce
       push: op-dollar
     - match: '\b_\b'
