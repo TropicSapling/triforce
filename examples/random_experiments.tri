@@ -2007,7 +2007,7 @@ f(); // prints "just did it"
 --------------------------------------------------
 
 // If you want to, you can define functions a bit more classical style like this:
-func f([#($par1), #($par2), #($par3)]) {
+func f([#par1, #par2, #par3]) {
 	...
 }
 
@@ -2015,13 +2015,11 @@ func f([#($par1), #($par2), #($par3)]) {
 f[x, y, z]
 
 // You can also have named arguments:
-func f([arg1 = #($par1), arg2 = #($par2), arg3 = #($par3)]) {
+func f([arg1 = #par1, arg2 = #par2, arg3 = #par3]) {
 	...
 }
 
 f[x, arg3 = z, arg2 = y] // out of order args allowed this way
-
-// I'll admit it looks a bit uglier than the usual `f(par1, par2, par3)` though.
 
 --------------------------------------------------
 
@@ -2110,3 +2108,35 @@ let res: bool = when {
 try let [#x, #y] = arr in {
 	// This block, where x & y are defined, only runs if pattern match succeeds.
 }
+
+--------------------------------------------------
+
+// Mutability
+
+// Variables are immutable by default:
+let x = 123;
+x = 456; // ERROR!
+
+// Add `mut` to make them mutable:
+let mut x = 123;
+x = 456; // ok
+
+func f ($par1) ($par2 as ->...) ($par3) {
+	// Function parameters are always immutable:
+	par1 = 789; // ERROR!
+	
+	// But you can still make mutable copies of them:
+	let mut par1 = par1;
+	par1 = 789; // ok, only local
+	
+	// Or, take in a pointer instead and modify what it points to:
+	@par2 = 456; // ok, affects outside
+}
+
+try let [#x, #y, #z] = [1, 2, 3];
+
+f x y z;
+
+println x; // still 1
+println y; // now 456
+println z; // still 3
