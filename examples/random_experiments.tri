@@ -2135,7 +2135,7 @@ func f ($par1) ($par2 as ->...) ($par3) {
 
 try let [#x, #y, #z] = [1, 2, 3];
 
-f x y z;
+f x ->y z;
 
 println x; // still 1
 println y; // now 456
