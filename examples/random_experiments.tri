@@ -2150,10 +2150,34 @@ func f ($par1) ($par2 as ->...) ($par3) {
 	@par2 = 456; // ok, affects outside
 }
 
-try let [#x, #y, #z] = [1, 2, 3];
+// TODO:
+// - Make extraction variables (x, y, z) used like this immutable by default?
+// - If so, decide on what syntax to use to make them mutable.
+let :[#x, #y, #z] = [1, 2, 3];
 
 f x ->y z;
 
 println x; // still 1
 println y; // now 456
 println z; // still 3
+
+--------------------------------------------------
+
+object Boxed (~Unboxing);
+
+func __catch__ (Boxed (Unboxing #thing)) {thing}
+
+func optionally $type {
+	()|(Boxed type)
+}
+
+// Auto-boxing function (similar to Ok-wrapping in Rust)
+boxing func f() --> optionally int {
+	if rand() {
+		123 //> Boxed 123
+	} else {
+		Unboxing () //> Boxed (Unboxing ()) == ()
+	}
+}
+
+// TODO: custom Box names (i.e. `Ok = Boxed`, `Err = Unboxing`)
