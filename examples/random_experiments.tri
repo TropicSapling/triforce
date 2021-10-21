@@ -2073,12 +2073,11 @@ f();
 
 --------------------------------------------------
 
-let otherwise = True;
+let arr: [#a, #b] = [3, 4]; // => `arr = [3, 4]`, `a = 3`, `b = 4`
+// Alt. if you only want to destruct:
+let :[#a, #b] = [3, 4];
 
-// `try` because pattern match may fail; if so it errors
-try let [#a, #b] = [3, 4];
-
-// Similar to Kotlin's `when x` and Rust's `match x`
+// Similar to Kotlin's `when x` and Rust's `match x` (exhaustive)
 when x is {
 	1     ==> println "x is 1",
 	2     ==> println "x is 2",
@@ -2087,7 +2086,14 @@ when x is {
 	_     ==> println "x is out of range"
 }
 
-// For types maybe?
+when arr is {
+	[#a as int, #b as int] ==> println "two integers ${a} and ${b}",
+	[#a as str, #b as str] ==> println "two strings '${a}' and '${b}'",
+	
+	[#a, #b] ==> println "two things ${a} and ${b}"
+}
+
+// For types maybe? (hopefully this extra syntax won't be needed)
 when x is a {
 	str ==> println "x is a string",
 	int ==> println "x is an integer",
@@ -2096,18 +2102,29 @@ when x is a {
 	_ ==> println "x is something else"
 }
 
+let otherwise = True;
+
 // Similar to Kotlin's `when`
-let res: bool = when {
+let res = when {
 	obj == ()  ==> False,
 	obj is str ==> True,
 	
 	otherwise ==> printerr "illegal state"
 };
+// Equivalent to this:
+let res = when _ is {
+	_ and obj == ()  ==> False,
+	_ and obj is str ==> True,
+	
+	_ ==> printerr "illegal state"
+};
 
-// Shorthand one-case `when` (like Rust's `if let`):
-try let [#x, #y] = arr in {
+// Shorthand one-case (non-exhaustive) `when` (like Rust's `if let`):
+when arr is [#x, #y] ==> {
 	// This block, where x & y are defined, only runs if pattern match succeeds.
 }
+// Can also be a one-liner:
+when arr is [#x, #y] ==> do something with x and y;
 
 --------------------------------------------------
 

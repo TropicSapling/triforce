@@ -160,7 +160,7 @@ contexts:
     - match: '\b{{decl_sym}}\b'
       scope: storage.type.triforce
 
-    - match: '\b(decl|unit|(try\s+)?let(\s+mut)?(\s+(macro|rec))?)\b'
+    - match: '\b(decl|unit|let(\s+mut)?(\s+(macro|rec))?)\b'
       scope: storage.type.triforce
       push: let-id-search-start
 
