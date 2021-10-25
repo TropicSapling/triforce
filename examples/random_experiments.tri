@@ -2181,3 +2181,13 @@ boxing func f() --> optionally int {
 }
 
 // TODO: custom Box names (i.e. `Ok = Boxed`, `Err = Unboxing`)
+
+--------------------------------------------------
+
+// Linear types explained well & how to use them for memory handling:
+// https://github.com/austral/specification/blob/master/src/rationale/3.resource-types.md
+
+// Also, some interesting notes on error handling & destructors:
+// https://github.com/austral/specification/blob/master/src/rationale/2.error-handling.md
+
+// (From a programming language starred by Graydon)
