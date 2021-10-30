@@ -149,7 +149,7 @@ contexts:
         - include: general
 
     # Declarations & definitions
-    - match: '\b((partial\s+)?func)\b'
+    - match: '\b((partial\s+)?(boxing\s+)?func)\b'
       scope: storage.type.triforce
       push: func-id-search-start
 

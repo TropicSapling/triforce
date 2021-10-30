@@ -20,6 +20,15 @@ prelude = {"if", "then", "else", "unless", "for each", "while", "break", "contin
 def between(view, a, b):
 	return view.substr(sublime.Region(a, b))
 
+def undo(view):
+	print("CUSTOM UNDO")
+	view.run_command('undo')
+
+class TriUndoCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		# Note: below timeout needed because Sublime Text is weird
+		sublime.set_timeout(lambda: undo(self.view), 0)
+
 class HighlightTriFuncCallCommand(sublime_plugin.TextCommand):
 	def find_funcs(self, edit):
 		global funcs
@@ -138,5 +147,5 @@ class FuncListener(sublime_plugin.EventListener):
 			if ready and view.syntax().scope == 'source.triforce':
 				ready = False
 				# TODO: fix running command messing with Ctrl+Z
-				view.run_command('highlight_tri_func_call')
+				# view.run_command('highlight_tri_func_call')
 		except AttributeError: ()

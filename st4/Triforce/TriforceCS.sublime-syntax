@@ -108,7 +108,7 @@ contexts:
         - include: cs-general
 
     # Declarations & definitions
-    - match: '\b((partial\s+)?func)\b'
+    - match: '\b((partial\s+)?(boxing\s+)?func)\b'
       scope: cs.storage.type.triforce
       push: cs-func-id-search-start
 

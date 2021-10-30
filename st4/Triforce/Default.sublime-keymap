@@ -71,12 +71,12 @@
     // Triforce (un)comment preparation
     { "keys": ["ctrl+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Comment Prep.sublime-macro"}, "context":
         [
-            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" }
         ]
     },
     { "keys": ["ctrl+shift+7"], "command": "run_macro_file", "args": {"file": "res://Packages/Triforce/Comment Prep.sublime-macro"}, "context":
         [
-            { "key": "selector", "operator": "equal", "operand": "source.triforce" },
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" }
         ]
     },
     
@@ -189,6 +189,17 @@
             { "key": "selector", "operator": "equal", "operand": "source.triforce|source.rust" },
             { "key": "selection_empty", "operator": "equal", "operand": true, "match_all": true },
             { "key": "preceding_text", "operator": "regex_contains", "operand": "^\\s*///.*$", "match_all": true }
+        ]
+    },
+
+    // ========================================
+    //       #### Plugin Keybindings ####
+    // ========================================
+
+    // Properly undo things (needed because plugin messes with undo history)
+    { "keys": ["ctrl+z"], "command": "tri_undo", "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" }
         ]
     }
 ]

@@ -95,7 +95,7 @@ contexts:
         - include: cc-general
 
     # Declarations & definitions
-    - match: '\b((partial\s+)?func)\b'
+    - match: '\b((partial\s+)?(boxing\s+)?func)\b'
       scope: cc.storage.type.triforce
       push: cc-func-id-search-start
 
