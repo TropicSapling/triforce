@@ -20,14 +20,42 @@ prelude = {"if", "then", "else", "unless", "for each", "while", "break", "contin
 def between(view, a, b):
 	return view.substr(sublime.Region(a, b))
 
-def undo(view):
-	print("CUSTOM UNDO")
-	view.run_command('undo')
+# This exists because Python
+def setReady(val):
+	global ready
+
+	ready = val
+
+def do(view, cmd):
+	setReady(False)
+
+	# Undo/Redo syntax highlighting
+	last_cmd = view.command_history(0)[0]
+	i = 0
+	while ('tri_' in last_cmd or last_cmd == '') and i < 256:
+		view.run_command(cmd)
+		last_cmd = view.command_history(0)[0]
+		i += 1
+
+	# Undo/Redo what the user typed
+	view.run_command(cmd)
+
+	# Undo/Redo final syntax highlighting
+	last_cmd = view.command_history(1)[0]
+	if view.command_history(1)[0] == 'highlight_tri_func_call':
+		view.run_command(cmd)
+
+	sublime.set_timeout_async(lambda: setReady(True), 0)
 
 class TriUndoCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		# Note: below timeout needed because Sublime Text is weird
-		sublime.set_timeout(lambda: undo(self.view), 0)
+		sublime.set_timeout_async(lambda: do(self.view, 'undo'), 0)
+
+class TriRedoCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		# Note: below timeout needed because Sublime Text is weird
+		sublime.set_timeout_async(lambda: do(self.view, 'redo'), 0)
 
 class HighlightTriFuncCallCommand(sublime_plugin.TextCommand):
 	def find_funcs(self, edit):
@@ -129,23 +157,18 @@ class HighlightTriFuncCallCommand(sublime_plugin.TextCommand):
 		
 		# Trigger on_modified_async(...) to restart
 		# TODO: fix this causing file to always say it's unsaved
-		view.insert(edit, 0, 'Q')
-		view.erase(edit, sublime.Region(0, 1))
+		# view.insert(edit, 0, 'Q')
+		# view.erase(edit, sublime.Region(0, 1))
 	
 	def run(self, edit):
-		global ready
-		
+		setReady(False)
 		self.highlight_calls(edit, self.view.size())
-		ready = True
+		setReady(True)
 
 class FuncListener(sublime_plugin.EventListener):
 	def on_modified_async(self, view):
-		global ready
-		
 		# Need 'try' in case attempting to run after file closed
 		try:
 			if ready and view.syntax().scope == 'source.triforce':
-				ready = False
-				# TODO: fix running command messing with Ctrl+Z
-				# view.run_command('highlight_tri_func_call')
+				view.run_command('highlight_tri_func_call')
 		except AttributeError: ()

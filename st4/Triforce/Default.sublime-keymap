@@ -201,5 +201,12 @@
         [
             { "key": "selector", "operator": "equal", "operand": "source.triforce" }
         ]
+    },
+
+    // Properly redo things (needed because plugin messes with redo history)
+    { "keys": ["ctrl+y"], "command": "tri_redo", "context":
+        [
+            { "key": "selector", "operator": "equal", "operand": "source.triforce" }
+        ]
     }
 ]
