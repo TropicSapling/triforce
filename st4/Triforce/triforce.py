@@ -38,19 +38,18 @@ def do(view, cmd):
 	setReady(False)
 
 	# Undo/Redo syntax highlighting
-	last_cmd = view.command_history(0)[0]
+	last_cmd = view.command_history(0)
 	# TODO: fix so 'i < 256' not needed (check properly if at end)
 	i = 0
-	while ('tri_' in last_cmd or last_cmd == '') and i < 256:
+	while ('tri_' in last_cmd[0] or last_cmd == ('', None, 1)) and i < 256:
 		view.run_command(cmd)
-		last_cmd = view.command_history(0)[0]
+		last_cmd = view.command_history(0)
 		i += 1
 
 	# Undo/Redo what the user typed
 	view.run_command(cmd)
 
 	# Undo/Redo final syntax highlighting
-	last_cmd = view.command_history(1)[0]
 	if view.command_history(1)[0] == 'highlight_tri_func_call':
 		view.run_command(cmd)
 
