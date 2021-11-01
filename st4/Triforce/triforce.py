@@ -3,6 +3,8 @@ import sublime_plugin
 
 import re
 
+# TODO: fix arrow key navigation & selection
+
 funcs      = set()
 funcs_iter = iter(funcs)
 
@@ -35,23 +37,39 @@ def setReady(val):
 	ready = val
 
 def do(view, cmd):
+	# TODO: improve speed of this & less spaghetti code
+
+	idx = 0 if cmd == 'undo' else 1
+
 	setReady(False)
 
 	# Undo/Redo syntax highlighting
-	last_cmd = view.command_history(0)
+	last_cmd = view.command_history(idx)
 	# TODO: fix so 'i < 256' not needed (check properly if at end)
 	i = 0
 	while ('tri_' in last_cmd[0] or last_cmd == ('', None, 1)) and i < 256:
 		view.run_command(cmd)
-		last_cmd = view.command_history(0)
+		last_cmd = view.command_history(idx)
 		i += 1
+	if cmd == 'redo':
+		while ('tri_' in last_cmd[0] or last_cmd[1] == None or last_cmd[1]['characters'].isspace()) and i < 256:
+			view.run_command(cmd)
+			last_cmd = view.command_history(idx)
+			i += 1
 
 	# Undo/Redo what the user typed
 	view.run_command(cmd)
 
-	# Undo/Redo final syntax highlighting
-	if view.command_history(1)[0] == 'highlight_tri_func_call':
+	last_cmd = view.command_history(idx)
+	while ('tri_' in last_cmd[0] or last_cmd[1] == None or not last_cmd[1]['characters'].isspace()) and i < 256:
 		view.run_command(cmd)
+		last_cmd = view.command_history(idx)
+		i += 1
+	if cmd == 'undo':
+		while ('tri_' in last_cmd[0] or last_cmd[1] == None or last_cmd[1]['characters'].isspace()) and i < 256:
+			view.run_command(cmd)
+			last_cmd = view.command_history(idx)
+			i += 1
 
 	sublime.set_timeout_async(lambda: setReady(True), 0)
 
