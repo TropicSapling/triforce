@@ -1,10 +1,12 @@
-import sublime
-import sublime_plugin
-
 import re
-import time
 
-sublime.Region.__hash__ = lambda self: hash(str(self))
+from functools import partial
+from time      import time
+
+from sublime        import Region, DRAW_NO_OUTLINE, PERSISTENT
+from sublime_plugin import EventListener
+
+Region.__hash__ = lambda self: hash(str(self))
 
 alltime_highlights = highlights = set()
 
@@ -31,7 +33,7 @@ prelude = (
 )
 
 def between(view, a, b):
-	return view.substr(sublime.Region(a, b))
+	return view.substr(Region(a, b))
 
 # This exists because Python
 def setReady(val):
@@ -39,7 +41,19 @@ def setReady(val):
 
 	ready = val
 
-class TriHighlighter(sublime_plugin.EventListener):
+def locally(view, f):
+	size = view.size()
+
+	for sel in view.sel():
+		i   = min(sel.a, sel.b) - 256
+		end = max(sel.a, sel.b) + 256
+
+		if i   < 0    : i   = 0
+		if end > size : end = size
+
+		f(view, i, end)
+
+class TriHighlighter(EventListener):
 	def find_funcs(self, view, i, end):
 		global funcs, funcs_iter
 
@@ -75,32 +89,23 @@ class TriHighlighter(sublime_plugin.EventListener):
 		# print(funcs) # DEBUG
 
 	def find_local_funcs(self, view):
-		size = view.size()
-
-		for sel in view.sel():
-			i   = min(sel.a, sel.b) - 256
-			end = max(sel.a, sel.b) + 256
-
-			if i   < 0    : i   = 0
-			if end > size : end = size
-
-			self.find_funcs(view, i, end)
+		locally(view, self.find_funcs)
 
 	def find_all_funcs(self, view):
 		self.find_funcs(view, 0, view.size())
 
-	def highlight_calls(self, view, start_time):
+	def highlight_calls(self, start_time, view, start, end):
 		global highlights, alltime_highlights
 
 		try:
 			f = next(funcs_iter)
 		except StopIteration:
-			self.dehighlight_calls(view)
+			self.dehighlight_calls(view, start, end)
 			self.find_local_funcs(view)
 			return
 
 		regex     = r"\b" + re.escape(f) + r"\b"
-		fcall_pos = [m.span() for m in re.finditer(regex, between(view, 0, view.size()))]
+		fcall_pos = [(m.start() + start, m.end() + start) for m in re.finditer(regex, between(view, start, end))]
 
 		for (a, b) in fcall_pos:
 			scopes = view.scope_name(a)
@@ -119,33 +124,41 @@ class TriHighlighter(sublime_plugin.EventListener):
 				"entity.name.function" in scopes):
 				continue
 
-			highlight = sublime.Region(a, b)
+			highlight = Region(a, b)
 			highlights.add(str(highlight))
 			alltime_highlights.add(str(highlight))
 			view.add_regions(
 				key     = str(highlight),
 				regions = [highlight],
 				scope   = scope,
-				flags   = sublime.DRAW_NO_OUTLINE|sublime.PERSISTENT
+				flags   = DRAW_NO_OUTLINE|PERSISTENT
 			)
 
 		# Keep going for up to 50 ms.
-		if time.time() - start_time < 0.05:
-			self.highlight_calls(view, start_time)
+		if time() - start_time < 0.05:
+			self.highlight_calls(start_time, view, start, end)
 
 		# Trigger on_modified_async(...) to restart
 		# TODO: fix this causing file to always say it's unsaved
 		#       - or actually probably better to not run in the background
 		# view.insert(edit, 0, 'Q')
-		# view.erase(edit, sublime.Region(0, 1))
+		# view.erase(edit, Region(0, 1))
 
-	def dehighlight_calls(self, view):
+	def highlight_local_calls(self, view):
+		locally(view, partial(self.highlight_calls, time()))
+
+	def highlight_all_calls(self, view):
+		self.highlight_calls(time(), view, 0, view.size())
+
+	def dehighlight_calls(self, view, start, end):
 		global highlights
 
 		for highlight in alltime_highlights:
 			# Dehighlight if no longer valid
 			if highlight not in highlights:
-				view.erase_regions(highlight)
+				regions = view.get_regions(highlight)
+				if len(regions) > 0 and regions[0].a >= start and regions[0].b <= end:
+					view.erase_regions(highlight)
 
 		highlights = set()
 
@@ -154,6 +167,6 @@ class TriHighlighter(sublime_plugin.EventListener):
 		try:
 			if ready and view.syntax().scope == 'source.triforce':
 				setReady(False)
-				self.highlight_calls(view, time.time())
+				self.highlight_local_calls(view)
 				setReady(True)
 		except AttributeError: ()
