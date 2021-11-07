@@ -40,9 +40,41 @@ def setReady(val):
 	ready = val
 
 class TriHighlighter(sublime_plugin.EventListener):
-	def find_funcs(self, view):
+	def find_funcs(self, view, i, end):
 		global funcs, funcs_iter
 
+		while i < end:
+			while "comment" in view.scope_name(i): i += 1
+
+			if "storage.type" in view.scope_name(i) and between(view, i, i+5) == "func ":
+				# Found function definition; register
+
+				s = ""
+				while view.substr(i) != '\n' and i < end:
+					while "entity.name.function" not in view.scope_name(i) and i < end:
+						if view.substr(i) == '\n': break
+						i += 1
+
+					start = i
+
+					while "entity.name.function" in view.scope_name(i):
+						if view.substr(i) == '\n': break
+						i += 1
+
+					if i < end: s += between(view, start, i) + " "
+
+				s = s.rstrip()
+				if view.substr(i - 1) == ';' or view.substr(i - 1) == '{':
+					if s != "" and s[0].islower() and re.match(prelude, s) == None:
+						funcs.add(s)
+
+			i += 1
+
+		funcs_iter = iter(funcs)
+
+		# print(funcs) # DEBUG
+
+	def find_local_funcs(self, view):
 		size = view.size()
 
 		for sel in view.sel():
@@ -52,36 +84,10 @@ class TriHighlighter(sublime_plugin.EventListener):
 			if i   < 0    : i   = 0
 			if end > size : end = size
 
-			while i < end:
-				while "comment" in view.scope_name(i): i += 1
+			self.find_funcs(view, i, end)
 
-				if "storage.type" in view.scope_name(i) and between(view, i, i+5) == "func ":
-					# Found function definition; register
-
-					s = ""
-					while view.substr(i) != '\n' and i < end:
-						while "entity.name.function" not in view.scope_name(i) and i < end:
-							if view.substr(i) == '\n': break
-							i += 1
-
-						start = i
-
-						while "entity.name.function" in view.scope_name(i):
-							if view.substr(i) == '\n': break
-							i += 1
-
-						if i < end: s += between(view, start, i) + " "
-
-					s = s.rstrip()
-					if view.substr(i - 1) == ';' or view.substr(i - 1) == '{':
-						if s != "" and s[0].islower() and re.match(prelude, s) == None:
-							funcs.add(s)
-
-				i += 1
-
-		funcs_iter = iter(funcs)
-
-		# print(funcs) # DEBUG
+	def find_all_funcs(self, view):
+		self.find_funcs(view, 0, view.size())
 
 	def highlight_calls(self, view, start_time):
 		global highlights, alltime_highlights
@@ -90,20 +96,27 @@ class TriHighlighter(sublime_plugin.EventListener):
 			f = next(funcs_iter)
 		except StopIteration:
 			self.dehighlight_calls(view)
-			self.find_funcs(view)
+			self.find_local_funcs(view)
 			return
 
-		# TODO: highlight longest function name first
 		regex     = r"\b" + re.escape(f) + r"\b"
 		fcall_pos = [m.span() for m in re.finditer(regex, between(view, 0, view.size()))]
 
 		for (a, b) in fcall_pos:
-			scope = view.scope_name(a)
-			if ("comment"                       in scope or
-				"string"                        in scope or
-				"variable"                      in scope or
-				"operator"                      in scope or
-				"entity.name.function.triforce" in scope):
+			scopes = view.scope_name(a)
+			scope  = "variable.function.triforce"
+
+			if "comment" in scopes or "string" in scopes:
+				if "meta.cc" in scopes and "string" not in scopes:
+					scope = "cc." + scope
+				elif "meta.cs" in scopes and "comment" not in scopes:
+					scope = "cs." + scope
+				else:
+					continue
+
+			if ("variable"             in scopes or
+				"operator"             in scopes or
+				"entity.name.function" in scopes):
 				continue
 
 			highlight = sublime.Region(a, b)
@@ -112,7 +125,7 @@ class TriHighlighter(sublime_plugin.EventListener):
 			view.add_regions(
 				key     = str(highlight),
 				regions = [highlight],
-				scope   = "variable.function.triforce", # TODO: support CC & CS
+				scope   = scope,
 				flags   = sublime.DRAW_NO_OUTLINE|sublime.PERSISTENT
 			)
 

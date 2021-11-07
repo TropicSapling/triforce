@@ -18,6 +18,15 @@ contexts:
   cc-universal:
     - match: '\\.'
       scope: cc.constant.character.escape.triforce
+    # Code strings within comments just coloured as regular strings for now
+    - match: '`'
+      scope: cc.string.quoted.double.triforce markup.bold
+      push:
+        - meta_scope: cc.string.quoted.double.triforce meta.cs.triforce
+        - match: '(?<!\\)(`)'
+          captures:
+            1: cc.string.quoted.double.triforce markup.bold
+          pop: true
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
       scope: cc.storage.type.triforce
       push:

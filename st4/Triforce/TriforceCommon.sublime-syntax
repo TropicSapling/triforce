@@ -78,6 +78,7 @@ contexts:
       captures:
         1: comment.line.triforce markup.bold
       embed: cc-general
+      embed_scope: meta.cc.triforce
       escape: '^(?!\s*//+\s*>)'
     - match: '^(?!\s*//+)'
       pop: true
@@ -92,6 +93,7 @@ contexts:
     - match: '`'
       scope: markup.bold
       embed: cc-general
+      embed_scope: meta.cc.triforce
       escape: '(`)|$'
       escape_captures:
         1: markup.bold

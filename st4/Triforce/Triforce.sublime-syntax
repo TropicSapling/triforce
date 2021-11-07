@@ -26,7 +26,7 @@ contexts:
     - match: '`'
       scope: string.quoted.double.triforce markup.bold
       embed: cs-general
-      embed_scope: string.quoted.double.triforce
+      embed_scope: string.quoted.double.triforce meta.cs.triforce
       escape: '(?<!\\)(`)'
       escape_captures:
         1: string.quoted.double.triforce markup.bold
@@ -199,6 +199,7 @@ contexts:
       captures:
         1: markup.bold
       embed: cc-general
+      embed_scope: meta.cc.triforce
       escape: '^\s*(///+)\s*(```)|^(?!\s*//)'
       escape_captures:
         2: markup.bold
@@ -207,6 +208,7 @@ contexts:
     - match: '`'
       scope: markup.bold
       embed: cc-general
+      embed_scope: meta.cc.triforce
       escape: '(`)|$'
       escape_captures:
         1: markup.bold
