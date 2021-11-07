@@ -39,10 +39,6 @@ contexts:
 
   cc-general:
     - include: cc-universal
-    
-    # Function calls
-    - match: '​[^​]+​' # note: invisible zero-width space characters
-      scope: cc.support.function.triforce
 
     # Strings
     - match: '"'

@@ -52,10 +52,6 @@ contexts:
 
   cs-general:
     - include: cs-universal
-    
-    # Function calls
-    - match: '​[^​]+​' # note: invisible zero-width space characters
-      scope: cs.support.function.triforce
 
     # Strings
     - match: '"'

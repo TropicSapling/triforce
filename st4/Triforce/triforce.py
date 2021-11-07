@@ -2,8 +2,11 @@ import sublime
 import sublime_plugin
 
 import re
+import time
 
-# TODO: fix arrow key navigation & selection
+sublime.Region.__hash__ = lambda self: hash(str(self))
+
+alltime_highlights = highlights = set()
 
 funcs      = set()
 funcs_iter = iter(funcs)
@@ -36,59 +39,10 @@ def setReady(val):
 
 	ready = val
 
-def do(view, cmd):
-	# TODO: improve speed of this & less spaghetti code
+class TriHighlighter(sublime_plugin.EventListener):
+	def find_funcs(self, view):
+		global funcs, funcs_iter
 
-	idx = 0 if cmd == 'undo' else 1
-
-	setReady(False)
-
-	# Undo/Redo syntax highlighting
-	last_cmd = view.command_history(idx)
-	# TODO: fix so 'i < 256' not needed (check properly if at end)
-	i = 0
-	while ('tri_' in last_cmd[0] or last_cmd == ('', None, 1)) and i < 256:
-		view.run_command(cmd)
-		last_cmd = view.command_history(idx)
-		i += 1
-	if cmd == 'redo':
-		while ('tri_' in last_cmd[0] or last_cmd[1] == None or last_cmd[1]['characters'].isspace()) and i < 256:
-			view.run_command(cmd)
-			last_cmd = view.command_history(idx)
-			i += 1
-
-	# Undo/Redo what the user typed
-	view.run_command(cmd)
-
-	last_cmd = view.command_history(idx)
-	while ('tri_' in last_cmd[0] or last_cmd[1] == None or not last_cmd[1]['characters'].isspace()) and i < 256:
-		view.run_command(cmd)
-		last_cmd = view.command_history(idx)
-		i += 1
-	if cmd == 'undo':
-		while ('tri_' in last_cmd[0] or last_cmd[1] == None or last_cmd[1]['characters'].isspace()) and i < 256:
-			view.run_command(cmd)
-			last_cmd = view.command_history(idx)
-			i += 1
-
-	sublime.set_timeout_async(lambda: setReady(True), 0)
-
-class TriUndoCommand(sublime_plugin.TextCommand):
-	def run(self, edit):
-		# Note: below timeout needed because Sublime Text is weird
-		sublime.set_timeout_async(lambda: do(self.view, 'undo'), 0)
-
-class TriRedoCommand(sublime_plugin.TextCommand):
-	def run(self, edit):
-		# Note: below timeout needed because Sublime Text is weird
-		sublime.set_timeout_async(lambda: do(self.view, 'redo'), 0)
-
-class HighlightTriFuncCallCommand(sublime_plugin.TextCommand):
-	def find_funcs(self, edit):
-		global funcs
-		global funcs_iter
-
-		view = self.view
 		size = view.size()
 
 		for sel in view.sel():
@@ -100,29 +54,6 @@ class HighlightTriFuncCallCommand(sublime_plugin.TextCommand):
 
 			while i < end:
 				while "comment" in view.scope_name(i): i += 1
-
-				if view.substr(i) == '\u200b':
-					# Found existing highlight; dehighlight if no longer valid
-
-					i += 1
-					start = i
-					while i < end and view.substr(i) != '\u200b':
-						i += 1
-
-					found_match = False
-					for f in funcs:
-						regex = r"\b" + re.escape(f) + r"\b"
-						term  = between(view, start-2, i+2).replace('\u200b', '')
-
-						if re.search(regex, term):
-							found_match = True
-							break
-
-					if not found_match:
-						view.erase(edit, sublime.Region(start-1, start))
-						view.erase(edit, sublime.Region(i-1, i))
-						i   -= 2
-						end -= 2
 
 				if "storage.type" in view.scope_name(i) and between(view, i, i+5) == "func ":
 					# Found function definition; register
@@ -152,22 +83,22 @@ class HighlightTriFuncCallCommand(sublime_plugin.TextCommand):
 
 		# print(funcs) # DEBUG
 
-	def highlight_calls(self, edit, size):
-		view = self.view
+	def highlight_calls(self, view, start_time):
+		global highlights, alltime_highlights
 
 		try:
 			f = next(funcs_iter)
 		except StopIteration:
-			self.find_funcs(edit)
+			self.dehighlight_calls(view)
+			self.find_funcs(view)
 			return
 
 		# TODO: highlight longest function name first
 		regex     = r"\b" + re.escape(f) + r"\b"
-		fcall_pos = [m.span() for m in re.finditer(regex, between(view, 0, size))]
+		fcall_pos = [m.span() for m in re.finditer(regex, between(view, 0, view.size()))]
 
-		offset = 0
 		for (a, b) in fcall_pos:
-			scope = view.scope_name(a + offset)
+			scope = view.scope_name(a)
 			if ("comment"                       in scope or
 				"string"                        in scope or
 				"variable"                      in scope or
@@ -175,12 +106,19 @@ class HighlightTriFuncCallCommand(sublime_plugin.TextCommand):
 				"entity.name.function.triforce" in scope):
 				continue
 
-			if view.substr(a + offset - 1) != '\u200b':
-				view.insert(edit, a + offset, '\u200b')
-				view.insert(edit, b + offset + 1, '\u200b')
-				# TODO: fix inserted characters messing with backspace & arrow keys
-				size   += 2
-				offset += 2
+			highlight = sublime.Region(a, b)
+			highlights.add(str(highlight))
+			alltime_highlights.add(str(highlight))
+			view.add_regions(
+				key     = str(highlight),
+				regions = [highlight],
+				scope   = "variable.function.triforce", # TODO: support CC & CS
+				flags   = sublime.DRAW_NO_OUTLINE|sublime.PERSISTENT
+			)
+
+		# Keep going for up to 50 ms.
+		if time.time() - start_time < 0.05:
+			self.highlight_calls(view, start_time)
 
 		# Trigger on_modified_async(...) to restart
 		# TODO: fix this causing file to always say it's unsaved
@@ -188,15 +126,21 @@ class HighlightTriFuncCallCommand(sublime_plugin.TextCommand):
 		# view.insert(edit, 0, 'Q')
 		# view.erase(edit, sublime.Region(0, 1))
 
-	def run(self, edit):
-		setReady(False)
-		self.highlight_calls(edit, self.view.size())
-		setReady(True)
+	def dehighlight_calls(self, view):
+		global highlights
 
-class FuncListener(sublime_plugin.EventListener):
+		for highlight in alltime_highlights:
+			# Dehighlight if no longer valid
+			if highlight not in highlights:
+				view.erase_regions(highlight)
+
+		highlights = set()
+
 	def on_modified_async(self, view):
 		# Need 'try' in case attempting to run after file closed
 		try:
 			if ready and view.syntax().scope == 'source.triforce':
-				view.run_command('highlight_tri_func_call')
+				setReady(False)
+				self.highlight_calls(view, time.time())
+				setReady(True)
 		except AttributeError: ()

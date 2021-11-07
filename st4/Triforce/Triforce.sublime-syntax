@@ -51,10 +51,6 @@ contexts:
 
   general:
     - include: universal
-    
-    # Function calls
-    - match: '​[^​]+​' # note: invisible zero-width space characters
-      scope: support.function.triforce
 
     # Strings
     - match: '"'
