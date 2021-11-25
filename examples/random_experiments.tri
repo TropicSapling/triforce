@@ -2266,10 +2266,6 @@ func nat {
 	| object OneMoreThan (nat) // note: no infinite loop since or-patterns are lazy
 }
 
-// Defines a type `int` as an extension of `nat`.
-let rec int = nat
-            | object OneLessThan (int);
-
 let zero = nat.Zero;
 let one  = nat.OneMoreThan zero;
 let two  = nat.OneMoreThan one;
@@ -2279,6 +2275,14 @@ expose nat; // after this we don't need to do `nat.` anymore
 let zero = Zero;
 let one  = OneMoreThan zero;
 let two  = OneMoreThan one;
+
+// Defines a type `int` as an extension of `nat`.
+let rec int = nat
+            | object OneLessThan (Zero|(OneLessThan _));
+
+expose int;
+
+let plus1, minus1: int, int = OneMoreThan Zero, OneLessThan Zero;
 
 nat: subtype of int|str;
 
