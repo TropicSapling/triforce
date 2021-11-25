@@ -2191,3 +2191,122 @@ boxing func f() --> optionally int {
 // https://github.com/austral/specification/blob/master/src/rationale/2.error-handling.md
 
 // (From a programming language starred by Graydon)
+
+--------------------------------------------------
+
+// Types are just subtypes of the universal type.
+// A (sub)type is just an or-pattern which doesn't collapse into anything at runtime.
+// I.e. `123|456 is subtype of int`, but `rand of [123, 456] is ~type`.
+let macro type = `subtype of _`;
+
+// Get `a` and `b` from user input
+let a: 1|2|3 = input() mod 3 + 1;
+let b: 4|5|6 = input() mod 3 + 4;
+
+// Create 2 new `x` and `y` types
+let x = 1|2|3;
+let y = 4|5|6;
+
+let ab_type = a|b; // i.e.   `3|5` if a=3, b=5
+let xy_type = x|y; // always `(1|2|3)|(4|5|6) :== 1|2|3|4|5|6`
+
+// Both types are subtypes of `1|2|3|4|5|6`...
+ab_type: subtype of 1|2|3|4|5|6; // i.e.   `3|5         : subtype of 1|2|3|4|5|6`
+xy_type: subtype of 1|2|3|4|5|6; // always `1|2|3|4|5|6 : subtype of 1|2|3|4|5|6`
+
+// ... but `ab_type` is not `1|2|3|4|5|6`, while `xy_type` is!
+ab_type :!= 1|2|3|4|5|6;
+xy_type :== 1|2|3|4|5|6;
+
+// Also, note that a type...
+let typ: type = 7|8|9;
+
+// is a subtype of itself...
+typ: subtype of 7|8|9;
+// ... and equal to itself...
+typ :== 7|8|9;
+// ... but does not match itself, since it isn't i.e. 7 or 8 or 9 but a type!
+typ: ~(7|8|9);
+
+let n: 12|34            = rand of [12, 34]; // the value `12` or `34`
+let t: subtype of 12|34 = any in  [12, 34]; // the type `12|34`
+
+n:  int; // `n` is a random integer
+t: ~int; // `t` is not an integer!
+t: type; // `t` is a type (with integer members => `subtype of int`)
+
+// -------------------------
+
+macro func ($typ as type).$member {
+	```
+	
+	let mem = for each mem in listified $$(typ) {
+		if mem == $$(member) {
+			break mem;
+		}
+	}
+	
+	when mem is {
+		Wrapped #val ==> val,
+		
+		// Names of functions that never return should end with '!'.
+		// This function never returns since it exits with an error instead.
+		() ==> panic! "$$(member) not in $$(typ)"
+	}
+	
+	```
+}
+
+// Defines a type `nat` and creates two objects as members of the type.
+let rec nat = object Zero
+            | object OneMoreThan (nat);
+// Note: this is implemented as a recursive auto-executing function:
+func nat {
+	  object Zero
+	| object OneMoreThan (nat) // note: no infinite loop since or-patterns are lazy
+}
+
+// Defines a type `int` as an extension of `nat`.
+let rec int = nat
+            | object OneLessThan (int);
+
+let zero = nat.Zero;
+let one  = nat.OneMoreThan zero;
+let two  = nat.OneMoreThan one;
+
+expose nat; // after this we don't need to do `nat.` anymore
+
+let zero = Zero;
+let one  = OneMoreThan zero;
+let two  = OneMoreThan one;
+
+nat: subtype of int|str;
+
+// If you want to check if a type is one of multiple types, remember that:
+nat: ~(nat|str|bool);
+// Meaning `nat: nat|str|bool` won't work! Instead you can do this:
+`nat`: `nat`|`str`|`bool`;
+
+// In general, `code strings` can be used to have sets within sets:
+let set: subtype of `nat`|`str`|`bool` = `nat`|`bool`; // {{0, 1, ...}, {True, False}}
+// Without code strings, or-patterns in Triforce "auto-unionise":
+let flat_set = nat|bool; // {0, 1, ..., True, False}
+
+// -------------------------
+
+// Another cool thing with types is that you can use them to shorten things:
+if x is a|b|c {
+	...
+}
+// is equivalent to the below (assuming x, a, b, c aren't types!):
+if x == a || x == b || x == c {
+	...
+}
+// If they are types, you can write it shorter still by doing this instead:
+if 'x is 'a|'b|'c {
+	...
+}
+// Assuming the below macro function is defined:
+macro func '$x {
+	`\`\$\$$$(x)\`` // i.e. 'a => `$$(a)`; if a=nat then 'a => `nat`
+}

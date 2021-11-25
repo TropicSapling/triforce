@@ -394,7 +394,7 @@ contexts:
     - match: '\$'
       scope: cs.keyword.operator.triforce
       push: cs-op-dollar
-    - match: '(has)|(;)|(,)' # end of object declaration
+    - match: '(has)|[;,|}]' # end of object declaration
       captures:
         1: cs.storage.type.triforce
         2: punctuation.terminator.triforce
