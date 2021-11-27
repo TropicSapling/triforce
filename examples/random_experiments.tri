@@ -2229,7 +2229,7 @@ typ :== 7|8|9;
 typ: ~(7|8|9);
 
 let n: 12|34            = rand of [12, 34]; // the value `12` or `34`
-let t: subtype of 12|34 = any in  [12, 34]; // the type `12|34`
+let t: subtype of 12|34 = any  of [12, 34]; // the type `12|34`
 
 n:  int; // `n` is a random integer
 t: ~int; // `t` is not an integer!
@@ -2314,3 +2314,108 @@ if 'x is 'a|'b|'c {
 macro func '$x {
 	`\`\$\$$$(x)\`` // i.e. 'a => `$$(a)`; if a=nat then 'a => `nat`
 }
+
+--------------------------------------------------
+
+category ExampleCategory {
+	object Object;
+	
+	func fib $n --> nat {
+		...
+	}
+	
+	func f $x {
+		...
+	}
+	
+	export [Object, fib]
+}
+
+let ex_cat_type = any in ExampleCategory; //> Object|fib
+
+ExampleCategory.fib    : ex_cat_type;
+ExampleCategory.Object : ex_cat_type;
+
+--------------------------------------------------
+
+object Proof;
+object QED;
+
+func _ *** (QED) {Proof}
+
+let proof of = Proof where;
+let trivial  = ();
+
+// `$a = $b` <=> `($a as ...) = ($b as ...)`
+// => types of a & b are deduced to be whatever makes the function compile
+// => `($a as _ where a == b) = $(b as _ where a == b)`
+// => no proof unless passed arguments are equal
+func proof that $a = $b --> proof of a == b {
+	trivial *** QED
+}
+
+let one_equals_zero = proof that 1 = 0; // ERROR
+let one_equals_one  = proof that 1 = 1; // ok
+
+let proof_that_fib3_is_2: proof of fib 3 == 2
+	  = fib 3
+	:== fib 2 + fib 1
+	:== (fib 1 + fib 0) + fib 1 // TODO: add LiquidHaskell-style "because" operator?
+	:== 1 + 0 + 1
+	:== 2
+	*** QED;
+
+--------------------------------------------------
+
+data LTE  : (n, m : Nat) -> Type where
+  // Zero is the smallest Nat
+  LTEZero : LTE Z    right
+  // If n <= m, then n + 1 <= m + 1
+  LTESucc : LTE left right -> LTE (S left) (S right)
+
+object LTE (Zero) ($m as nat);
+
+func LTESucc (LTE (#n as nat) (#m as nat)) {
+	object LTE (OneMoreThan n) (OneMoreThan m) // TODO: fix not same LTE object (tip: will be same if placed in same scope)
+}
+
+multi func ($n as nat) <= ($m as nat) --> bool {
+	(Zero)           <= _                ==> True,
+	(OneMoreThan #n) <= (OneMoreThan #m) ==> n <= m
+}
+
+object ($n as _ where n <= m) <= $m;
+
+--------------------------------------------------
+
+object $x = $x;
+
+func cong $f (#x = #x) {
+	f x = f x
+}
+
+let rec nat = object Zero
+            | object OneMoreThan (nat);
+
+multi func ($n as nat) + ($m as nat) --> nat {
+	(Zero)           + $m ==> m,
+	(OneMoreThan #n) + $m ==> OneMoreThan (n + m)
+}
+
+multi func zero_right_id ($n as nat) --> n + Zero = n {
+	zero_right_id (Zero)           ==> Zero = Zero,
+	zero_right_id (OneMoreThan #n) ==> cong OneMoreThan (zero_right_id n)
+}
+
+--------------------------------------------------
+
+data (=) : a -> b -> Type where
+	Refl : x = x
+
+zeroRightId : (n : Nat) -> n + 0 = n
+zeroRightId Z     = Refl
+zeroRightId (S n) = cong (zeroRightId n)
+
+cong : a = b -> f a = f b
+
+cong (zeroRightId n) : S (n + 0) = S n

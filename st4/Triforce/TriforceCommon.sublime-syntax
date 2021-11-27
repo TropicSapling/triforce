@@ -16,7 +16,7 @@ variables:
   keyword_ctrl:       '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|eval|prerun|run|spawn|assign|to\s+worker\s+in|defer)'
   keyword_check:      '(as|fulfilling|where(\s+we)?|which|when|matches|and|is(\s+(a|an|any)(?!{{identifier}}))?|are|could\s+be)'
   keyword_namespace:  '((ex|im)port(\s+all)?|except|from|into|expose)'
-  keyword_type:       '(type|bool|nat|int|frac|complex|num|str)'
+  keyword_type:       '(type|proof\s+of|bool|nat|int|frac|complex|num|str)'
   keyword_type_spec:  '(impure|unpredictable|macro|implic\s+made|(suitable|subtype)\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|unsafe|async\s+escaping|exclusively)'
   keyword_const:      '(True|False|Infinity|this|caller)'
   keyword_const_uniq: '\?\?\?|UndefNum'
