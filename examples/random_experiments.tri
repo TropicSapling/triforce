@@ -1650,21 +1650,42 @@ the_answer is ~UNDEFINED: False; // the_answer = UNDEFINED
 
 --------------------------------------------------
 
-// Recursive variables are rarely useful, but can for example be used to build lists:
+// Recursive variables can for example be used to build lists:
 let n: int = 0;
 let rec arr = [n++] + arr if n < 100 else []; // arr = [0, 1, ..., 99]
 
-// More useful are recursive functions...
-let rec fib $n = $n => {
-	if n == 0 then 0 else
-	if n == 1 then 1 else fib (n-1) + fib (n-2)
+// The `let rec` definition macro expands into this:
+let arr = {
+	// Defines a recursive auto-executing function (note: total by default)
+	func arr {
+		[n++] + arr if n < 100 else []
+	}
+	
+	// Executes the function and returns the result, which is assigned to the variable
+	arr
 };
+
+// More useful are recursive functions...
+let rec fib $n = $n => if n < 2 then n else fib (n-1) + fib (n-2);
 
 // ... which are more commonly written like this:
 func fib $n {
-	if n == 0 then 0 else
-	if n == 1 then 1 else fib (n-1) + fib (n-2)
+	n if n < 2 else fib (n-1) + fib (n-2)
 }
+
+// Note that functions are total by default (opt out by using `partial func`).
+// This means that they must have a defined output for every possible input.
+// As a consequence, they cannot infinitely recurse, since infinite recursion
+// never returns any output (meaning the output is `UNDEFINED`).
+func forever() {
+	forever() // nope!
+}
+
+// Additionally, recursive variables cannot make use of infinite recursion at all.
+let rec x = 1 + x; // nope!
+// The reason behind this is that infinitely recursively defined variables are pointless.
+// The program would just get stuck at the variable definition forever.
+// When infinite recursion is wanted, use a partial function instead.
 
 --------------------------------------------------
 
@@ -2260,11 +2281,17 @@ macro func ($typ as type).$member {
 // Defines a type `nat` and creates two objects as members of the type.
 let rec nat = object Zero
             | object OneMoreThan (nat);
-// Note: this is implemented as a recursive auto-executing function:
-func nat {
-	  object Zero
-	| object OneMoreThan (nat) // note: no infinite loop since or-patterns are lazy
-}
+// This is really just recursively defining a variable, and macro expands to this:
+let nat = {
+	// Defines a recursive auto-executing function (note: total by default)
+	func nat {
+		  object Zero
+		| object OneMoreThan (nat) // note: no infinite loop since or-patterns are lazy
+	}
+	
+	// Executes the function and returns the result, which is assigned to the variable
+	nat
+};
 
 let zero = nat.Zero;
 let one  = nat.OneMoreThan zero;
