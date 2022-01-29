@@ -2446,3 +2446,41 @@ zeroRightId (S n) = cong (zeroRightId n)
 cong : a = b -> f a = f b
 
 cong (zeroRightId n) : S (n + 0) = S n
+
+--------------------------------------------------
+
+//> with bounds off {}
+//> with limits off {}
+//> with safety off {}
+//> with protect off {}
+//> with safeguards off {}
+//> with restraints off {}
+//> with safety limits off {}
+
+// Functions using `unsafe area` must either be marked as `unsafe`...
+unsafe func do something risky with $x {
+	do some safe stuff;
+	
+	unsafe area {
+		do the risky things;
+	}
+	
+	do more safe stuff;
+}
+
+// ... or with `ensures safety` if they are safe to call for all inputs:
+func safe to call --> int ensures safety {
+	let raw_ptr = safe_addr_to_int();
+	
+	unsafe area {
+		// `unsafe` functions can only be called within `unsafe area`.
+		// The caller is supposed to ensure it gives safe inputs.
+		do something risky with safe_input;
+		
+		@raw_ptr
+	}
+}
+
+func main {
+	safe to call;
+}
