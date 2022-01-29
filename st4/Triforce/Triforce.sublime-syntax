@@ -411,7 +411,7 @@ contexts:
       push: op-dollar
     - match: '\?'
       scope: source.triforce
-    - match: '(?=[{;]|-->|==>)' # end of function declaration
+    - match: '(?=[{;]|-->|==>|ensures\s+safety)' # end of function declaration
       pop: true
     - match: '{{identifier}}|}|]'
       scope: entity.name.function.triforce

@@ -328,7 +328,7 @@ contexts:
       push: cs-op-dollar
     - match: '\?'
       scope: source.triforce
-    - match: '(?=[{;]|-->|==>)'
+    - match: '(?=[{;]|-->|==>|ensures\s+safety)'
       pop: true
     - match: '{{identifier}}|}|]'
       scope: cs.entity.name.function.triforce

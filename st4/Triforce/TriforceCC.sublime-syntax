@@ -284,7 +284,7 @@ contexts:
       push: cc-op-dollar
     - match: '\?'
       scope: source.triforce
-    - match: '(?=[{;]|-->|==>)'
+    - match: '(?=[{;]|-->|==>|ensures\s+safety)'
       pop: true
     - match: '{{identifier}}|}|]'
       scope: cc.entity.name.function.triforce

@@ -20,8 +20,8 @@ keyword_ctrl       = r'\b(if|then|else|unless|(for\s+)?each|while|break|continue
 keyword_check      = r'\b(as|fulfilling|where(\s+we)?|which|when|matches|and|is(\s+(a|an|any)(?!{{identifier}}))?|are|could\s+be)\b'
 keyword_namespace  = r'\b((ex|im)port(\s+all)?|except|from|into|expose)\b'
 keyword_type       = r'\b(type|proof\s+of|bool|nat|int|frac|complex|num|str)\b'
-keyword_type_spec  = r'\b(impure|unpredictable|macro|implic\s+made|(suitable|subtype)\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|unsafe|async\s+escaping|exclusively)\b'
-keyword_misc       = r'\b(panic|with|all|in|excl|any(\s+(suitable|of))?|optionally|recollected|listified|codified|stringified|ensure|print(ln|err)?|otherwise|mod)\b'
+keyword_type_spec  = r'\b(impure|unpredictable|macro|implic\s+made|(suitable|subtype)\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|unsafe(\s+area)?|async\s+escaping|exclusively)\b'
+keyword_misc       = r'\b(panic|with|all|in|excl|any(\s+(suitable|of))?|optionally|recollected|listified|codified|stringified|ensure(s\s+safety)?|print(ln|err)?|otherwise|mod)\b'
 
 prelude = (
 	keyword_ctrl      + r'|' +
