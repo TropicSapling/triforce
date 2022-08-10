@@ -1109,7 +1109,30 @@ let arr = each n in [1, 2, 3] as 2*n; //> [2, 4, 6]
 /// not exist when `p.drain()` is running, therefore causing a runtime error.
 /// This is the *Silently Shifting Semicolon*, or more like *Silently Shifting Statement*.
 /// 
-/// TODO: read more, look for solutions!
+/// ## The solution: safety by default
+/// "Now consider a simple Sequential Consistency (SC) compiler which follows a
+/// “volatile-by-default” approach. It must ensure SC semantics for all accesses, whether
+/// synchronization or data. However, if the compiler can statically prove some accesses
+/// to be Data Race Free (DRF), it is safe to aggressively optimize them. [...]
+/// 
+/// SC conservatively assumes that [data accesses that cannot be proved to be DRF] might
+/// not be DRF, obtaining safety at the expense of performance. This simple approach to
+/// ensuring SC semantics is, even today, much less expensive than is commonly thought."
+/// 
+/// It is better to ensure that the programmer can assume instructions won't be reordered.
+/// Sequential Consistency should be enforced by default, decreasing performance slightly
+/// but still allowing for optimisations where they can be proven to be safe. This way,
+/// the programmer can safely forget about instruction reordering and not need to worry.
+/// Programs will behave as expected.
+/// 
+/// ### 'guarded-by' annotations?
+/// "Further, an SC compiler can leverage [concurrency annotations] to soundly and
+/// modularly identify SC-preserving compiler optimizations. For instance, the
+/// 'guarded-by' annotation communicates a particular locking discipline, allowing an
+/// SC compiler to optimize accesses to the protected location for the entire duration
+/// that the guarding lock is held."
+/// 
+/// TODO: SPLIT THIS FILE INTO SEVERAL MAYBE? One for each topic (i.e. concurrency)
 
 --------------------------------------------------
 
