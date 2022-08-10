@@ -1086,6 +1086,33 @@ let arr = each n in [1, 2, 3] as 2*n; //> [2, 4, 6]
 
 --------------------------------------------------
 
+/// # The Silently Shifting Semicolon
+/// http://web.cs.ucla.edu/~todd/research/snapl15.pdf
+/// 
+/// Semicolons/Statements are supposed to indicate instructions running in order.
+/// However, performance tricks allow for instruction reordering.
+/// This is not noticable in sequential, non-parallel programs,
+/// but as soon as concurrency is introduced things start getting weird.
+/// 
+/// Take a look at the following code for an example:
+/// 
+/// > A: let p  = newPasta();  ||  C: if cooked then
+/// > B: cooked = True;        ||         p.drain();
+/// 
+/// Here the statements A & B run in parallel with C (as shown with `||`).
+/// You expect B to run first after A, and that `p` therefore must exist
+/// when `cooked` is `True`. Then you would expect that, whenever C runs,
+/// that if `cooked` is `True` and `p.drain()` runs, `p` will exist.
+/// 
+/// However, due to the aforementioned instruction reordering only being designed for
+/// sequential programming and not concurrency, B could run before A and cause `p` to
+/// not exist when `p.drain()` is running, therefore causing a runtime error.
+/// This is the *Silently Shifting Semicolon*, or more like *Silently Shifting Statement*.
+/// 
+/// TODO: read more, look for solutions!
+
+--------------------------------------------------
+
 // Prints contents of file.
 // Python-style auto-closes file afterwards.
 with file f at "path/to/file.ext" open {
