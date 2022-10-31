@@ -8,7 +8,9 @@
 // 
 // Some expressions do however never return; instead they crash or loop forever.
 // If the compiler cannot exclude the possibility of this happening for an expression,
-// it will add the special `UNDEFINED` value to its or-pattern.
+// it will add the special `N/A` value to its or-pattern.
+// 
+// (`N/A` = never-returned value = "Never Available" / "Not Available" / "No Answer")
 // 
 // Below is an example of this.
 
@@ -19,50 +21,50 @@ let n = nat;
 // - n == n is True
 // - The remaining terms of LHS & RHS are known
 // => Compiler can determine if True or False
-(n - 1)            * 2 + 2 == n * 2
-UNDEFINED|0|1|...  * 2 + 2 == 0|2|4...
-// Potential UNDEFINED(s) found!
-// Add UNDEFINED to or-pattern, then
-// start over with values not leading to UNDEFINED:
-          0|1|...  * 2 + 2 ==   2|4|...
-          0|2|...      + 2 ==   2|4|...
-          2|4|...          ==   2|4|...
+(n - 1)     * 2 + 2 == n * 2
+N/A|0|1|... * 2 + 2 == 0|2|4...
+// Potential N/A(s) found!
+// Add N/A to or-pattern, then
+// start over with values not leading to N/A:
+    0|1|... * 2 + 2 ==   2|4|...
+    0|2|...     + 2 ==   2|4|...
+    2|4|...         ==   2|4|...
 // LHS == RHS since:
 // - Compiler can determine if True or False
 // - LHS & RHS or-patterns consist of the same values in the same order
-=> UNDEFINED|True
+=> N/A|True
 
 // - n == n2 is True|False
 // => Compiler *cannot* determine if True or False
-(n - 1)            * 2 + 2 == n2 * 2
-UNDEFINED|0|1|...  * 2 + 2 == 0|2|4...
-// Potential UNDEFINED(s) found!
+(n - 1)     * 2 + 2 == n2 * 2
+N/A|0|1|... * 2 + 2 == 0|2|4...
+// Potential N/A(s) found!
 // Since the compiler cannot determine anything more,
-// and it's irrelevant if there are more potential UNDEFINEDs,
+// and it's irrelevant if there are more potential N/As,
 // it stops here and returns:
-=> UNDEFINED|True|False
+=> N/A|True|False
 
-// Basically, `UNDEFINED` is propagating just like `???`.
-// It can be given to any function and will make it return `UNDEFINED`.
-   UNDEFINED * 2 + 2 == n * 2
-=> UNDEFINED     + 2 == n * 2
-=> UNDEFINED         == n * 2
-=> UNDEFINED
-// Note that this means that you can't directly check if something equals `UNDEFINED`,
-// since `x == UNDEFINED` just returns `UNDEFINED`. However, it is still possible to do
-// it indirectly by doing `!(x is ~UNDEFINED)`. This is because `~UNDEFINED` is built-in
-// to mean an or-pattern excluding `UNDEFINED`. This is necessary because all other
-// or-patterns implicitly include `UNDEFINED`:
-nat :== 0|1|... :== 0|1|...|UNDEFINED;
-// To override this default behaviour, one can add `& ~UNDEFINED` to the or-pattern:
-nat & ~UNDEFINED :== 0|1|... & ~UNDEFINED;
+// Basically, `N/A` is propagating just like `???`.
+// It can be given to any function and will make it return `N/A`.
+   N/A * 2 + 2 == n * 2
+=> N/A     + 2 == n * 2
+=> N/A         == n * 2
+=> N/A
+// Note that this means that you can't directly check if something equals `N/A`,
+// since `x == N/A` just returns `N/A`. However, it is still possible to do
+// it indirectly by doing `!(x is ~N/A)`. This is because `~N/A` is built-in
+// to mean an or-pattern excluding `N/A`. This is necessary because all other
+// or-patterns implicitly include `N/A`:
+nat :== 0|1|... :== 0|1|...|N/A;
+// To override this default behaviour, one can add `& ~N/A` to the or-pattern:
+nat & ~N/A :== 0|1|... & ~N/A;
 
-// Really, typing `UNDEFINED` has no good use outside of `~UNDEFINED`. It could be used
+// Really, typing `N/A` has no good use outside of `~N/A`. It could be used
 // as an alternative to `???`, but doing so will just cause confusion and problems.
-// For that reason, `UNDEFINED` on its own will probably give a warning on compilation.
+// For that reason, `N/A` on its own will probably give a warning on compilation.
 
-// (Also, `~~UNDEFINED` <=> `UNDEFINED` if it wasn't obvious, so `x is ~~UNDEFINED`
-//  will still become `x is UNDEFINED` and then `UNDEFINED`)
+// (Also, `~~N/A` <=> `N/A` if it wasn't obvious, so `x is ~~N/A`
+//  will still become `x is N/A` and then `N/A`)
 
 // -------------------------------------------
 // |                EXAMPLE 2                |

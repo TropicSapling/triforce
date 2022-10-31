@@ -1684,19 +1684,23 @@ if a is an int|str {...}
 // Fuzzy Logic: `x :== !x` <=> `x :== 1 - x` <=> `x :== 0.5`
 // Arthur Prior:
 // - "This statement is false." <=> "This statement is true and this statement is false."
-// - `x :== !x` <=> `x && x :== !x && x` <=> `x && x :== False` <=> `x :== False`
-
-func "This sentence is not true" is true {
-	//> !("This sentence is not true" is true)
-	if "This sentence is not true" is true then
-		!True :== False
-	else
-		!!True :== True
+//                              <=> "It is true that this statement is false"
+multi func arthur_prior truth of this_sentence_is(bool) --> bool {
+	truth of this_sentence_is(True)  ==> True && True,
+	truth of this_sentence_is(False) ==> True && False
 }
 
-let the_answer = "This sentence is not true" is true;
+arthur_prior truth of this_sentence_is(False) :== False;
 
-the_answer is ~UNDEFINED: False; // the_answer = UNDEFINED
+// Infinitely recursive interpretation:
+multi func truth of this_sentence_is(bool) --> bool {
+	truth of this_sentence_is(True)  ==> True|False,
+	truth of this_sentence_is(False) ==> !(truth of this_sentence_is(False))
+}
+
+let the_answer = truth of this_sentence_is(False);
+
+the_answer is ~N/A: False; // the_answer = N/A ("No Answer")
 
 --------------------------------------------------
 
@@ -1726,7 +1730,7 @@ func fib $n {
 // Note that functions are total by default (opt out by using `partial func`).
 // This means that they must have a defined output for every possible input.
 // As a consequence, they cannot infinitely recurse, since infinite recursion
-// never returns any output (meaning the output is `UNDEFINED`).
+// never returns any output (meaning the output is `N/A`).
 func forever() {
 	forever() // nope!
 }

@@ -19,7 +19,7 @@ variables:
   keyword_type:       '(type|proof\s+of|bool|nat|int|frac|complex|num|str)'
   keyword_type_spec:  '(impure|unpredictable|macro|implic\s+made|(suitable|subtype)\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|unsafe(\s+area)?|async\s+escaping|exclusively)'
   keyword_const:      '(True|False|Infinity|this|caller)'
-  keyword_const_uniq: '\?\?\?|UndefNum'
+  keyword_const_uniq: '\?\?\?|UndefNum|N/A'
   keyword_misc:       '({{keyword_check}}|{{keyword_namespace}}|panic|with|all|in|excl|any(\s+(suitable|of))?|optionally|recollected|listified|codified|stringified|ensure(s\s+safety)?|print(ln|err)?|otherwise|mod)'
 
   # Declarations
