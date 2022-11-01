@@ -1681,30 +1681,42 @@ if a is an int|str {...}
 
 --------------------------------------------------
 
-/// **This statement is not (100%) true.**
+/// # This statement is not (100%) true.
 /// <=> [This statement is not true.] is not true.
 /// <=> [[This statement is not true.] is not true] is not true.
 /// <=> [[[[...] is not true.] is not true.] is not true] is not true.
 /// 
 /// => Infinitely recursive statement => truth is `N/A` ("Never Available")
 /// 
-/// Since no truth value can be deduced, one cannot prove that the truth value is
-/// anything, neither true nor not true. Note that we're not saying *it is* neither
-/// (that would be a contradiction), but rather that neither can be *proved*. It is
-/// a fundamental part of logic that either a thing is 100% something, or it is not,
-/// which applies to booleans as well obviously => either 100% true or not 100% true.
-/// Even if you don't know if boolean, it's either 100% a boolean which is 100% true
-/// or not 100% a boolean which is 100% true but something else (potentially non-boolean).
+/// ## Proof
+/// 1. Assume [can tell if true or not] AND [true]     => not true => CONTRADICTION
+/// 2. Assume [can tell if true or not] AND [not true] => true     => CONTRADICTION
+/// 3. Only option left is that we cannot tell if true or not; there is no truth value.
 /// 
-/// **The law of the excluded middle still holds** in that sense, but you cannot always
-/// *prove* something to be specifically true or specifically not true. Obviously,
-/// something may be true or not true even if you're not able to prove it. With this
-/// paradox, you often *think* you have managed to prove that the statement is not true,
-/// but you haven't actually because in doing so you assumed the statement had a truth
-/// value which it never has (proof by contradiction by assuming statement is true)!
+/// So, there can be no truth value which is anything, neither true nor not true.
+/// We can say that the statement cannot have a truth value that is 100% true, but that
+/// does NOT mean it has a truth value that is not 100% true. It can still just not have
+/// a truth value at all, which is the case! The paradox only arises when you assume
+/// there is a truth value when there isn't. You will then reach the conclusion
+/// that it's neither true nor not true, which is a contradiction that leads you to
+/// the only left option of your assumption about there being an answer being wrong.
 /// 
-/// However, if the recursion were to stop at a random point, it would be 50/50
-/// for the statement to be true or not true. Then one could in a Fuzzy Logic sense
+/// ## The law of the excluded middle still sort of holds.
+/// It is a fundamental part of logic that either a thing is 100% something, or it is not.
+/// But you need to remember that when you say a statement is not 100% true, you're not
+/// necessarily saying it's partially false. You're actually saying that the statement
+/// does not have a truth value that is 100% true, which still leaves the possibility of
+/// the statement simply not having a truth value at all.
+/// 
+/// What's confusing is that, you can still say that assuming the statement has a truth
+/// value it is 100% true that "The statement is not true". And also that it is 100%
+/// true that "The statement is not (not true)" <=> "The statement is true". That is a
+/// contradiction, but it only arises due to the assumption, so you can deduce that your
+/// assumption that there is a truth value is wrong and the paradox is solved.
+/// 
+/// ## Fuzzy Logic
+/// If the recursion were to stop at a random point, it would be 50/50 for
+/// the statement to be true or not true. Then one could in a Fuzzy Logic sense
 /// say that the statement is half-true (`fin_statement = 1 - fin_statement = 0.5`).
 /// 
 /// In the case of "This statement is true", the truth of it would still be `N/A`,
@@ -1712,8 +1724,6 @@ if a is an int|str {...}
 /// a random point there would be no way to tell the probability of truth or not truth.
 /// Fuzzy Logic simply gives `fin_statement = fin_statement` which just says that the
 /// truth value will be whatever it is chosen to be at the deepest recursion level.
-/// 
-/// Below is a translation into Triforce code.
 
 // "This statement is not true."
 let statement  = ($this_statement => this_statement(this_statement) != True);
