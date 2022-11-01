@@ -1681,16 +1681,21 @@ if a is an int|str {...}
 
 --------------------------------------------------
 
-/// # This statement is not (100%) true.
+/// # This statement is not true.
 /// <=> [This statement is not true.] is not true.
 /// <=> [[This statement is not true.] is not true] is not true.
 /// <=> [[[[...] is not true.] is not true.] is not true] is not true.
 /// 
 /// => Infinitely recursive statement => truth is `N/A` ("Never Available")
 /// 
+/// **NOTE: Whenever "true" is written here, it means *strictly* true.**
+/// - Meaning "not true" could be strictly false but also half-true, somewhat false, etc.
+/// - In the case of there potentially not being any truth value, "not true" also
+///   includes non-boolean values or even `N/A` (the complete lack of a value).
+/// 
 /// ## Proof
-/// 1. Assume [can tell if true or not] AND [true]     => not true => CONTRADICTION
-/// 2. Assume [can tell if true or not] AND [not true] => true     => CONTRADICTION
+/// 1. Assume [has truth value] AND [true]     => not true => CONTRADICTION
+/// 2. Assume [has truth value] AND [not true] => true     => CONTRADICTION
 /// 3. Only option left is that we cannot tell if true or not; there is no truth value.
 /// 
 /// So, there can be no truth value which is anything, neither true nor not true.

@@ -169,4 +169,4 @@ class TriHighlighter(EventListener):
 				setReady(False)
 				self.highlight_local_calls(view)
 				setReady(True)
-		except AttributeError: ()
+		except AttributeError: pass
