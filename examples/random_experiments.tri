@@ -1681,26 +1681,54 @@ if a is an int|str {...}
 
 --------------------------------------------------
 
-// Fuzzy Logic: `x :== !x` <=> `x :== 1 - x` <=> `x :== 0.5`
-// Arthur Prior:
-// - "This statement is false." <=> "This statement is true and this statement is false."
-//                              <=> "It is true that this statement is false"
-multi func arthur_prior truth of this_sentence_is(bool) --> bool {
-	truth of this_sentence_is(True)  ==> True && True,
-	truth of this_sentence_is(False) ==> True && False
-}
+/// **This statement is not (100%) true.**
+/// <=> [This statement is not true.] is not true.
+/// <=> [[This statement is not true.] is not true] is not true.
+/// <=> [[[[...] is not true.] is not true.] is not true] is not true.
+/// 
+/// => Infinitely recursive statement => truth is `N/A` ("Never Available")
+/// 
+/// Since no truth value can be deduced, one cannot prove that the truth value is
+/// anything, neither true nor not true. Note that we're not saying *it is* neither
+/// (that would be a contradiction), but rather that neither can be *proved*. It is
+/// a fundamental part of logic that either a thing is 100% something, or it is not,
+/// which applies to booleans as well obviously => either 100% true or not 100% true.
+/// Even if you don't know if boolean, it's either 100% a boolean which is 100% true
+/// or not 100% a boolean which is 100% true but something else (potentially non-boolean).
+/// 
+/// **The law of the excluded middle still holds** in that sense, but you cannot always
+/// *prove* something to be specifically true or specifically not true. Obviously,
+/// something may be true or not true even if you're not able to prove it. With this
+/// paradox, you often *think* you have managed to prove that the statement is not true,
+/// but you haven't actually because in doing so you assumed the statement had a truth
+/// value which it never has (proof by contradiction by assuming statement is true)!
+/// 
+/// However, if the recursion were to stop at a random point, it would be 50/50
+/// for the statement to be true or not true. Then one could in a Fuzzy Logic sense
+/// say that the statement is half-true (`fin_statement = 1 - fin_statement = 0.5`).
+/// 
+/// In the case of "This statement is true", the truth of it would still be `N/A`,
+/// but it would propagate in such a way that even if the recursion were to stop at
+/// a random point there would be no way to tell the probability of truth or not truth.
+/// Fuzzy Logic simply gives `fin_statement = fin_statement` which just says that the
+/// truth value will be whatever it is chosen to be at the deepest recursion level.
+/// 
+/// Below is a translation into Triforce code.
 
-arthur_prior truth of this_sentence_is(False) :== False;
+// "This statement is not true."
+let statement  = ($this_statement => this_statement(this_statement) != True);
+// "This statement is true."
+let statement2 = ($this_statement => this_statement(this_statement));
 
-// Infinitely recursive interpretation:
-multi func truth of this_sentence_is(bool) --> bool {
-	truth of this_sentence_is(True)  ==> True|False,
-	truth of this_sentence_is(False) ==> !(truth of this_sentence_is(False))
-}
+let the_answer  = statement(statement);
+let the_answer2 = statement2(statement2);
 
-let the_answer = truth of this_sentence_is(False);
+the_answer is ~N/A: False; // the_answer is N/A (proved during compilation)
 
-the_answer is ~N/A: False; // the_answer = N/A ("No Answer")
+// The below will never print anything, as the truth value will never become available
+println "Truth of \"This statement is not true.\": ${the_answer}";
+// Neither will this print anything (even if the_answer had completed)
+println "Truth of \"This statement is true.\": ${the_answer2}";
 
 --------------------------------------------------
 
