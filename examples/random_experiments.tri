@@ -1696,28 +1696,26 @@ if a is an int|str {...}
 /// ## Proof
 /// 1. Assume [has truth value] AND [true]     => not true => CONTRADICTION
 /// 2. Assume [has truth value] AND [not true] => true     => CONTRADICTION
-/// 3. Only option left is that we cannot tell if true or not; there is no truth value.
+/// **3. Only option left is that there is no truth value.**
 /// 
-/// So, there can be no truth value which is anything, neither true nor not true.
-/// We can say that the statement cannot have a truth value that is 100% true, but that
-/// does NOT mean it has a truth value that is not 100% true. It can still just not have
-/// a truth value at all, which is the case! The paradox only arises when you assume
-/// there is a truth value when there isn't. You will then reach the conclusion
-/// that it's neither true nor not true, which is a contradiction that leads you to
-/// the only left option of your assumption about there being an answer being wrong.
+/// We can reason that, since the statement has no truth value, it cannot be said to be
+/// true. Then it is not true. That causes confusion since the statement says of itself
+/// that it is not true, and we just found that it is true that the statement is not true.
+/// Then it would seem as if the statement suddenly is true, creating a paradox.
 /// 
-/// ## The law of the excluded middle still sort of holds.
+/// But what we had found was that "The statement is not true" was true, not that
+/// "This statement is not true" is true. This is an important distinction since we
+/// know the latter statement has no truth value, due to its potential truth value solely
+/// depending on itself through infinite recursion which will never resolve. So while we
+/// can truthfully say "The statement is not true" referring to the statement outside
+/// of itself, we cannot say that "This statement is not true" is true still.
+/// 
+/// ## The law of the excluded middle still holds (sort of)
 /// It is a fundamental part of logic that either a thing is 100% something, or it is not.
-/// But you need to remember that when you say a statement is not 100% true, you're not
-/// necessarily saying it's partially false. You're actually saying that the statement
-/// does not have a truth value that is 100% true, which still leaves the possibility of
-/// the statement simply not having a truth value at all.
-/// 
-/// What's confusing is that, you can still say that assuming the statement has a truth
-/// value it is 100% true that "The statement is not true". And also that it is 100%
-/// true that "The statement is not (not true)" <=> "The statement is true". That is a
-/// contradiction, but it only arises due to the assumption, so you can deduce that your
-/// assumption that there is a truth value is wrong and the paradox is solved.
+/// But you need to remember that when you say a statement is not true, you're not
+/// necessarily saying it's (partially) false. You're actually saying that the statement
+/// does not have a truth value that is true, which still leaves the possibility of the
+/// statement simply not having a truth value at all.
 /// 
 /// ## Fuzzy Logic
 /// If the recursion were to stop at a random point, it would be 50/50 for
