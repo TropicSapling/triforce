@@ -1733,6 +1733,17 @@ let statement  = ($this_statement => this_statement(this_statement) != True);
 // "This statement is true."
 let statement2 = ($this_statement => this_statement(this_statement));
 
+// TODO: FIX BELOW ISSUES NOTED IN COMMENTS:
+
+//> P = $thisP => thisP(thisP) is not true
+//> 
+//> P(P) is not true // must not evaluate P(P) to get an answer
+
+// 1 smaller infinity => not the same statement
+// We say P never returns, never evaluate P(P) when reasoning
+
+// "This statement never returns"
+
 let the_answer  = statement(statement);
 let the_answer2 = statement2(statement2);
 
