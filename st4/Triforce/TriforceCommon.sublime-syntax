@@ -115,7 +115,7 @@ contexts:
   punctuation:
     - match: ';'
       scope: punctuation.terminator.triforce
-    - match: '[:,]|-->'
+    - match: '[:,]|-->|==>'
       scope: punctuation.separator.triforce
     - match: '\.'
       scope: punctuation.accessor.dot.triforce

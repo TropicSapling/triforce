@@ -203,6 +203,8 @@ contexts:
     - include: cs-all-universal
     - match: \.{2,3}
       scope: cs.keyword.operator.range.triforce
+    - match: '(-->|==>)'
+      scope: source.triforce
     - match: ':?([!<>=]=|[<>])'
       scope: cs.keyword.operator.comparison.triforce
     - match: '(?:[-+%/*^&|]|<<|>>)?='
@@ -216,7 +218,7 @@ contexts:
     - match: '[@~?'']'
       scope: cs.keyword.operator.triforce
     - match: '[$#]'
-      scope: cs.keyword.operator.triforce
+      scope: cs.variable.parameter.triforce
       push: cs-op-dollar
     - match: '\b_\b'
       scope: cs.keyword.operator.triforce
@@ -324,7 +326,7 @@ contexts:
     - match: '(?=\[)'
       push: cs-func-bracket-group
     - match: '\$'
-      scope: cs.keyword.operator.triforce
+      scope: cs.variable.parameter.triforce
       push: cs-op-dollar
     - match: '\?'
       scope: source.triforce
@@ -349,7 +351,7 @@ contexts:
     - match: '(?=\[)'
       push: cs-func-bracket-group
     - match: '\$'
-      scope: cs.keyword.operator.triforce
+      scope: cs.variable.parameter.triforce
       push: cs-op-dollar
     - match: '\?'
       scope: source.triforce
@@ -392,7 +394,7 @@ contexts:
     - match: '(?=\()'
       push: cs-group
     - match: '\$'
-      scope: cs.keyword.operator.triforce
+      scope: cs.variable.parameter.triforce
       push: cs-op-dollar
     - match: '(has)|[;,|}]' # end of object declaration
       captures:
@@ -417,7 +419,7 @@ contexts:
     - match: '(?=\()'
       push: cs-group
     - match: '\$'
-      scope: cs.keyword.operator.triforce
+      scope: cs.variable.parameter.triforce
       push: cs-op-dollar
     - match: '(?=[=:\[;])'
       pop: true

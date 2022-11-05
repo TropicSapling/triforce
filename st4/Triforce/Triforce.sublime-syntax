@@ -293,6 +293,8 @@ contexts:
   operators:
     - match: \.{2,3}
       scope: keyword.operator.range.triforce
+    - match: '(-->|==>)'
+      scope: source.triforce
     - match: ':?([!<>=]=|[<>])'
       scope: keyword.operator.comparison.triforce
     - match: '(?:[-+%/*^&|]|<<|>>)?='
@@ -306,7 +308,7 @@ contexts:
     - match: '[@~?'']'
       scope: keyword.operator.triforce
     - match: '[$#]'
-      scope: keyword.operator.triforce
+      scope: variable.parameter.triforce
       push: op-dollar
     - match: '\b_\b'
       scope: keyword.operator.triforce
@@ -407,7 +409,7 @@ contexts:
     - match: '(?=\[)'
       push: func-bracket-group
     - match: '\$'
-      scope: keyword.operator.triforce
+      scope: variable.parameter.triforce
       push: op-dollar
     - match: '\?'
       scope: source.triforce
@@ -432,7 +434,7 @@ contexts:
     - match: '(?=\[)'
       push: func-bracket-group
     - match: '\$'
-      scope: keyword.operator.triforce
+      scope: variable.parameter.triforce
       push: op-dollar
     - match: '\?'
       scope: source.triforce
@@ -472,7 +474,7 @@ contexts:
     - match: '(?=\()'
       push: group
     - match: '\$'
-      scope: keyword.operator.triforce
+      scope: variable.parameter.triforce
       push: op-dollar
     - match: '(has)|[;,|}]' # end of object declaration
       captures:
@@ -496,7 +498,7 @@ contexts:
     - match: '(?=\()'
       push: group
     - match: '\$'
-      scope: keyword.operator.triforce
+      scope: variable.parameter.triforce
       push: op-dollar
     - match: '(?=[=:\[;])' # end of let declaration (sort of; type may follow)
       pop: true

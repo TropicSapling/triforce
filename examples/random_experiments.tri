@@ -2597,7 +2597,7 @@ func main {
 
 /// # Named return values, inspired by Go.
 /// Names serve as variable declarations and can be used to explain what is returned.
-func names of ($p as any Person) --> [$first, $last]: [str, str] {
+func names of ($p as any Person) --> [$first: str, $last: str] {
 	[first, last] = p.name split by " ";
 
 	// [first, last] returned automatically, but can optionally be returned explicitly

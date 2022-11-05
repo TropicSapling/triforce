@@ -166,6 +166,8 @@ contexts:
   cc-operators:
     - match: \.{2,3}
       scope: cc.keyword.operator.range.triforce
+    - match: '(-->|==>)'
+      scope: source.triforce
     - match: ':?([!<>=]=|[<>])'
       scope: cc.keyword.operator.comparison.triforce
     - match: '(?:[-+%/*^&|]|<<|>>)?='
@@ -179,7 +181,7 @@ contexts:
     - match: '[@~?'']'
       scope: cc.keyword.operator.triforce
     - match: '[$#]'
-      scope: cc.keyword.operator.triforce
+      scope: cc.variable.parameter.triforce
       push: cc-op-dollar
     - match: '\b_\b'
       scope: cc.keyword.operator.triforce
@@ -280,7 +282,7 @@ contexts:
     - match: '(?=\[)'
       push: cc-func-bracket-group
     - match: '\$'
-      scope: cc.keyword.operator.triforce
+      scope: cc.variable.parameter.triforce
       push: cc-op-dollar
     - match: '\?'
       scope: source.triforce
@@ -305,7 +307,7 @@ contexts:
     - match: '(?=\[)'
       push: cc-func-bracket-group
     - match: '\$'
-      scope: cc.keyword.operator.triforce
+      scope: cc.variable.parameter.triforce
       push: cc-op-dollar
     - match: '\?'
       scope: source.triforce
@@ -345,7 +347,7 @@ contexts:
     - match: '(?=\()'
       push: cc-group
     - match: '\$'
-      scope: cc.keyword.operator.triforce
+      scope: cc.variable.parameter.triforce
       push: cc-op-dollar
     - match: '(has)|[;,|}]' # end of object declaration
       captures:
@@ -369,7 +371,7 @@ contexts:
     - match: '(?=\()'
       push: cc-group
     - match: '\$'
-      scope: cc.keyword.operator.triforce
+      scope: cc.variable.parameter.triforce
       push: cc-op-dollar
     - match: '(?=[=:\[;])'
       pop: true
