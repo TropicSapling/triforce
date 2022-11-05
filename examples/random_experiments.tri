@@ -1742,7 +1742,7 @@ let statement2 = ($this_statement => this_statement(this_statement));
 // 1 smaller infinity => not the same statement
 // We say P never returns, never evaluate P(P) when reasoning
 
-// "This statement never returns"
+// "This statement never returns" / "This function never returns"
 
 let the_answer  = statement(statement);
 let the_answer2 = statement2(statement2);
@@ -2590,3 +2590,19 @@ func safe to call --> int ensures safety {
 func main {
 	safe to call;
 }
+
+--------------------------------------------------
+
+// NOTE: should consider if `($p as any Person)` can be shortened to `($p: person)`
+
+/// # Named return values, inspired by Go.
+/// Names serve as variable declarations and can be used to explain what is returned.
+func names of ($p as any Person) --> [$first, $last]: [str, str] {
+	[first, last] = p.name split by " ";
+
+	// [first, last] returned automatically, but can optionally be returned explicitly
+}
+
+let p = Person with [name = "John Doe", age = 42];
+
+println "${names of p}"; // ["John", "Doe"]
