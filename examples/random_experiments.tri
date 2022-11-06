@@ -982,6 +982,8 @@ category TranslationOfRustCodeExample {
 // Notes on structured concurrency.
 // https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/
 
+// TODO: maybe rename 'spawn ... in' to 'go ... in', sounds better?
+
 func do big calc concurrently in ($scope as any AsyncScope) {
 	for each n in 0..65535 {
 		// Do each calculation concurrently to speed things up.
@@ -998,6 +1000,7 @@ func do big calc concurrently in ($scope as any AsyncScope) {
 	// They keep running in the background.
 }
 
+// TODO: reconsider if async scope names really should be UpperCamelCase
 async scope Scope {
 	do big calc concurrently in Scope;
 	
