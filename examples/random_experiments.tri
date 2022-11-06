@@ -1046,6 +1046,40 @@ func run within framework {
 
 --------------------------------------------------
 
+// It is also possible to use just `spawn` without an `async escaping` block.
+// In that case it simply means the spawned threads must've finished upon function exit.
+func init {
+	...
+	
+	//> go do async stuff;
+	spawn do async stuff;
+	
+	...
+	
+	if return_early {
+		return; // will wait for spawned threads to finish
+	}
+	
+	...
+}
+// <=> (equivalent to)
+func init {
+	async scope FunctionScope {
+		...
+	
+		//> go do async stuff in FunctionScope;
+		spawn do async stuff in FunctionScope;
+		
+		if return_early {
+			return; // will wait for spawned threads to finish
+		}
+		
+		...
+	}
+}
+
+--------------------------------------------------
+
 // Concurrent map
 macro func each $item in ($arr as [_]) as $trans {
 	```
