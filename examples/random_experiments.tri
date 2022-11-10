@@ -865,16 +865,26 @@ multi func fib ($n as any Int) --> any Int {
 
 --------------------------------------------------
 
+/// # The N/A value
+/// In Triforce, the complete lack of a value is represented by `N/A`.
+/// This is the so called *bottom type* / *uninhabited type* / etc.
+/// It is defined as simply being equivalent to `~_`, that is: "not anything".
+let N/A: any = ~_;
+
+--------------------------------------------------
+
 // Multiple dispatch example
 // Translated from Julia code shown in https://www.youtube.com/watch?v=kc9HwsxE1OY @ 7:02
 
-let pet: _ = UNDEFINED; // maybe change to 'declare type pet' or 'let pet: anything = UNDEFINED'?
+// Declare a new type `pet` with no values (will be added later).
+// We use `N/A` to represent the lack of a value (could here be read as "Not Anything").
+let pet: type = N/A;
 
 // Objects are values with properties
 object Dog has [$name as str]
 object Cat has [$name as str]
 
-pet |= any Dog|Cat;
+pet |= any Dog|Cat; // add values to the `pet` type
 
 decl $($a meets $b); // maybe change to 'declare $a meets $b'?
 
