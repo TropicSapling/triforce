@@ -871,6 +871,19 @@ multi func fib ($n as any Int) --> any Int {
 /// It is defined as simply being equivalent to `~_`, that is: "not anything".
 let N/A: any = ~_;
 
+// PROBLEM BELOW - TODO: SOLVE!
+
+~123 & ~~123 <=> ~123 & 123 <=> ~_
+
+123|~_ & ~~_ <=> 123|~_ & _ <=> 123 or ~_ // which???
+
+// `~_` if the bottom type, should be subtype of all types, including `_`.
+// But then `_` must include `~_`, meaning `_ = type1|type2|...|~_` which is nonsense!
+// Obviously a type cannot include the opposite of itself!
+// - Should the bottom type then be something else? Just be called `N/A`, and not be `~_`?
+// - Then `_ = type1|type2|...|N/A`, and `~_ = ~type1 & ~type2 & ... & ~N/A`.
+// - But then `~_` is uninhabited anyway, it's not anything, and `N/A` is something...
+
 --------------------------------------------------
 
 // Multiple dispatch example
