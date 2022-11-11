@@ -820,7 +820,7 @@ fib n = fib (n-1) + fib (n-2)
 // ... but that's not possible in Triforce.
 
 // But maybe we could use a new '==>' syntax when fitting:
-func fib ($n as any Int) --> any Int {
+func fib ($n as int) --> int {
 	// Here we put the definitions in a list to separate them,
 	// but semicolons could also be used. That could however
 	// cause some confusion with regards to if something is
@@ -835,7 +835,7 @@ func fib ($n as any Int) --> any Int {
 }
 
 // Compare to how it looks like without that syntax:
-func fib ($n as any Int) --> any Int {
+func fib ($n as int) --> int {
 	func fib (0) { 0 }
 	func fib (1) { 1 }
 	func fib $n  { fib (n-1) + fib (n-2) }
@@ -857,7 +857,7 @@ macro func multi func $declaration --> $ret_type {$defs} {
 }
 
 // ... we could write it simpler like this:
-multi func fib ($n as any Int) --> any Int {
+multi func fib ($n as int) --> int {
 	fib (0) ==> 0,
 	fib (1) ==> 1,
 	fib $n  ==> fib (n-1) + fib(n-2)
@@ -865,11 +865,22 @@ multi func fib ($n as any Int) --> any Int {
 
 --------------------------------------------------
 
-/// # The N/A value
-/// In Triforce, the complete lack of a value is represented by `N/A`.
+/// # N/A - the type with no value
+/// In Triforce, the complete lack of a value is represented by the type `N/A`.
 /// This is the so called *bottom type* / *uninhabited type* / etc.
+/// Unlike all other types, this type is not a set of any values - it is the empty set.
+/// 
 /// It is defined as simply being equivalent to `~_`, that is: "not anything".
 let N/A: any = ~_;
+
+/// Since `N/A` doesn't correspond to any value, it cannot be used as a value.
+/// It must only be used as a type for type checking*.
+/// 
+/// *Can also be passed to macros as long as not evaluated.
+
+// `N/A` is the empty union `|` like in Julia (`Union{}`)?
+// - then would be subtype of all, including `_`
+// - then different from `~_`
 
 // PROBLEM BELOW - TODO: SOLVE!
 
