@@ -868,10 +868,8 @@ multi func fib ($n as int) --> int {
 /// # N/A - the type with no value
 /// In Triforce, the complete lack of a value is represented by the type `N/A`.
 /// This is the so called *bottom type* / *uninhabited type* / etc.
-/// Unlike all other types, this type is not a set of any values - it is the empty set.
-/// 
-/// It is defined as simply being equivalent to `~_`, that is: "not anything".
-let N/A: any = ~_;
+/// Unlike all other types, this type is not a set of any values - it's the empty set `|`.
+let N/A: type = |;
 
 /// Since `N/A` doesn't correspond to any value, it cannot be used as a value.
 /// It must only be used as a type for type checking*.
