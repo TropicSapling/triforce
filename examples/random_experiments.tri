@@ -2675,3 +2675,26 @@ func names of ($p as any Person) --> [$first: str, $last: str] {
 let p = Person with [name = "John Doe", age = 42];
 
 println "${names of p}"; // ["John", "Doe"]
+
+--------------------------------------------------
+
+// Inclusive Range [a, b]
+func $a..$b;
+// Inclusive-Exclusive Range [a, b)
+func $a..<$b;
+// Exclusive-Inclusive Range (a, b]
+func $a<..$b;
+// Exclusive Range (a, b)
+func $a<..<$b;
+
+let n: num = ...;
+when n is {
+	5..10   ==> println "5 <= n <= 10",
+	5..<10  ==> println "5 <= n <  10",
+	5<..10  ==> println "5 <  n <= 10",
+	5<..<10 ==> println "5 <  n <  10"
+}
+
+if n in 123<..<456 {...}
+// is equivalent to:
+if 123 < n < 456 {...}
