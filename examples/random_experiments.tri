@@ -8,6 +8,8 @@ $(f $a $b [...])   <=> ($(f $a $b [...]) as $#0 $#1 [...])
 /// # NOTE
 /// This file is quite messy and contains both old and new syntax.
 /// Most of the new syntax can be found after the first few hundred lines.
+/// 
+/// TODO: SPLIT THIS FILE INTO SEVERAL MAYBE? One for each topic (i.e. concurrency)
 
 --------------------------------------------------
 
@@ -1200,16 +1202,42 @@ let arr = each n in [1, 2, 3] as 2*n; //> [2, 4, 6]
 /// 'guarded-by' annotation communicates a particular locking discipline, allowing an
 /// SC compiler to optimize accesses to the protected location for the entire duration
 /// that the guarding lock is held."
-/// 
-/// TODO: SPLIT THIS FILE INTO SEVERAL MAYBE? One for each topic (i.e. concurrency)
 
 --------------------------------------------------
+
+/// # Access to external things (i.e. files)
+/// `with $handler` is used to access external resources, such as files.
+/// 
+/// **Every `$handler` should handle necessary resource init & exit procedures,
+/// as well as by default ensure that the resource is mutually exclusively accessed.**
+/// 	- The latter is IMPORTANT to prevent TOCTOU issues!
 
 // Prints contents of file.
 // Python-style auto-closes file afterwards.
 with file f at "path/to/file.ext" open {
 	println(contents of f);
 }
+
+// Even just accessing file properties requires a `with` block,
+// which by default ensures mutually exclusive access to prevent TOCTOU issues.
+with file f at "path/to/file.ext" {
+	// [TOC] Security checks before using file
+	if !(f right type of file) return;
+	if !(f safe) return;
+	...
+	
+	// No other thread or process can mess with the file between TOC and TOU.
+	// This is ensured by the file access handler (`file $f at $path`),
+	// which will request the OS to block all modifications to file contents & metadata.
+
+	with file f open {
+		// [TOU] Do stuff with file open (OS grants for this specific thread)
+	}
+	
+	// Modification blocks are lifted first after exiting the `with` block.
+}
+
+// ALSO, bit related to this: see atomic transactions!
 
 --------------------------------------------------
 
