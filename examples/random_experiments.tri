@@ -2726,3 +2726,26 @@ when n is {
 if n in 123<..<456 {...}
 // is equivalent to:
 if 123 < n < 456 {...}
+
+--------------------------------------------------
+
+/// # Information Flow Security
+/// Type system should prevent secret information from flowing to public variables.
+/// 
+/// See i.e. https://www.jsflow.net/jsflow-console.html
+
+// Some mockup syntax just to demonstrate the concept:
+
+let mut top_secret: secret bool = True;
+let mut not_secret: public num  = 123;
+
+// Below should not be allowed, because is leaking information.
+// Secret could be figured out based on the value of `not_secret`.
+if top_secret {
+	not_secret = 456
+} else {
+	not_secret = 789
+}
+
+// And this should definitely not be allowed!
+not_secret = numberify top_secret;
