@@ -2749,3 +2749,14 @@ if top_secret {
 
 // And this should definitely not be allowed!
 not_secret = numberify top_secret;
+
+--------------------------------------------------
+
+/// # Worth taking inspiration from Zig's memory management
+/// "The zig standard library provides a standard interface for allocators.
+/// Everything in the stdlib that allocates memory takes an allocator as
+/// an argument. This makes it easy to use custom allocators without
+/// having to write your own basic data-structures."
+/// - jamie@scattered-thoughts.net
+/// 
+/// https://www.scattered-thoughts.net/writing/assorted-thoughts-on-zig-and-rust/
