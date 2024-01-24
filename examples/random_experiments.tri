@@ -2752,7 +2752,8 @@ not_secret = numberify top_secret;
 
 --------------------------------------------------
 
-/// # Worth taking inspiration from Zig's memory management
+/// # Worth taking inspiration from Zig
+/// ## Like Zig's memory management
 /// "The zig standard library provides a standard interface for allocators.
 /// Everything in the stdlib that allocates memory takes an allocator as
 /// an argument. This makes it easy to use custom allocators without
@@ -2760,3 +2761,16 @@ not_secret = numberify top_secret;
 /// - jamie@scattered-thoughts.net
 /// 
 /// https://www.scattered-thoughts.net/writing/assorted-thoughts-on-zig-and-rust/
+/// 
+/// ## And Zig's interesting build.zig system
+/// https://ziglang.org/learn/overview/#zig-build-system
+/// 
+/// ## As well as Zig's comptime
+/// "
+/// - Call any function at compile-time.
+/// - Manipulate types as values without runtime overhead.
+/// - Comptime emulates the target architecture.
+/// "
+/// 
+/// ## Really just Zig in general actually
+/// https://ziglang.org/
