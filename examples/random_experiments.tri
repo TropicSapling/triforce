@@ -2774,3 +2774,22 @@ not_secret = numberify top_secret;
 /// 
 /// ## Really just Zig in general actually
 /// https://ziglang.org/
+
+--------------------------------------------------
+
+/// # Important Comments?
+/// I remember reading a blog post long ago arguing that comments should stand out more than code.
+/// It was NOT this one, but it makes the same point and I can't find the other post:
+/// https://www.benkuhn.net/syntax/
+/// 
+/// I disagree with that *all* comments should stand out.
+/// Especially doc comments should instead be less visible and even collapsible.
+/// But maybe *some* comments could be made to stand out?
+
+//! Introducing Important Comments
+/// Important Comments could use the syntax `//!` and have special syntax highlighting
+/// with background colour and/or bold font.
+
+func dangerous() {
+	... //! IMPORTANT: don't mess with this!
+}
