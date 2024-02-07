@@ -37,10 +37,10 @@ func f ($x as ...) --> ...;
 
 func f ($x as ...) --> ... {x + 123}
 // <=>
-func f ($x as num) --> ... {x + 123}
+func f ($x as num) --> ___ {x + 123} // note: `___` = `_` = `any`
 
+// TODO example on calling `f`
 let a: ... = 123;
 
-
-
+// TODO example on solving equations
 let b: int = ...;
