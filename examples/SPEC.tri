@@ -51,10 +51,11 @@ let b: int = ...;
 /// 
 /// Every pure* expression that can be evaluated at compile time, will be evaluated at compile time.
 /// - EXCEPTION: `run $expr` can be used to override this and force runtime execution of `$expr`.
+/// - Note: Evaluation timing out during compilation will finish during runtime.
 /// 
 /// Additionally, `prerun $expr` can be used to force compile time execution of any expression, including impure ones.
 /// 
-/// *pure = non-I/O, non-effectual
+/// *pure = non-I/O, non-effectual, deterministic
 
 /// ### Examples
 /// ------------
