@@ -44,3 +44,16 @@ let a: ... = 123;
 
 // TODO example on solving equations
 let b: int = ...;
+
+/// =============
+/// ## Evaluation
+/// =============
+/// 
+/// Every pure* expression that can be evaluated at compile time, will be evaluated at compile time.
+/// 
+/// *pure = non-I/O, non-effectual
+
+/// ### Examples
+/// ------------
+
+// TODO
