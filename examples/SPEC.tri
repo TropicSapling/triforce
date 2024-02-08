@@ -50,8 +50,8 @@ let b: int = ...;
 /// =============
 /// 
 /// Every pure* expression that can be evaluated at compile time, will be evaluated at compile time.
-- EXCEPTION: `run $expr` can be used to override this and force runtime execution of `$expr`.
-- EXCEPTION: `prerun $expr` can be used to force compile time execution of impure expressions.
+/// - EXCEPTION: `run $expr` can be used to override this and force runtime execution of `$expr`.
+/// - EXCEPTION: `prerun $expr` can be used to force compile time execution of impure expressions.
 /// 
 /// *pure = non-I/O, non-effectual
 
