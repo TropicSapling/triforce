@@ -71,4 +71,26 @@ println n; //> 4
 /// ### Examples
 /// ------------
 
-// TODO
+{
+	func f $x {x + 123}
+
+	let a = 456;
+
+	println (f a);
+	prerun println "f(a) = ${f a}";
+	
+	run {
+		let b = 321;
+		println(f b);
+	}
+}
+// <=> (after compile time evaluation)
+{
+	func f $x {x + 123}
+	
+	println 579;
+	
+	let b = 321;
+	println(f b);
+}
+// Additionally, "f(a) = 579" will be printed during compilation.
