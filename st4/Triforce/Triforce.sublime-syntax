@@ -247,12 +247,19 @@ contexts:
         - include: cleared-line-comments
         - include: doc-comment
 
+    # Section Headings/Separators
+    - match: '(#{7,})(?!#)(((?!#{7,}).)*)(#{7,})?'
+      captures:
+        1: markup.heading.1 cc.punctuation.definition.heading
+        2: comment.line.triforce markup.bold
+        4: markup.heading.1 cc.punctuation.definition.heading
+
     # Headings
     - match: '///+\s*(#)(?!#)(.*)$'
       captures:
         1: markup.heading.1 cc.punctuation.definition.heading
         2: comment.line.triforce markup.bold
-    - match: '///+\s*(#{2,6})(?!#)(.*)$'
+    - match: '///+\s*(#{2,6}|[=-]{7,})(?!#)(.*)$'
       captures:
         1: markup.heading cc.punctuation.definition.heading
         2: comment.line.triforce markup.bold

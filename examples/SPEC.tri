@@ -1,9 +1,20 @@
-/// # Triforce specification - Triforce by Example
+/// ==================================================================================
+/// 
+///                     ########  TRIFORCE SPECIFICATION  ########
+/// 
+/// ==================================================================================
+
+/// # Triforce by Example
 /// This file specifies the Triforce language by means of code examples.
 /// 
 /// **Note:**
 /// - Only non-obvious parts of the language are explained here.
 /// - The specification is incomplete and ever-evolving.
+
+
+/// ##################################################################################
+/// ##################################################################################
+
 
 /// =================
 /// ## Type inference
@@ -12,16 +23,16 @@
 /// `...` = the set of all allowed values in the context it is used
 /// 
 /// This special pseudo-type is useful for scripting/prototyping, as it is a
-/// shapeshifter and takes on the form of whatever type is applicable in the context it
-/// is used. Using it allows you to code in a more dynamic way, removing the need to
-/// think about what types variables and functions should have. It is not strictly
+/// shapeshifter and takes on the form of whatever type is applicable in the context
+/// it is used. Using it allows you to code in a more dynamic way, removing the need
+/// to think about what types variables and functions should have. It is not strictly
 /// dynamic typing as `...` is still technically meant to be statically inferred,
 /// but many of the cons of dynamic typing still apply. Consequently, using `...` in
 /// this way should be left for code where correctness is not of importance.
 /// 
-/// Another (very different) use of the type is to solve equations. `...` can be seen
-/// as the unknown in an equation, and be given a name like `let x = ...`. The compiler
-/// will then figure out one or more values that the unknown variable can take on.
+/// Another use of the type is to solve equations. `...` can be seen as the unknown
+/// in an equation, and be given a name like `let x = ...`. The compiler will then
+/// figure out one or more values that the unknown variable can take on.
 
 /// ### Syntax sugar
 /// ----------------
@@ -55,6 +66,10 @@ let n: int = ...;
   n     :== 4; // "n should equal 4"
 
 println n; //> 4
+
+
+/// ##################################################################################
+
 
 /// =============
 /// ## Evaluation
