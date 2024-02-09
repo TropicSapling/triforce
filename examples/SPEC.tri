@@ -37,13 +37,24 @@ func f ($x as ...) --> ...;
 
 func f ($x as ...) --> ... {x + 123}
 // <=>
-func f ($x as num) --> ___ {x + 123} // note: `___` = `_` = `any`
+func f ($x as num) --> any {x + 123}
 
-// TODO example on calling `f`
-let a: ... = 123;
+let a: ... = 456;
+// <=>
+let a: ___ = 456; // note: `___` = `_` = `any`
 
-// TODO example on solving equations
-let b: int = ...;
+println (f a);         // OK
+//> println (f "str"); // type error
+
+////////////////
+
+let n: int = ...;
+
+2*n + 1 :== 9; // <=> `(2*n + 1 == 9): True`
+2*n     :== 8;
+  n     :== 4; // "n should equal 4"
+
+println n; //> 4
 
 /// =============
 /// ## Evaluation
