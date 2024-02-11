@@ -16,6 +16,31 @@
 /// ##################################################################################
 
 
+/// ==============
+/// ## Type system
+/// ==============
+/// 
+/// `_` = the set of all types
+/// 
+/// The type system is loosely based on set theory.
+
+/// ### Examples
+/// ------------
+
+// A type is a set of one or more values.
+let type = "singleton";
+// Values can be added to a type using the `|` ("or") operator.
+type |= 1|2|3;
+// As well as filtered using the `&` ("and") operator.
+type &= 2|"singleton";
+
+type :== "singleton"|2;
+
+// TODO ...
+
+/// ##################################################################################
+
+
 /// =================
 /// ## Type inference
 /// =================
