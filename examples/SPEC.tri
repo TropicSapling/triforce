@@ -36,7 +36,7 @@ type &= 2|"singleton";
 
 type :== "singleton"|2;
 
-// TODO ...
+// TODO ... [to fully solve: see "N/A - the type with no value" in random_experiments]
 
 /// ##################################################################################
 
