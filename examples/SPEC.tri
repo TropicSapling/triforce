@@ -22,12 +22,26 @@
 /// 
 /// `_` = the set of all types
 /// 
-/// The type system is loosely based on set theory.
+/// The type system is loosely based on set theory. It follows similar rules, but has
+/// a different syntax specially crafted for programming. A type is defined as a set
+/// of zero, one or more values, where the values may be types themselves.
 
 /// ### Examples
 /// ------------
 
-// A type is a set of one or more values.
+// The empty, uninhabited bottom type is an empty set without values.
+let N/A: type = |;
+// It is the complement of the universal top type, which contains all values:
+let any: type = _;
+
+~any :== ~_ :== N/A;
+
+// Since the empty `N/A` type matches nothing, this "function" cannot be called.
+func Object ($field as any) (N/A);
+// Instead, we can partially apply it to use it as an object:
+let obj = Object "field value";
+
+// The singleton type is a set of one value.
 let type = "singleton";
 // Values can be added to a type using the `|` ("or") operator.
 type |= 1|2|3;
