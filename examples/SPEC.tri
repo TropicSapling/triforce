@@ -52,6 +52,11 @@ type :== "singleton"|2;
 
 // TODO ... [to fully solve: see "N/A - the type with no value" in random_experiments]
 
+// TODO more:
+// - type equality, should order matter or not?
+// - maybe have `super` keyword for when superposition types should be allowed?
+// - subset checking by default, or checking just if in set by default?
+
 /// ##################################################################################
 
 
