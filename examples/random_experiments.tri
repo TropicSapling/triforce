@@ -2793,3 +2793,21 @@ not_secret = numberify top_secret;
 func dangerous() {
 	... //! IMPORTANT: don't mess with this!
 }
+
+--------------------------------------------------
+
+/// # "Graphene" syntax
+/// - Go is light but fragile
+/// - Rust is heavy but robust
+/// 
+/// The ideal would be something light as Go but robust as Rust.
+/// Below I will experiment with a potential such syntax - codenamed Graphene.
+/// - Note that it may be inconsistent / not work
+
+func f [#x int, #y num, #z str] any {
+	let mut y = y
+
+	...
+}
+
+...
