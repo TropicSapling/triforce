@@ -2804,10 +2804,20 @@ func dangerous() {
 /// Below I will experiment with a potential such syntax - codenamed Graphene.
 /// - Note that it may be inconsistent / not work
 
-func f [#x int, #y num, #z str] any {
-	let mut y = y
+/// func f [#x int, #y num, #z str] --> any {
+/// 	let y int = y
+/// 
+/// 	...
+/// }
 
+func StartProcess(name string, argv []string, attr *ProcAttr) (*Process, error) {
 	...
 }
 
-...
+StartProcess("ping", ["ping", "-c 3", "google.com"], "google.com")
+
+func start proc (name str) with ([argv []str, attr ->proc_attr]) --> [->proc, err] {
+	...
+}
+
+start proc "ping" with args ["-c 3", "google.com"]

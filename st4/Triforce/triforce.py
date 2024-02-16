@@ -24,12 +24,13 @@ keyword_type_spec  = r'\b(impure|unpredictable|macro|implic\s+made|(suitable|sub
 keyword_misc       = r'\b(panic|with|all|in|excl|any(\s+(suitable|of))?|optionally|recollected|listified|codified|stringified|ensure(s\s+safety)?|print(ln|err)?|otherwise|mod)\b'
 
 prelude = (
+	                    r'^('+
 	keyword_ctrl      + r'|' +
 	keyword_check     + r'|' +
 	keyword_namespace + r'|' +
 	keyword_type      + r'|' +
 	keyword_type_spec + r'|' +
-	keyword_misc
+	keyword_misc      + r')$'
 )
 
 def between(view, a, b):
