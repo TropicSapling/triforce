@@ -69,6 +69,19 @@
     [
         /////////////// NORMAL /////////////////
         {
+            "name": "Triforce function call",
+            "scope": "variable.function.triforce",
+            "background": "color(hsl(70, 8%, 14.7%) alpha(0.002))", // almost-bg hack
+            "foreground": "var(blue)"
+        },
+        {
+            "name": "Triforce type use",
+            "scope": "variable.type.triforce",
+            "background": "color(hsl(70, 8%, 14.7%) alpha(0.002))", // almost-bg hack
+            "foreground": "var(blue)",
+            //"font_style": "italic" // ST doesn't support this atm
+        },
+        {
             "name": "Unique2 constant",
             "scope": "unique2.constant.language",
             "foreground": "var(purple2)"
@@ -85,6 +98,19 @@
         },
 
         ///////////////// CC ///////////////////
+        {
+            "name": "Triforce function call",
+            "scope": "cc.variable.function.triforce",
+            "background": "color(hsl(70, 8%, 14.7%) alpha(0.002))", // almost-bg hack
+            "foreground": "var(cc_blue)"
+        },
+        {
+            "name": "Triforce type use",
+            "scope": "cc.variable.type.triforce",
+            "background": "color(hsl(70, 8%, 14.7%) alpha(0.002))", // almost-bg hack
+            "foreground": "var(cc_blue)",
+            //"font_style": "italic" // ST doesn't support this atm
+        },
         {
             "name": "String",
             "scope": "cc.string",
@@ -190,6 +216,12 @@
         },
         
         ///////////////// CS ///////////////////
+        {
+            "name": "Triforce function call",
+            "scope": "cs.variable.function.triforce",
+            "background": "color(hsl(70, 8%, 14.7%) alpha(0.002))", // almost-bg hack
+            "foreground": "var(cs_blue)"
+        },
         {
             "name": "Comment",
             "scope": "cs.comment",

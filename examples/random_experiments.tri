@@ -2816,7 +2816,7 @@ func StartProcess(name string, argv []string, attr *ProcAttr) (*Process, error) 
 
 StartProcess("ping", ["ping", "-c 3", "google.com"], "google.com")
 
-func start proc (name str) with ([argv []str, attr ->proc_attr]) --> [->proc, err] {
+func start proc (name str) with ([argv []str, attr ->proc_attr]) --> ->proc|err {
 	...
 }
 
