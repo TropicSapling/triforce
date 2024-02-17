@@ -2821,3 +2821,9 @@ func start proc (name str) with ([argv []str, attr ->proc_attr]) --> ->proc|err 
 }
 
 start proc "ping" with args ["-c 3", "google.com"]
+
+--------------------------------------------------
+
+/// # https://www.hylo-lang.org/
+/// Language with an interesting potentially simpler memory/ownership model.
+/// Worth taking a deeper look at.
