@@ -1,0 +1,121 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/syntax.html
+version: 2
+name: TriforceCommon
+scope: source.triforce
+hidden: true
+variables:
+  ######## TODO: CLEANUP OLD SYNTAX ########
+  
+  # Identifiers
+  identifier:     '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+|([!<>\-+%/*^&|@~?.]|==|##)[!<>\-+%/*^&|@~?.=#]*))'
+  var_identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
+
+  # Keywords
+  keyword_ctrl:       '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|eval|prerun|run|go|spawn|assign|to\s+worker\s+in|defer)'
+  keyword_check:      '(as|fulfilling|where(\s+we)?|which|when|matches|and|is(\s+(a|an|any)(?!{{identifier}}))?|are|could\s+be)'
+  keyword_namespace:  '((ex|im)port(\s+all)?|except|from|into|expose)'
+  keyword_type:       '(type|proof\s+of|bool|nat|int|frac|complex|num|str)'
+  keyword_type_spec:  '(impure|unpredictable|macro|implic\s+made|(suitable|subtype)\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|unsafe(\s+area)?|async\s+escaping|exclusively)'
+  keyword_const:      '(True|False|Infinity|this|caller)'
+  keyword_const_uniq: '\?\?\?|UndefNum|N/A'
+  keyword_misc:       '({{keyword_check}}|{{keyword_namespace}}|panic|with|all|in|excl|any(\s+(suitable|of))?|optionally|recollected|listified|codified|stringified|ensure(s\s+safety)?|print(ln|err)?|otherwise|mod)'
+
+  # Declarations
+  decl_sym: '(decl(\s+(sym(indies|block)))|enclosed\s+by|with\s+escaper)'
+
+  # Numbers
+  digits:  '(0(x[0-9a-fA-F_]+|o[0-7_]+|b[01_]+)|[0-9_]+)'
+  numbers: '(-)?{{digits}}(\.{{digits}})?([iu](8|16|32|64|128|size)|f(loat)?(32|64))?'
+
+  # Misc.
+  escaped_byte: '\\(x\h{2}|n|r|t|0|"|''|\\)'
+  escaped_char: '\\(x\h{2}|n|r|t|0|"|''|\\|u\{\h{1,6}\})'
+contexts:
+  main:
+    - include: truly-universal
+
+  ################################################################################
+  ##                                                                            ##
+  ##                   ========  BASICALLY UNIVERSAL  ========                  ##
+  ##                                                                            ##
+  ################################################################################
+
+  truly-universal:
+    - match: '\b__{{identifier}}__\b'
+      scope: markup.heading
+
+  ################################################################################
+  ##                                                                            ##
+  ##                   =============  COMMENTS  =============                   ##
+  ##                                                                            ##
+  ################################################################################
+  
+  cleared-line-comments:
+    # Line comments, but scopes are cleared and contents ignored
+    - match: '^(?=\s*//+(\s*>)?)'
+      push:
+        - clear_scopes: true
+        - match: '\s*(//+)(\s*>)?'
+          captures:
+            1: source.triforce comment.line.triforce
+            2: source.triforce comment.line.triforce markup.bold
+          pop: true
+
+  block-comments:
+    # NOTE: Using IDE keybindings, multiple line comments can function as block comments.
+    #       This is the recommended way, and the below block comments are only supported
+    #       because some people prefer to use them instead. Depending on what consensus
+    #       is reached, they may be removed in the future in favor of minimalism.
+    - match: '/\*'
+      scope: punctuation.definition.comment.triforce
+      push: block-comment
+  
+  comment:
+    # Common syntax for all comments (excl. deprecated /* block comments */)
+    - match: '//+\s*(>)' # code comments
+      captures:
+        1: comment.line.triforce markup.bold
+      embed: cc-general
+      embed_scope: meta.cc.triforce
+      escape: '^(?!\s*//+\s*>)'
+    - match: '^(?!\s*//+)'
+      pop: true
+    - match: 'TODO[:.!]?'
+      scope: cc.support.function.triforce
+
+  line-comment:
+    - meta_scope: comment.line.triforce
+    - include: comment
+    
+    # `Inline code`
+    - match: '`'
+      scope: markup.bold
+      embed: cc-general
+      embed_scope: meta.cc.triforce
+      escape: '(`)|$'
+      escape_captures:
+        1: markup.bold
+
+  block-comment:
+    # Currently, these comments don't support any advanced features
+    - meta_scope: comment.block.triforce
+    - match: '\*/'
+      scope: punctuation.definition.comment.triforce
+      pop: true
+    - include: block-comments
+
+  ################################################################################
+  ##                                                                            ##
+  ##                   ============  PUNCTUATION  ============                  ##
+  ##                                                                            ##
+  ################################################################################
+
+  punctuation:
+    - match: ';'
+      scope: punctuation.terminator.triforce
+    - match: '[:,]|-->|==>'
+      scope: punctuation.separator.triforce
+    - match: '\.'
+      scope: punctuation.accessor.dot.triforce

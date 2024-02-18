@@ -1,0 +1,155 @@
+/// ==================================================================================
+/// 
+///                     ########  TRIFORCE SPECIFICATION  ########
+/// 
+/// ==================================================================================
+
+/// # Triforce by Example
+/// This file specifies the Triforce language by means of code examples.
+/// 
+/// **Note:**
+/// - Only non-obvious parts of the language are explained here.
+/// - The specification is incomplete and ever-evolving.
+
+
+/// ##################################################################################
+/// ##################################################################################
+
+
+/// ==============
+/// ## Type system
+/// ==============
+/// 
+/// `_` = the set of all types
+/// 
+/// The type system is loosely based on set theory. It follows similar rules, but has
+/// a different syntax specially crafted for programming. A type is defined as a set
+/// of zero, one or more values, where the values may be types themselves.
+
+/// ### Examples
+/// ------------
+
+// The empty, uninhabited bottom type is an empty set without values.
+let N/A: type = |;
+// It is the complement of the universal top type, which contains all values:
+let any: type = _;
+
+~any :== ~_ :== N/A;
+
+// Since the empty `N/A` type matches nothing, this "function" cannot be called.
+func Object ($field as any) (N/A);
+// Instead, we can partially apply it to use it as an object:
+let obj = Object "field value";
+
+// The singleton type is a set of one value.
+let type = "singleton";
+// Values can be added to a type using the `|` ("or") operator.
+type |= 1|2|3;
+// As well as filtered using the `&` ("and") operator.
+type &= 2|"singleton";
+
+type :== "singleton"|2;
+
+// TODO ... [to fully solve: see "N/A - the type with no value" in random_experiments]
+
+// TODO more:
+// - type equality, should order matter or not?
+// - maybe have `super` keyword for when superposition types should be allowed?
+// - subset checking by default, or checking just if in set by default?
+
+/// ##################################################################################
+
+
+/// =================
+/// ## Type inference
+/// =================
+/// 
+/// `...` = the set of all allowed values in the context it is used
+/// 
+/// This special pseudo-type is useful for scripting/prototyping, as it is a
+/// shapeshifter and takes on the form of whatever type is applicable in the context
+/// it is used. Using it allows you to code in a more dynamic way, removing the need
+/// to think about what types variables and functions should have. It is not strictly
+/// dynamic typing as `...` is still technically meant to be statically inferred,
+/// but many of the cons of dynamic typing still apply. Consequently, using `...` in
+/// this way should be left for code where correctness is not of importance.
+/// 
+/// Another use of the type is to solve equations. `...` can be seen as the unknown
+/// in an equation, and be given a name like `let x = ...`. The compiler will then
+/// figure out one or more values that the unknown variable can take on.
+
+/// ### Syntax sugar
+/// ----------------
+
+func f $x;
+// <=>
+func f ($x as ...);
+// <=>
+func f ($x as ...) --> ...;
+
+/// ### Examples
+/// ------------
+
+func f ($x as ...) --> ... {x + 123}
+// <=>
+func f ($x as num) --> any {x + 123}
+
+let a: ... = 456;
+// <=>
+let a: ___ = 456; // note: `___` = `_` = `any`
+
+println (f a);         // OK
+//> println (f "str"); // type error
+
+////////////////
+
+let n: int = ...;
+
+2*n + 1 :== 9; // <=> `(2*n + 1 == 9): True`
+2*n     :== 8;
+  n     :== 4; // "n should equal 4"
+
+println n; //> 4
+
+
+/// ##################################################################################
+
+
+/// =============
+/// ## Evaluation
+/// =============
+/// 
+/// By default, every pure (non-I/O, non-effectual, deterministic) expression
+/// that *can* be evaluated at compile time, *will* be evaluated at compile time.
+/// - Evaluation timing out during compilation will finish during runtime.
+/// 
+/// `run $expr` overrides the default and forces *runtime* execution of `$expr`.
+/// 
+/// `prerun $expr` forces *compile time* execution of any (impure) expression.
+
+/// ### Examples
+/// ------------
+
+{
+	func f $x {x + 123}
+
+	let a = 456;
+
+	println (f a);
+	prerun println "f(a) = ${f a}";
+	
+	run {
+		let b = 321;
+		println(f b);
+	}
+}
+// <=> (after compile time evaluation)
+{
+	func f $x {x + 123}
+	
+	println 579;
+	
+	let b = 321;
+	println(f b);
+}
+// Additionally, "f(a) = 579" will be printed during compilation.

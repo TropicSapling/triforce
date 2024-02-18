@@ -1,0 +1,341 @@
+{
+    "variables":
+    {
+//      "blue": "hsl(190, 81%, 67%)",    // rgb(103, 216, 239)
+//      "orange": "hsl(32, 98%, 56%)",   // rgb(253, 150, 33)
+//      "purple": "hsl(261, 100%, 75%)", // rgb(172, 128, 255)
+//      "red2": "hsl(338, 95%, 56%)",    // rgb(249, 36, 114)
+//      "yellow": "hsl(54, 70%, 68%)",   // rgb(231, 219, 116)
+//      "yellow2": "hsl(80, 76%, 53%)",  // rgb(166, 226, 44)
+
+//      "yellow5": "hsl(50, 11%, 41%)", // rgb(116, 112, 93)
+//      "white3": "hsl(60, 30%, 96%)",  // rgb(248, 248, 242)
+
+        // Random variations of purple (max +-64 per tuple item)
+        "purple2": "rgb(157, 92, 255)",
+        "purple3": "rgb(195, 139, 208)",
+        "purple4": "rgb(191, 104, 255)",
+
+        // h = hue, s = 11/30 * sat, l = 41%
+        "cc_blue": "hsl(190, 30%, 41%)",   // rgb(73, 125, 136)
+        "cc_orange": "hsl(32, 36%, 41%)",  // rgb(142, 107, 67)
+        "cc_purple": "hsl(261, 37%, 41%)", // rgb(93, 66, 143)
+        "cc_red2": "hsl(338, 35%, 41%)",   // rgb(141, 68, 95)
+        "cc_yellow": "hsl(54, 26%, 41%)",  // rgb(132, 126, 77)
+        "cc_yellow2": "hsl(80, 28%, 41%)", // rgb(114, 134, 75)
+        
+        /*
+        
+        let round = Math.round;
+        
+        function calc(red, gre, blu) {
+            let r = round(231 + (red/248)*(red - 231));
+            let g = round(219 + (gre/248)*(gre - 219));
+            let b = round(116 + (blu/242)*(blu - 116));
+            
+            return [`rgb(${r}, ${g}, ${b})`, [r, g, b]];
+        }
+        
+        function calcLight(red, gre, blu, light) {
+            let ratio = 1 - light / 96;
+            
+            let r = round(231 + ratio*(red - 231));
+            let g = round(219 + ratio*(gre - 219));
+            let b = round(116 + ratio*(blu - 116));
+            
+            return [`rgb(${r}, ${g}, ${b})`, [r, g, b]];
+        }
+        
+        function calcMixed(red, gre, blu, light) {
+            let [r1, g1, b1] = calc(red, gre, blu)[1];
+            let [r2, g2, b2] = calcLight(red, gre, blu, light)[1];
+            
+            let [r, g, b] = [round((r1+r2)/2), round((g1+g2)/2), round((b1+b2)/2)];
+            
+            return [`rgb(${r}, ${g}, ${b})`, [r, g, b]];
+        }
+        
+        */
+        "cs_blue": "rgb(185, 217, 195)",    // calcMixed(103, 216, 239, 67)
+        "cs_orange": "rgb(240, 190, 81)",   // calcLight(253, 150, 33, 56)
+        "cs_purple": "rgb(204, 186, 204)",  // calcMixed(172, 128, 255, 75)
+        "cs_red2": "rgb(239, 143, 115)",    // calcLight(249, 36, 114, 56)
+        "cs_yellow": "rgb(231, 219, 116)",  // calc(231, 219, 116)
+        "cs_yellow2": "rgb(202, 222, 84)",  // calcLight(166, 226, 44, 53)
+        "cs_yellow5": "rgb(165, 158, 103)", // calcLight(116, 112, 93, 41)
+    },
+    
+    "rules":
+    [
+        /////////////// NORMAL /////////////////
+        {
+            "name": "Triforce function call",
+            "scope": "variable.function.triforce",
+            "background": "color(hsl(70, 8%, 14.7%) alpha(0.002))", // almost-bg hack
+            "foreground": "var(blue)"
+        },
+        {
+            "name": "Triforce type use",
+            "scope": "variable.type.triforce",
+            "background": "color(hsl(70, 8%, 14.7%) alpha(0.002))", // almost-bg hack
+            "foreground": "var(blue)",
+            //"font_style": "italic" // ST doesn't support this atm
+        },
+        {
+            "name": "Unique2 constant",
+            "scope": "unique2.constant.language",
+            "foreground": "var(purple2)"
+        },
+        {
+            "name": "Unique3 constant",
+            "scope": "unique3.constant.language",
+            "foreground": "var(purple3)"
+        },
+        {
+            "name": "Unique4 constant",
+            "scope": "unique4.constant.language",
+            "foreground": "var(purple4)"
+        },
+
+        ///////////////// CC ///////////////////
+        {
+            "name": "Triforce function call",
+            "scope": "cc.variable.function.triforce",
+            "background": "color(hsl(70, 8%, 14.7%) alpha(0.002))", // almost-bg hack
+            "foreground": "var(cc_blue)"
+        },
+        {
+            "name": "Triforce type use",
+            "scope": "cc.variable.type.triforce",
+            "background": "color(hsl(70, 8%, 14.7%) alpha(0.002))", // almost-bg hack
+            "foreground": "var(cc_blue)",
+            //"font_style": "italic" // ST doesn't support this atm
+        },
+        {
+            "name": "String",
+            "scope": "cc.string",
+            "foreground": "var(cc_yellow)"
+        },
+        {
+            "name": "Number",
+            "scope": "cc.constant.numeric",
+            "foreground": "var(cc_purple)"
+        },
+        {
+            "name": "Built-in constant",
+            "scope": "cc.constant.language",
+            "foreground": "var(cc_purple)"
+        },
+        {
+            "name": "User-defined constant",
+            "scope": "cc.constant.character, cc.constant.other",
+            "foreground": "var(cc_purple)"
+        },
+        {
+            "name": "Keyword",
+            "scope": "cc.keyword, cc.keyword.operator.word",
+            "foreground": "var(cc_red2)"
+        },
+        {
+            "name": "Annotation Punctuation",
+            "scope": "cc.punctuation.definition.annotation",
+            "foreground": "var(cc_red2)"
+        },
+        {
+            "name": "Storage",
+            "scope": "cc.storage",
+            "foreground": "var(cc_red2)"
+        },
+        {
+            "name": "Storage type",
+            "scope": "cc.storage.type",
+            "foreground": "var(cc_blue)",
+            "font_style": "italic"
+        },
+        {
+            "name": "Entity name",
+            "scope": "cc.entity.name",
+            "foreground": "var(cc_yellow2)"
+        },
+        {
+            "name": "Function argument",
+            "scope": "cc.variable.parameter",
+            "foreground": "var(cc_orange)",
+            "font_style": "italic"
+        },
+        {
+            "name": "Language variable",
+            "scope": "cc.variable.language",
+            "foreground": "var(cc_orange)",
+            "font_style": "italic"
+        },
+        {
+            "name": "Tag name",
+            "scope": "cc.entity.name.tag",
+            "foreground": "var(cc_red2)"
+        },
+        {
+            "name": "Tag attribute",
+            "scope": "cc.entity.other.attribute-name",
+            "foreground": "var(cc_yellow2)"
+        },
+        {
+            "name": "Function call",
+            "scope": "cc.variable.function, cc.variable.annotation",
+            "foreground": "var(cc_blue)"
+        },
+        {
+            "name": "Library function",
+            "scope": "cc.support.function, cc.support.macro",
+            "foreground": "var(cc_blue)"
+        },
+        {
+            "name": "Library constant",
+            "scope": "cc.support.constant",
+            "foreground": "var(cc_blue)"
+        },
+        {
+            "name": "Library class/type",
+            "scope": "cc.support.type, cc.support.class",
+            "foreground": "var(cc_blue)",
+            "font_style": "italic"
+        },
+        {
+            "name": "markup headings",
+            "scope": "markup.heading cc.punctuation.definition.heading",
+            "foreground": "var(cc_orange)"
+        },
+        {
+            "name": "markup h1",
+            "scope": "markup.heading.1 cc.punctuation.definition.heading",
+            "foreground": "var(cc_red2)"
+        },
+        {
+            "scope": "cc.entity.name.filename",
+            "foreground": "var(cc_yellow)"
+        },
+        
+        ///////////////// CS ///////////////////
+        {
+            "name": "Triforce function call",
+            "scope": "cs.variable.function.triforce",
+            "background": "color(hsl(70, 8%, 14.7%) alpha(0.002))", // almost-bg hack
+            "foreground": "var(cs_blue)"
+        },
+        {
+            "name": "Triforce type use",
+            "scope": "cs.variable.type.triforce",
+            "background": "color(hsl(70, 8%, 14.7%) alpha(0.002))", // almost-bg hack
+            "foreground": "var(cs_blue)",
+            //"font_style": "italic" // ST doesn't support this atm
+        },
+        {
+            "name": "Comment",
+            "scope": "cs.comment",
+            "foreground": "var(cs_yellow5)"
+        },
+        {
+            "name": "String",
+            "scope": "cs.string",
+            "foreground": "var(cs_yellow)"
+        },
+        {
+            "name": "Number",
+            "scope": "cs.constant.numeric",
+            "foreground": "var(cs_purple)"
+        },
+        {
+            "name": "Built-in constant",
+            "scope": "cs.constant.language",
+            "foreground": "var(cs_purple)"
+        },
+        {
+            "name": "User-defined constant",
+            "scope": "cs.constant.character, cs.constant.other",
+            "foreground": "var(cs_purple)"
+        },
+        {
+            "name": "Keyword",
+            "scope": "cs.keyword, cs.keyword.operator.word",
+            "foreground": "var(cs_red2)"
+        },
+        {
+            "name": "Annotation Punctuation",
+            "scope": "cs.punctuation.definition.annotation",
+            "foreground": "var(cs_red2)"
+        },
+        {
+            "name": "Storage",
+            "scope": "cs.storage",
+            "foreground": "var(cs_red2)"
+        },
+        {
+            "name": "Storage type",
+            "scope": "cs.storage.type",
+            "foreground": "var(cs_blue)",
+            "font_style": "italic",
+        },
+        {
+            "name": "Entity name",
+            "scope": "cs.entity.name",
+            "foreground": "var(cs_yellow2)"
+        },
+        {
+            "name": "Function argument",
+            "scope": "cs.variable.parameter",
+            "foreground": "var(cs_orange)",
+            "font_style": "italic"
+        },
+        {
+            "name": "Language variable",
+            "scope": "cs.variable.language",
+            "foreground": "var(cs_orange)",
+            "font_style": "italic"
+        },
+        {
+            "name": "Tag name",
+            "scope": "cs.entity.name.tag",
+            "foreground": "var(cs_red2)"
+        },
+        {
+            "name": "Tag attribute",
+            "scope": "cs.entity.other.attribute-name",
+            "foreground": "var(cs_yellow2)"
+        },
+        {
+            "name": "Function call",
+            "scope": "cs.variable.function, cs.variable.annotation",
+            "foreground": "var(cs_blue)"
+        },
+        {
+            "name": "Library function",
+            "scope": "cs.support.function, cs.support.macro",
+            "foreground": "var(cs_blue)"
+        },
+        {
+            "name": "Library constant",
+            "scope": "cs.support.constant",
+            "foreground": "var(cs_blue)"
+        },
+        {
+            "name": "Library class/type",
+            "scope": "cs.support.type, cs.support.class",
+            "foreground": "var(cs_blue)",
+            "font_style": "italic"
+        },
+        {
+            "name": "markup headings",
+            "scope": "markup.heading cs.punctuation.definition.heading",
+            "foreground": "var(cs_orange)"
+        },
+        {
+            "name": "markup h1",
+            "scope": "markup.heading.1 cs.punctuation.definition.heading",
+            "foreground": "var(cs_red2)"
+        },
+        {
+            "scope": "cs.entity.name.filename",
+            "foreground": "var(cs_yellow)"
+        },
+    ]
+}

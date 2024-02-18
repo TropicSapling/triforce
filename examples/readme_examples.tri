@@ -2,35 +2,75 @@
 // |                EXAMPLE 1                |
 // -------------------------------------------
 
+// During compilation, the compiler analyses the program and tries to figure out what
+// potential values expressions might evaluate to at runtime. It puts these potential
+// values into or-patterns for each expression.
+// 
+// Some expressions do however never return; instead they crash or loop forever.
+// If the compiler cannot exclude the possibility of this happening for an expression,
+// it will add the special `N/A` value to its or-pattern.
+// 
+// (`N/A` = never-returned value = "Never Available" / "Not Available" / "No Answer")
+// 
+// Below is an example of this.
+
+let ($a as nat) - ($b as nat) = $a $b => a - b unless b > a then panic "below 0!";
+
+let n = nat;
+
 // - n == n is True
 // - The remaining terms of LHS & RHS are known
 // => Compiler can determine if True or False
-(n - 1)            * 2 + 2 == n * 2
-Undefined|0|1|...  * 2 + 2 == 0|2|4...
-// Potential Undefined(s) found!
-// Add Undefined to or-pattern, then
-// start over with values not leading to Undefined:
-          0|1|...  * 2 + 2 ==   2|4|...
-          0|2|...      + 2 ==   2|4|...
-          2|4|...          ==   2|4|...
+(n - 1)     * 2 + 2 == n * 2
+N/A|0|1|... * 2 + 2 == 0|2|4...
+// Potential N/A(s) found!
+// Add N/A to or-pattern, then
+// start over with values not leading to N/A:
+    0|1|... * 2 + 2 ==   2|4|...
+    0|2|...     + 2 ==   2|4|...
+    2|4|...         ==   2|4|...
 // LHS == RHS since:
 // - Compiler can determine if True or False
 // - LHS & RHS or-patterns consist of the same values in the same order
-=> Undefined|True
+=> N/A|True
 
 // - n == n2 is True|False
 // => Compiler *cannot* determine if True or False
-(n - 1)            * 2 + 2 == n2 * 2
-Undefined|0|1|...  * 2 + 2 == 0|2|4...
-// Potential Undefined(s) found!
+(n - 1)     * 2 + 2 == n2 * 2
+N/A|0|1|... * 2 + 2 == 0|2|4...
+// Potential N/A(s) found!
 // Since the compiler cannot determine anything more,
-// and it's irrelevant if there are more potential Undefineds,
+// and it's irrelevant if there are more potential N/As,
 // it stops here and returns:
-=> Undefined|True|False
+=> N/A|True|False
+
+// Basically, `N/A` is propagating just like `???`.
+// It can be given to any function and will make it return `N/A`.
+   N/A * 2 + 2 == n * 2
+=> N/A     + 2 == n * 2
+=> N/A         == n * 2
+=> N/A
+// Note that this means that you can't directly check if something equals `N/A`,
+// since `x == N/A` just returns `N/A`. However, it is still possible to do
+// it indirectly by doing `!(x is ~N/A)`. This is because `~N/A` is built-in
+// to mean an or-pattern excluding `N/A`. This is necessary because all other
+// or-patterns implicitly include `N/A`:
+nat :== 0|1|... :== 0|1|...|N/A;
+// To override this default behaviour, one can add `& ~N/A` to the or-pattern:
+nat & ~N/A :== 0|1|... & ~N/A;
+
+// Really, typing `N/A` has no good use outside of `~N/A`. It could be used
+// as an alternative to `???`, but doing so will just cause confusion and problems.
+// For that reason, `N/A` on its own will probably give a warning on compilation.
+
+// (Also, `~~N/A` <=> `N/A` if it wasn't obvious, so `x is ~~N/A`
+//  will still become `x is N/A` and then `N/A`)
 
 // -------------------------------------------
 // |                EXAMPLE 2                |
 // -------------------------------------------
+
+// OUTDATED. Will be either replaced or removed soon.
 
 // 'closed' prevents the compiler from looking at the function body
 // before the function is in its final scope.
@@ -40,7 +80,7 @@ $x => (
 		// Final scope
 		// 'z' is defined here, so all is fine
 
-		(_ => y x) _ // just to show final scope isn't necessarily call scope
+		(() => y x) () // just to show final scope isn't necessarily call scope
 	)) (closed impure $a => x++ * z a) 123 // 'impure' allows change of 'x', so all is fine
 )
 
@@ -57,7 +97,7 @@ $x => (
 	($y $z => (
 		// Final scope
 		
-		(_ => y x) _ // just to show final scope isn't necessarily call scope
+		(() => y x) () // just to show final scope isn't necessarily call scope
 	)) ($a => x++ * z a) 123 // ERROR: 'z' is undefined, and 'x' is an outside/free pattern being changed
 )
 
@@ -78,11 +118,11 @@ let x = 123;
 // Example of a cool thing using #-defs
 // '#($y)%' defines 'y' inside function body as '5' in this case
 // You could also do '#($y as 5)%' if you only want to allow that input
-func (any Number)% _ {};
+object (num)%;
 
-func ($x as any Number) * (#($y)%) {
+func ($x as num) * (#($y)%) {
     x * y / 100
-};
+}
 
 120 * 5% == 6
 
@@ -114,17 +154,23 @@ __catch__ (5% * 120%) == 6%
 
 // Below we instead catch all matching terms
 // *before* any other pattern matching is
-// done by using 'frozen'.
+// done by using an implicit closure.
 //
 // This results in every single function
 // being catched before evaluation.
-impure func __catch__ ($f as implicitly frozen) {
+impure func __catch__ ($f as implicitly _ => __explicit__) {
 	println "nope!";
-};
+}
 
 println "Hello world!"; // prints "nope!"
 9 + 10 == 21;           // prints "nope!"
 9 + 10 == 19;           // prints "nope!"
+
+// NOTE: We could ofc just define '%' as '/ 100'
+// if we don't care about having an object:
+func ($x as any Number)% {x / 100}
+// But I chose to use an object for this example
+// to better showcase features of the language.
 
 // -------------------------------------------
 // |                EXAMPLE 5                |
@@ -178,12 +224,12 @@ id        != ($x => x)
 // |                EXAMPLE 6                |
 // -------------------------------------------
 
-func Potato _ {};
+func Potato () {};
 
 let potato  = Potato;
 let potato2 = Potato;
 let potato3 = {
-	func Potato _ {};
+	func Potato () {};
 
 	Potato
 };
@@ -215,8 +261,7 @@ object Player [
 	$health as any Number
 ];
 
-// Note how this is shorthand for 'f ($x as _)'
-impure func f $x {
+impure func f ($x as _) {
 	println "last";
 };
 
@@ -246,3 +291,53 @@ f (Player "Steve" 50) // prints "second"
 f (Player "Alex"  40) // prints "fifth"
 f (Player "Alex"  60) // prints "third"
 f Potato              // prints "last"
+
+// -------------------------------------------
+// |                EXAMPLE 8                |
+// -------------------------------------------
+
+// Dictionaries/HashMaps + Error Handling example
+
+func test() --> () implic made Wrapped EXPLIC {
+  // Only allowing optional Int values for demonstration purposes.
+  // 'optionally any Int' <=> 'any Int | ()' (read as "any Int or nothing")
+  func lookup $key in $dict --> optionally any Int implic made Wrapped EXPLIC {
+    for each [$hash, $val] in dict {
+      if hash of key == hash {
+        return val; // all returns implicitly wrapped by default, making this become 'return (Wrapped val)'
+      };
+    };
+    
+    // '`$expr`' can however be used to bypass the implicit wrapping
+    // '`$expr`' is read as "precisely $expr"
+    
+    return `()`; // "return precisely nothing"; returns unwrapped '()', here meaning no entry was found
+  };
+  
+  // Idk if dictionaries actually will have this syntax,
+  // but let's assume they do for this example.
+  let dict = [["abc", 123], ["def", ()], ["ghi", 456]];
+  
+  println(lookup "abc"     in dict); // prints "Wrapped 123"; entry with value '123' found
+  println(lookup "invalid" in dict); // prints "()"; no entry found
+  println(lookup "def"     in dict); // prints "Wrapped ()"; entry found, but the entry is nothing
+  
+  // '?' can be used to automatically unwrap.
+  // If unwrapping fails, it returns to an error handler.
+  println(lookup "def"     in dict)?; // prints "()"; entry found, but the entry is nothing
+  println(lookup "invalid" in dict)?; // no entry found; returns '`()`' to error handler without printing anything
+  
+  (lookup "ghi" in dict)? // returning something fallible requires '?'; else 'Wrapped $val' could be returned which doesn't match '()'
+};
+
+func handle error () {
+	// Handle the error somehow...
+};
+
+func init() {
+  // If test() succeeds, it returns 'Wrapped ()'.
+  // If it however fails, it returns '()':
+  if test() == () then handle error;
+  
+  // (We could ofc also have chosen to return 'Err $err_info' or similar instead to know better how to handle the error)
+};

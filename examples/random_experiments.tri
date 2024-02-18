@@ -1,8 +1,15 @@
 // Syntax sugar
-$a                 <=> ($a as _) // 'a' can be called like 'a arg1 arg2 ...'
-$(f $a $b ...)     <=> ($(f $a $b ...) as $#0 $#1 ...)
-(x)                <=> (_ as x) // where 'x' is not '$a' ('$a b' is allowed and will become '_ as $a b')
-// EDIT: should that last sugar be removed? might just be confusing to have it
+$a                 <=> ($a as ...)
+$(f $a $b [...])   <=> ($(f $a $b [...]) as $#0 $#1 [...])
+(named_pattern)    <=> (_ as named_pattern)
+
+--------------------------------------------------
+
+/// # NOTE
+/// This file is quite messy and contains both old and new syntax.
+/// Most of the new syntax can be found after the first few hundred lines.
+/// 
+/// TODO: SPLIT THIS FILE INTO SEVERAL MAYBE? One for each topic (i.e. concurrency)
 
 --------------------------------------------------
 
@@ -150,7 +157,7 @@ basic func use $module {
 		)
 	}
 
-	scope
+	__caller_scope__
 };
 
 func even_zero {
@@ -282,21 +289,21 @@ func $this where ($contract as frozen any Bool) {
 
 // Something is an *object* if it's atomic or only contains properties of itself
 object Player [
-  $x      as any Int,
-  $y      as any Int,
-  $health as any Double
+	$x      as any Int,
+	$y      as any Int,
+	$health as any Double
 ];
 
 let HealthContract = frozen (
-  this health > 50.0 &&
-  this health < 100.0
+	this health > 50.0 &&
+	this health < 100.0
 );
 
 // Something is a *category* if it contains objects that aren't properties of itself
 let items = [
-  Dirt,
-  Stone,
-  Wood
+	Dirt,
+	Stone,
+	Wood
 ];
 
 func throw ($item as any of items) from ($player as any Player fulfilling HealthContract) {...};
@@ -357,7 +364,7 @@ func import ($filepath as any Path) {
 // If this conflicts with built-in 'as', rename to
 // 'import ... and rename to ...'
 func import ($filepath as any Path) as ($name as permafrosted) {
-	category `name` (import filepath)
+	category $$(name) {import filepath}
 };
 
 func expose ($cat as any List) {
@@ -367,6 +374,19 @@ func expose ($cat as any List) {
 			expose cat[1..];
 		};
 	)
+};
+
+// UPDATE 2021-05-02, same function as above but with the new syntax:
+macro func expose ($cat as any List) {
+	let cat = eval cat;
+	
+	code {
+		// using `$$()` to clarify the name is the evaluated `cat[0]` rather than 'cat[0]'
+		let $$(cat[0]) = $$(cat[0]);
+		if $$(cat) length > 1 {
+			expose $$(cat[1..]);
+		};
+	}
 };
 
 // This:
@@ -472,16 +492,16 @@ any Bool == any of [Bool.True, Bool.False] == Bool.True|Bool.False
 
 // Another example
 category Shape (
-  object Rectangle [
-    $width,
-    $height
-  ];
+	object Rectangle [
+		$width,
+		$height
+	];
 
-  object Circle [
-    $radius
-  ];
-  
-  export all;
+	object Circle [
+		$radius
+	];
+
+	export all;
 );
 
 expose Shape; // so we don't need to type Shape.Circle and Shape.Rectangle all the time
@@ -573,22 +593,22 @@ apply (add $a and $b) and multiply; // => (123 + 456) * (456 + 789) => 579 * 124
 
 // AST
 
-object Object [
-	$field  as any Field
+object Object has [
+	$field  as any Field,
 	$field2 as any Field
 ];
 
 =>
 
 [
-	"object",
-	"Object",
+	`object ... has ...`,
+	`Object`,
 	[
-		"List",
-		["as", "$field", ["any", "Field"]],
+		`List ... ...`,
+		[`... as ...`, [`$`, `field`], [`any ...`, `Field`]],
 		[
-			"List",
-			["as", "$field2", ["any", "Field"]],
+			`List ... ...`,
+			["... as ...", [`$`, `field2`], [`any ...`, `Field`]],
 			Nothing
 		]
 	]
@@ -645,3 +665,2165 @@ reactive: if count >= 10 {
 	println "count is dangerously high!";
 	count = 9;
 };
+
+--------------------------------------------------
+
+// List comprehensions?
+
+func transformed $x {
+	let y = f(x);
+
+	y if y correct else () // TODO: should returning '()' stop an item from being added to the list?
+}
+
+let transformed_items = each item in items recollected as transformed item;
+
+let odd_doubles = each x in [1, 2, 3, 4, 5] recollected as x*2 if x odd; // [2, 6, 10]
+
+// Or perhaps this below syntax is better?
+
+func each $item [where|which $filter]? in $arr as $transformation;
+func all [which $filter]? in $arr [$transformation]?;
+
+let odd_doubles = each x where this is odd in [1, 2, 3, 4, 5] as x doubled;
+let odd_doubles = each x which is odd in [1, 2, 3, 4, 5] as x doubled;
+let odd_doubles = all which are odd in [1, 2, 3, 4, 5] doubled;
+
+let arr = each x in [1, 2, 3, 4, 5] as 2*x + 1;
+
+// When just filtering it might sound better with reversed order:
+let arr = all in [1, 2, 3, 4, 5] which are odd;
+
+// And sometimes inverse-filtering using 'excl' sounds better:
+for each m in (matchs excl each m where m[0] != i) {
+	...
+}
+
+// Alternative map syntax that fits better with for-loops:
+for each m in (matchs with each m as 2*m + 1) {
+	...
+}
+
+// Python, Rust and others also have Iterables.
+// 
+// In Python you can have "generators", which
+// have identical syntax to list comprehensions
+// except with surrounding parentheses. These
+// are kind of like "lazy" list comprehensions.
+// 
+// Maybe something similar for Triforce?
+
+--------------------------------------------------
+
+// Array programming in Triforce?
+
+// Recursive multi-array for-each
+rec for each [a, b] in [A, B] {
+	R += a + b;
+}
+
+// i.e.
+let X = [[1, 2], [3, 4]];
+let Y = [[5, 6], [7, 8]];
+let R: any List = [];
+rec for each [x, y] in [X, Y] {
+	R += x + y;
+}
+
+println R; // prints "[[6, 8], [10, 12]]"
+
+// Then maybe you could using this define shortcuts for common operations:
+func $arr $op..$op $arr2 {
+	let res: any List = [];
+
+	rec for each [a, b] in [arr, arr2] {
+		res += a op b;
+	}
+
+	res
+}
+
+X +..+ Y // => '[[1+5, 2+6], [3+7, 4+8]]'
+X /../ Y // => '[[1/5, 2/6], [3/7, 4/8]]'
+
+--------------------------------------------------
+
+// Implicit closures using macros
+macro func f $x {
+	func f ($x as T) {
+		x() + 1
+	}
+
+	`` $$(f) (() => $$(x)) ``
+}
+
+--------------------------------------------------
+
+// Math equations
+
+let n = any suitable int; // <=> suitable of ...|-1|0|1|...
+
+2*n + 1 :== 9; // equivalent to '(2*n + 1 == 9): True'
+2*n     :== 8;
+  n     :== 4; // "n should equal 4"
+
+println n; // prints '4'
+
+// All of the `:` operators return their second argument,
+// in order to make things like the following work properly:
+x :< y :< z;
+x :> y :> z;
+
+10 :< 15 :< 20; // `:== (15 :< 20)` => OK
+10 :< 20 :< 15; // `:== (20 :< 15)` => ERROR
+
+1 + 2 + 3 :== 3 + 3 :== 6;
+
+// Fuzzy Logic example:
+
+func not $x {1 - x}
+
+let x = ...;
+
+x :== not x;
+x :== 1 - x;
+x :== 0.5;
+
+--------------------------------------------------
+
+func assert_positive($n as 0|1|...) {}
+
+// 'suitable': exclude what doesn't compile
+// 'any suitable Int' <=> 'suitable of any Int'
+func f($x as any suitable Int where this is even) { assert_positive(x) }
+// <=>
+func f($x as 0|2|...) { assert_positive(x) }
+
+f(2);  // ok
+f(-2); // err!
+
+
+// Compare to this, which doesn't compile:
+func f($x as any Int where this is even) { assert_positive(x) }
+// <=>
+func f($x as ...|-2|0|2|...) { assert_positive(x) } // fails assertion!
+
+// Doesn't matter if we call with positive value;
+// assertion still fails before any calls are evaluated.
+f(2); // not evaluated!
+
+--------------------------------------------------
+
+// Haskell looks nice and clean like this...
+fib 0 = 0
+fib 1 = 1
+fib n = fib (n-1) + fib (n-2)
+
+// ... but that's not possible in Triforce.
+
+// But maybe we could use a new '==>' syntax when fitting:
+func fib ($n as int) --> int {
+	// Here we put the definitions in a list to separate them,
+	// but semicolons could also be used. That could however
+	// cause some confusion with regards to if something is
+	// returned or not.
+	expose [
+		fib (0) ==> 0,
+		fib (1) ==> 1,
+		fib $n  ==> fib (n-1) + fib(n-2)
+	]
+
+	fib n
+}
+
+// Compare to how it looks like without that syntax:
+func fib ($n as int) --> int {
+	func fib (0) { 0 }
+	func fib (1) { 1 }
+	func fib $n  { fib (n-1) + fib (n-2) }
+
+	fib n
+}
+
+// And using this...
+macro func multi func $declaration --> $ret_type {$defs} {
+	``
+
+	let $$(declaration) = {
+		expose [$$(defs)];
+
+		$$(declaration)
+	}: _ => $$(ret_type); // only works if ':' is made a macro
+
+	``
+}
+
+// ... we could write it simpler like this:
+multi func fib ($n as int) --> int {
+	fib (0) ==> 0,
+	fib (1) ==> 1,
+	fib $n  ==> fib (n-1) + fib(n-2)
+}
+
+--------------------------------------------------
+
+/// # N/A - the type with no value
+/// In Triforce, the complete lack of a value is represented by the type `N/A`.
+/// This is the so called *bottom type* / *uninhabited type* / etc.
+/// Unlike all other types, this type is not a set of any values - it's the empty set `|`.
+let N/A: type = |;
+
+/// Since `N/A` doesn't correspond to any value, it cannot be used as a value.
+/// It must only be used as a type for type checking*.
+/// 
+/// *Can also be passed to macros as long as not evaluated.
+
+// `N/A` is the empty union `|` like in Julia (`Union{}`)?
+// - then would be subtype of all, including `_`
+// - then different from `~_`
+
+// PROBLEM BELOW - TODO: SOLVE!
+
+~123 & ~~123 <=> ~123 & 123 <=> ~_
+
+123|~_ & ~~_ <=> 123|~_ & _ <=> 123 or ~_ // which???
+
+// `~_` if the bottom type, should be subtype of all types, including `_`.
+// But then `_` must include `~_`, meaning `_ = type1|type2|...|~_` which is nonsense!
+// Obviously a type cannot include the opposite of itself!
+// - Should the bottom type then be something else? Just be called `N/A`, and not be `~_`?
+// - Then `_ = type1|type2|...|N/A`, and `~_ = ~type1 & ~type2 & ... & ~N/A`.
+// - But then `~_` is uninhabited anyway, it's not anything, and `N/A` is something...
+
+--------------------------------------------------
+
+// Multiple dispatch example
+// Translated from Julia code shown in https://www.youtube.com/watch?v=kc9HwsxE1OY @ 7:02
+
+// Declare a new type `pet` with no values (will be added later).
+// We use `N/A` to represent the lack of a value (could here be read as "Not Anything").
+let pet: type = N/A;
+
+// Objects are values with properties
+object Dog has [$name as str]
+object Cat has [$name as str]
+
+pet |= any Dog|Cat; // add values to the `pet` type
+
+decl $($a meets $b); // maybe change to 'declare $a meets $b'?
+
+func ($a as pet) encounters ($b as pet) {
+	let verb = a meets b;
+	println (a.name + " meets " + b.name + " and " + verb);
+}
+
+(any Dog) meets (any Dog) ==> "sniffs";
+(any Dog) meets (any Cat) ==> "chases";
+(any Cat) meets (any Dog) ==> "hisses";
+(any Cat) meets (any Cat) ==> "slinks";
+
+let fido     = Dog "Fido";
+let rex      = Dog "Rex";
+let whiskers = Cat "Whiskers";
+let spots    = Cat "Spots";
+
+fido     encounters rex;
+fido     encounters whiskers;
+whiskers encounters rex;
+whiskers encounters spots;
+
+// $ tric pets.tri
+// 
+// Fido meets Rex and sniffs
+// Fido meets Whiskers and chases
+// Whiskers meets Rex and hisses
+// Whiskers meets Spots and slinks
+
+--------------------------------------------------
+
+// Minimal importing examples
+import [a, b, ...] from "lib";
+import all         from "lib";
+
+// Importing examples showing all features
+import [a as x, B.b as y, all in C, ...] from "lib" into Lib;
+import all except [e1, e2, ...]          from "lib" into Lib;
+
+// Access like:
+println Lib.x;
+println Lib.y;
+println Lib.something_in_C;
+println Lib.something_in_lib_thats_not_excepted;
+println Lib.(function taking 123 and 456);       // equivalent to 'Lib.(function taking $x and $y) 123 456'
+
+// Note: we can ofc also import functions and call them
+
+{
+	// Expose for a certain scope...
+	expose Lib;
+
+	// ... and you can simply do this within the scope:
+	println x;
+	println y;
+}
+
+// Note:
+// Conflict with reserved keyword 'as' can probably be resolved
+// by making only '({$(<...>)|_} as <...>)' reserved.
+
+// Idea: also allow all of above but with 'export'? So you can forward exports, like:
+export [AmongUsClient as Client] from "client";
+
+category TranslationOfRustCodeExample {
+	// Rust
+	``
+	extern crate clap;
+	extern crate term_painter;
+
+	use clap::{Arg, App};
+	use term_painter::{ToStyle, Color::*};
+	use kernel32::{GetConsoleMode, SetConsoleMode};
+
+	use std::{
+		fs,
+		fs::File,
+		io::prelude::*,
+		io::ErrorKind,
+		process::Command,
+		path::PathBuf,
+		str
+	};
+	``
+
+	// Triforce
+	import [Arg, App]                       from "clap";
+	import [ToStyle, all in Color]          from "term_painter";
+	import [GetConsoleMode, SetConsoleMode] from "kernel32";
+
+	import [
+		fs,
+		fs.File,
+		all in io.prelude,
+		io.ErrorKind,
+		process.Command,
+		path.PathBuf,
+		str
+	] from "std";
+}
+
+--------------------------------------------------
+
+// Notes on structured concurrency.
+// https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/
+
+// TODO: maybe rename 'spawn ... in' to 'go ... in', sounds better?
+
+func do big calc concurrently in ($scope as any AsyncScope) {
+	for each n in 0..65535 {
+		// Do each calculation concurrently to speed things up.
+		// `spawn` spawns a new thread (perhaps an actor like in Erlang?).
+		spawn {
+			let slow_calc = n^n;
+			
+			// TODO: figure out how to synchronise printing
+			print "${n}^${n} = " + slow_calc + ", ";
+		} in scope;
+	}
+	
+	// Function exits here before calculations are finished.
+	// They keep running in the background.
+}
+
+// TODO: reconsider if async scope names really should be UpperCamelCase
+async scope Scope {
+	do big calc concurrently in Scope;
+	
+	print "\n\nACCEPTING CONNECTIONS.\n\n";
+	
+	while accepting_connections {
+		let incoming_connection = ...;
+		
+		spawn (handle connection incoming_connection) in Scope;
+	}
+	
+	print "\n\nNO LONGER ACCEPTING CONNECTIONS.\n\n";
+	
+	// Big calculations and connection handlers may still be running here.
+	// If so the program will wait until they are done before exiting this block.
+}
+
+print "\n\nALL ASYNC PROCESSES FINISHED!\n\n";
+
+--------------------------------------------------
+
+// Sometimes you have an exported function called by a framework,
+// and you want this function to spawn a thread that outlives the function.
+// This works fine if the framework passes an async scope to the function:
+func run within framework and scope ($scope as any AsyncScope) {
+	spawn f in scope;
+}
+
+// But what if it doesn't? What if the framework was not built with concurrency in mind?
+func run within framework {
+	// Well, in that case you can `spawn` inside of an `async escaping` block instead:
+	async escaping {
+		// This block does nothing but alert you that threads that aren't limited to
+		// any async scope/factory are spawned here. These threads simply "escape"
+		// and may not finish until the entire program exits, hence the name.
+		
+		spawn f;
+	}
+}
+
+// NOTE:
+// Of course, `async escaping` should be avoided whenever possible, just like `unsafe`.
+
+--------------------------------------------------
+
+// It is also possible to use just `spawn` without an `async escaping` block.
+// In that case it simply means the spawned threads must've finished upon function exit.
+func init {
+	...
+	
+	//> go do async stuff;
+	spawn do async stuff;
+	
+	...
+	
+	if return_early {
+		return; // will wait for spawned threads to finish
+	}
+	
+	...
+}
+// <=> (equivalent to)
+func init {
+	async scope FunctionScope {
+		...
+	
+		//> go do async stuff in FunctionScope;
+		spawn do async stuff in FunctionScope;
+		
+		if return_early {
+			return; // will wait for spawned threads to finish
+		}
+		
+		...
+	}
+}
+
+--------------------------------------------------
+
+// Concurrent map
+macro func each $item in ($arr as [_]) as $trans {
+	```
+	
+	let res: auto = [];
+	
+	// Here we use a thread pool / worker factory for concurrency.
+	// Upon entering the factory block, an optimal number of threads are created.
+	// They then sit idle until they are assigned work, and join after the block.
+	async factory Factory {
+		for each $$(item) in $$(arr) {
+			// Here we assign work to a worker. Unlike with 'spawn', no new thread
+			// is created here; instead an existing thread is assigned work.
+			assign {
+				exclusively { // lock, alt. you could do Erlang-style messaging
+					res += $$(trans);
+				}
+			} to worker in Factory;
+		}
+	}
+	
+	res
+	
+	```
+}
+
+let arr = each n in [1, 2, 3] as 2*n; //> [2, 4, 6]
+
+--------------------------------------------------
+
+// TODO: atomic transactions (see: transactional memory) (note: maybe starvation)?
+// - note: "server" only applies memory changes from one client at a time
+// - note: EVERY variable version is checked and updated (only 1 version per var, even if List?)
+// - note: read variables must not be from different versions
+// - note: automatically repeats whole atomic transaction block on fail
+// - note: printing/similar should only be done at commit time (no repeating!)
+// - note: fail if version wrong for variables read (not necessarily written back)
+// - note: to incr performance, allow user to allow some specific changes?
+// - note: see https://en.wikipedia.org/wiki/Software_transactional_memory
+// - note: see https://clojure.org/reference/refs
+
+--------------------------------------------------
+
+/// # The Silently Shifting Semicolon
+/// http://web.cs.ucla.edu/~todd/research/snapl15.pdf
+/// 
+/// Semicolons/Statements are supposed to indicate instructions running in order.
+/// However, performance tricks allow for instruction reordering.
+/// This is not noticable in sequential, non-parallel programs,
+/// but as soon as concurrency is introduced things start getting weird.
+/// 
+/// Take a look at the following code for an example:
+/// 
+/// > A: let p  = newPasta();  ||  C: if cooked then
+/// > B: cooked = True;        ||         p.drain();
+/// 
+/// Here the statements A & B run in parallel with C (as shown with `||`).
+/// You expect B to run first after A, and that `p` therefore must exist
+/// when `cooked` is `True`. Then you would expect that, whenever C runs,
+/// that if `cooked` is `True` and `p.drain()` runs, `p` will exist.
+/// 
+/// However, due to the aforementioned instruction reordering only being designed for
+/// sequential programming and not concurrency, B could run before A and cause `p` to
+/// not exist when `p.drain()` is running, therefore causing a runtime error.
+/// This is the *Silently Shifting Semicolon*, or more like *Silently Shifting Statement*.
+/// 
+/// ## The solution: safety by default
+/// "Now consider a simple Sequential Consistency (SC) compiler which follows a
+/// “volatile-by-default” approach. It must ensure SC semantics for all accesses, whether
+/// synchronization or data. However, if the compiler can statically prove some accesses
+/// to be Data Race Free (DRF), it is safe to aggressively optimize them. [...]
+/// 
+/// SC conservatively assumes that [data accesses that cannot be proved to be DRF] might
+/// not be DRF, obtaining safety at the expense of performance. This simple approach to
+/// ensuring SC semantics is, even today, much less expensive than is commonly thought."
+/// 
+/// It is better to ensure that the programmer can assume instructions won't be reordered.
+/// Sequential Consistency should be enforced by default, decreasing performance slightly
+/// but still allowing for optimisations where they can be proven to be safe. This way,
+/// the programmer can safely forget about instruction reordering and not need to worry.
+/// Programs will behave as expected.
+/// 
+/// ### 'guarded-by' annotations?
+/// "Further, an SC compiler can leverage [concurrency annotations] to soundly and
+/// modularly identify SC-preserving compiler optimizations. For instance, the
+/// 'guarded-by' annotation communicates a particular locking discipline, allowing an
+/// SC compiler to optimize accesses to the protected location for the entire duration
+/// that the guarding lock is held."
+
+--------------------------------------------------
+
+/// # Access to external things (i.e. files)
+/// `with $handler` is used to access external resources, such as files.
+/// 
+/// **Every `$handler` should handle necessary resource init & exit procedures,
+/// as well as by default ensure that the resource is mutually exclusively accessed.**
+/// 	- The latter is IMPORTANT to prevent TOCTOU issues!
+
+// Prints contents of file.
+// Python-style auto-closes file afterwards.
+with file f at "path/to/file.ext" open {
+	println(contents of f);
+}
+
+// Even just accessing file properties requires a `with` block,
+// which by default ensures mutually exclusive access to prevent TOCTOU issues.
+with file f at "path/to/file.ext" {
+	// [TOC] Security checks before using file
+	if !(f right type of file) return;
+	if !(f safe) return;
+	...
+	
+	// No other thread or process can mess with the file between TOC and TOU.
+	// This is ensured by the file access handler (`file $f at $path`),
+	// which will request the OS to block all modifications to file contents & metadata.
+
+	with file f open {
+		// [TOU] Do stuff with file open (OS grants for this specific thread)
+	}
+	
+	// Modification blocks are lifted first after exiting the `with` block.
+}
+
+// ALSO, bit related to this: see atomic transactions!
+
+--------------------------------------------------
+
+// Adding 'where given' before closure-inputs sometimes improves readability
+
+filter arr where given $item => item is even // read as-is but with '=>' unpronounced
+
+map arr where given $item => item * 2 // read as-is but with '=>' pronounced as "return"
+
+// Or maybe it's unnecessary? Most people would probably understand anyway
+// and figure out a fitting way to pronounce things.
+
+--------------------------------------------------
+
+// Memory problems:
+// - Deref pointers to dealloc memory
+//   - i.e. out of scope, arr resize, @nullptr
+// - Concurrency data races
+// - Memory leaks
+
+--------------------------------------------------
+
+// Extending macro functions
+// -------------------------
+
+// Original definition
+macro func if $cond then $tbody else $fbody {
+	code {
+		func if (True)  then $tbody else $fbody {tbody()}
+		func if (False) then $tbody else $fbody {fbody()}
+
+		if $$(cond) then
+			() => $$(tbody)
+		else
+			() => $$(fbody)
+	}
+}
+
+if True then println "yup" else "nope";
+// =>
+// yup
+
+// Extension:
+macro func if $cond then $tbody else $fbody {
+
+	func if (True)  then _ else _ { println "It's true!";  }
+	func if (False) then _ else _ { println "It's false!"; }
+
+	if (eval cond) then tbody else fbody;
+
+	// This last statement "switches" to the original definition of the function,
+	// thereby allowing for this function to serve as an extension of the original.
+	continue matching;
+}
+
+if True then println "yup" else println "nope";
+// =>
+// It's true!
+// yup
+
+--------------------------------------------------
+
+// Testing complex functions
+// -------------------------
+
+// Haskell
+f2p :: (a -> (b, c)) -> (a -> b, a -> c)
+f2p f = (fst . f, snd . f)
+
+// Triforce?
+func f2p ($f as $a => [#(#($b), #($c))]) --> [#(#($a => $b), #($a => $c))] {
+	[$a => f(a)[0], $a => f(a)[1]] // or maybe with function composition operator: [[0] ¤ f, [1] ¤ f]
+}
+
+// TODO
+// ----
+// Think more about this:
+// - Does this work out ok? Will $a, $b, $c be defined in return type?
+// - Should syntax be changed? Is it perhaps too verbose?
+//   - maybe syntax sugar or similar for list types?
+
+--------------------------------------------------
+
+// Sets are usually "automatically" unionised/flattened in Triforce:
+{{1, 2, 3}, {4, 5}} <=> (1|2|3)|(4|5) <=> 1|2|3|4|5
+
+// This is often beneficial, but could sometimes be problematic.
+// Perhaps allowing sets to be represented both as list and or-patterns,
+// and allowing easy conversion between the formats, could be of help?
+orify [[1, 2, 3], [4, 5]] <=> (1|2|3)|(4|5)  <=> 1|2|3|4|5
+orify [[1, 2, 3], [], []] <=> (1|2|3)|(|)|~_ <=> 1|2|3
+
+--------------------------------------------------
+
+// Allow moving out types into 'where' clauses?
+// Compare the below functions:
+
+func divide even ($a as int which mod 2 == 0) with ($b as int which != 0) --> int {
+	...
+}
+
+func divide even $a with $b --> int
+	where [
+		a: int which mod 2 == 0,
+		b: int which != 0
+	]
+{
+	...
+}
+
+// Also just to demonstrate how flexible the 'where' clause is:
+func divide ($a as even int) with $b --> int
+	where [
+		func even $x {x which mod 2 == 0}, // '=' within here defines rather than assigns
+
+		non_zero_int = int which != 0,
+
+		b: non_zero_int
+	]
+{
+	...
+}
+
+// Note to self: if you for some reason feel like the 'where' clause isn't flexible enough,
+// it's because that didn't work out well with reading things and made little sense.
+// It doesn't make sense to i.e. print something in a 'where [we]' clause because for that
+// you could just do this instead:
+{
+	println "hello";
+
+	func divide even $a with $b --> int {...}
+}
+// The reading also got weird because function declarations are read in a declarative sense,
+// while printing, etc. are read as imperative statements. It would become something like
+// "function divide even a with b returns int" and then suddenly changing to imperative
+// "where we let msg = ...; print msg;" and then back to declarative "has implementation"!
+//
+// Put it all together and you'll remember:
+// "function 'divide even a with b' returns int, where we let msg = ... and print msg, and the function has the implementation:"
+// Compare to the better:
+// "function 'divide even a with b' returns int, where a is an int which is even, and has the implementation:"
+
+--------------------------------------------------
+
+/// Code blocks in comments (available for ST3):
+/// 
+/// ```
+/// func divide even $a with $b --> int
+/// 	where [
+/// 		a: int which mod 2 == 0,
+/// 		b: int which != 0
+/// 	]
+/// {
+/// 	...
+/// }
+/// ```
+/// 
+/// More comment text here just to check that things work :)
+
+println "Some code in-between";
+
+/// If statements.
+/// 
+/// ```
+/// if True  then println "yup" else "nope"; // prints "yup"
+/// if False then println "yup" else "nope"; // prints "nope"
+/// ```
+macro func if $cond then $tbody else $fbody {
+	code {
+		func if (True)  then $tbody else $fbody {tbody()}
+		func if (False) then $tbody else $fbody {fbody()}
+
+		if $$(cond) then
+			() => $$(tbody)
+		else
+			() => $$(fbody)
+	}
+}
+
+--------------------------------------------------
+
+func f($inp as num|str) {
+	let a: auto = inp;
+
+	// 'inp' is not changed after being assigned to 'a'
+	// and 'a' is not changed either...
+
+	if inp is num {
+		// ... so inside here it knows 'inp' and 'a' must be numbers
+		let n = a + 123; // and so this is allowed
+
+		// but it still knows of the restriction
+		// so it does allow this:
+		a = "hello";
+		a = 456;
+		// but not this:
+		a = SomeObjectThatsNotANumberNorString;
+	}
+
+	// Also, function parameters should probably be immutable by default,
+	// similar to how it is with 'let' (this is the case in Rust).
+	// Then the below statement wouldn't be allowed by default:
+	inp = 789;
+
+	// To allow mutation, Rust uses something similar to 'mut $inp'.
+	// Nim simply forces you to do something like 'let inp: auto = inp'.
+	// Btw, supposedly this immutability also increases performance.
+}
+
+--------------------------------------------------
+
+/// # Basedlined strings
+/// 
+/// ## Similar concepts in other languages
+/// - *Java*       : [text blocks](https://openjdk.java.net/jeps/378)
+/// - *Scala*      : [multiline strings](https://docs.scala-lang.org/overviews/scala-book/two-notes-about-strings.html)
+/// - *Python*     : [multiline strings](https://docs.python.org/3/library/textwrap.html)
+/// - *Bash*       : [Heredocs](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html#tag_18_07_04)
+/// - *Ruby*       : [Heredocs](https://www.rubyguides.com/2018/11/ruby-heredoc/)
+/// - *Swift*      : [multiline string literals](https://docs.swift.org/swift-book/LanguageGuide/StringsAndCharacters.html#ID286)
+/// - *JavaScript* : [dedent proposal](https://github.com/tc39/proposal-string-dedent)
+/// 
+/// ## Algorithm
+/// The below function, which will be defined in the prelude, modifies strings as follows:
+/// 1. The first line is kept as-is, unless it is only whitespace; then it is removed.
+/// 2. On the lines below, all indentation before the least-indented characters is removed.
+/// 3. Additionally, the last line is removed if it is only whitespace.
+func baselined ($s as str) --> str {...}
+
+let unwanted_str = "This
+					string
+					spans
+					multiple
+					lines";
+
+let str1 = baselined "This
+					  string
+					  spans
+					  multiple
+					  lines";
+
+let str2 = baselined "
+					 macro func if $cond then $tbody else $fbody {
+						 code {
+							 func if (True)  then $tbody else $fbody {tbody()}
+							 func if (False) then $tbody else $fbody {fbody()}
+
+							 if $$(cond) then
+								 () => $$(tbody)
+							 else
+								 () => $$(fbody)
+						 }
+					 }
+					 ";
+
+let str3 = baselined "
+	func divide even $a with $b --> int
+		where [
+			a: int which mod 2 == 0,
+			b: int which != 0
+		]
+	{
+		...
+	}
+";
+
+// TODO: raw strings; no escaping required (incl. no escaping of "")
+
+println unwanted_str;
+// This
+//                     string
+//                     spans
+//                     multiple
+//                     lines
+
+println str1;
+// This
+// string
+// spans
+// multiple
+// lines
+
+println str2;
+// macro func if $cond then $tbody else $fbody {
+//     code {
+//         func if (True)  then $tbody else $fbody {tbody()}
+//         func if (False) then $tbody else $fbody {fbody()}
+// 
+//         if $$(cond) then
+//             () => $$(tbody)
+//         else
+//             () => $$(fbody)
+//     }
+// }
+
+println str3;
+// func divide even $a with $b --> int
+//     where [
+//         a: int which mod 2 == 0,
+//         b: int which != 0
+//     ]
+// {
+//     ...
+// }
+
+--------------------------------------------------
+
+// Below is just for testing comments; it's not actual documentation
+
+/// Converts the vector into `Box<[T]>`. This first paragraph is the summary. Everything
+/// else will be folded by default once editor support for this is available.
+/// 
+/// ***Note** that this **will** drop any excess capacity.*
+/// 
+/// "Roses are Red,
+/// Violets are Blue,
+/// 
+/// Unexpected '{'
+/// on line 32."
+/// 
+/// # Examples
+/// 
+/// ```
+/// let v     = vec![1, 2, 3];
+/// let slice = v.into_boxed_slice();
+/// ```
+/// 
+/// Any excess capacity is removed:
+/// 
+/// ```Triforce
+/// let vec: auto = Vec::with_capacity(10);
+/// vec.extend([1, 2, 3].iter().cloned());
+/// 
+/// assert_eq!(vec.capacity(), 10);
+/// let slice = vec.into_boxed_slice();
+/// assert_eq!(slice.into_vec().capacity(), 3);
+/// ```
+/// 
+/// > macro func if $cond then $tbody else $fbody {
+/// >     code {
+/// >         func if (True)  then $tbody else $fbody {tbody()}
+/// >         func if (False) then $tbody else $fbody {fbody()}
+/// >         
+/// >         if $$(cond) then
+/// >             () => $$(tbody)
+/// >         else
+/// >             () => $$(fbody)
+/// >     }
+/// > }
+func into_boxed_slice($self) --> Box<[T], A> {
+	unsafe {
+		self.shrink_to_fit();
+		let me  = ManuallyDrop::new(self);
+//>		let buf = ptr::read(&me.buf);
+//>		let len = me.len();
+		buf.into_box(len).assume_init()
+	}
+}
+
+--------------------------------------------------
+
+// Function bracket groups. `[group]?` = optional group.
+
+// Here, the first and second groups are optional.
+func [macro]? func $declaration [--> $ret_type]? \{$body} {
+	...
+}
+
+// Here, both groups are NOT optional. In fact, the grouping is unnecessary here
+// and might as well have been left out. For that reason, and to avoid confusion,
+// having unnecessary groups like this will give a compiler warning. The warning
+// will also come along with a suggestion to add '?' to the end.
+func [macro] func $declaration [--> $ret_type] \{$body} {
+	...
+}
+
+// Surrounding the entire function name in a group won't give a warning however,
+// since it has an use and can't really cause much confusion. It's equivalent
+// to surrounding with parentheses (except it also defines `[]#0`). This is also
+// recommended over using parentheses since it can't be confused with a parameter,
+// and really the brackets are the "parentheses of function names" you could say.
+func [macro func $declaration --> $ret_type {$body}] {
+	...
+}
+
+// Now, here comes a more advanced function with 2 nested groups.
+// The first group is required, while the second one is optional.
+
+//> macro func if $cond [then $tbody | {$tbody}] [else $fbody]? {
+macro func if $cond [then $tbody | {$tbody}] [else [$fbody | {$fbody}]]? {
+	// The function bracket groups can be accessed using the syntax `[]#n#m`.
+	// Attempting to index out of bounds gives an error (obviously).
+	// 
+	// Here, `[]#0 is "then ..."|"{...}"` and `[]#1 is ""|"else [...]"`.
+	// - an empty string means the group was not given when the function was called
+	// 
+	// Furthermore, if `[]#1 != ""` then `[]#1#0 is "..."|"{...}"`.
+	// - if `[]#1` wasn't given, `[]#1#0` gives an error
+	// - `[]#0#m` also gives an error since `[]#0` contains no groups
+	
+	// If else-body not provided, set it to `()`
+	let fbody = fbody unless []#1 == "" then ();
+//>	let fbody = fbody unless fbody is UNPROVIDED then ();
+	
+	code {
+		func if (True)  then $tbody else $fbody {tbody()}
+		func if (False) then $tbody else $fbody {fbody()}
+
+		if $$(eval cond) then
+			() => $$(eval tbody) // eval tbody == eval (code {xyz}) == xyz
+		else
+			() => $$(fbody)
+	}
+}
+
+// 6 ways to call the above function:
+// - if $cond then  $tbody
+// - if $cond then  $tbody  else  $fbody
+// - if $cond then  $tbody  else {$fbody}
+// - if $cond      {$tbody}
+// - if $cond      {$tbody} else  $fbody
+// - if $cond      {$tbody} else {$fbody}
+
+--------------------------------------------------
+
+/// Calculates the nth fibonacci number.
+/// Values above 50 are not accepted since they take forever to calculate.
+/// 
+/// # Examples
+/// > fib 1 == 1
+/// > fib 2 == 1
+/// > fib 3 == 2
+multi func fib ($n as 0..50) --> nat {
+//>	let i: auto = 0; // maybe not loop actually
+	
+	fib (0) ==> 0,
+	fib (1) ==> 1,
+	fib $n  ==> fib (n-1) + fib (n-2)
+}
+
+--------------------------------------------------
+
+// Macros, code and interpolation
+
+// > literally   ident   => (ident_285b52f49ac52637)
+// > literally ((ident)) => (ident_285b52f49ac52637)
+// 
+// > literally just   ident   => ident_285b52f49ac52637
+// > literally just ((ident)) => ident_285b52f49ac52637
+// 
+// > literally unmangled   expr   => (expr)
+// > literally unmangled ((expr)) => (expr)
+// 
+// `literally just` + `literally unmangled` = `literally as is`
+// 
+// > literally as is   expr   => expr
+// > literally as is ((expr)) => expr
+// 
+// Also, mangling is not done on identifiers inserted using `$$(...)`, so assuming:
+// > let x = literally as is ident;
+// Then:
+// > literally (println $$(x)) => (println (ident))
+
+let name = literally as is fib;
+let var  = literally as is n;
+
+// Without `as is`, `fib` would turn into something like `(fib_317d481089b8c8fe)`
+//> let name = literally fib;
+
+macro func up to ($n as literally as is fifty) {
+	let fifty = 50; 0..(eval n)
+}
+
+func ret $type {
+	literally as is (--> $$(type))
+}
+
+// `$$just(x)` is shorthand for `$$(literally just $$(x))`
+func $$just(name) ($($$just(var)) as up to fifty) $$just(ret nat) {
+	...
+}
+// is equivalent to:
+func fib ($(n) as 0..50) --> (nat) {
+	...
+}
+
+--------------------------------------------------
+
+if run (x is a|b|c|d|e|f) {
+	...
+}
+// is equivalent to:
+if run (x == a || x == b || x == c || x == d || x == e || x == f) {
+	...
+}
+
+// NOTE: The 'run' is required. It ensures that all of the checks are done during runtime.
+//		 Without it, the compiler will attempt to resolve some things during compilation,
+//		 which will get weird because `a`, `b`, `c`, etc. probably don't have 1 known
+//		 value until runtime.
+if x is a|b|c|d|e|f {
+	...
+}
+// here the compiler could for example see the above as this:
+if 123|456 is (123|456)|789|12|(345|678)|912|3 { // `a = 123|456`, `b = 789`, etc.
+	...
+}
+// <=>
+if 123|456 is 123|456|789|12|345|678|912|3 {
+	...
+}
+// <=>
+if True {
+	...
+}
+// which is not the expected result! What if `x = 123` at runtime? Then the result should
+// be `False`, but the compiler deduced at compile time that it must be `True`!
+
+// 'run' solves the problem since at runtime only intentional or-patterns can exist
+// and not ones created by the compiler. All values will be known at runtime.
+
+// ----------------
+
+// Perhaps it's better to rename `is` to `is [a|an]` to avoid confusion?
+let $x is [a|an] $t = $x matches $t; // TODO: let-bracket-group syntax highlighting!
+
+// And then define a new, different function `is` like this:
+func $x is $y {
+	run (x is a y)
+}
+
+// Then, it's clear: the below sounds weird, so don't use it:
+if x is an a|b|c|d|e|f {...}
+// Instead:
+if x is a|b|c|d|e|f {...}
+// And only use `is [a|an]` with types (then it sounds right!):
+if a is an int|str {...}
+
+--------------------------------------------------
+
+/// # This statement is not true.
+/// <=> [This statement is not true.] is not true.
+/// <=> [[This statement is not true.] is not true] is not true.
+/// <=> [[[[...] is not true.] is not true.] is not true] is not true.
+/// 
+/// => Infinitely recursive statement => truth is `N/A` ("Never Available")
+/// 
+/// **NOTE: Whenever "true" is written here, it means *strictly* true.**
+/// - Meaning "not true" could be strictly false but also half-true, somewhat false, etc.
+/// - In the case of there potentially not being any truth value, "not true" also
+///   includes non-boolean values or even `N/A` (the complete lack of a value).
+/// 
+/// ## Proof
+/// 1. Assume [has truth value] AND [true]     => not true => CONTRADICTION
+/// 2. Assume [has truth value] AND [not true] => true     => CONTRADICTION
+/// **3. Only option left is that there is no truth value.**
+/// 
+/// We can reason that, since the statement has no truth value, it cannot be said to be
+/// true. Then it is not true. That causes confusion since the statement says of itself
+/// that it is not true, and we just found that it is true that the statement is not true.
+/// Then it would seem as if the statement suddenly is true, creating a paradox.
+/// 
+/// But what we had found was that "The statement is not true" was true, not that
+/// "This statement is not true" is true. This is an important distinction since we
+/// know the latter statement has no truth value, due to its potential truth value solely
+/// depending on itself through infinite recursion which will never resolve. So while we
+/// can truthfully say "The statement is not true" referring to the statement outside
+/// of itself, we cannot say that "This statement is not true" is true still.
+/// 
+/// ## The law of the excluded middle still holds (sort of)
+/// It is a fundamental part of logic that either a thing is 100% something, or it is not.
+/// But you need to remember that when you say a statement is not true, you're not
+/// necessarily saying it's (partially) false. You're actually saying that the statement
+/// does not have a truth value that is true, which still leaves the possibility of the
+/// statement simply not having a truth value at all.
+/// 
+/// ## Fuzzy Logic
+/// If the recursion were to stop at a random point, it would be 50/50 for
+/// the statement to be true or not true. Then one could in a Fuzzy Logic sense
+/// say that the statement is half-true (`fin_statement = 1 - fin_statement = 0.5`).
+/// 
+/// In the case of "This statement is true", the truth of it would still be `N/A`,
+/// but it would propagate in such a way that even if the recursion were to stop at
+/// a random point there would be no way to tell the probability of truth or not truth.
+/// Fuzzy Logic simply gives `fin_statement = fin_statement` which just says that the
+/// truth value will be whatever it is chosen to be at the deepest recursion level.
+
+// "This statement is not true."
+let statement  = ($this_statement => this_statement(this_statement) != True);
+// "This statement is true."
+let statement2 = ($this_statement => this_statement(this_statement));
+
+// TODO: FIX BELOW ISSUES NOTED IN COMMENTS:
+
+//> P = $thisP => thisP(thisP) is not true
+//> 
+//> P(P) is not true // must not evaluate P(P) to get an answer
+
+// 1 smaller infinity => not the same statement
+// We say P never returns, never evaluate P(P) when reasoning
+
+// "This statement never returns" / "This function never returns"
+
+let the_answer  = statement(statement);
+let the_answer2 = statement2(statement2);
+
+the_answer is ~N/A: False; // the_answer is N/A (proved during compilation)
+
+// The below will never print anything, as the truth value will never become available
+println "Truth of \"This statement is not true.\": ${the_answer}";
+// Neither will this print anything (even if the_answer had completed)
+println "Truth of \"This statement is true.\": ${the_answer2}";
+
+--------------------------------------------------
+
+// Recursive variables can for example be used to build lists:
+let n: int = 0;
+let rec arr = [n++] + arr if n < 100 else []; // arr = [0, 1, ..., 99]
+
+// The `let rec` definition macro expands into this:
+let arr = {
+	// Defines a recursive auto-executing function (note: total by default)
+	func arr {
+		[n++] + arr if n < 100 else []
+	}
+	
+	// Executes the function and returns the result, which is assigned to the variable
+	arr
+};
+
+// More useful are recursive functions...
+let rec fib $n = $n => if n < 2 then n else fib (n-1) + fib (n-2);
+
+// ... which are more commonly written like this:
+func fib $n {
+	n if n < 2 else fib (n-1) + fib (n-2)
+}
+
+// Note that functions are total by default (opt out by using `partial func`).
+// This means that they must have a defined output for every possible input.
+// As a consequence, they cannot infinitely recurse, since infinite recursion
+// never returns any output (meaning the output is `N/A`).
+func forever() {
+	forever() // nope!
+}
+
+// Additionally, recursive variables cannot make use of infinite recursion at all.
+let rec x = 1 + x; // nope!
+// The reason behind this is that infinitely recursively defined variables are pointless.
+// The program would just get stuck at the variable definition forever.
+// When infinite recursion is wanted, use a partial function instead.
+
+--------------------------------------------------
+
+// Know the difference!
+
+{
+	// Defines an *immutable* variable and checks that it is an `int`
+	let var = 123: int;
+//>	let var = "hello world": int; // ERROR!
+
+//>	var = 456; // ERROR!
+
+	// Defines a *mutable* variable that must always stay an `int`
+	let var: int = 123;
+
+	var = 456;
+//>	var = "not an int"; // ERROR!
+}
+
+--------------------------------------------------
+
+// Units of measure - sketch based on F#
+// https://docs.microsoft.com/en-us/archive/blogs/andrewkennedy/units-of-measure-in-f-part-one-introducing-units
+
+// Unit decls & defs could be just like `let` except would define the units only within
+// a special unit namespace making them only usable within `<...>`.
+unit kg;
+unit m;
+unit s;
+
+// New units can be created through multiplication and division of existing units.
+
+unit N = kg*m/s^2; // or maybe `s**2` if `^` used for something else
+
+let g = 9.81 <m/s^2>;
+
+let andrew_office_height = 3.5 <m>;
+
+let impact_speed = sqrt (2 * g * andrew_office_height): frac <m/s>;
+
+// Adding or subtracting things with different units causes a unit mismatch.
+// Here, we attempt to add `2*g: frac <m/s^2>` and `andrew_office_height: frac <m>`:
+let impact_speed = sqrt (2 * g + andrew_office_height); // ERROR: unit mismatch
+
+// Defining a different, non-unit `m` here. It's in a separate namespace => no conflict.
+let m = 65 <kg>;
+let F = m*g;
+
+F: frac <kg*m/s^2>;
+F: frac <N>;
+
+println F; // "637.65 N" maybe, or maybe without the unit afterwards?
+
+// This is a very incomplete sketch btw. Will need to think it through a lot more.
+
+--------------------------------------------------
+
+// Concurrency locks/mutexes & semaphores (= more generalised "availability locks")
+
+exclusively  {...} ??? // or maybe just excl {...}? although keyword taken
+synchronized {...} ??? // Java-style
+
+when available {...} ??? // For semaphores. Needs better syntax...
+
+// Or maybe objects should just get locked & unlocked automatically instead?
+// Still though sometimes manual locking & unlocking will be necessary.
+
+--------------------------------------------------
+
+// Something like `@Override` in Java to prevent mistakenly defining new functions
+// when you actually meant to override an already existing function?
+
+// i.e. say we have a multiplication function:
+func (a as num)*(b as num) {...}
+
+// and we want to change its implementation; override it:
+func (a as int)*(b as int) {...}
+// but we accidentally type `int` instead of `num` and end up defining a new function*!
+
+// With `##[Override]` (maybe different syntax though), this would error:
+##[Override]
+func (a as int)*(b as int) {...} // ERROR! Should be `num` not `int`!
+
+// This way we won't unknowingly end up defining a new function when we meant to override!
+
+// *Technically, you may say we're still overriding part of the implementation; the one
+// for integers. But we're not fully overriding.
+
+--------------------------------------------------
+
+// OBJECTS
+// -------
+
+// Objects are values in the form of uncallable functions.
+macro func [object $obj;] {
+	`func [$$(obj)] (~_) {}`
+}
+
+// They are created like this:
+object True;
+object False;
+
+// They may also have properties.
+macro func object $obj has ($properties as [_]) {
+	// -- Construct code for object definition --
+	
+	let code_str: auto = `func $$raw(obj)`;
+	
+	properties = eval properties;
+	
+	for each prop in properties {
+		code_str += ` $$(prop)`;
+		
+		// Strip properties of `as ...`, so only `$prop` is left.
+		// Needed for next section.
+		prop = codified (listified `$$(prop)`)[1];
+	}
+	
+	code_str += ` (~_) {}`;
+	
+	// -- Construct code for object property access functions --
+	
+	for each prop in properties {
+		code_str += `macro func ($$raw(obj)`;
+		
+		for each prop in properties {
+			code_str += ` #$$(prop)`;
+		}
+		
+		code_str += `).(\`$$(prop[1..])\`) {\`\$\$$$(prop[1..])\`}`;
+	}
+	
+	code_str
+}
+
+func $obj with ($props as any FieldList) { // TODO: define `FieldList`
+	let obj_with_props: auto = obj;
+	
+	for each _ in props {
+		for each prop in props {
+			if prop name == current_prop_name??? { // TODO: define `current_prop_name`
+				obj_with_props = obj_with_props (prop value);
+			}
+		}
+	}
+	
+	obj_with_props
+}
+
+macro func $obj.$field {
+	// TODO ...
+	
+	listified `$$(eval obj)`
+}
+
+// Here is an example object with properties:
+object Cat has [
+	$name as str,
+	$age  as int
+]
+
+// Which macro expands into this:
+func Cat ($name as str) ($age as int) (~_) {}
+
+macro func (Cat #$name #$age).(`name`) {`$$(name)`}
+macro func (Cat #$name #$age).(`age`)  {`$$(age)`}
+
+// And can then be used to create objects like this:
+let cat = Cat "Whiskers" 7;
+// OR
+let cat = Cat with [age = 7, name = "Whiskers"]; // order doesn't matter here
+// OR
+let cat: auto  = Cat;
+cat.name = "Whiskers";
+cat.age  = 7;
+
+// It's also possible to have unnamed properties:
+object Dog has [str, str]
+
+// And objects with special syntax:
+object (num)%;
+
+let fifty_fifty = 50%;
+
+// You can match objects like this:
+func ($x as num) * (#($y)%) {
+    x * y / 100
+}
+
+func greet senior (Cat with [name = #$name, age = 10..]) {
+	println "Hello Sr. " + name;
+}
+
+greet senior cat; // ERROR: age too low
+
+greet senior (Cat "Ziggy" 11); // Hello Sr. Ziggy
+
+--------------------------------------------------
+
+// `[_] == any List`
+func ($list as [_])[last] {
+	list[list length - 1]
+}
+
+// Better (?) syntax for the "fold"/"reduce" function:
+func [$init_val]? $op (#$arr[0]) $op ... $op (#$arr[last]);
+// Or perhaps a more general version:
+func [$init_val]? $op (#$arr[#$a]) $op ... $op (#$arr[#$b]);
+
+// `$init_val` is optional, but required if you want to support empty lists
+
+// Used like this:
+func sum $arr {
+	0 + arr[0] + ... + arr[last] // 0 if list empty
+}
+
+func mul $arr {
+	arr[0] * ... * arr[last] // error if list empty
+}
+
+// Note that "fold" is still not such a bad name though if you understand it.
+// It's named as such because you "fold" a larger data structure (i.e. a list)
+// repetitively until it becomes one small thing (i.e. a sum). Also, you can't just
+// always fold left because it's efficient, since some operations require right folding.
+
+--------------------------------------------------
+
+// Code string syntax highlighting testing & comparison
+
+return ```
+	let mut not_first_arg = False;
+	for each section in function.structure {
+		when section is {
+			FunctionSection.Arg (ref to #name) (ref to #type) ==> {
+				if not_first_arg {
+					output += ",";
+				}
+				
+				output += name;
+				output += "_$$(ext)";
+				output += \`:\`;
+				output += ->(compile type);
+				
+				not_first_arg = true;
+			},
+			
+			_ ==> ()
+		}
+	}
+```;
+
+let str = 'let n: int = 123'; // not valid syntax; just for comparison
+let str = `let n: int = 123`;
+let str = "let n: int = 123";
+
+let n = 123: int;
+
+func if (True)  then $tbody else $fbody {tbody()}
+func if (False) then $tbody else $fbody {fbody()}
+
+if $$(eval cond) then
+	() => $$(eval tbody) // eval tbody == eval (code {xyz}) == xyz
+else
+	() => $$(fbody)
+
+```
+let n = 123: int;
+
+func if (True)  then $tbody else $fbody {tbody()}
+func if (False) then $tbody else $fbody {fbody()}
+
+if $$(eval cond) then
+	() => $$(eval tbody) // eval tbody == eval (code {xyz}) == xyz
+else
+	() => $$(fbody)
+```
+
+"""
+let n = 123: int;
+
+func if (True)  then $tbody else $fbody {tbody()}
+func if (False) then $tbody else $fbody {fbody()}
+
+if $$(eval cond) then
+	() => $$(eval tbody) // eval tbody == eval (code {xyz}) == xyz
+else
+	() => $$(fbody)
+"""
+
+macro func let \[$a, $b, $c] = \[$x, $y, $z] {
+	```
+	
+	let $$(a) = $$(x);
+	let $$(b) = $$(y);
+	let $$(c) = $$(z);
+	
+	```
+}
+
+--------------------------------------------------
+
+func newline count in ($s as str) --> int {
+	count of (all which == '\n' in s)
+}
+
+func ($s as str) without first char --> str {
+	s[1..]
+}
+
+func greet senior (Cat with [name = #($name), age = 10..]) {
+	println "Hello Sr. " + name;
+}
+
+let string = "hello\nworld";
+
+println (newline count in string); // 1
+
+println (string without first char); // ello\nworld
+
+greet senior cat;
+
+for each m in (matchs excl each m where m[0] != i) {
+	...
+}
+
+--------------------------------------------------
+
+// Auto-executing function:
+func just do it {
+	println "just did it";
+}
+
+just do it; // prints "just did it"
+
+let f = () => just do it; // turn back into normal function
+
+f;   // does nothing
+f(); // prints "just did it"
+
+--------------------------------------------------
+
+// If you want to, you can define functions a bit more classical style like this:
+func f([#par1, #par2, #par3]) {
+	...
+}
+
+// And then you call like this:
+f[x, y, z]
+
+// You can also have named arguments:
+func f([arg1 = #par1, arg2 = #par2, arg3 = #par3]) {
+	...
+}
+
+f[x, arg3 = z, arg2 = y] // out of order args allowed this way
+
+--------------------------------------------------
+
+// `defer` can be used to delay things to execute first after* a function returns.
+// Useful for when you want something to run at the end regardless of what happens.
+// Early returns (potentially caused by errors) do not stop deferred expressions
+// from running afterwards. Similar to how `finally {...}` works in Java.
+// 
+// *Actually executes right before returning, but it behaves as if it was after:
+// > let x: int = 0;
+// > defer (x += 1);
+// > return x; // returns 0, not 1
+
+// Example (translated from Go and modified):
+func f() {
+	println "counting";
+	
+	// Lock and unlock upon exit (unnecessary, but just an example).
+	mutex.lock();
+	defer mutex.unlock();
+	
+	for each i in 0..9 {
+		defer (println i);
+	}
+	
+	if return_early {
+		return; // returns early, and then runs all deferred expressions
+	}
+	
+	println "done";
+	
+	// Here the function returns and then runs all deferred expressions.
+}
+
+f();
+// counting
+// done
+// 9
+// 8
+// 7
+// 6
+// 5
+// 4
+// 3
+// 2
+// 1
+// 0
+
+// Note how the most recently deferred expression gets evaluated first.
+// The deferred expressions get pushed onto a stack and then run last-in-first-out.
+
+--------------------------------------------------
+
+let arr: [#a, #b] = [3, 4]; // => `arr = [3, 4]`, `a = 3`, `b = 4`
+// Alt. if you only want to destruct:
+let :[#a, #b] = [3, 4];
+
+// Similar to Kotlin's `when x` and Rust's `match x` (exhaustive)
+when x is {
+	1     ==> println "x is 1",
+	2     ==> println "x is 2",
+	a|b   ==> println "x is 3 or 4",
+	5..10 ==> println "x is 5, 6, 7, 8, 9, or 10",
+	_     ==> println "x is out of range"
+}
+
+when arr is {
+	[#a as int, #b as int] ==> println "two integers ${a} and ${b}",
+	[#a as str, #b as str] ==> println "two strings '${a}' and '${b}'",
+	
+	[#a, #b] ==> println "two things ${a} and ${b}"
+}
+
+// For types maybe? (hopefully this extra syntax won't be needed)
+when x is a {
+	str ==> println "x is a string",
+	int ==> println "x is an integer",
+	[_] ==> println "x is a list",
+	
+	_ ==> println "x is something else"
+}
+
+let otherwise = True;
+
+// Similar to Kotlin's `when`
+let res = when {
+	obj == ()  ==> False,
+	obj is str ==> True,
+	
+	otherwise ==> printerr "illegal state"
+};
+// Equivalent to this:
+let res = when _ is {
+	_ and obj == ()  ==> False,
+	_ and obj is str ==> True,
+	
+	_ ==> printerr "illegal state"
+};
+
+// Shorthand one-case (non-exhaustive) `when` (like Rust's `if let`):
+when arr is [#x, #y] ==> {
+	// This block, where x & y are defined, only runs if pattern match succeeds.
+}
+// Can also be a one-liner:
+when arr is [#x, #y] ==> do something with x and y;
+
+--------------------------------------------------
+
+// Mutability
+
+// Variables are immutable by default:
+let x = 123;
+x = 456; // ERROR!
+
+// Add `mut` to make them mutable:
+let mut x = 123;
+x = 456; // ok
+
+func f ($par1) ($par2 as ->...) ($par3) {
+	// Function parameters are always immutable:
+	par1 = 789; // ERROR!
+	
+	// But you can still make mutable copies of them:
+	let mut par1 = par1;
+	par1 = 789; // ok, only local
+	
+	// Or, take in a pointer instead and modify what it points to:
+	@par2 = 456; // ok, affects outside
+}
+
+// TODO:
+// - Make extraction variables (x, y, z) used like this immutable by default?
+// - If so, decide on what syntax to use to make them mutable.
+let :[#x, #y, #z] = [1, 2, 3];
+
+f x ->y z;
+
+println x; // still 1
+println y; // now 456
+println z; // still 3
+
+--------------------------------------------------
+
+object Boxed (~Unboxing);
+
+func __catch__ (Boxed (Unboxing #thing)) {thing}
+
+func optionally $type {
+	()|(Boxed type)
+}
+
+// Auto-boxing function (similar to Ok-wrapping in Rust)
+boxing func f() --> optionally int {
+	if rand() {
+		123 //> Boxed 123
+	} else {
+		Unboxing () //> Boxed (Unboxing ()) == ()
+	}
+}
+
+// TODO: custom Box names (i.e. `Ok = Boxed`, `Err = Unboxing`)
+
+--------------------------------------------------
+
+// Linear types explained well & how to use them for memory handling:
+// https://github.com/austral/specification/blob/master/src/rationale/3.resource-types.md
+
+// Also, some interesting notes on error handling & destructors:
+// https://github.com/austral/specification/blob/master/src/rationale/2.error-handling.md
+
+// (From a programming language starred by Graydon)
+
+--------------------------------------------------
+
+// Types are just subtypes of the universal type.
+// A (sub)type is just an or-pattern which doesn't collapse into anything at runtime.
+// I.e. `123|456 is subtype of int`, but `rand of [123, 456] is ~type`.
+let macro type = `subtype of _`;
+
+// Get `a` and `b` from user input
+let a: 1|2|3 = input() mod 3 + 1;
+let b: 4|5|6 = input() mod 3 + 4;
+
+// Create 2 new `x` and `y` types
+let x = 1|2|3;
+let y = 4|5|6;
+
+let ab_type = a|b; // i.e.   `3|5` if a=3, b=5
+let xy_type = x|y; // always `(1|2|3)|(4|5|6) :== 1|2|3|4|5|6`
+
+// Both types are subtypes of `1|2|3|4|5|6`...
+ab_type: subtype of 1|2|3|4|5|6; // i.e.   `3|5         : subtype of 1|2|3|4|5|6`
+xy_type: subtype of 1|2|3|4|5|6; // always `1|2|3|4|5|6 : subtype of 1|2|3|4|5|6`
+
+// ... but `ab_type` is not `1|2|3|4|5|6`, while `xy_type` is!
+ab_type :!= 1|2|3|4|5|6;
+xy_type :== 1|2|3|4|5|6;
+
+// Also, note that a type...
+let typ: type = 7|8|9;
+
+// is a subtype of itself...
+typ: subtype of 7|8|9;
+// ... and equal to itself...
+typ :== 7|8|9;
+// ... but does not match itself, since it isn't i.e. 7 or 8 or 9 but a type!
+typ: ~(7|8|9);
+
+let n: 12|34            = rand of [12, 34]; // the value `12` or `34`
+let t: subtype of 12|34 = any  of [12, 34]; // the type `12|34`
+
+n:  int; // `n` is a random integer
+t: ~int; // `t` is not an integer!
+t: type; // `t` is a type (with integer members => `subtype of int`)
+
+// -------------------------
+
+macro func ($typ as type).$member {
+	```
+	
+	let mem = for each mem in listified $$(typ) {
+		if mem == $$(member) {
+			break mem;
+		}
+	}
+	
+	when mem is {
+		Wrapped #val ==> val,
+		
+		// Names of functions that never return should end with '!'.
+		// This function never returns since it exits with an error instead.
+		() ==> panic! "$$(member) not in $$(typ)"
+	}
+	
+	```
+}
+
+// Defines a type `nat` and creates two objects as members of the type.
+let rec nat = object Zero
+            | object OneMoreThan (nat);
+// This is really just recursively defining a variable, and macro expands to this:
+let nat = {
+	// Defines a recursive auto-executing function (note: total by default)
+	func nat {
+		  object Zero
+		| object OneMoreThan (nat) // note: no infinite loop since or-patterns are lazy
+	}
+	
+	// Executes the function and returns the result, which is assigned to the variable
+	nat
+};
+
+let zero = nat.Zero;
+let one  = nat.OneMoreThan zero;
+let two  = nat.OneMoreThan one;
+
+expose nat; // after this we don't need to do `nat.` anymore
+
+let zero = Zero;
+let one  = OneMoreThan zero;
+let two  = OneMoreThan one;
+
+// Defines a type `int` as an extension of `nat`.
+let rec int = nat
+            | object OneLessThan (Zero|(OneLessThan _));
+
+expose int;
+
+let plus1, minus1: int, int = OneMoreThan Zero, OneLessThan Zero;
+
+nat: subtype of int|str;
+
+// If you want to check if a type is one of multiple types, remember that:
+nat: ~(nat|str|bool);
+// Meaning `nat: nat|str|bool` won't work! Instead you can do this:
+`nat`: `nat`|`str`|`bool`;
+
+// In general, `code strings` can be used to have sets within sets:
+let set: subtype of `nat`|`str`|`bool` = `nat`|`bool`; // {{0, 1, ...}, {True, False}}
+// Without code strings, or-patterns in Triforce "auto-unionise":
+let flat_set = nat|bool; // {0, 1, ..., True, False}
+
+// -------------------------
+
+// Another cool thing with types is that you can use them to shorten things:
+if x is a|b|c {
+	...
+}
+// is equivalent to the below (assuming x, a, b, c aren't types!):
+if x == a || x == b || x == c {
+	...
+}
+// If they are types, you can write it shorter still by doing this instead:
+if 'x is 'a|'b|'c {
+	...
+}
+// Assuming the below macro function is defined:
+macro func '$x {
+	`\`\$\$$$(x)\`` // i.e. 'a => `$$(a)`; if a=nat then 'a => `nat`
+}
+
+--------------------------------------------------
+
+category ExampleCategory {
+	object Object;
+	
+	func fib $n --> nat {
+		...
+	}
+	
+	func f $x {
+		...
+	}
+	
+	export [Object, fib]
+}
+
+let ex_cat_type = any in ExampleCategory; //> Object|fib
+
+ExampleCategory.fib    : ex_cat_type;
+ExampleCategory.Object : ex_cat_type;
+
+--------------------------------------------------
+
+object Proof;
+object QED;
+
+func _ *** (QED) {Proof}
+
+let proof of = Proof where;
+let trivial  = ();
+
+// `$a = $b` <=> `($a as ...) = ($b as ...)`
+// => types of a & b are deduced to be whatever makes the function compile
+// => `($a as _ where a == b) = $(b as _ where a == b)`
+// => no proof unless passed arguments are equal
+func proof that $a = $b --> proof of a == b {
+	trivial *** QED
+}
+
+let one_equals_zero = proof that 1 = 0; // ERROR
+let one_equals_one  = proof that 1 = 1; // ok
+
+let proof_that_fib3_is_2: proof of fib 3 == 2
+	  = fib 3
+	:== fib 2 + fib 1
+	:== (fib 1 + fib 0) + fib 1 // TODO: add LiquidHaskell-style "because" operator?
+	:== 1 + 0 + 1
+	:== 2
+	*** QED;
+
+--------------------------------------------------
+
+data LTE  : (n, m : Nat) -> Type where
+  // Zero is the smallest Nat
+  LTEZero : LTE Z    right
+  // If n <= m, then n + 1 <= m + 1
+  LTESucc : LTE left right -> LTE (S left) (S right)
+
+object LTE (Zero) ($m as nat);
+
+func LTESucc (LTE (#n as nat) (#m as nat)) {
+	object LTE (OneMoreThan n) (OneMoreThan m) // TODO: fix not same LTE object (tip: will be same if placed in same scope)
+}
+
+multi func ($n as nat) <= ($m as nat) --> bool {
+	(Zero)           <= _                ==> True,
+	(OneMoreThan #n) <= (OneMoreThan #m) ==> n <= m
+}
+
+object ($n as _ where n <= m) <= $m;
+
+--------------------------------------------------
+
+object $x = $x;
+
+func cong $f (#x = #x) {
+	f x = f x
+}
+
+let rec nat = object Zero
+            | object OneMoreThan (nat);
+
+multi func ($n as nat) + ($m as nat) --> nat {
+	(Zero)           + $m ==> m,
+	(OneMoreThan #n) + $m ==> OneMoreThan (n + m)
+}
+
+multi func zero_right_id ($n as nat) --> n + Zero = n {
+	zero_right_id (Zero)           ==> Zero = Zero,
+	zero_right_id (OneMoreThan #n) ==> cong OneMoreThan (zero_right_id n)
+}
+
+--------------------------------------------------
+
+data (=) : a -> b -> Type where
+	Refl : x = x
+
+zeroRightId : (n : Nat) -> n + 0 = n
+zeroRightId Z     = Refl
+zeroRightId (S n) = cong (zeroRightId n)
+
+cong : a = b -> f a = f b
+
+cong (zeroRightId n) : S (n + 0) = S n
+
+--------------------------------------------------
+
+//> with bounds off {}
+//> with limits off {}
+//> with safety off {}
+//> with protect off {}
+//> with safeguards off {}
+//> with restraints off {}
+//> with safety limits off {}
+
+// Functions using `unsafe area` must either be marked as `unsafe`...
+unsafe func do something risky with $x {
+	do some safe stuff;
+	
+	unsafe area {
+		do the risky things;
+	}
+	
+	do more safe stuff;
+}
+
+// ... or with `ensures safety` if they are safe to call for all inputs:
+func safe to call --> int ensures safety {
+	let raw_ptr = safe_addr_to_int();
+	
+	unsafe area {
+		// `unsafe` functions can only be called within `unsafe area`.
+		// The caller is supposed to ensure it gives safe inputs.
+		do something risky with safe_input;
+		
+		@raw_ptr
+	}
+}
+
+func main {
+	safe to call;
+}
+
+--------------------------------------------------
+
+// NOTE: should consider if `($p as any Person)` can be shortened to `($p: person)`
+
+/// # Named return values, inspired by Go.
+/// Names serve as variable declarations and can be used to explain what is returned.
+func names of ($p as any Person) --> [$first: str, $last: str] {
+	[first, last] = p.name split by " ";
+
+	// [first, last] returned automatically, but can optionally be returned explicitly
+}
+
+let p = Person with [name = "John Doe", age = 42];
+
+println "${names of p}"; // ["John", "Doe"]
+
+--------------------------------------------------
+
+// Inclusive Range [a, b]
+func $a..$b;
+// Inclusive-Exclusive Range [a, b)
+func $a..<$b;
+// Exclusive-Inclusive Range (a, b]
+func $a<..$b;
+// Exclusive Range (a, b)
+func $a<..<$b;
+
+let n: num = ...;
+when n is {
+	5..10   ==> println "5 <= n <= 10",
+	5..<10  ==> println "5 <= n <  10",
+	5<..10  ==> println "5 <  n <= 10",
+	5<..<10 ==> println "5 <  n <  10"
+}
+
+if n in 123<..<456 {...}
+// is equivalent to:
+if 123 < n < 456 {...}
+
+--------------------------------------------------
+
+/// # Information Flow Security
+/// Type system should prevent secret information from flowing to public variables.
+/// 
+/// See i.e. https://www.jsflow.net/jsflow-console.html
+
+// Some mockup syntax just to demonstrate the concept:
+
+let mut top_secret: secret bool = True;
+let mut not_secret: public num  = 123;
+
+// Below should not be allowed, because is leaking information.
+// Secret could be figured out based on the value of `not_secret`.
+if top_secret {
+	not_secret = 456
+} else {
+	not_secret = 789
+}
+
+// And this should definitely not be allowed!
+not_secret = numberify top_secret;
+
+--------------------------------------------------
+
+/// # Worth taking inspiration from Zig
+/// ## Like Zig's memory management
+/// "The zig standard library provides a standard interface for allocators.
+/// Everything in the stdlib that allocates memory takes an allocator as
+/// an argument. This makes it easy to use custom allocators without
+/// having to write your own basic data-structures."
+/// - jamie@scattered-thoughts.net
+/// 
+/// https://www.scattered-thoughts.net/writing/assorted-thoughts-on-zig-and-rust/
+/// 
+/// ## And Zig's interesting build.zig system
+/// https://ziglang.org/learn/overview/#zig-build-system
+/// 
+/// ## As well as Zig's comptime
+/// "
+/// - Call any function at compile-time.
+/// - Manipulate types as values without runtime overhead.
+/// - Comptime emulates the target architecture.
+/// "
+/// 
+/// ## Really just Zig in general actually
+/// https://ziglang.org/
+
+--------------------------------------------------
+
+/// # Important Comments?
+/// I remember reading a blog post long ago arguing that comments should stand out more than code.
+/// It was NOT this one, but it makes the same point and I can't find the other post:
+/// https://www.benkuhn.net/syntax/
+/// 
+/// I disagree with that *all* comments should stand out.
+/// Especially doc comments should instead be less visible and even collapsible.
+/// But maybe *some* comments could be made to stand out?
+
+//! Introducing Important Comments
+/// Important Comments could use the syntax `//!` and have special syntax highlighting
+/// with background colour and/or bold font.
+
+func dangerous() {
+	... //! IMPORTANT: don't mess with this!
+}
+
+--------------------------------------------------
+
+/// # "Graphene" syntax
+/// - Go is light but fragile
+/// - Rust is heavy but robust
+/// 
+/// The ideal would be something light as Go but robust as Rust.
+/// Below I will experiment with a potential such syntax - codenamed Graphene.
+/// - Note that it may be inconsistent / not work
+
+/// func f [#x int, #y num, #z str] --> any {
+/// 	let y int = y
+/// 
+/// 	...
+/// }
+
+func StartProcess(name string, argv []string, attr *ProcAttr) (*Process, error) {
+	...
+}
+
+StartProcess("ping", ["ping", "-c 3", "google.com"], "google.com")
+
+func start proc (name str) with ([argv []str, attr ->proc_attr]) --> ->proc|err {
+	...
+}
+
+start proc "ping" with args ["-c 3", "google.com"]
+
+--------------------------------------------------
+
+/// # https://www.hylo-lang.org/
+/// Language with an interesting potentially simpler memory/ownership model.
+/// Worth taking a deeper look at.

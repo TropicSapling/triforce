@@ -1,151 +1,223 @@
-// --------------------------------------------------
-// |                  THE PRELUDE                   |
-// --------------------------------------------------
+decl symblock sb_comment enclosed by // \n; // regex is used to match
 
-// TODO: Put the basic things that are needed for the prelude but shouldn't be visible from the
-//       outside inside a category 'Foundation'. This can be done by writing the category stuff
-//       by hand using anonymous functions, or by generating these anonymous functions.
+// Regex is used to match here too, so we need to do '\\' instead of '\'
+decl symblock __sb_default_str__ enclosed by " " with escaper \\;
+
+decl symindies { } [ ] , . :;
+decl symindies + - * /;
+decl symindies @ % ? !;
+
+// Built-in symindies: ( ) ; $ # < = > ~ & |
+// Built-in symgroups:
+// - default
+// - whitespace
+
+// ================================================================================
+// 
+//                          ########  THE PRELUDE  ########
+// 
+// ================================================================================
+
+// TODO: Put the basic things that are needed for the prelude but shouldn't be visible
+//       from the outside inside a category 'Foundation'. This can be done by writing the
+//       category stuff by hand using anonymous functions, or by generating these
+//       anonymous functions.
+// 
 // OR:   Alternatively, put everything inside 'Prelude' category and then expose Prelude.
 
-// -------------------------
-// |   CATEGORY: Basics    |
-// -------------------------
+// ========================================
+//        #### The Fundamentals ####
+// ========================================
 
-decl symblock sb_line_comment  enclosed by // \n;
-decl symblock sb_multi_comment enclosed by /* */;
+// Definition of a basic form of 'let'.
+// TODO: 'unpredictable'?
+##(precedence below _)
+(macro $glob_scope => code (
+	// Preceding and trailing pattern can be omitted when matching.
+	// Here we omit the pattern def for the variable scope.
+	// We write 'let $pat = $val;' rather than 'let $pat = $val; $scope'.
+	($(let $pat = $val;) => (
+		$$(glob_scope)
+	)) (
+		##(precedence below _)
+		macro $pat $val $scope => code (
+			($($$(pat)) =>
+				$$(scope)
+			) $$(val)
+		)
+	)
+))
 
-decl symblock __sb_default_str__ enclosed by " " with escaper \;
+// EVERYTHING here and below gets passed as 1 arg to the above anonymous macro
+// due to its precedence being below everything (even the semicolon).
+// The result is the global scope with the 'let ... = ...;' macro defined.
 
-// TODO: Fix '@(precedence below ;)' for all functions using 'scope' (including all forms of 'let')
-(unpredictable $(let basic $var = $val;) => __outer_scope__) (($var as implicitly permafrosted) $val => (unpredictable $`var` => __outer_scope__) val)
+// Example:
+//    'let n = 1 + 2; println n;'
+// => '($(let $pat = $val;) => (let n = 1 + 2; println n;)) (macro $pat $val $scope => `` ($($$(pat)) => $$(scope)) $$(val) ``)'
+// => '($(n) => println n;) (1 + 2)'
+// => '($(n) => println n;) 3'
+// 
+// The first 2 steps can only be done during compilation. The last step can in this case also be done
+// during compilation, but may have to be done at runtime in other situations.
 
 // TODO: 'let [$a as ..., $b as ..., ...] = <value>;' function which allows both multiple
 //       definitions at once and destructuring of the value.
 
-// TODO: Declare operators using symgroups:
-// - {}
-// - []
-// - ;
-// - +-*/%
-// - etc.
+// TODO: Define 'debug $expr' function similar to Rust's 'dbg!(...)'
 
 // Useless, but looks nice sometimes.
 // Convention to use this whenever $expr spans multiple lines.
 // Also use this for the classics 'func', 'if', etc.
-let basic {$expr} = $expr => expr;
+let {$expr} = $expr => expr;
 
-let basic basic func ($pattern as implicitly permafrosted) ($body as implicitly frozen); = $pattern $body => frozen raw (let basic `pattern` = __all_args_placeholders__ pattern => body;);
+// TODO: FIX BOILERPLATE CODE BELOW
 
-basic func Typed $expr $type _ {};
+// Defines basic function definitions
+// TODO: Allow for impure & unpredictable functions
+let func $declaration --> $ret_type {$body} = macro _ _ _ => code {
+	let $$(declaration) = $$(cloaked declaration) => (($x as ret_type) => x) $$(body); $scope
+};
+
+// Macro functions
+let macro func $declaration --> $ret_type {$body} = macro _ _ _ => code {
+	let $$(declaration) = macro $$(cloaked declaration) => (($x as ret_type) => x) $$(body); $scope
+};
+
+// Defines 'func $declaration {$body}' (return type unchecked) using our new 'func $declaration --> $ret_type {$body}'!
+//> macro func [func $declaration {$body}] --> _ {
+macro func (  func $declaration {$body}  ) --> _ {
+	code {
+		func $$(declaration) --> _ {$$(body)}
+	}
+}
+
+macro func (  macro func $declaration {$body}  ) --> _ {
+	code {
+		macro func $$(declaration) --> _ {$$(body)}
+	}
+}
+
+// This definition makes empty function bodies work the way you'd expect.
+// Note: use 'func ... {$_}' when you really mean to do partial application.
+macro func (  func $declaration {}  ) {
+	code {
+		func $$(declaration) {()}
+	}
+}
+
+macro func (  macro func $declaration {}  ) {
+	code {
+		macro func $$(declaration) {()}
+	}
+}
+
+// We make this function uncallable by making the last parameter
+// require '~_' ("nothing possible here"), since we want it to
+// be used as an object rather than a function to be called.
+func Typed $expr $type (~_) {}
 // If all pattern matching fails, throw away type restriction
-basic func __catch__ (Typed #$expr _) {expr};
+func __catch__ (Typed #($expr) _) {expr}
 
 // Pronounced as: "$expr [should] be[come] type"
-basic func ($expr as type ): $type {Typed expr type};
-basic func (Typed #$expr _): $type {expr: type}; // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
+func ($expr as type   ): $type {Typed expr type}
+func (Typed #($expr) _): $type {expr: type} // allows for stuff like '(n: 0..): any Int' changing the type of 'n'
 
-basic func any $obj {obj (__all_args_but_one__ obj)};
+func any $obj {obj (__all_args_but_one__ obj)}
 
 // TODO: getting category of value and doing 'any <category>'
 // i.e. 'type of Player 50 100' => 'Player _ _'
-basic func type of (_ constructed using $constructor) {any constructor};
+func type of (_ constructed using $constructor) {any constructor}
 
-// Marker for unchecked input
+// Marker for unvalidated input
 // File reading, user input, etc. should use this
-// Always ensure 'raw' input is ~UncheckedInput
-// TODO: Make '__catch__' for this or not?
-basic func UncheckedInput _ {};
+// Always ensure raw input is ~UnvalidatedInput
+func UnvalidatedInput (~_) {}
 
+// We redefine 'let' as a more advanced form.
 // Pronounced as: "let $var be $type and equal $val"
-// let impure $var = $val also works (thanks to 'raw')
-basic func let ($var as implicitly permafrosted raw ~UncheckedInput): $type = $val; {
-	frozen raw (let basic `var` = val: type;)
-};
+func let ($pat as _ implic made () => UNPARSED EXPLIC): $type = $val; {
+	let `pat` = val: type; $scope
+}
 
-basic func let ($var as implicitly permafrosted): auto = $val; {
-	frozen raw (let `var`: type of val = val;)
-};
+func let ($pat as _ implic made () => UNPARSED EXPLIC): auto = $val; {
+	let `pat`: type of val = val; $scope
+}
 
-basic func let ($var as implicitly permafrosted) = $val; {
-	frozen raw (let `var`: val = val;)
-};
+// If no type specified, $pat is defined as immutable
+func let ($pat as _ implic made () => UNPARSED EXPLIC) = $val; {
+	let `pat`: val = val; $scope
+}
 
-basic func Nothing _ {};
-
-// Useful for distinguishing 'Nothing' from 'Wrapped Nothing'
+// Useful for distinguishing '()' from 'Wrapped ()'
 // See https://www.reddit.com/r/ProgrammingLanguages/comments/hy6emx/explicit_nullability_vs_optionals/fzarbwu/
-basic func Wrapped $obj _ {};
+func Wrapped $obj (~_) {}
 
-basic func List $item ($tail as any List) _ {};
-
-// TODO: List '[]' syntax, list access
+func List $item ($tail as any List) (~_) {}
 
 // This sets the default list to 'List' and returns nothing
 __set_default_list__ List
 
-// Does not accept unchecked input for security reasons
-basic func rec basic func ($pattern as implicitly permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
-	frozen raw {
-		let `pattern` = {
-			basic func $f `pattern` {
-				let `pattern` = f f;
-				body
-			};
-			
-			($f pattern) ($f pattern) // becomes '($f fib $n) ($f fib $n)' => '(($f fib $n) fib $n)' if pattern = 'fib $n'
-		};
-	}
-};
+// Adds the following functionality to 'func':
+//   - Recursion
+//   - 'where' clauses
+func (  func ($decl_closure as _ implic made () => UNPARSED (raw EXPLIC)) --> ($ret_type as _) where we ($decls_closure as _ implic made () => raw EXPLIC) {($body_closure as _ implic made () => EXPLIC)} ) {
+	let `decl_closure` = {
+		decls_closure();
 
-basic func impure rec basic func ($pattern as implicitly permafrosted raw ~UncheckedInput) ($body as implicitly frozen); {
-	frozen raw {
-		let impure `pattern` = {
-			impure basic func $f `pattern` {
-				let `pattern` = f f;
-				body
-			};
-			
-			($f pattern) ($f pattern)
-		};
-	}
-};
+		func $f `decl_closure()` --> ret_type {
+			let `decl_closure` = f f;
+
+			body_closure()
+		}
+
+		($f decl_closure()) ($f decl_closure()) // becomes '($f fib $n) ($f fib $n)' => '(($f fib $n) fib $n)' if pattern = 'fib $n'
+	}; $scope
+}
 
 // Complete *total* functions: allows easy attributes, recursion & types
-// - a total function must:
-//		- have no infinite loops
-//		- cause no side-effects
-//		- use no outside/free patterns
+// - a total function must return, meaning it must:
+//		- have no (possibly) infinite loops
+//		- have no possibility of crashing
 // Note: adding 'impure' before '[partial] func' works since 'impure rec func' exists
-basic func ##($attrs as implicitly permafrosted any List) func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
-	frozen raw {
+basic func ##($attrs as implicitly unchecked paused any List) func ($pattern as implicitly unchecked paused) ($typed_body as implicitly unchecked paused); {
+	paused raw {
 		// This built-in tells compiler 'pattern' has attributes 'attrs'
-		// and returns 'pattern' as permafrosted. The attributes must
-		// be given using the default list.
-		rec basic func `__set_attributes__ attrs pattern` {typed_body: ~Undefined};
+		// and returns 'pattern'. The attributes must be given using the default list.
+		rec basic func `paused (__set_attributes__ attrs pattern)` {typed_body: ~Undefined};
 	}
 };
 
 // Complete *partial* functions (I know that sounds contradicting but it's not actually so yeah xD)
-basic func ##($attrs as implicitly permafrosted any List) partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {
-	frozen raw {
-		rec basic func `__set_attributes__ attrs pattern` {typed_body};
+basic func ##($attrs as implicitly unchecked paused any List) partial func ($pattern as implicitly unchecked paused) ($typed_body as implicitly unchecked paused); {
+	paused raw {
+		rec basic func `paused (__set_attributes__ attrs pattern)` {typed_body};
 	}
 };
 
-basic func         func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {[]         func `pattern` {typed_body};};
-basic func partial func ($pattern as implicitly permafrosted) ($typed_body as implicitly frozen); {[] partial func `pattern` {typed_body};};
+basic func         func ($pattern as implicitly unchecked paused) ($typed_body as implicitly unchecked paused); {[]         func `paused pattern` {typed_body};};
+basic func partial func ($pattern as implicitly unchecked paused) ($typed_body as implicitly unchecked paused); {[] partial func `paused pattern` {typed_body};};
 
-// The legendary SEMICOLON
-##[precedence below _]
-func $expr; {};
+// TODO: Add ability to provide return type before function body?
+// ----
+// Maybe using '-->' operator? Since '->' is taken for pointers.
 
-// '->' means 'pointer/ref to' and acts similarly to 'permafrosted' when it comes to evaluation
-impure func ($var as implicitly ->(Typed _ #$type)) = ($val as type) {
+/// # The legendary SEMICOLON.
+/// Structures statements for evaluation.
+/// Evaluates `$statement` first and then `$scope`. Returns `$scope`.
+/// 
+/// ## TODO
+/// Move this (or declare above); it's clearly used long before being defined!
+##[precedence below _, right assoc]
+func [$statement;$scope] {scope} // `x; y; z; 123` => `x; (y; (z; 123))` => `123`
+
+// '->' means 'pointer/ref to'
+impure func ($var as implicitly ->(Typed _ #($type))) = ($val as type) {
 	__assign__ var (Typed val type)
 };
 
 func ref to $val allowing $sub {
-	frozen raw (->(Typed val #$super) where sub matches super)
+	paused raw (->(Typed val #($super)) where sub matches super)
 };
 
 func ref to $val {
@@ -156,110 +228,204 @@ func ref to $val {
 // |    CATEGORY: Bool     |
 // -------------------------
 
-func True  _ {};
-func False _ {};
+func True  (~_) {}
+func False (~_) {}
 
-func (True)  && ($b as any Bool)                      {b};
-func (False) && (implicitly frozen becoming any Bool) {False};
+func (True)  && ($b as any Bool)                    {b}
+func (False) && (any Bool implic made () => EXPLIC) {False}
 
-func (True)  || (implicitly frozen becoming any Bool) {False};
-func (False) || ($b as any Bool)                      {b};
+func (True)  || (any Bool implic made () => EXPLIC) {False}
+func (False) || ($b as any Bool)                    {b}
 
-func !(True)  {False};
-func !(False) {True};
+func !(True)  {False}
+func !(False) {True}
 
 // -------------------------
 // | CATEGORY: Comparison  |
 // -------------------------
 
-func $a == $a {True};
-func _  == _  {False};
-func $a != $b {!(a == b)};
+func $a == $a {True}
+func _  == _  {False}
+func $a != $b {!(a == b)}
 
-func ($expr as type) matches $type {True};
-func _               matches $type {False};
+func ($expr as type) matches $type {True}
+func _               matches $type {False}
 
 let $expr is $type = $expr matches $type;
 
 // Useful for ruling out potential runtime scenarios at compile time
 // True|False could be True, but !(False could be True)
-func $a could be $b {b matches a};
+func $a could be $b {b matches a}
 
 // -------------------------
 // |   CATEGORY: Control   |
 // -------------------------
 
+macro func if $cond then $tbody else $fbody {
+	``
+
+	func if (True)  then $tbody else $fbody {tbody()}
+	func if (False) then $tbody else $fbody {fbody()}
+
+	if $$(cond) then
+		() => $$(tbody)
+	else
+		() => $$(fbody)
+
+	``
+}
+
+// ex: 'if x == 123 {456}'
+func (  if (True)  {($tbody as _ implic made () => EXPLIC)}  ) {tbody()}
+func (  if (False) {($tbody as _ implic made () => EXPLIC)}  ) {}
 // ex: 'if x == 123 {456} else {789}'
-func if (True)  ($body as implicitly frozen)                                   {body};
-func if (False) ($body as implicitly frozen)                                   {};
-func if (True)  ($body as implicitly frozen) else ($expr as implicitly frozen) {body};
-func if (False) ($body as implicitly frozen) else ($expr as implicitly frozen) {expr};
+func (  if (True)  {($tbody as _ implic made () => EXPLIC)} else {($fbody as _ implic made () => EXPLIC)}  ) {tbody()}
+func (  if (False) {($tbody as _ implic made () => EXPLIC)} else {($fbody as _ implic made () => EXPLIC)}  ) {fbody()}
 
 // ex: 'if x == 123 then 456 else 789'
-func if $cond then ($body as implicitly frozen)                                   {if cond {body}};
-func if $cond then ($body as implicitly frozen) else ($expr as implicitly frozen) {if cond {body} else {expr}};
+let if $cond then $tbody             = if $cond {$tbody};
+let if $cond then $tbody else $fbody = if $cond {$tbody} else {$fbody};
 
-func while ($cond as any Bool) ($body as implicitly frozen) {
-	...
-};
+// ex: 'return 123 if x == 456 else 789;'
+let $tbody if $cond else $fbody = if $cond then $tbody else $fbody;
 
-func for each $item in ($list as any List) ($body as implicitly frozen) {
-	...
-};
+func (  while ($cond as any Bool) {($body as _ implic made () => EXPLIC)}  ) {
+	// TODO ...
+}
+
+func (  for each $item in ($list as any List) {($body as _ implic made () => EXPLIC)}  ) {
+	// TODO ...
+}
 
 // -------------------------
 // |   CATEGORY: Number    |
 // -------------------------
 
+// Inclusive range
 func $n..$m {
-	n|(n + 1)|...|m
-};
+	if m > n then
+		n|(n + 1)|...|m
+	else if m == n then
+		n
+	else
+		()
+}
 
-func $n +- $m {n-m..n+m};
+// Exclusive range
+func $n..<$m {
+	n..(m - 1)
+}
+
+func $n +- $m {n-m..n+m}
+
+// i.e. 'n += m;' => 'n = n + m;'
+macro func $n $op= $m; {
+	`$$n = $$n $$op $$m;`
+}
 
 // -------------------------
 // |  CATEGORY: Category   |
 // -------------------------
 
-// ex: 'fieldified [$a as 123, $b as any Int]' => AST: [["as", "$a", "123"], ["as", "$b", ["any", "Int"]]]
+// TODO: Move out of prelude into std lib if possible.
+// Ex: 'fieldified [$a as 123, $b as any Int]' => AST: [["as", "$a", "123"], ["as", "$b", ["any", "Int"]]]
 func fieldified ($fields as any List) {
 	let AST: any List = [];
 
 	for each field in fields {
-		AST += listified permafrosted `field`; // note how the field is parenthesised (add 'raw' to avoid this)
+		AST += listified paused field; // note how the field is parenthesised (add 'raw' to avoid this)
 	};
 
 	AST // = [["as", "$field", "<type>"], ["as", "$field2", "<type2>"], ...]
 };
 
-func object ($obj as implicitly permafrosted) ($fields as any List); {
-	frozen raw (func `obj` `raw codified fieldified fields` _ {};)
+func object ($obj as implicitly unchecked paused) ($fields as any List); {
+	paused raw (func `paused obj` `raw codified fieldified fields` () {};)
 };
 
-func object ($obj as implicitly permafrosted); {
-	frozen raw (object `obj` [])
+func object ($obj as implicitly unchecked paused); {
+	paused raw (object `paused obj` [])
 };
 
-func category ($cat as implicitly permafrosted) ($contents as any List) {
-	frozen raw (let `cat` = contents; contents)
+func category ($cat as implicitly unchecked paused) ($contents as any List) {
+	paused raw (let `paused cat` = contents; contents)
 };
 
 // Currently doesn't do anything more than checking
 // that what you're exporting is a list, which is
 // useless since 'category' does that later anyway
-func export ($exports as any List) {
+func export ($exports as any List); {
 	exports
 };
 
 func expose ($cat as any List) {
-	frozen raw (
+	paused raw {
+		// Nothing in this block is evaluated until after returning.
+		// This block captures variables, functions, etc.
+		// Captures have precedence over what is defined in __caller_scope__.
+		// I.e. if __caller_scope__ defines another 'cat' that will be ignored.
+		// We could still put something undefined in here though and it would
+		// still compile if __caller_scope__ defines that thing.
+
 		let `cat[0]` = cat[0]; // using '``' to clarify the name is the evaluated cat[0] rather than 'cat[0]'
 		if cat length > 1 {
 			expose cat[1..];
 		};
-	)
+	}
 };
 
-// TODO: Generalise into 'apply $f to itself $n times'
-// TODO: Move out of prelude into std lib
-func apply $f to itself {f f};
+// -------------------------
+// |   PROPER CATEGORIES   |
+// -------------------------
+
+category Misc {
+    // Like '()', but propagates; see https://docs.julialang.org/en/v1/manual/missing/
+    // Typical pronunciation: "unknown" or "missing".
+	object ???;
+    
+    // This is really just NaN, but renamed since "Not a Number is a number" sounds weird.
+    // Behaves almost like '???', except comparisons follow the NaN specification instead
+    // of propagating the object: UndefNum != _ is always True, and all other
+    // comparisons are always False.
+    object UndefNum;
+    
+    // Infinity. Follows the floating point specification.
+    object Infinity;
+    
+    // TODO: move 'UndefNum' and 'Infinity' to a separate category for numbers
+
+	func optionally $x {x|()};
+
+	// TODO: Move into more fitting category
+	func [                            ] {List $item ()};
+	func [($expr as implicitly paused)] {
+		// We need this object to allow for multi-dimensional Lists
+		object CommaList [
+			$item,
+			$tail as any CommaList
+		];
+
+		func ($x as CommaList #($item) #($tail)), $y { CommaList item (tail, y)        };
+		func ($x as CommaList #($item) #()     ), $y { CommaList item (CommaList y ()) };
+		func ($x                               ), $y { CommaList x    (CommaList y ()) };
+
+		func ($expr as CommaList #($item) #($tail)) converted to (List) { List item (tail converted to List) };
+		func ($expr as CommaList #($item) #()     ) converted to (List) { List item () };
+
+		expr converted to List
+	};
+
+	// TODO: list[i] access syntax
+
+	func stringified ($expr as unchecked paused) --> any String {
+		(listified (unchecked paused expr))[0]
+	};
+
+	// TODO: Generalise into 'apply $f to itself $n times'
+	// TODO: Move out of prelude into std lib
+	func apply $f to itself {f f};
+
+	export [optionally];
+};
+
+expose Misc;

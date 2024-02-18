@@ -1,0 +1,4 @@
+[
+    {"command": "insert", "args": {"characters": "\n/// "} },
+    {"command": "reindent", "args": {"single_line": true} }
+]

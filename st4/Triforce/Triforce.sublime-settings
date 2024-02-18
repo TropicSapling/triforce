@@ -1,0 +1,11 @@
+{
+	"color_scheme": "Packages/Color Scheme - Default/Monokai.sublime-color-scheme",
+
+	"detect_indentation": false,
+
+	"draw_unicode_white_space": "none",
+
+	"rulers": [90],
+
+	"trim_automatic_white_space": false
+}

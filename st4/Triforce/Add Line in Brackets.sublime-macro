@@ -1,0 +1,6 @@
+[
+    {"command": "insert", "args": {"characters": "\n\t\n"} },
+    {"command": "unindent", "args": null},
+    {"command": "move", "args": {"by": "lines", "forward": false} },
+    {"command": "move_to", "args": {"to": "hardeol", "extend": false} }
+]
