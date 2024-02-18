@@ -1,8 +1,13 @@
 # Triforce programming language
 ![banner](img/banner.PNG)
 
-**This README is outdated. See [random_experiments.tri](examples/random_experiments.tri) for sketches of newer language concepts.**
+## This README is (very) outdated
+**See [random_experiments.tri](examples/random_experiments.tri) for sketches of newer language concepts.**
+- **Also see [SPEC.tri](examples/SPEC.tri) for a very incomplete specification**
 
+*Everything below this point was last updated on 2020-08-05.*
+
+## About
 Triforce is a programming language emphasizing performance, power and productivity.
 
 The main goals of the language include:
