@@ -2873,3 +2873,12 @@ sum numbers ["first": 34, "second": 12]
 /// # https://www.hylo-lang.org/
 /// Language with an interesting potentially simpler memory/ownership model.
 /// Worth taking a deeper look at.
+
+--------------------------------------------------
+
+/// # \(...) instead of ${...}?
+/// Saw this in some Swift code and got inspired:
+self.headers["\(field)"] = "\(value)"
+/// Makes some sense since \ is afterall an escape character.
+/// Compare with:
+self.headers["${field}"] = "${value}"
