@@ -2810,6 +2810,7 @@ func dangerous() {
 /// 	...
 /// }
 
+// Go
 func StartProcess(name string, argv []string, attr *ProcAttr) (*Process, error) {
 	...
 }
@@ -2821,6 +2822,48 @@ func start proc (name str) with ([argv []str, attr ->proc_attr]) --> ->proc|err 
 }
 
 start proc "ping" with args ["-c 3", "google.com"]
+
+// Go
+func SumIntsOrFloats[K comparable, V int64 | float64](m map[K]V) V {
+    var s V
+    for _, v := range m {
+        s += v
+    }
+    return s
+}
+
+SumIntsOrFloats[string, int64](map[string]int64{
+	"first":  34,
+	"second": 12
+})
+
+func sum numbers (map [K: V]) --> sum V {
+	| K = comparable
+	| V = int|frac
+
+	for each [_, val] in map {
+		sum += val
+	}
+}
+
+func sum numbers (map [K: V]) --> sum V where K = comparable
+											  V = int|frac   {
+	for each [_, val] in map {
+		sum += val
+	}
+}
+
+func sum numbers (map [K: V]) --> sum V
+where
+	K = comparable
+	V = int|frac
+{
+	for each [_, val] in map {
+		sum += val
+	}
+}
+
+sum numbers ["first": 34, "second": 12]
 
 --------------------------------------------------
 
