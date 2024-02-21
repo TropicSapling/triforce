@@ -2837,28 +2837,31 @@ SumIntsOrFloats[string, int64](map[string]int64{
 	"second": 12
 })
 
-func sum numbers (map [K: V]) --> sum V {
+// Dictionary probably better name than map - used in Swift & Python
+// Swift also uses `[K: V]` syntax for dictionary types
+
+func sum numbers (dict [K: V]) --> sum V {
 	| K = comparable
 	| V = int|frac
 
-	for each [_, val] in map {
+	for each [_, val] in dict {
 		sum += val
 	}
 }
 
-func sum numbers (map [K: V]) --> sum V where K = comparable
+func sum numbers (dict [K: V]) --> sum V where K = comparable
 											  V = int|frac   {
-	for each [_, val] in map {
+	for each [_, val] in dict {
 		sum += val
 	}
 }
 
-func sum numbers (map [K: V]) --> sum V
+func sum numbers (dict [K: V]) --> sum V
 where
 	K = comparable
 	V = int|frac
 {
-	for each [_, val] in map {
+	for each [_, val] in dict {
 		sum += val
 	}
 }
