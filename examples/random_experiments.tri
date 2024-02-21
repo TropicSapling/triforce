@@ -2850,7 +2850,7 @@ func sum numbers (dict [K: V]) --> sum V {
 }
 
 func sum numbers (dict [K: V]) --> sum V where K = comparable
-											  V = int|frac   {
+											   V = int|frac   {
 	for each [_, val] in dict {
 		sum += val
 	}
