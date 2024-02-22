@@ -2803,6 +2803,10 @@ func dangerous() {
 /// The ideal would be something light as Go but robust as Rust.
 /// Below I will experiment with a potential such syntax - codenamed Graphene.
 /// - Note that it may be inconsistent / not work
+/// 
+/// REMEMBER:
+/// It is important to keep things private & immutable by default.
+/// - even though the syntax may suffer a little
 
 /// func f [#x int, #y num, #z str] --> any {
 /// 	let y int = y

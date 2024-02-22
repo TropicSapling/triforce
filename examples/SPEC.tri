@@ -42,13 +42,16 @@ func Object ($field as any) (N/A);
 let obj = Object "field value";
 
 // The singleton type is a set of one value.
-let type = "singleton";
+let mut typ = "singleton";
 // Values can be added to a type using the `|` ("or") operator.
-type |= 1|2|3;
+typ |= 1|2|3;
 // As well as filtered using the `&` ("and") operator.
-type &= 2|"singleton";
+typ &= 2|"singleton";
 
-type :== "singleton"|2;
+typ :== "singleton"|2;
+
+// Best to remove mutability when no longer needed
+let typ = typ;
 
 // TODO ... [to fully solve: see "N/A - the type with no value" in random_experiments]
 
