@@ -16,6 +16,23 @@
 /// ##################################################################################
 
 
+/// ================
+/// ## Formal syntax
+/// ================
+/// 
+/// The formal syntax will be specified with a metalanguage similar to Go's EBNF-variant:
+/// ```
+/// Syntax   = [FullExpr]...;
+/// FullExpr = fullexpr_name `=` [Expr] `;`;
+/// TODO ...
+/// ```
+/// 
+/// TODO: specify formal syntax
+
+
+/// ##################################################################################
+
+
 /// ==============
 /// ## Type system
 /// ==============
@@ -59,6 +76,7 @@ let typ = typ;
 // - type equality, should order matter or not?
 // - maybe have `super` keyword for when superposition types should be allowed?
 // - subset checking by default, or checking just if in set by default?
+
 
 /// ##################################################################################
 
