@@ -2886,3 +2886,52 @@ self.headers["\(field)"] = "\(value)"
 /// Makes some sense since \ is afterall an escape character.
 /// Compare with:
 self.headers["${field}"] = "${value}"
+
+--------------------------------------------------
+
+/// # Good take on language complexity - and a great explanation of `async`!
+/// "My main complaint is that programming languages have too much minutiae to track
+/// that I really shouldn't have to be tracking.
+/// 
+/// Take, for example, asynchronous builtins:
+/// 
+/// Why are all the explanations wrapped in jargon that only an expert in the language
+/// would grok immediately? Promises? Futures? You gotta explain those, with examples,
+/// before you can explain what to do with a value from an async call. Go look at the
+/// popular introductions to async (say, on MDN for js, or Microsoft for C#, etc) and
+/// count how many times they have to explain something because of their leaky
+/// abstraction implementation rather than explaining the concept.
+/// 
+/// How about simply saying \"**calling async functions only schedules the function
+/// for later execution, it doesn't execute it**\".
+/// 
+/// That naturally leads into \"**So you need to check if it is finished using an
+/// identifier to identify which scheduled call you want to check**\"...
+/// 
+/// Which itself naturally leads to \"**The identifier you need was given to you when
+/// you scheduled the call**\"...
+/// 
+/// Which leads to \"**Using that identifier from `id = foo();`, you wait for the
+/// result like this: `result = id.wait()`**\".
+/// 
+/// You can even add \"**You can return that id, or pass it around so some other
+/// code can do `id.wait()`**\".
+/// 
+/// Now they don't explain it this way, because their implementation(s) is more of a
+/// leaky abstraction exposing irrelevant information about the compiler, than of a
+/// straightforward implementation of the concept. They are unable to separate the
+/// concept from their implementation.
+/// 
+/// The common implementation of async is so counterintuitive that they have to
+/// explain their particular implementation instead of the concept, because it has
+/// almost nothing to do with the concept. If they just explained the concept,
+/// programmers would still be confused because the implementation needs things like
+/// colored functions just to work poorly.
+/// 
+/// The concept of scheduled functions (which may return once, or may yield multiple
+/// times before returning), which is a simple path to understanding asynchronous
+/// calls, is completely divorced from the implementation which will produce errors
+/// like \"cannot call asynchronous function from a top level\" or \"cannot call
+/// await in a function not declared as async\"."
+/// 
+/// - lelanthran @ https://news.ycombinator.com/
