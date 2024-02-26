@@ -28,7 +28,7 @@
 /// Term       = Factor [Factor]…;
 /// Factor     = def_name | tok[`-`tok] | Group | Option;
 /// Group      = `(`Expression`)`;
-/// Option     = `[`Expression`]`[…];
+/// Option     = `[`Expression`]`[`…`];
 /// ```
 /// 
 /// TODO: specify formal syntax
