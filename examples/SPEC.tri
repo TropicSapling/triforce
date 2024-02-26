@@ -20,16 +20,20 @@
 /// ## Formal syntax
 /// ================
 /// 
-/// The formal syntax will be specified with a metalanguage similar to Go's EBNF-variant:
+/// The formal syntax will be specified with a metalanguage similar to Go's:
 /// ```
 /// Syntax     = [Definition]…;
-/// Definition = def_name `=` [Expression] `;`;
-/// Expression = Term [`|` Term]…;
+/// Definition = def_name "=" [Expression] ";";
+/// Expression = Term ["|" Term]…;
 /// Term       = Factor [Factor]…;
-/// Factor     = def_name | tok[`-`tok] | Group | Option;
-/// Group      = `(`Expression`)`;
-/// Option     = `[`Expression`]`[`…`];
+/// Factor     = def_name | tok["-"tok] | Group | Option;
+/// Group      = "("Expression")";
+/// Option     = "["Expression"]"["…"];
 /// ```
+/// 
+/// Lexical tokens are enclosed in "" or `` (i.e. "let", "=", "``" or `""`).
+/// Terminal tokens are lowercase. Non-terminal tokens are CamelCase.
+/// - `[a-b]` = characters a through b
 /// 
 /// TODO: specify formal syntax
 
