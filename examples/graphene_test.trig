@@ -1,0 +1,14 @@
+// Taking inspiration from Ada
+// https://learn.adacore.com/courses/intro-to-ada/chapters/imperative_language.html
+
+PARTIAL FUNCTION SumValues
+
+	(in dictionary [K: V])
+
+BEGIN
+
+	FOR EACH [_, value] IN dictionary
+		sum += value
+	END FOR EACH
+
+END FUNCTION SumValues

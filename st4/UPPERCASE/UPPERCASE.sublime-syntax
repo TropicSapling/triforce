@@ -1,0 +1,14 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/syntax.html
+version: 2
+name: UPPERCASE
+file_extensions:
+  - trig
+scope: source.graphene
+contexts:
+  main:
+    - match: '[A-Z][A-Z]+'
+      scope: keyword.control.graphene
+    - match: '/[/]+.*$'
+      scope: comment.line.graphene
