@@ -8,7 +8,8 @@ from sublime_plugin import EventListener
 
 Region.__hash__ = lambda self: hash(str(self))
 
-alltime_highlights = highlights = set()
+alltime_fhighlights = fhighlights = set()
+alltime_thighlights = thighlights = set()
 
 funcs      = set()
 types      = set()
@@ -109,12 +110,12 @@ class TriHighlighter(EventListener):
 		self.find(view, 0, view.size())
 
 	def highlight(self, start_time, iscall, view, start, end):
-		global highlights, alltime_highlights
+		global fhighlights, thighlights, alltime_fhighlights, alltime_thighlights
 
 		try:
 			f = next(funcs_iter) if iscall else next(types_iter)
 		except StopIteration:
-			self.dehighlight(view, start, end)
+			self.dehighlight(iscall, view, start, end)
 			self.find_local(view)
 			return
 
@@ -139,8 +140,14 @@ class TriHighlighter(EventListener):
 				continue
 
 			highlight = Region(a, b)
-			highlights.add(str(highlight))
-			alltime_highlights.add(str(highlight))
+
+			if iscall:
+				fhighlights.add(str(highlight))
+				alltime_fhighlights.add(str(highlight))
+			else:
+				thighlights.add(str(highlight))
+				alltime_thighlights.add(str(highlight))
+
 			view.add_regions(
 				key     = str(highlight),
 				regions = [highlight],
@@ -166,17 +173,27 @@ class TriHighlighter(EventListener):
 	def highlight_all(self, view):
 		self.highlight(time(), True, view, 0, view.size())
 
-	def dehighlight(self, view, start, end):
-		global highlights
+	def dehighlight(self, iscall, view, start, end):
+		global fhighlights, thighlights
 
-		for highlight in alltime_highlights:
-			# Dehighlight if no longer valid
-			if highlight not in highlights:
-				regions = view.get_regions(highlight)
-				if len(regions) > 0 and regions[0].a >= start and regions[0].b <= end:
-					view.erase_regions(highlight)
+		if iscall:
+			for highlight in alltime_fhighlights:
+				# Dehighlight if no longer valid
+				if highlight not in fhighlights:
+					regions = view.get_regions(highlight)
+					if len(regions) > 0 and regions[0].a >= start and regions[0].b <= end:
+						view.erase_regions(highlight)
 
-		highlights = set()
+			fhighlights = set()
+		else:
+			for highlight in alltime_thighlights:
+				# Dehighlight if no longer valid
+				if highlight not in thighlights:
+					regions = view.get_regions(highlight)
+					if len(regions) > 0 and regions[0].a >= start and regions[0].b <= end:
+						view.erase_regions(highlight)
+
+			thighlights = set()
 
 	def on_modified_async(self, view):
 		# Need 'try' in case attempting to run after file closed
