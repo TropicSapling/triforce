@@ -2949,8 +2949,40 @@ self.headers["${field}"] = "${value}"
 
 /// # New syntax?
 /// More concise and Go-like.
+/// 
+/// Examples below going from simple -> complex.
 
-func (optional str) given --> bool {optional != ""}
+/// -----------------------------------
+
+func add `[x int, y int]` --> int {
+	x + y
+}
+
+add [1, 2]
+//> 3
+
+/// -----------------------------------
+
+func (x num) plus (y num) --> num {
+	x + y
+}
+
+123 plus 456
+//> 579
+
+/// -----------------------------------
+
+object (num)%
+
+func (x num) * `#(y num)%` {
+    x * y / 100
+}
+
+120 * 5% == 6
+
+/// -----------------------------------
+
+func (optional) given {optional != ""}
 
 // Greets a person, optionally on a specified day. Based on a Swift example.
 func greet (person str) [on (day str)]? --> greeting str {
@@ -2963,3 +2995,12 @@ greet "John"
 //> "Hello John!"
 greet "Jane" on "Friday"
 //> "Hello Jane! Today is Friday."
+
+/// -----------------------------------
+
+func __catch__ ((`_` op `_`) #(#(x)%) #(#(y)%)) {
+    (((x / 100) op (y / 100)) * 100)%
+}
+
+120% * 5% :== 6%
+120% + 5% :== 125%

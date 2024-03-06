@@ -9,7 +9,7 @@ variables:
   ######## TODO: CLEANUP OLD SYNTAX ########
   
   # Identifiers
-  identifier:     '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+|([!<>\-+%/*^&|@~?.]|==|##)[!<>\-+%/*^&|@~?.=#]*))'
+  identifier:     '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+|{{op0}}{{op}}*))'
   var_identifier: '(?:(?:[[:alpha:]][_[:alnum:]]*|_[_[:alnum:]]+)\b)' # include a word boundary at the end to ensure all possible characters are consumed, to prevent catastrophic backtracking
 
   # Keywords
@@ -24,6 +24,11 @@ variables:
 
   # Declarations
   decl_sym: '(decl(\s+(sym(indies|block)))|enclosed\s+by|with\s+escaper)'
+
+  # Operators
+  op:     '([!<>\-+%/*^&|@~?.=#])'
+  op0:    '([!<>\-+%/*^&|@~?.]|==|##)'
+  bin_op: '([<>-+/*^&|.,=])'
 
   # Numbers
   digits:  '(0(x[0-9a-fA-F_]+|o[0-7_]+|b[01_]+)|[0-9_]+)'

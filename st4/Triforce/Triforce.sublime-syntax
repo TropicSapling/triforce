@@ -483,7 +483,7 @@ contexts:
     - match: '\$'
       scope: variable.parameter.triforce
       push: op-dollar
-    - match: '(has)|[;,|}]' # end of object declaration
+    - match: '(has)|[\n;,|}]' # end of object declaration
       captures:
         1: storage.type.triforce
         2: punctuation.terminator.triforce
