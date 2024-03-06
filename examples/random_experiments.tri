@@ -2844,33 +2844,33 @@ SumIntsOrFloats[string, int64](map[string]int64{
 // Dictionary probably better name than map - used in Swift & Python
 // Swift also uses `[K: V]` syntax for dictionary types
 
-func sum numbers (dict [K: V]) --> sum V {
-	| K = comparable
-	| V = int|frac
+func sum numbers in (dict [k: v]) --> sum v {
+	| k = comparable
+	| v = int|frac
 
 	for each [_, val] in dict {
 		sum += val
 	}
 }
 
-func sum numbers (dict [K: V]) --> sum V where K = comparable
-											   V = int|frac   {
+func sum numbers in (dict [k: v]) --> sum v where k = comparable
+												  v = int|frac   {
 	for each [_, val] in dict {
 		sum += val
 	}
 }
 
-func sum numbers (dict [K: V]) --> sum V
+func sum numbers in (dict [k: v]) --> sum v
 where
-	K = comparable
-	V = int|frac
+	k = comparable
+	v = int|frac
 {
 	for each [_, val] in dict {
 		sum += val
 	}
 }
 
-sum numbers ["first": 34, "second": 12]
+sum numbers in ["first": 34, "second": 12]
 
 --------------------------------------------------
 
@@ -2944,3 +2944,22 @@ self.headers["${field}"] = "${value}"
 /// - `concurrently`
 /// - `go`
 /// - `spawn`
+
+--------------------------------------------------
+
+/// # New syntax?
+/// More concise and Go-like.
+
+func (optional str) given --> bool {optional != ""}
+
+// Greets a person, optionally on a specified day. Based on a Swift example.
+func greet (person str) [on (day str)]? --> greeting str {
+	greeting = "Hello \(person)!"
+	if []#0 given then
+		greeting += " Today is \(day)."
+}
+
+greet "John"
+//> "Hello John!"
+greet "Jane" on "Friday"
+//> "Hello Jane! Today is Friday."

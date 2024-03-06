@@ -12,3 +12,5 @@ BEGIN
 	END FOR EACH
 
 END FUNCTION SumValues
+
+// On second thought, this verbose syntax is probably not so good...
