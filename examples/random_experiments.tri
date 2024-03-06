@@ -2949,7 +2949,6 @@ self.headers["${field}"] = "${value}"
 
 /// # New syntax?
 /// More concise and Go-like.
-/// 
 /// Examples below going from simple -> complex.
 
 /// -----------------------------------
@@ -2978,15 +2977,31 @@ func (x num) * `#(y num)%` {
     x * y / 100
 }
 
-120 * 5% == 6
+120 * 5% :== 6
 
 /// -----------------------------------
 
-func (optional) given {optional != ""}
+// Fibonacci limited to 50th number
+multi func fib (n nat in 0..50) --> nat {
+	fib `0` ==> 0,
+	fib `1` ==> 1,
+	fib (n) ==> fib(n-1) + fib(n-2)
+}
+
+fib 2 :== fib(2-1) + fib(2-2)
+	  :== fib 1    + fib 0
+	  :== 1
+
+/// -----------------------------------
+
+func (optional) given {
+	optional != ""
+}
 
 // Greets a person, optionally on a specified day. Based on a Swift example.
 func greet (person str) [on (day str)]? --> greeting str {
 	greeting = "Hello \(person)!"
+
 	if []#0 given then
 		greeting += " Today is \(day)."
 }
@@ -2998,9 +3013,15 @@ greet "Jane" on "Friday"
 
 /// -----------------------------------
 
-func __catch__ ((`_` op `_`) #(#(x)%) #(#(y)%)) {
-    (((x / 100) op (y / 100)) * 100)%
+func __catch__ ((`...` ?? `...`) #(a) #(b)) {
+	| any precedes ?? // gives `??` lowest precedence
+	| a = #(x)%
+	| b = #(y)%
+	
+    ((x/100 ?? y/100) * 100)%
 }
 
 120% * 5% :== 6%
 120% + 5% :== 125%
+
+/// -----------------------------------
