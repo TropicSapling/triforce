@@ -3058,8 +3058,13 @@ let c = ...
 // Anonymous function/closure defining a local `??` operator among other inputs.
 // Obviously, you would normally not define such a complex function like this.
 // This is only for checking that the syntax still works in edge cases.
-(a) (b type) ((##[_ precedes this] (x) ?? `type`) #(x) #(y)) => (
+(a) (b type) ((##[_ precedes this] (x) ?? `type`) #(x) #(y)) => {
 	(a ?? b + c) :== (a ?? b) + c
-)
+}
 
 /// -----------------------------------
+
+// Defining an untyped, primitive `let` with anonymous macros:
+(pattern) (val) (scope code) => (
+	(... => eval scope) ...
+)
