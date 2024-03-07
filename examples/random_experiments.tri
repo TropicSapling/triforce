@@ -2962,7 +2962,7 @@ func (x num) plus (y num) --> num {
 
 /// -----------------------------------
 
-func add `[#(x) int, #(y) int]` --> int {
+func add `[#(x int), #(y int)]` --> int {
 	x + y
 }
 
@@ -2972,7 +2972,7 @@ add [1, 2]
 /// -----------------------------------
 
 // The return type can specify exactly what is wanted
-func `[#(x) str, #(y) str]` swapped --> [y, x] {
+func `[#(x str), #(y str)]` swapped --> [y, x] {
 	[y, x]
 }
 
