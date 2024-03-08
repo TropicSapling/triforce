@@ -23,11 +23,11 @@ contexts:
     - match: '\\.'
       scope: constant.character.escape.triforce
     # Code strings [WIP]
-    - match: '`'
+    - match: '`|===+'
       scope: string.quoted.double.triforce markup.bold
       embed: cs-general
       embed_scope: string.quoted.double.triforce meta.cs.triforce
-      escape: '(?<!\\)(`)'
+      escape: '(?<!\\)(`|===+)'
       escape_captures:
         1: string.quoted.double.triforce markup.bold
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
@@ -277,15 +277,22 @@ contexts:
 
   double-quoted-string:
     - meta_scope: string.quoted.double.triforce
-    - match: '\\.'
+    - match: '(\\)[\\$]'
+      captures:
+        1: cc.constant.character.escape.triforce
+    - match: '\\(?![({])'
       scope: constant.character.escape.triforce
+      push:
+        - match: '.'
+          scope: constant.character.escape.triforce
+          pop: true
     - match: '"'
       scope: punctuation.definition.string.end.triforce
       pop: true
-    - match: '(?=\${)'
+    - match: '(?=[\\$][({])'
       push:
         - clear_scopes: true
-        - match: '\${'
+        - match: '[\\$][({]'
           scope: source.triforce
         - match: '[)}]'
           pop: true

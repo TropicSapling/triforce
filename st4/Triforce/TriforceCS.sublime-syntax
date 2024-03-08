@@ -16,10 +16,10 @@ contexts:
   ################################################################################
   
   cs-all-universal:
-    - match: '(?=(\$\$)(just|raw)?[({])'
+    - match: '(?=(\$\$|\\)(just|raw)?[({])'
       push:
         - clear_scopes: true
-        - match: '(\$\$)(just|raw)?[({]'
+        - match: '(\$\$|\\)(just|raw)?[({]'
           captures:
             1: source.triforce
             2: variable.annotation.triforce
@@ -28,9 +28,16 @@ contexts:
         - include: general
 
   cs-universal:
-    - include: cs-all-universal
-    - match: '\\.'
+    - match: '(\\)[\\$]'
+      captures:
+        1: cc.constant.character.escape.triforce
+    - match: '\\(?![({])'
       scope: cs.constant.character.escape.triforce
+      push:
+        - match: '.'
+          scope: cs.constant.character.escape.triforce
+          pop: true
+    - include: cs-all-universal
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
       scope: cs.storage.type.triforce
       push:
