@@ -25,21 +25,12 @@ contexts:
         - match: '[)}]'
           pop: true
         - include: general
-    - match: '(?=\\#[(''])'
-      push:
-        - clear_scopes: true
-        - match: '(\\#)[('']'
-          captures:
-            1: variable.parameter.triforce
-        - match: '[)'']'
-          pop: true
-        - include: general
 
   cs-universal:
     - match: '(\\)[\\$]'
       captures:
         1: cc.constant.character.escape.triforce
-    - match: '\\(?![({#])'
+    - match: '\\(?![({])'
       scope: cs.constant.character.escape.triforce
       push:
         - match: '.'

@@ -85,13 +85,13 @@ class TriHighlighter(EventListener):
 
 						if i < end: s += between(view, start, i) + " "
 
-						if islet and between(view, i, i+8) == ": type =": break
+						if islet and between(view, i, i+7) == " type =": break
 
 					s = s.rstrip()
 					if isfunc and (view.substr(i-1) == ';' or view.substr(i-1) == '{'):
 						if s != "" and s[0].islower() and re.match(prelude, s) == None:
 							funcs.add(s)
-					if islet and between(view, i, i+8) == ": type =":
+					if islet and between(view, i, i+7) == " type =":
 						if s != "" and s[0].islower() and re.match(prelude, s) == None:
 							types.add(s)
 

@@ -518,3 +518,4 @@ contexts:
       pop: true
     - match: '{{identifier}}'
       scope: entity.name.function.triforce
+      pop: true

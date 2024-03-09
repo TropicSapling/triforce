@@ -3023,6 +3023,21 @@ greet "Jane" on "Friday"
 
 /// -----------------------------------
 
+// Simple variable
+let string str = "value"
+
+// Multi-variable definition
+let '[#(x str), #(y str)]' = ["a", "b"]
+// <=>
+let '[#(x), #(y)]' [str, str] = ["a", "b"]
+
+// Naming and typing an anonymous function
+let (f (x)) 'type' => 'type' = {
+	(x) => ...
+}
+
+/// -----------------------------------
+
 func __catch__ (('...' ?? '...') #(a) #(b)) {
 	| any precedes ?? // gives `??` lowest precedence
 	| a = #(x)%
@@ -3033,23 +3048,6 @@ func __catch__ (('...' ?? '...') #(a) #(b)) {
 
 120% * 5% :== 6%
 120% + 5% :== 125%
-
-/// -----------------------------------
-
-// This syntax *could* work for `let` as well
-let n num = 123
-
-// But then you get odd things like this...
-let [a, b] [int, int] = ...
-// And functions would need to be defined like this:
-let [(x) plus (y)] type = ...
-
-// Alternatively, `let` could require `:` to precede the type
-let [a, b]: [int, int] = ...
-
-let (x) plus (y): 'num' 'num' => 'num' = (x num) (y num) => {
-	x + y
-}
 
 /// -----------------------------------
 
@@ -3064,13 +3062,43 @@ let c = ...
 
 /// -----------------------------------
 
-let [once, twice, thrice] = [1, 2, 3]
-
 // This type matches any code string
-let codestr type = `\#'any'`
+let codestr type = `\(any)`
+
+{
+	// This instead matches a code string equal to the `any` type:
+	let cs_equal_to_any type = `\(<any>)`
+
+	`any` is cs_equal_to_any
+	//> True
+	` _  ` is cs_equal_to_any
+	//> True
+
+	`any + any` is cs_equal_to_any
+	//> False
+	`int` is cs_equal_to_any
+	//> False
+}
+
+{
+	// And finally this will *only* match specifically `any`:
+	let cs_any type = `any`
+
+	`any` is cs_any
+	//> True
+	` any ` is cs_any
+	//> True
+
+	`_` is cs_any
+	//> False
+}
+
+/// -----------------------------------
+
+let '[#(once), #(twice), #(thrice)]' = [1, 2, 3]
 
 // Example macro
-macro (expr codestr) replicated (n nat) [times]? --> new_expr codestr {
+macro func (expr codestr) replicated (n nat) [times]? --> new_expr codestr {
 	for each _ in 0..<n {
 		new_expr += `\(expr)`
 	}
