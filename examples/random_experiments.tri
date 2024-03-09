@@ -3066,6 +3066,6 @@ let c = ...
 
 // Defining an untyped, primitive `let` with anonymous macros:
 macro (pat `\(_)`) (val) (scope `\(_)`) =>
-	================================
+	===========================
 	(\(pat) => \(scope)) \(val)
-	================================
+	===========================
