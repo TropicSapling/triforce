@@ -19,11 +19,11 @@ types_iter = iter(types)
 ready = True
 
 # Remember to update this as syntax changes
-keyword_ctrl       = r'\b(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|eval|prerun|run|spawn|assign|to\s+worker\s+in|defer)\b'
+keyword_ctrl       = r'\b(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|eval|prerun|run|go|spawn|assign|to\s+worker\s+in|defer|multitask|concurrently)\b'
 keyword_check      = r'\b(as|fulfilling|where(\s+we)?|which|when|matches|and|is(\s+(a|an|any)(?!{{identifier}}))?|are|could\s+be)\b'
 keyword_namespace  = r'\b((ex|im)port(\s+all)?|except|from|into|expose)\b'
-keyword_type       = r'\b(type|proof\s+of|bool|nat|int|frac|complex|num|str)\b'
-keyword_type_spec  = r'\b(impure|unpredictable|macro|implic\s+made|(suitable|subtype)\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|unsafe(\s+area)?|async\s+escaping|exclusively)\b'
+keyword_type       = r'\b(type|proof\s+of|bool|nat|int|frac|complex|num|(code)?str)\b'
+keyword_type_spec  = r'\b(impure|unpredictable|macro|implic\s+made|(suitable|subtype)\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|unsafe(\s+area)?|async\s+escaping|exclusively|precedes)\b'
 keyword_misc       = r'\b(panic|with|all|in|excl|any(\s+(suitable|of))?|optionally|recollected|listified|codified|stringified|ensure(s\s+safety)?|print(ln|err)?|otherwise|mod)\b'
 
 prelude = (
@@ -92,7 +92,8 @@ class TriHighlighter(EventListener):
 						if s != "" and s[0].islower() and re.match(prelude, s) == None:
 							funcs.add(s)
 					if islet and between(view, i, i+8) == ": type =":
-						types.add(s)
+						if s != "" and s[0].islower() and re.match(prelude, s) == None:
+							types.add(s)
 
 			i += 1
 
