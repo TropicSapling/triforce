@@ -63,6 +63,12 @@ contexts:
     - match: '"'
       scope: cs.punctuation.definition.string.begin.triforce
       push: cs-double-quoted-string
+    - match: '`'
+      scope: cs.punctuation.definition.string.begin.triforce
+      push: cs-codestr-small
+    - match: '===+'
+      scope: cs.punctuation.definition.string.begin.triforce
+      push: cs-codestr-large
 
     # Keywords
     - match: '\b{{keyword_ctrl}}\b'
@@ -196,6 +202,26 @@ contexts:
     - match: '\\.'
       scope: cs.constant.character.escape.triforce
     - match: '"'
+      scope: cs.punctuation.definition.string.end.triforce
+      pop: true
+
+  cs-codestr-small:
+    - meta_scope: cs.string.quoted.double.triforce
+    - match: '(\$\$|\\)(just|raw)?[({]'
+      scope: cs.string.quoted.double.triforce
+    - match: '\\.'
+      scope: cs.constant.character.escape.triforce
+    - match: '`'
+      scope: cs.punctuation.definition.string.end.triforce
+      pop: true
+
+  cs-codestr-large:
+    - meta_scope: cs.string.quoted.double.triforce
+    - match: '(\$\$|\\)(just|raw)?[({]'
+      scope: cs.string.quoted.double.triforce
+    - match: '\\.'
+      scope: cs.constant.character.escape.triforce
+    - match: '===+'
       scope: cs.punctuation.definition.string.end.triforce
       pop: true
 

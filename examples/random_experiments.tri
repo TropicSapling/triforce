@@ -3067,30 +3067,24 @@ let codestr type = `\(any)`
 
 {
 	// This instead matches a code string equal to the `any` type:
-	let cs_equal_to_any type = `\(<any>)`
+	let cs_eq_to_any type = `\(<any>)`
 
-	`any` is cs_equal_to_any
-	//> True
-	` _  ` is cs_equal_to_any
-	//> True
-
-	`any + any` is cs_equal_to_any
-	//> False
-	`int` is cs_equal_to_any
-	//> False
+	`any`       is cs_eq_to_any :== True
+	` any\n  `  is cs_eq_to_any :== True
+	`_`         is cs_eq_to_any :== True
+	`any + any` is cs_eq_to_any :== False
+	`print 123` is cs_eq_to_any :== False
 }
 
 {
-	// And finally this will *only* match specifically `any`:
+	// And finally this will *only* match specifically `any` (ignoring whitespace):
 	let cs_any type = `any`
 
-	`any` is cs_any
-	//> True
-	` any ` is cs_any
-	//> True
-
-	`_` is cs_any
-	//> False
+	`any`       is cs_any :== True
+	` any\n  `  is cs_any :== True
+	`_`         is cs_any :== False
+	`any + any` is cs_any :== False
+	`print 123` is cs_any :== False
 }
 
 /// -----------------------------------
@@ -3114,7 +3108,23 @@ let double = ...
 /// -----------------------------------
 
 // Defining an untyped, primitive `let` with anonymous macros:
-macro (pat codestr) (val) (scope codestr) =>
-	===========================
-	(\(pat) => \(scope)) \(val)
-	===========================
+##[_ precedes this]
+(macro (glob_scope codestr) => (
+	==================================================
+	([let (pat) = (val)] => (
+		\(glob_scope)
+	)) (
+		macro (pat codestr) (val) (scope codestr) => (
+			===========================
+			(\(pat) => \(scope)) \(val)
+			===========================
+		)
+	)
+	==================================================
+))
+
+// Thanks to the macro having lowest precedence, it will take
+// everything below itself as its input argument (glob_scope).
+
+// Now we can use it here like this
+let abc = 123
