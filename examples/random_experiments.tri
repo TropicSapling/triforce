@@ -2962,7 +2962,7 @@ func (x num) plus (y num) --> num {
 
 /// -----------------------------------
 
-func add `[#(x int), #(y int)]` --> int {
+func add '[#(x int), #(y int)]' --> int {
 	x + y
 }
 
@@ -2972,7 +2972,7 @@ add [1, 2]
 /// -----------------------------------
 
 // The return type can specify exactly what is wanted
-func `[#(x str), #(y str)]` swapped --> [y, x] {
+func '[#(x str), #(y str)]' swapped --> [y, x] {
 	[y, x]
 }
 
@@ -2983,8 +2983,8 @@ func `[#(x str), #(y str)]` swapped --> [y, x] {
 
 object (num)%
 
-func (x num) * `#(y num)%` {
-    x * y / 100
+func (x num) * '#(y num)%' {
+	x * y / 100
 }
 
 120 * 5% :== 6
@@ -2993,8 +2993,8 @@ func (x num) * `#(y num)%` {
 
 // Fibonacci limited to 50th number
 multi func fib (n nat in 0..50) --> nat {
-	fib `0` ==> 0,
-	fib `1` ==> 1,
+	fib '0' ==> 0,
+	fib '1' ==> 1,
 	fib (n) ==> fib(n-1) + fib(n-2)
 }
 
@@ -3023,7 +3023,7 @@ greet "Jane" on "Friday"
 
 /// -----------------------------------
 
-func __catch__ ((`...` ?? `...`) #(a) #(b)) {
+func __catch__ (('...' ?? '...') #(a) #(b)) {
 	| any precedes ?? // gives `??` lowest precedence
 	| a = #(x)%
 	| b = #(y)%
@@ -3047,7 +3047,7 @@ let [(x) plus (y)] type = ...
 // Alternatively, `let` could require `:` to precede the type
 let [a, b]: [int, int] = ...
 
-let (x) plus (y): `num` `num` => `num` = (x num) (y num) => {
+let (x) plus (y): 'num' 'num' => 'num' = (x num) (y num) => {
 	x + y
 }
 
@@ -3058,14 +3058,14 @@ let c = ...
 // Anonymous function/closure defining a local `??` operator among other inputs.
 // Obviously, you would normally not define such a complex function like this.
 // This is only for checking that the syntax still works in edge cases.
-(a) (b type) ((##[_ precedes this] (x) ?? `type`) #(x) #(y)) => {
+(a) (b type) ((##[_ precedes this] (x) ?? 'type') #(x) #(y)) => {
 	(a ?? b + c) :== (a ?? b) + c
 }
 
 /// -----------------------------------
 
 // Defining an untyped, primitive `let` with anonymous macros:
-macro (pat `\(_)`) (val) (scope `\(_)`) =>
+macro (pat `\(#'_')`) (val) (scope `\(#'_')`) =>
 	===========================
 	(\(pat) => \(scope)) \(val)
 	===========================
