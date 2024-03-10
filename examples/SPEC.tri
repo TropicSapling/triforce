@@ -39,16 +39,18 @@
 /// ----------
 /// ```
 /// Syntax     = [Expression];
-/// Expression = Specifiers Inputs;
-/// Specifiers = Specifier | "("Specifier [Specifier]…")"
-/// Inputs     = Input     | "("Input     [Input]…    ")"
+/// Expression = CmdLabels Inputs;
+/// CmdLabels  = CmdLabel | "(" CmdLabel [CmdLabel]… ")";
+/// Inputs     = Input    | "(" Input    [Input]…    ")";
 /// 
-/// Specifier = "comment" | "string" | "cstring" | "block"
-///           | "group"   | "mac"    | "fun"     | Precedence;
-/// 
+/// CmdLabel   = Precedence | SubCommand | Command;
 /// Precedence = "(" "_" "precedes" "this" ")";
+/// SubCommand = "comment" | "string" | "cstring" | "glob";
+/// Command    = "block"   | "group"  | "mac"     | "fun";
 /// 
-/// Lambda = [Spec]… [Param]… [Expr]… [Arg]…;
+/// Input     = ParamList | pattern | regex | token;
+/// ParamList = Parameter | "(" Parameter [Parameter]… ")";
+/// Parameter = "(" [Precedence] pattern ")" | identifier
 /// 
 /// Builtin = ...;
 /// ```
@@ -76,19 +78,19 @@ group ]
 // 2. Newlines
 // 3. Whitespace (excl. newlines)
 
-((_ precedes this) mac) ((glob_scope `\(_)`) _ (
+((_ precedes this) glob mac) (
 	======================================================================
 	fun ((((_ precedes this) let (pat `\(_)`) = (val)\\n(scope `\(_)`))) (
 		\(glob_scope)
 	) (
-		mac (_ (pat val scope) (
+		mac ((pat val scope) (
 			============================
 			fun (\(pat) \(scope) \(val))
 			============================
-		)) // how to get partial application to work with this syntax???
+		) ($pat $val $scope)) // `$` = unapplied arg
 	))
 	======================================================================
-) ()
+)
 
 
 /// ##################################################################################
