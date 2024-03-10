@@ -76,21 +76,19 @@ group ]
 // 2. Newlines
 // 3. Whitespace (excl. newlines)
 
-((_ precedes this) mac) (((glob_scope `\(_)`)) (
+((_ precedes this) mac) ((glob_scope `\(_)`) _ (
 	======================================================================
 	fun ((((_ precedes this) let (pat `\(_)`) = (val)\\n(scope `\(_)`))) (
 		\(glob_scope)
 	) (
-		mac ((pat val scope) (
+		mac (_ (pat val scope) (
 			============================
 			fun (\(pat) \(scope) \(val))
 			============================
-		))
+		)) // how to get partial application to work with this syntax???
 	))
 	======================================================================
-) (
-	// global scope here ... not quite correct!
-))
+) ()
 
 
 /// ##################################################################################
