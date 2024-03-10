@@ -3107,24 +3107,36 @@ let double = ...
 
 /// -----------------------------------
 
-// Defining an untyped, primitive `let` with anonymous macros:
+// Defining a primitive `let` with anonymous macros:
 ##[_ precedes this]
 (macro (glob_scope codestr) => (
-	==================================================
-	([let (pat) = (val)] => (
+	=======================================================================
+	([##[_ precedes this] let (pat codestr) = (val)\\n(scope codestr)] => (
 		\(glob_scope)
 	)) (
-		macro (pat codestr) (val) (scope codestr) => (
-			===========================
-			(\(pat) => \(scope)) \(val)
-			===========================
-		)
+		macro (pat) (val) (scope) => ===========================
+									 (\(pat) => \(scope)) \(val)
+									 ===========================
 	)
-	==================================================
+	=======================================================================
 ))
 
 // Thanks to the macro having lowest precedence, it will take
 // everything below itself as its input argument (glob_scope).
 
-// Now we can use it here like this
-let abc = 123
+let simple int = 123
+
+// Newline ending statement can always be avoided using grouping
+let multiline0 = {
+	123 +
+	456
+}
+
+// Binary operators are also special cased to allow for statement extension.
+// The statement is extended if there is a binary operator right after newline.
+let multiline1 = 123
+               + 456
+
+let multiline2 = int
+               | frac
+               | str
