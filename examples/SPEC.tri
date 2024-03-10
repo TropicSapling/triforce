@@ -34,8 +34,63 @@
 /// Lexical tokens are enclosed in "" or `` (i.e. "let", "=", "``" or `""`).
 /// Terminal tokens are lowercase. Non-terminal tokens are CamelCase.
 /// - `[a-b]` = characters a through b
+
+/// ### Syntax
+/// ----------
+/// ```
+/// Syntax     = [Expression];
+/// Expression = Specifiers Inputs;
+/// Specifiers = Specifier | "("Specifier [Specifier]…")"
+/// Inputs     = Input     | "("Input     [Input]…    ")"
 /// 
-/// TODO: specify formal syntax
+/// Specifier = "comment" | "string" | "cstring" | "block"
+///           | "group"   | "mac"    | "fun"     | Precedence;
+/// 
+/// Precedence = "(" "_" "precedes" "this" ")";
+/// 
+/// Lambda = [Spec]… [Param]… [Expr]… [Arg]…;
+/// 
+/// Builtin = ...;
+/// ```
+/// 
+/// TODO: specify more of formal syntax
+
+(comment block) (//       \n ())
+(string  block) ("        "  \\)
+(cstring block) (`        `  \\)
+(cstring block) ((x ===+) x  ()) // ===
+// Built-in block: parentheses
+
+group (+ - * /)
+group (@ % ? !)
+group ,
+group .
+group :
+group ;
+group {
+group }
+group [
+group ]
+// Built-in groups:
+// 1. Default
+// 2. Newlines
+// 3. Whitespace (excl. newlines)
+
+((_ precedes this) mac) (((glob_scope `\(_)`)) (
+	======================================================================
+	fun ((((_ precedes this) let (pat `\(_)`) = (val)\\n(scope `\(_)`))) (
+		\(glob_scope)
+	) (
+		mac ((pat val scope) (
+			============================
+			fun (\(pat) \(scope) \(val))
+			============================
+		))
+	))
+	======================================================================
+) (
+	// global scope here ... not quite correct!
+))
 
 
 /// ##################################################################################
