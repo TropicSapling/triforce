@@ -43,14 +43,14 @@
 /// CmdLabels  = CmdLabel | "(" CmdLabel [CmdLabel]… ")";
 /// Inputs     = Input    | "(" Input    [Input]…    ")";
 /// 
-/// CmdLabel   = Precedence | SubCommand | Command;
-/// Precedence = "(" "_" "precedes" "this" ")";
+/// CmdLabel   = SubCommand | Command;
 /// SubCommand = "comment" | "string" | "cstring" | "glob";
 /// Command    = "block"   | "group"  | "mac"     | "fun";
 /// 
-/// Input     = ParamList | pattern | regex | token;
-/// ParamList = Parameter | "(" Parameter [Parameter]… ")";
-/// Parameter = "(" [Precedence] pattern ")" | identifier
+/// Input      = ParamList | pattern | regex | token;
+/// ParamList  = Parameter | "(" Parameter [Parameter]… ")";
+/// Parameter  = "(" [Precedence] pattern ")" | identifier;
+/// Precedence = "(" "_" "precedes" "this" ")";
 /// 
 /// Builtin = ...;
 /// ```
@@ -61,7 +61,7 @@
 (string  block) ("        "  \\)
 (cstring block) (`        `  \\)
 (cstring block) ((x ===+) x  ()) // ===
-// Built-in block: parentheses
+/// Built-in block: parentheses
 
 group (+ - * /)
 group (@ % ? !)
@@ -73,12 +73,13 @@ group {
 group }
 group [
 group ]
-// Built-in groups:
-// 1. Default
-// 2. Newlines
-// 3. Whitespace (excl. newlines)
+/// Built-in groups:
+/// 1. Default
+/// 2. Newlines
+/// 3. Whitespace (excl. newlines)
 
-((_ precedes this) glob mac) (
+/// `(glob mac)` defines `glob_scope` as the `Expression` following it
+(glob mac) (
 	======================================================================
 	fun ((((_ precedes this) let (pat `\(_)`) = (val)\\n(scope `\(_)`))) (
 		\(glob_scope)
@@ -91,6 +92,24 @@ group ]
 	))
 	======================================================================
 )
+
+/// `Expression` following the `(glob mac)` starts here.
+/// Everything here and after is implicitly surrounded in parentheses.
+/// This is the case for every `Expression` following a previous `Expression`.
+/// 
+/// Meaning that, for example:
+/// > group (@ % ? !)
+/// > group ,
+/// > group .
+/// > ...
+/// <=>
+/// > group (@ % ? !) (
+/// >	 group , (
+/// >		 group . (
+/// >			 ...
+/// >		 )
+/// >	 )
+/// > )
 
 
 /// ##################################################################################
