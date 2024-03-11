@@ -41,7 +41,7 @@
 /// Formal syntax (incomplete):
 /// ```
 /// Syntax  = [CmdCall];
-/// CmdCall = "(" CmdCall ")" | (BlockDef|GroupDef|Lambda) [CmdCall];
+/// CmdCall = "(" CmdCall ")" | (BlockDef|GroupDef|TokenDef|Lambda) [CmdCall];
 /// 
 /// BlockDef = "block" BVariant BStart BEnd BEsc;
 /// BVariant = "(" BVariant ")" | "comment" | "string" | "cstring";
@@ -50,7 +50,9 @@
 /// BEsc     = regex_with_var_def_and_interpolation | "(" ")";
 /// 
 /// GroupDef = "group" GInput;
+/// TokenDef = "token" TInput;
 /// GInput   = "(" GInput ")" | token | "(" token [token]… ")";
+/// TInput   = "(" TInput ")" | token | "(" token [token]… ")";
 /// 
 /// Lambda   = "λ" LVariant ParamList FuncBody ArgList;
 /// LVariant = "(" LVariant ")" | "transform" | "function";
@@ -74,34 +76,31 @@ block comment //        \n    ()
 block string  "         "     \\
 block cstring `         `     \\
 block cstring \(x=)===+ \(x)  () // ===
-/// Built-in block: parentheses
-
-group (+ - * /)
-group (@ % ? !)
-group ,
-group .
-group :
-group ;
-group {
-group }
-group [
-group ]
-/// Built-in groups:
-/// 1. Default
-/// 2. Newlines
-/// 3. Whitespace (excl. newlines)
 
 /// Groups and blocks are used for deciding how to form tokens.
 /// - Comment blocks and whitespace groups are ignored and do not form tokens.
 /// - Remaining blocks & groups form tokens as has been defined.
-/// 
+group (+ - * / ^ < > & | =)
+group (@ % ? !)
+group (. ,)
+group (: ;)
+group ($ #)
+/// Built-in groups:
+/// - Default
+/// - Whitespace, excl. `\n`
+/// - `\n`
+
+/// The `token` command defines specific stand-alone tokens.
+token ({ } [ ] ~ ')
+/// Built-in tokens:
+/// - `(`
+/// - `)`
+
 /// Example following the above definitions:
 /// > let invalidstr str="123 + 456"//+789
-/// > 				   *=" + 789"
+/// > 				   *=(("*789"))
 /// =>
-/// tokens: [`let`, `invalidstr`, `str`, `=`, `"123 + 456"`, `*=`, `" + 789"`, `\n`]
-/// 
-/// TODO: should parentheses groups be one token or several? (i.e. `(invalid str)`)
+/// [let, invalidstr, str, =, "123 + 456", *=, (, (, "*789", ), ), \n]
 
 λ transform () (
 	==============================================================================
