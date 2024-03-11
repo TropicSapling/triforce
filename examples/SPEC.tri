@@ -34,26 +34,36 @@
 /// Lexical tokens are enclosed in "" or `` (i.e. "let", "=", "``" or `""`).
 /// Terminal tokens are lowercase. Non-terminal tokens are CamelCase.
 /// - `[a-b]` = characters a through b
-
-/// ### Syntax
-/// ----------
 /// 
-/// Formal syntax (incomplete):
+/// ### General
+/// -----------
 /// ```
 /// Syntax  = [CmdCall];
 /// CmdCall = "(" CmdCall ")" | (BlockDef|GroupDef|TokenDef|Lambda) [CmdCall];
+/// ```
 /// 
+/// ### Block Definitions
+/// ---------------------
+/// ```
 /// BlockDef = "block" BVariant BStart BEnd BEsc;
 /// BVariant = "(" BVariant ")" | "comment" | "string" | "cstring";
 /// BStart   = regex_with_var_def_and_interpolation;
 /// BEnd     = regex_with_var_def_and_interpolation;
 /// BEsc     = regex_with_var_def_and_interpolation | "(" ")";
+/// ```
 /// 
+/// ### Group/Token Definitions
+/// ---------------------------
+/// ```
 /// GroupDef = "group" GInput;
 /// TokenDef = "token" TInput;
 /// GInput   = "(" GInput ")" | token | "(" token [token]… ")";
 /// TInput   = "(" TInput ")" | token | "(" token [token]… ")";
+/// ```
 /// 
+/// ### λλλλλ
+/// ---------
+/// ```
 /// Lambda   = "λ" LVariant ParamList FuncBody ArgList;
 /// LVariant = "(" LVariant ")" | "transform" | "function";
 /// FuncBody = "(" FuncBody ")" | CmdCall     | block;
@@ -63,10 +73,13 @@
 /// 
 /// ArgList   = "(" [Argument]…  ")" | Argument;
 /// Argument  = ...                  | "$" token | block;
+/// ```
 /// 
+/// ### Misc.
+/// ---------
+/// ```
 /// Precedence = "#" "#" "(" "_" "precedes" "this" ")";
-/// 
-/// Builtin = ...;
+/// Builtin    = ...;
 /// ```
 /// 
 /// Comments and whitespace can be inserted anywhere.
