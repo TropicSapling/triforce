@@ -46,7 +46,7 @@
 /// ---------------------
 /// ```
 /// BlockDef = "block" BVariant BStart BEnd BEsc;
-/// BVariant = "(" BVariant ")" | "comment" | "string" | "cstring";
+/// BVariant = "(" BVariant ")" | "comment" | "string" | "cstring" | "custom";
 /// BStart   = regex_with_var_def_and_interpolation;
 /// BEnd     = regex_with_var_def_and_interpolation;
 /// BEsc     = regex_with_var_def_and_interpolation | "(" ")";
@@ -85,10 +85,14 @@
 /// Comments and whitespace can be inserted anywhere.
 /// Note however that newlines count as tokens and are sometimes used.
 
+/// -----------------------------------
+
+// Below is some sort of prelude/foundation to test the syntax
+
 block comment //        \n    ()
 block string  "         "     \\
 block cstring `         `     \\
-block cstring \(x=)===+ \(x)  () // ===
+block cstring \(x=)===+ \(x)  ()
 
 /// Groups and blocks are used for deciding how to form tokens.
 /// - Comment blocks and whitespace groups are ignored and do not form tokens.
@@ -121,9 +125,9 @@ token ({ } [ ] ~ ')
 		\(glob_scope)
 	) (
 		λ transform (pat val scope) (
-			============================
-			fun (\(pat) \(scope) \(val))
-			============================
+			=================================
+			λ function \(pat) \(scope) \(val)
+			=================================
 		) ($pat $val $scope) // `$` = unapplied arg
 	)
 	==============================================================================
@@ -145,6 +149,8 @@ token ({ } [ ] ~ ')
 /// >		 )
 /// >	 )
 /// > )
+
+let ({(expr)}) = λ function expr expr // unapplied `$expr` is implicit
 
 
 /// ##################################################################################
