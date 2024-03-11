@@ -40,23 +40,27 @@
 /// 
 /// Formal syntax (incomplete):
 /// ```
-/// Syntax  = [Command];
-/// Command = (BlockDef|GroupDef|Lambda) [Command];
+/// Syntax  = [CmdCall];
+/// CmdCall = "(" CmdCall ")" | (BlockDef|GroupDef|Lambda) [CmdCall];
 /// 
-/// BlockDef = "block" ("comment"|"string"|"cstring") BStart BEnd BEsc;
+/// BlockDef = "block" BVariant BStart BEnd BEsc;
+/// BVariant = "(" BVariant ")" | "comment" | "string" | "cstring";
 /// BStart   = regex_with_var_def_and_interpolation;
 /// BEnd     = regex_with_var_def_and_interpolation;
 /// BEsc     = regex_with_var_def_and_interpolation | "(" ")";
 /// 
-/// GroupDef = "group" (token | "(" token [token]… ")");
+/// GroupDef = "group" GInput;
+/// GInput   = "(" GInput ")" | token | "(" token [token]… ")";
 /// 
-/// Lambda    = "λ" ("transform"|"function") ParamList FuncBody ArgList;
-/// ParamList = "(" [Parameter]… ")" | Parameter;
-/// ArgList   = "(" [Argument]…  ")" | Argument;
-/// FuncBody  = Command | block;
+/// Lambda   = "λ" LVariant ParamList FuncBody ArgList;
+/// LVariant = "(" LVariant ")" | "transform" | "function";
+/// FuncBody = "(" FuncBody ")" | CmdCall     | block;
 /// 
+/// ParamList = "(" [Parameter]…     ")" | Parameter;
 /// Parameter = "(" [Precedence] ... ")" | ...;
-/// Argument  = ... | "$" token | block;
+/// 
+/// ArgList   = "(" [Argument]…  ")" | Argument;
+/// Argument  = ...                  | "$" token | block;
 /// 
 /// Precedence = "#" "#" "(" "_" "precedes" "this" ")";
 /// 
@@ -87,8 +91,20 @@ group ]
 /// 2. Newlines
 /// 3. Whitespace (excl. newlines)
 
+/// Groups and blocks are used for deciding how to form tokens.
+/// - Comment blocks and whitespace groups are ignored and do not form tokens.
+/// - Remaining blocks & groups form tokens as has been defined.
+/// 
+/// Example following the above definitions:
+/// > let invalidstr str="123 + 456"//+789
+/// > 				   *=" + 789"
+/// =>
+/// tokens: [`let`, `invalidstr`, `str`, `=`, `"123 + 456"`, `*=`, `" + 789"`, `\n`]
+/// 
+/// TODO: should parentheses groups be one token or several? (i.e. `(invalid str)`)
+
 λ transform () (
-	============================================================================
+	==============================================================================
 	λ function ((##(_ precedes this) let (pat `\(_)`) = (val)\\n(scope `\(_)`))) (
 		\(glob_scope)
 	) (
@@ -98,7 +114,7 @@ group ]
 			============================
 		) ($pat $val $scope) // `$` = unapplied arg
 	)
-	============================================================================
+	==============================================================================
 ) ()
 
 /// Everything here and after is passed as the final input to `λ`.
