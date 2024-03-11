@@ -39,7 +39,7 @@
 /// ----------
 /// ```
 /// Syntax     = [Expression];
-/// Expression = CmdLabels Inputs;
+/// Expression = (CmdLabels Inputs | comment | "\n") [Expression];
 /// CmdLabels  = CmdLabel | "(" CmdLabel [CmdLabel]… ")";
 /// Inputs     = Input    | "(" Input    [Input]…    ")";
 /// 
