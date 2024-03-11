@@ -37,30 +37,39 @@
 
 /// ### Syntax
 /// ----------
+/// 
+/// Formal syntax (incomplete):
 /// ```
-/// Syntax     = [Expression];
-/// Expression = (CmdLabels Inputs | comment | "\n") [Expression];
-/// CmdLabels  = CmdLabel | "(" CmdLabel [CmdLabel]… ")";
-/// Inputs     = Input    | "(" Input    [Input]…    ")";
+/// Syntax  = [Command];
+/// Command = (BlockDef|GroupDef|Lambda) [Command];
 /// 
-/// CmdLabel   = SubCommand | Command;
-/// SubCommand = "comment" | "string" | "cstring" | "glob";
-/// Command    = "block"   | "group"  | "mac"     | "fun";
+/// BlockDef = "block" ("comment"|"string"|"cstring") BStart BEnd BEsc;
+/// BStart   = regex_with_var_def_and_interpolation;
+/// BEnd     = regex_with_var_def_and_interpolation;
+/// BEsc     = regex_with_var_def_and_interpolation | "(" ")";
 /// 
-/// Input      = ParamList | pattern | regex | token;
-/// ParamList  = Parameter | "(" Parameter [Parameter]… ")";
-/// Parameter  = "(" [Precedence] pattern ")" | identifier;
-/// Precedence = "(" "_" "precedes" "this" ")";
+/// GroupDef = "group" (token | "(" token [token]… ")");
+/// 
+/// Lambda    = "λ" ("transform"|"function") ParamList FuncBody ArgList;
+/// ParamList = "(" [Parameter]… ")" | Parameter;
+/// ArgList   = "(" [Argument]…  ")" | Argument;
+/// FuncBody  = Command | block;
+/// 
+/// Parameter = "(" [Precedence] ... ")" | ...;
+/// Argument  = ... | "$" token | block;
+/// 
+/// Precedence = "#" "#" "(" "_" "precedes" "this" ")";
 /// 
 /// Builtin = ...;
 /// ```
 /// 
-/// TODO: specify more of formal syntax
+/// Comments and whitespace can be inserted anywhere.
+/// Note however that newlines count as tokens and are sometimes used.
 
-(comment block) (//       \n ())
-(string  block) ("        "  \\)
-(cstring block) (`        `  \\)
-(cstring block) ((x ===+) x  ()) // ===
+block comment //        \n    ()
+block string  "         "     \\
+block cstring `         `     \\
+block cstring \(x=)===+ \(x)  () // ===
 /// Built-in block: parentheses
 
 group (+ - * /)
@@ -78,24 +87,22 @@ group ]
 /// 2. Newlines
 /// 3. Whitespace (excl. newlines)
 
-/// `(glob mac)` defines `glob_scope` as the `Expression` following it
-(glob mac) (
-	======================================================================
-	fun ((((_ precedes this) let (pat `\(_)`) = (val)\\n(scope `\(_)`))) (
+λ transform () (
+	============================================================================
+	λ function ((##(_ precedes this) let (pat `\(_)`) = (val)\\n(scope `\(_)`))) (
 		\(glob_scope)
 	) (
-		mac ((pat val scope) (
+		λ transform (pat val scope) (
 			============================
 			fun (\(pat) \(scope) \(val))
 			============================
-		) ($pat $val $scope)) // `$` = unapplied arg
-	))
-	======================================================================
-)
+		) ($pat $val $scope) // `$` = unapplied arg
+	)
+	============================================================================
+) ()
 
-/// `Expression` following the `(glob mac)` starts here.
-/// Everything here and after is implicitly surrounded in parentheses.
-/// This is the case for every `Expression` following a previous `Expression`.
+/// Everything here and after is passed as the final input to `λ`.
+/// Every `Expression` takes what follows it as its final input.
 /// 
 /// Meaning that, for example:
 /// > group (@ % ? !)
