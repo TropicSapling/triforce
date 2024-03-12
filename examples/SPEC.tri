@@ -38,8 +38,9 @@
 /// ### General
 /// -----------
 /// ```
-/// Syntax  = [CmdCall];
-/// CmdCall = "(" CmdCall ")" | (BlockDef|GroupDef|TokenDef|Lambda) [CmdCall];
+/// Syntax   = [CmdCall];
+/// CmdCall  = "(" CmdCall ")" | (BlockDef|GroupDef|TokenDef|Lambda) [CmdCall] | FuncCall;
+/// FuncCall = token [token]…;
 /// ```
 /// 
 /// ### Block Definitions
