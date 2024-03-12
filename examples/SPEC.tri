@@ -86,9 +86,15 @@
 /// ### Misc.
 /// ---------
 /// ```
-/// Precedence = "#" "#" "(" "_" "precedes" "this" ")";
-/// Builtin    = ...;
+/// Precedence    = "##" "(" "_" "precedes" "this" ")";
+/// Associativity = "##" "(" "assoc" ("none"|"left"|"right") ")";
+/// Builtin       = ...;
 /// ```
+/// 
+/// Precedence relations form a DAG - see figure 1 in the following paper:
+/// [https://www.cse.chalmers.se/~nad/publications/danielsson-norell-mixfix.pdf]
+/// 
+/// Default associativity should probably be "none" or "left".
 /// 
 /// Comments and whitespace can be inserted anywhere.
 /// Note however that newlines count as tokens and are sometimes used.
