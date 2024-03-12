@@ -16,6 +16,15 @@ contexts:
   ################################################################################
   
   cs-all-universal:
+    - match: '(\\)[\\$]'
+      captures:
+        1: cc.constant.character.escape.triforce # cc for fade effect
+    - match: '\\(?![({])'
+      scope: cs.constant.character.escape.triforce
+      push:
+        - match: '.'
+          scope: cs.constant.character.escape.triforce
+          pop: true
     - match: '(?=(\$\$|\\)(just|raw)?[({])'
       push:
         - clear_scopes: true
@@ -27,15 +36,6 @@ contexts:
         - include: general
 
   cs-universal:
-    - match: '(\\)[\\$]'
-      captures:
-        1: cc.constant.character.escape.triforce
-    - match: '\\(?![({])'
-      scope: cs.constant.character.escape.triforce
-      push:
-        - match: '.'
-          scope: cs.constant.character.escape.triforce
-          pop: true
     - include: cs-all-universal
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
       scope: cs.storage.type.triforce
@@ -206,6 +206,7 @@ contexts:
       pop: true
 
   cs-codestr-small:
+    - include: cs-all-universal
     - meta_scope: cs.string.quoted.double.triforce
     - match: '(\$\$|\\)(just|raw)?[({]'
       scope: cs.string.quoted.double.triforce
@@ -216,6 +217,7 @@ contexts:
       pop: true
 
   cs-codestr-large:
+    - include: cs-all-universal
     - meta_scope: cs.string.quoted.double.triforce
     - match: '(\$\$|\\)(just|raw)?[({]'
       scope: cs.string.quoted.double.triforce

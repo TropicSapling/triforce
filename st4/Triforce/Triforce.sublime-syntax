@@ -30,18 +30,18 @@ contexts:
       escape: '(?<!\\)(`)'
       escape_captures:
         1: string.quoted.double.triforce markup.bold
-    - match: '\s+={3,33}(?!=)'
+    - match: '\s+={3,36}(?!=)'
       scope: string.quoted.double.triforce markup.bold
       embed: cs-general
       embed_scope: string.quoted.double.triforce meta.cs.triforce
-      escape: '(\s+={3,33}(?!=))'
+      escape: '(\s+={3,36}(?!=))'
       escape_captures:
         1: string.quoted.double.triforce markup.bold
-    - match: '\s+={34,}(?!=)'
+    - match: '\s+={37,}(?!=)'
       scope: string.quoted.double.triforce markup.bold
       embed: cs-general
       embed_scope: string.quoted.double.triforce meta.cs.triforce
-      escape: '(\s+={34,}(?!=))'
+      escape: '(\s+={37,}(?!=))'
       escape_captures:
         1: string.quoted.double.triforce markup.bold
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
@@ -293,7 +293,7 @@ contexts:
     - meta_scope: string.quoted.double.triforce
     - match: '(\\)[\\$]'
       captures:
-        1: cc.constant.character.escape.triforce
+        1: cc.constant.character.escape.triforce # cc for fade effect
     - match: '\\(?![({])'
       scope: constant.character.escape.triforce
       push:
