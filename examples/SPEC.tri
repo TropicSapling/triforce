@@ -166,11 +166,12 @@ deftokens ({ } [ ] ~ ')
 
 let ({(expr)}) = λ function expr expr // unapplied `$expr` is implicit
 
-let (println (x)\n(scope `\(_)`)) = λ function x {
-	runforeign rust
-	====================
-	println("{}", \(x));
-	====================
+let (println (x)\n(scope `\(_)`)) = λ transform x {
+	======================================
+	runforeign rust `println("{}", \(x));`
+
+	\(scope)
+	======================================
 }
 
 println "hello, world"
