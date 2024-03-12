@@ -39,14 +39,16 @@
 /// -----------
 /// ```
 /// Syntax   = [CmdCall];
-/// CmdCall  = "(" CmdCall ")" | (BlockDef|GroupDef|TokenDef|Lambda) [CmdCall] | FuncCall;
+/// CmdCall  = "(" CmdCall ")"
+/// 		 | (BlockDef|GroupDef|TokenDef|Lambda) [CmdCall]
+/// 		 | FuncCall;
 /// FuncCall = token [token]…;
 /// ```
 /// 
 /// ### Block Definitions
 /// ---------------------
 /// ```
-/// BlockDef = "block" BVariant BStart BEnd BEsc;
+/// BlockDef = "defblock" BVariant BStart BEnd BEsc;
 /// BVariant = "(" BVariant ")" | "comment" | "string" | "cstring" | "custom";
 /// BStart   = regex_with_var_def_and_interpolation;
 /// BEnd     = regex_with_var_def_and_interpolation;
@@ -56,8 +58,8 @@
 /// ### Group/Token Definitions
 /// ---------------------------
 /// ```
-/// GroupDef = "group" GInput;
-/// TokenDef = "token" TInput;
+/// GroupDef = "defgroup"  GInput;
+/// TokenDef = "deftokens" TInput;
 /// GInput   = "(" GInput ")" | token | "(" token [token]… ")";
 /// TInput   = "(" TInput ")" | token | "(" token [token]… ")";
 /// ```
@@ -76,6 +78,11 @@
 /// Argument  = ...                  | "$" token | block;
 /// ```
 /// 
+/// ### Foreign Function Interface
+/// ```
+/// RunForeign = "runforeign" "rust" block;
+/// ```
+/// 
 /// ### Misc.
 /// ---------
 /// ```
@@ -90,26 +97,26 @@
 
 // Below is some sort of prelude/foundation to test the syntax
 
-block comment //        \n    ()
-block string  "         "     \\
-block cstring `         `     \\
-block cstring \(x=)===+ \(x)  ()
+defblock comment //        \n    ()
+defblock string  "         "     \\
+defblock cstring `         `     \\
+defblock cstring \(x=)===+ \(x)  ()
 
 /// Groups and blocks are used for deciding how to form tokens.
 /// - Comment blocks and whitespace groups are ignored and do not form tokens.
 /// - Remaining blocks & groups form tokens as has been defined.
-group (+ - * / ^ < > & | =)
-group (@ % ? !)
-group (. ,)
-group (: ;)
-group ($ #)
+defgroup (+ - * / ^ < > & | =)
+defgroup (@ % ? !)
+defgroup (. ,)
+defgroup (: ;)
+defgroup ($ #)
 /// Built-in groups:
 /// - Default
 /// - Whitespace, excl. `\n`
 /// - `\n`
 
-/// The `token` command defines specific stand-alone tokens.
-token ({ } [ ] ~ ')
+/// The `deftokens` command defines specific stand-alone tokens.
+deftokens ({ } [ ] ~ ')
 /// Built-in tokens:
 /// - `(`
 /// - `)`
@@ -135,23 +142,32 @@ token ({ } [ ] ~ ')
 ) ()
 
 /// Everything here and after is passed as the final input to `λ`.
-/// Every `Expression` takes what follows it as its final input.
+/// Every `CmdCall` takes what follows it as its final input.
 /// 
 /// Meaning that, for example:
-/// > group (@ % ? !)
-/// > group ,
-/// > group .
+/// > defgroup (@ % ? !)
+/// > defgroup ,
+/// > defgroup .
 /// > ...
 /// <=>
-/// > group (@ % ? !) (
-/// >	 group , (
-/// >		 group . (
+/// > defgroup (@ % ? !) (
+/// >	 defgroup , (
+/// >		 defgroup . (
 /// >			 ...
 /// >		 )
 /// >	 )
 /// > )
 
 let ({(expr)}) = λ function expr expr // unapplied `$expr` is implicit
+
+let (println (x)\n(scope `\(_)`)) = λ function x {
+	runforeign rust
+	====================
+	println("{}", \(x));
+	====================
+}
+
+println "hello, world"
 
 
 /// ##################################################################################
