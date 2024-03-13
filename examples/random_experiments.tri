@@ -3126,32 +3126,38 @@ let double = ...
 
 let simple int = 123
 
-// Newline ending statement can always be avoided using grouping
-let multiline0 = {
+// Multiline `let` by enclosing the newline
+let multiline = {
 	123 +
 	456
 }
 
-// Binary operators are also special cased to allow for statement extension.
-// The statement is extended if there is a binary operator right after newline.
-let multiline1 = 123
-               + 456
-
-let multiline2 = int
-               | frac
-               | str
-
-// Additionally, ending the line with some form of bracket extends it:
-let multiline3 = 123 + {
-	let multiline4 = [
+let multiline = 123 + {
+	let multiline1 = [
 		4,
 		5,
 		6
 	]
 	
-	let multiline5 = 789 + (
+	let multiline2 = 789 + (
 		12 * 34 * 56
 	)
 	
-	multiline4 +..+ [multiline5, 78, 90]
+	multiline1 +..+ [multiline2, 78, 90]
 }
+
+func begin (expr) end {expr}
+
+// Works with custom enclosing functions
+let multiline = begin
+	123 + 456 + 789
+end
+
+// Binary operators are also special cased to allow for statement extension.
+// The statement is extended if there is a binary operator right after newline.
+let multiline = 123
+              + 456
+
+let multiline = int
+              | frac
+              | str
