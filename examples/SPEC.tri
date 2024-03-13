@@ -72,9 +72,10 @@
 /// 
 /// Parameter = "(" ParName [ParType] ")";
 /// ParName   = "(" [Precedence] FuncPart [FuncPart]… ")" | token;
+/// ParType   = ...;
 /// FuncPart  = Parameter | token;
 /// 
-/// Argument  = Expression | "$" [token];
+/// Argument = Expression | "$" [token];
 /// ```
 /// 
 /// ### Foreign Function Interface
