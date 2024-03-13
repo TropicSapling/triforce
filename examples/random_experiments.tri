@@ -3161,3 +3161,11 @@ let multiline = 123
 let multiline = int
               | frac
               | str
+
+// Custom special cases are also possible by "extending" `let`:
+macro let (pattern codestr) = (val_p1 codestr) and\n(val_p2 codestr)\n(scope codestr) {
+	... // implementation is left as an exercise to the reader
+}
+
+let multiline = True and
+                False
