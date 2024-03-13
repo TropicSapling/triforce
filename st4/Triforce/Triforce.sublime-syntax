@@ -30,18 +30,18 @@ contexts:
       escape: '(?<!\\)(`)'
       escape_captures:
         1: string.quoted.double.triforce markup.bold
-    - match: '\s+={3,36}(?!=)'
+    - match: '\s+={3,40}(?!=)'
       scope: string.quoted.double.triforce markup.bold
       embed: cs-general
       embed_scope: string.quoted.double.triforce meta.cs.triforce
-      escape: '(\s+={3,36}(?!=))'
+      escape: '(\s+={3,40}(?!=))'
       escape_captures:
         1: string.quoted.double.triforce markup.bold
-    - match: '\s+={37,}(?!=)'
+    - match: '\s+={41,}(?!=)'
       scope: string.quoted.double.triforce markup.bold
       embed: cs-general
       embed_scope: string.quoted.double.triforce meta.cs.triforce
-      escape: '(\s+={37,}(?!=))'
+      escape: '(\s+={41,}(?!=))'
       escape_captures:
         1: string.quoted.double.triforce markup.bold
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'

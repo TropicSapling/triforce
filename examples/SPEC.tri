@@ -38,10 +38,10 @@
 /// ### General
 /// -----------
 /// ```
-/// Syntax   = [CmdCall];
-/// CmdCall  = "(" CmdCall ")"
-/// 		 | (BlockDef|GroupDef|TokenDef|Lambda) [CmdCall]
-/// 		 | FuncCall;
+/// Syntax     = [Expression];
+/// Expression = CmdCall | FuncCall | block;
+/// 
+/// CmdCall  = (BlockDef|GroupDef|TokenDef|Lambda) [Expression];
 /// FuncCall = token [token]…;
 /// ```
 /// 
@@ -49,7 +49,7 @@
 /// ---------------------
 /// ```
 /// BlockDef = "defblock" BVariant BStart BEnd BEsc;
-/// BVariant = "(" BVariant ")" | "comment" | "string" | "cstring" | "custom";
+/// BVariant = "comment" | "string" | "cstring" | "custom";
 /// BStart   = regex_with_var_def_and_interpolation;
 /// BEnd     = regex_with_var_def_and_interpolation;
 /// BEsc     = regex_with_var_def_and_interpolation | "(" ")";
@@ -58,24 +58,23 @@
 /// ### Group/Token Definitions
 /// ---------------------------
 /// ```
-/// GroupDef = "defgroup"  GInput;
-/// TokenDef = "deftokens" TInput;
-/// GInput   = "(" GInput ")" | token | "(" token [token]… ")";
-/// TInput   = "(" TInput ")" | token | "(" token [token]… ")";
+/// GroupDef = "defgroup"  "(" [token]… ")";
+/// TokenDef = "deftokens" "(" [token]… ")";
 /// ```
 /// 
 /// ### λλλλλ
 /// ---------
 /// ```
-/// Lambda   = "λ" LVariant ParamList FuncBody ArgList;
-/// LVariant = "(" LVariant ")" | "transform" | "function";
-/// FuncBody = "(" FuncBody ")" | CmdCall     | block;
+/// Lambda    = "λ" ("transform"|"function") ParamList FuncBody [ArgList];
+/// ParamList = "(" [Parameter]… ")";
+/// FuncBody  = "(" [Expression] ")";
+/// ArgList   = "(" [Argument]…  ")";
 /// 
-/// ParamList = "(" [Parameter]…     ")" | Parameter;
-/// Parameter = "(" [Precedence] ... ")" | ...;
+/// Parameter = "(" ParName [ParType] ")";
+/// ParName   = "(" [Precedence] FuncPart [FuncPart]… ")" | token;
+/// FuncPart  = Parameter | token;
 /// 
-/// ArgList   = "(" [Argument]…  ")" | Argument;
-/// Argument  = ...                  | "$" token | block;
+/// Argument  = Expression | "$" [token];
 /// ```
 /// 
 /// ### Foreign Function Interface
@@ -134,17 +133,17 @@ deftokens ({ } [ ] ~ ')
 /// [let, invalidstr, str, =, "123 + 456", *=, (, (, "*789", ), ), \n]
 
 λ transform () (
-	==============================================================================
-	λ function ((##(_ precedes this) let (pat `\(_)`) = (val)\\n(scope `\(_)`))) (
+	================================================================================
+	λ function (((##(_ precedes this) let (pat `\(_)`) = (val)\\n(scope `\(_)`)))) (
 		\(glob_scope)
 	) (
-		λ transform (pat val scope) (
-			====================================
-			λ function \\(pat) \\(scope) \\(val)
-			====================================
+		λ transform ((pat) (val) (scope)) (
+			========================================
+			λ function (\\(pat)) \\(scope) (\\(val))
+			========================================
 		) ($pat $val $scope) // `$` = unapplied arg
 	)
-	==============================================================================
+	================================================================================
 ) ()
 
 /// Everything here and after is passed as the final input to `λ`.
@@ -164,15 +163,15 @@ deftokens ({ } [ ] ~ ')
 /// >	 )
 /// > )
 
-let ({(expr)}) = λ function expr expr // unapplied `$expr` is implicit
+let ({(expr)}) = λ function ((expr)) (expr) // unapplied `$expr` is implicit
 
-let (println (x)\n(scope `\(_)`)) = λ transform x {
+let (println (x)\n(scope `\(_)`)) = λ transform ((x)) (
 	======================================
 	runforeign rust `println("{}", \(x));`
 
 	\(scope)
 	======================================
-}
+)
 
 println "hello, world"
 
