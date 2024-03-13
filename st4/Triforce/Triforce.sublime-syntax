@@ -422,6 +422,8 @@ contexts:
   # Should clean up below; a lot of boilerplate that can be grouped together
 
   func-id-search:
+    - match: '\\n'
+      scope: constant.character.escape.triforce
     - match: '(\\)(.)'
       captures:
         1: cc.constant.character.escape.triforce # cc for fade effect

@@ -155,7 +155,7 @@ contexts:
 
   cs-line-comments:
     - include: cs-all-universal
-    # Line comments within code comments
+    # Line comments within code strings
     - match: '//'
       scope: punctuation.definition.comment.triforce
       push: cs-line-comment
@@ -345,6 +345,8 @@ contexts:
   # Should clean up below; a lot of boilerplate that can be grouped together
 
   cs-func-id-search:
+    - match: '\\n'
+      scope: cs.constant.character.escape.triforce
     - match: '(\\)(.)'
       captures:
         1: cs.constant.character.escape.triforce
@@ -430,7 +432,7 @@ contexts:
     - match: '\$'
       scope: cs.variable.parameter.triforce
       push: cs-op-dollar
-    - match: '(has)|[;,|}]' # end of object declaration
+    - match: '(has)|[\n;,|}]' # end of object declaration
       captures:
         1: cs.storage.type.triforce
         2: punctuation.terminator.triforce
@@ -459,3 +461,4 @@ contexts:
       pop: true
     - match: '{{identifier}}'
       scope: cs.entity.name.function.triforce
+      pop: true

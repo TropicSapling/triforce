@@ -2829,11 +2829,11 @@ start proc "ping" with args ["-c 3", "google.com"]
 
 // Go
 func SumIntsOrFloats[K comparable, V int64 | float64](m map[K]V) V {
-    var s V
-    for _, v := range m {
-        s += v
-    }
-    return s
+	var s V
+	for _, v := range m {
+		s += v
+	}
+	return s
 }
 
 SumIntsOrFloats[string, int64](map[string]int64{
@@ -2999,8 +2999,8 @@ multi func fib (n nat in 0..50) --> nat {
 }
 
 fib 2 :== fib(2-1) + fib(2-2)
-	  :== fib 1    + fib 0
-	  :== 1
+      :== fib 1    + fib 0
+      :== 1
 
 /// -----------------------------------
 
@@ -3115,8 +3115,8 @@ let double = ...
 		\(glob_scope)
 	)) (
 		macro (pat) (val) (scope) => ===========================
-									 (\(pat) => \(scope)) \(val)
-									 ===========================
+		                             (\(pat) => \(scope)) \(val)
+		                             ===========================
 	)
 	=======================================================================
 ))
@@ -3163,9 +3163,18 @@ let multiline = int
               | str
 
 // Custom special cases are also possible by "extending" `let`:
-macro let (pattern codestr) = (val_p1 codestr) and\n(val_p2 codestr)\n(scope codestr) {
+macro let (pattern codestr) = (val_p1 codestr) &&\n(val_p2 codestr)\n(scope codestr) {
 	... // implementation is left as an exercise to the reader
 }
 
-let multiline = True and
+let multiline = True  &&
                 False
+
+// Also possible to define so that something extends a statement in general
+func (cond1) &&\n (cond2) {...}
+func (cond1) \n&& (cond2) {...}
+
+println True  &&
+        False &&
+        ...
+     && ???

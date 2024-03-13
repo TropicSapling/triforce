@@ -27,6 +27,22 @@ contexts:
           captures:
             1: cc.string.quoted.double.triforce markup.bold
           pop: true
+    - match: '\s+={3,36}(?!=)'
+      scope: cc.string.quoted.double.triforce markup.bold
+      push:
+        - meta_scope: cc.string.quoted.double.triforce meta.cs.triforce
+        - match: '(\s+={3,36}(?!=))'
+          captures:
+            1: cc.string.quoted.double.triforce markup.bold
+          pop: true
+    - match: '\s+={37,}(?!=)'
+      scope: cc.string.quoted.double.triforce markup.bold
+      push:
+        - meta_scope: cc.string.quoted.double.triforce meta.cs.triforce
+        - match: '(\s+={37,}(?!=))'
+          captures:
+            1: cc.string.quoted.double.triforce markup.bold
+          pop: true
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
       scope: cc.storage.type.triforce
       push:
@@ -267,6 +283,8 @@ contexts:
   # Should clean up below; a lot of boilerplate that can be grouped together
 
   cc-func-id-search:
+    - match: '\\n'
+      scope: cc.constant.character.escape.triforce
     - match: '(\\)(.)'
       captures:
         1: cc.constant.character.escape.triforce
@@ -349,7 +367,7 @@ contexts:
     - match: '\$'
       scope: cc.variable.parameter.triforce
       push: cc-op-dollar
-    - match: '(has)|[;,|}]' # end of object declaration
+    - match: '(has)|[\n;,|}]' # end of object declaration
       captures:
         1: cc.storage.type.triforce
         2: punctuation.terminator.triforce
@@ -377,3 +395,4 @@ contexts:
       pop: true
     - match: '{{identifier}}'
       scope: cc.entity.name.function.triforce
+      pop: true
