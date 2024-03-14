@@ -89,7 +89,7 @@
 /// Type = "(" [Type] ")"
 ///      | "<" [Type] ">"
 ///      | TypeOp
-/// 	 | MatPat
+///      | MatPat
 ///      | Single
 /// 
 /// TypeOp = [Type] "&" [Type]
