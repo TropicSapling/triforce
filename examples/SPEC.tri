@@ -70,12 +70,28 @@
 /// FuncBody  = "(" [Expression] ")";
 /// ArgList   = "(" [Argument]…  ")";
 /// 
-/// Parameter = "(" ParName [ParType] ")";
+/// Parameter = "(" ParName [Type] ")" | "'" Type "'";
 /// ParName   = "(" [Precedence] FuncPart [FuncPart]… ")" | token;
-/// ParType   = ...;
 /// FuncPart  = Parameter | token;
 /// 
-/// Argument = Expression | "$" [token];
+/// Argument = Expression | Builtin | "$" [token];
+/// ```
+/// 
+/// ### Type System
+/// ---------------
+/// ```
+/// Type = "(" [Type] ")"
+///      | "<" [Type] ">"
+///      | TypeOp
+/// 	 | MatPat
+///      | Single;
+/// 
+/// TypeOp = [Type] "&" [Type]
+///        | [Type] "|" [Type]
+///        |        "~" [Type];
+/// 
+/// MatPat = ("#" Parameter | token) ["#" Parameter | token]…;
+/// Single = Builtin | block;
 /// ```
 /// 
 /// ### Foreign Function Interface
@@ -88,7 +104,7 @@
 /// ```
 /// Precedence    = "##" "(" "_" "precedes" "this" ")";
 /// Associativity = "##" "(" "assoc" ("none"|"left"|"right") ")";
-/// Builtin       = ...;
+/// Builtin       = "..." | "_";
 /// ```
 /// 
 /// Precedence relations form a DAG - see figure 1 in the following paper:

@@ -3070,7 +3070,7 @@ let codestr type = `\(any)`
 	let cs_eq_to_any type = `\(<any>)`
 
 	`any`       is cs_eq_to_any :== True
-	` any\n  `  is cs_eq_to_any :== True
+	`  any   `  is cs_eq_to_any :== True
 	`_`         is cs_eq_to_any :== True
 	`any + any` is cs_eq_to_any :== False
 	`print 123` is cs_eq_to_any :== False
@@ -3081,7 +3081,7 @@ let codestr type = `\(any)`
 	let cs_any type = `any`
 
 	`any`       is cs_any :== True
-	` any\n  `  is cs_any :== True
+	`  any   `  is cs_any :== True
 	`_`         is cs_any :== False
 	`any + any` is cs_any :== False
 	`print 123` is cs_any :== False
