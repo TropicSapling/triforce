@@ -11,7 +11,7 @@ Group      = "("Expression")"
 Option     = "["Expression"]"["…"]
 ```
 
-Lexical tokens are enclosed in "" or `` (i.e. "let", "=", "``" or `""`).
+Lexical tokens are enclosed in "" or \`\` (i.e. "let", "=", "``" or \`""\`).
 Terminal tokens are lowercase. Non-terminal tokens are CamelCase.
 - `[a-b]` = characters a through b
 
