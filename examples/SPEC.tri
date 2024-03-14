@@ -71,7 +71,7 @@
 /// ArgList   = "(" [Argument]…  ")";
 /// 
 /// Parameter = "(" ParName [Type] ")" | "'" Type "'";
-/// ParName   = "(" [Precedence] FuncPart [FuncPart]… ")" | token;
+/// ParName   = "(" [AttrList] FuncPart [FuncPart]… ")" | token;
 /// FuncPart  = Parameter | token;
 /// 
 /// Argument = Expression | Builtin | "$" [token];
@@ -95,6 +95,7 @@
 /// ```
 /// 
 /// ### Foreign Function Interface
+/// ------------------------------
 /// ```
 /// RunForeign = "runforeign" "rust" block;
 /// ```
@@ -102,9 +103,13 @@
 /// ### Misc.
 /// ---------
 /// ```
-/// Precedence    = "##" "(" "_" "precedes" "this" ")";
-/// Associativity = "##" "(" "assoc" ("none"|"left"|"right") ")";
-/// Builtin       = "..." | "_";
+/// AttrList  = "##" "(" [Attribute]… ")";
+/// Attribute = "(" (PreceAttr|AssocAttr) ")";
+/// 
+/// PreceAttr = Builtin "precedes" Builtin;
+/// AssocAttr = "assoc" ("none"|"left"|"right");
+/// 
+/// Builtin = "this" | "..." | "_";
 /// ```
 /// 
 /// Precedence relations form a DAG - see figure 1 in the following paper:
@@ -150,8 +155,8 @@ deftokens ({ } [ ] ~ ')
 /// [let, invalidstr, str, =, "123 + 456", *=, (, (, "*789", ), ), \n]
 
 λ transform () (
-	================================================================================
-	λ function (((##(_ precedes this) let (pat `\(_)`) = (val)\\n(scope `\(_)`)))) (
+	==================================================================================
+	λ function (((##((_ precedes this)) let (pat `\(_)`) = (val)\\n(scope `\(_)`)))) (
 		\(glob_scope)
 	) (
 		λ transform ((pat) (val) (scope)) (
@@ -160,7 +165,7 @@ deftokens ({ } [ ] ~ ')
 			========================================
 		) ($pat $val $scope) // `$` = unapplied arg
 	)
-	================================================================================
+	==================================================================================
 ) ()
 
 /// Everything here and after is passed as the final input to `λ`.
