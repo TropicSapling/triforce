@@ -43,9 +43,9 @@
 /// -----------
 /// ```
 /// Syntax     = [Expression]
-/// Expression = CmdCall|FuncUse|block
+/// Expression = CmdUse|FuncUse|block
 /// 
-/// CmdCall = (BlockDef|GroupDef|TokenDef|Lambda) [Expression]
+/// CmdUse  = (BlockDef|GroupDef|TokenDef|Lambda) [Expression]
 /// FuncUse = (IdentToken|Argument) [IdentToken|Argument]…
 /// ```
 /// 
@@ -166,8 +166,8 @@ deftokens ({ } [ ] ~ ')
 /// [let, invalidstr, str, =, "123 + 456", *=, (, (, "*789", ), ), \n]
 
 λ transform () (
-	==================================================================================
-	λ function (((##((_ precedes this)) let (pat `\(_)`) = (val)\\n(scope `\(_)`)))) (
+	======================================================================================
+	λ function (((##((_ precedes this)) let (pat) = (val)\\n(scope)) λ transform # # $)) (
 		\(glob_scope)
 	) (
 		λ transform ((pat) (val) (scope)) (
@@ -176,7 +176,7 @@ deftokens ({ } [ ] ~ ')
 			========================================
 		) ($pat $val $scope) // `$` = unapplied arg
 	)
-	==================================================================================
+	======================================================================================
 ) ()
 
 /// Everything here and after is passed as the final input to `λ`.
