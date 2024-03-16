@@ -42,19 +42,25 @@
 /// ### General
 /// -----------
 /// ```
-/// Syntax     = [Expression]
-/// Expression = CmdUse|FuncUse|block
+/// Syntax   = [ListExpr]
+/// ListExpr = "("    [CmdUse|FuncUse|block] ")"
+///          | "(>>>" [CmdUse|FuncUse|block]
 /// 
-/// CmdUse  = (BlockDef|GroupDef|TokenDef|Lambda) [Expression]
+/// CmdUse  = BlockDef|GroupDef|TokenDef|Lambda
 /// FuncUse = (IdentToken|Argument) [IdentToken|Argument]…
 /// ```
 /// 
-/// Note that `FuncUse` must always contain *at least* one `IdentToken`.
+/// The special `(>>>` open-ended parenthesis encloses everything that follows it
+/// within its own scope. It is always paired with a closing parenthesis implicitly
+/// placed at the end of the scope. Note that this scope can continue past EOF if the
+/// file has been included into another file; this allows for importing definitions.
+/// 
+/// Note also that `FuncUse` must always contain *at least* one `IdentToken`.
 /// 
 /// ### Block Definitions
 /// ---------------------
 /// ```
-/// BlockDef = "defblock" BVariant BStart BEnd BEsc
+/// BlockDef = "defblock" BVariant BStart BEnd BEsc ListExpr
 /// BVariant = "comment"|"string"|"cstring"|"custom"
 /// BStart   = regex_with_var_def_and_interpolation
 /// BEnd     = regex_with_var_def_and_interpolation
@@ -64,24 +70,33 @@
 /// ### Group/Token Definitions
 /// ---------------------------
 /// ```
-/// GroupDef = "defgroup"  "(" [token]… ")"
-/// TokenDef = "deftokens" "(" [token]… ")"
+/// GroupDef = "defgroup"  "(" [token]… ")" ListExpr
+/// TokenDef = "deftokens" "(" [token]… ")" ListExpr
 /// ```
 /// 
 /// ### λλλλλ
 /// ---------
 /// ```
-/// Lambda    = "λ" ("transform"|"function") ParamList FuncBody [ArgList]
-/// ParamList = "(" [Parameter]… ")"
-/// FuncBody  = "(" [Expression] ")"
-/// ArgList   = "(" [Argument]…  ")"
+/// Lambda    = "λ" ("transform"|"function") ParamList ListExpr [ArgList]
+/// ParamList = "("    [Parameter]… ")"
+/// ArgList   = "("    [Argument]…  ")"
+///           | "(>>>" [Argument]…
 /// 
-/// Parameter = "(" ParName [Type] ")" | "'" Type "'"
+/// Parameter = "("    ParName [Type] ")"
+///           | "(>>>" ParName [Type] ")"
+///           | "'" Type "'"
+/// 
+/// Argument = ListExpr | Builtin | "$"[IdentToken]
+/// 
 /// ParName   = "(" [AttrList] FuncPart [FuncPart]… ")" | IdentToken
 /// FuncPart  = Parameter|IdentToken
-/// 
-/// Argument = Expression | Builtin | "$" [IdentToken]
 /// ```
+/// 
+/// **NOTE:**
+/// `(>>>` as part of `Parameter` here indicates something slightly different than it
+/// normally does. It will not enclose everything that follows it, but instead act as
+/// a normal start-of-parameter - apart from also declaring that an open-ended `(>>>`
+/// should be automatically placed ahead of the parameter/argument at application.
 /// 
 /// ### Type System
 /// ---------------
@@ -96,7 +111,7 @@
 ///        | [Type] "|" [Type]
 ///        |        "~" [Type]
 /// 
-/// MatPat = ("#" Parameter | IdentToken) ["#" Parameter | IdentToken]…
+/// MatPat = ("#"Parameter | IdentToken) ["#"Parameter | IdentToken]…
 /// Single = Builtin|block
 /// ```
 /// 
@@ -135,29 +150,31 @@
 
 // Below is some sort of prelude/foundation to test the syntax
 
-defblock comment //        \n    ()
-defblock string  "         "     \\
-defblock cstring `         `     \\
-defblock cstring \(x=)===+ \(x)  ()
+(>>>
+defblock comment //        \n    () (>>>
+defblock string  "         "     \\ (>>>
+defblock cstring `         `     \\ (>>>
+defblock cstring \(x=)===+ \(x)  () (>>>
 
 /// Groups and blocks are used for deciding how to form tokens.
 /// - Comment blocks and whitespace groups are ignored and do not form tokens.
 /// - Remaining blocks & groups form tokens as has been defined.
-defgroup (+ - * / ^ < > & | =)
-defgroup (@ % ? !)
-defgroup (. ,)
-defgroup (: ;)
-defgroup ($ #)
+defgroup (+ - * / ^ < > & | =) (>>>
+defgroup (@ % ? !)             (>>>
+defgroup (. ,)                 (>>>
+defgroup (: ;)                 (>>>
+defgroup ($ #)                 (>>>
 /// Built-in groups:
 /// - Default
 /// - Whitespace, excl. `\n`
 /// - `\n`
 
 /// The `deftokens` command defines specific stand-alone tokens.
-deftokens ({ } [ ] ~ ')
+deftokens ({ } [ ] ~ ') (>>>
 /// Built-in tokens:
 /// - `(`
 /// - `)`
+/// - `(>>>`
 
 /// Example following the above definitions:
 /// > let invalidstr str="123 + 456"//+789
@@ -165,9 +182,9 @@ deftokens ({ } [ ] ~ ')
 /// =>
 /// [let, invalidstr, str, =, "123 + 456", *=, (, (, "*789", ), ), \n]
 
-λ transform () (
-	======================================================================================
-	λ function (((##((_ precedes this)) let (pat) = (val)\\n(scope)) λ transform # # $)) (
+λ transform ((glob_scope)) (
+	===================================================================
+	λ function (((let (pat) = (val)\\n(>>>scope)) λ transform # # $)) (
 		\(glob_scope)
 	) (
 		λ transform ((pat) (val) (scope)) (
@@ -176,29 +193,25 @@ deftokens ({ } [ ] ~ ')
 			========================================
 		) ($pat $val $scope) // `$` = unapplied arg
 	)
-	======================================================================================
-) ()
+	===================================================================
+) (>>>(>>>
 
 /// Everything here and after is passed as the final input to `λ`.
-/// Every `CmdCall` takes what follows it as its final input.
+/// This is because `(>>>` is a special, open-ended parenthesis.
 /// 
-/// Meaning that, for example:
-/// > defgroup (@ % ? !)
-/// > defgroup ,
-/// > defgroup .
+/// Meaning that:
+/// > λ transform ((glob_scope)) (...) (>>>(>>>
 /// > ...
 /// <=>
-/// > defgroup (@ % ? !) (
-/// >	 defgroup , (
-/// >		 defgroup . (
-/// >			 ...
-/// >		 )
-/// >	 )
-/// > )
+/// > λ transform ((glob_scope)) (...) ((
+/// >	 ...
+/// > ))
+/// 
+/// That is, the global scope is passed as the `glob_scope` argument.
 
 let ({(expr)}) = λ function ((expr)) (expr) // unapplied `$expr` is implicit
 
-let (println (x)\n(scope `\(_)`)) = λ transform ((x)) (
+let (println (x)\n(>>>scope)) = λ transform ((x)) (
 	======================================
 	runforeign rust `println("{}", \(x));`
 
@@ -207,6 +220,7 @@ let (println (x)\n(scope `\(_)`)) = λ transform ((x)) (
 )
 
 println "hello, world"
+// `(>>>` automatically inserted here, per the above function definition
 
 
 /// ##################################################################################
