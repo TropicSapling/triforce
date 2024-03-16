@@ -230,7 +230,7 @@ println "hello, world"
 /// ## Type system
 /// ==============
 /// 
-/// `_` = the set of all types
+/// `_` = the set of all types (excluding itself)
 /// 
 /// The type system is loosely based on set theory. It follows similar rules, but has
 /// a different syntax specially crafted for programming. A type is defined as a set
