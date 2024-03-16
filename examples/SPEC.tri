@@ -111,8 +111,10 @@
 ///        | [Type] "|" [Type]
 ///        |        "~" [Type]
 /// 
-/// MatPat = ("#"Parameter | IdentToken) ["#"Parameter | IdentToken]…
+/// MatPat = (Match|token) [Match|token]…
 /// Single = Builtin|block
+/// 
+/// Match = "$"[IdentToken] | "#"[Parameter]
 /// ```
 /// 
 /// ### Attributes
@@ -240,33 +242,35 @@ println "hello, world"
 /// ------------
 
 // The empty, uninhabited bottom type is an empty set without values.
-let N/A: type = |;
+let (N/A) type = |
 // It is the complement of the universal top type, which contains all values:
-let any: type = _;
+let any type = _
 
-~any :== ~_ :== N/A;
+~any :== ~_ :== N/A
 
 // Since the empty `N/A` type matches nothing, this "function" cannot be called.
-func Object ($field as any) (N/A);
+func Object (field any) (N/A);
 // Instead, we can partially apply it to use it as an object:
-let obj = Object "field value";
+let obj = Object "field value"
 
 // The singleton type is a set of one value.
-let mut typ = "singleton";
+let mut typ = "singleton"
 // Values can be added to a type using the `|` ("or") operator.
-typ |= 1|2|3;
+typ |= 1|2|3
 // As well as filtered using the `&` ("and") operator.
-typ &= 2|"singleton";
+typ &= 2|"singleton"
 
-typ :== "singleton"|2;
+typ :== "singleton"|2
 
 // Best to remove mutability when no longer needed
-let typ = typ;
+let typ = typ
 
 // TODO ... [to fully solve: see "N/A - the type with no value" in random_experiments]
 
 // TODO more:
 // - type equality, should order matter or not?
+//       - Probably best to ignore order of elements. Order seemed helpful in some
+//         cases, but those cases have (better?) workarounds + order causes issues.
 // - maybe have `super` keyword for when superposition types should be allowed?
 // - subset + member checking combined by default, or member checking only by default?
 // - **NOTE:** Subset checking means the empty set `|` matches itself.
