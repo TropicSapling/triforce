@@ -268,9 +268,10 @@ let typ = typ;
 // TODO more:
 // - type equality, should order matter or not?
 // - maybe have `super` keyword for when superposition types should be allowed?
-// - subset checking by default, or checking just if in set by default?
+// - subset + member checking combined by default, or member checking only by default?
 // - **NOTE:** Subset checking means the empty set `|` matches itself.
 //             Meaning there would be no way to fully block an argument application.
+//             (Unless make special exception for the empty type of course)
 
 
 /// ##################################################################################
