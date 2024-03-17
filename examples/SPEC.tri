@@ -42,11 +42,17 @@
 /// ### General
 /// -----------
 /// ```
-/// Syntax   = [ListExpr]
-/// ListExpr = "("    [CmdUse|FuncUse|block] ")"
-///          | "(>>>" [CmdUse|FuncUse|block]
+/// Syntax     = [Expression]
+/// Expression = ListExpr|Value
 /// 
-/// CmdUse  = BlockDef|GroupDef|TokenDef|Lambda
+/// ListExpr = "("    [ListEvalApp|CmdCall|FuncUse] ")"
+///          | "(>>>" [ListEvalApp|CmdCall|FuncUse]
+/// 
+/// Value = block
+/// 
+/// ListEvalApp = ListExpr (Argument|token) [Argument|token]…
+/// 
+/// CmdCall = BlockDef|GroupDef|TokenDef|Lambda
 /// FuncUse = (IdentToken|Argument) [IdentToken|Argument]…
 /// ```
 /// 
@@ -60,24 +66,29 @@
 /// ### Block Definitions
 /// ---------------------
 /// ```
-/// BlockDef = "defblock" BVariant BStart BEnd BEsc ListExpr
-/// BVariant = "comment"|"string"|"cstring"|"custom"
+/// BlockDef = EvalToDefblock EvalToBVariant BStart BEnd BEsc ListExpr
 /// BStart   = regex_with_var_def_and_interpolation
 /// BEnd     = regex_with_var_def_and_interpolation
 /// BEsc     = regex_with_var_def_and_interpolation | "(" ")"
+/// 
+/// EvalToDefblock = ListExpr | "defblock"
+/// EvalToBVariant = ListExpr | "comment" | "string" | "cstring" | "custom"
 /// ```
 /// 
 /// ### Group/Token Definitions
 /// ---------------------------
 /// ```
-/// GroupDef = "defgroup"  "(" [token]… ")" ListExpr
-/// TokenDef = "deftokens" "(" [token]… ")" ListExpr
+/// GroupDef = EvalToDefgroup  "(" [token]… ")" ListExpr
+/// TokenDef = EvalToDeftokens "(" [token]… ")" ListExpr
+/// 
+/// EvalToDefgroup  = ListExpr | "defgroup"
+/// EvalToDeftokens = ListExpr | "deftokens"
 /// ```
 /// 
 /// ### λλλλλ
 /// ---------
 /// ```
-/// Lambda    = "λ" ("transform"|"function") ParamList ListExpr [ArgList]
+/// Lambda    = EvalToLambda EvalToLVariant ParamList ListExpr [ArgList]
 /// ParamList = "("    [Parameter]… ")"
 /// ArgList   = "("    [Argument]…  ")"
 ///           | "(>>>" [Argument]…
@@ -90,6 +101,9 @@
 /// 
 /// ParName   = "(" [AttrList] FuncPart [FuncPart]… ")" | IdentToken
 /// FuncPart  = Parameter|IdentToken
+/// 
+/// EvalToLambda   = ListExpr | "λ"
+/// EvalToLVariant = ListExpr | "transform" | "function"
 /// ```
 /// 
 /// **NOTE:**
@@ -152,6 +166,10 @@
 
 // Below is some sort of prelude/foundation to test the syntax
 
+/// TODO: Consider just scrapping the idea that `(...)` is function application.
+///       Causes issues with partial application (i.e. `let $unapplied = 123\n`).
+/// 	  BUT can keep that it represents a list of tokens!
+
 (>>>
 defblock comment //        \n    () (>>>
 defblock string  "         "     \\ (>>>
@@ -184,19 +202,19 @@ deftokens ({ } [ ] ~ ') (>>>
 /// =>
 /// [let, invalidstr, str, =, "123 + 456", *=, (, (, "*789", ), ), \n]
 
-λ transform ((glob_scope)) (
-	===================================================================
-	λ function (((let (pat) = (val)\\n(>>>scope)) λ transform # # $)) (
+(λ transform ((glob_scope)) (
+	==================================================================
+	(λ function (((let (pat) = (val)\\n(>>>scope)) λ transform # #)) (
 		\(glob_scope)
-	) (
+	)) (
 		λ transform ((pat) (val) (scope)) (
 			========================================
 			λ function (\\(pat)) \\(scope) (\\(val))
 			========================================
-		) ($pat $val $scope) // `$` = unapplied arg
+		)
 	)
-	===================================================================
-) (>>>(>>>
+	==================================================================
+)) (>>>(>>>
 
 /// Everything here and after is passed as the final input to `λ`.
 /// This is because `(>>>` is a special, open-ended parenthesis.
@@ -211,7 +229,7 @@ deftokens ({ } [ ] ~ ') (>>>
 /// 
 /// That is, the global scope is passed as the `glob_scope` argument.
 
-let ({(expr)}) = λ function ((expr)) (expr) // unapplied `$expr` is implicit
+let ({(expr)}) = (λ function ((expr)) (expr)) $expr // `$` = unapplied arg
 
 let (println (x)\n(>>>scope)) = λ transform ((x)) (
 	======================================
