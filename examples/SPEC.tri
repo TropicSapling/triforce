@@ -216,6 +216,29 @@ deftokens ({ } [ ] ~ ') (>>>
 	==================================================================
 )) (>>>(>>>
 
+// WIP object/structure that the above command would evaluate to.
+// Might simply remove the command in favor of the object form.
+(Transform [[`glob_scope`]] (
+	=================================================================================
+	// Here we could run code at macro invocation if we wanted
+	// ...
+
+	// After any potential code above has finished running, this codestr is returned:
+	===============================================================
+	(Function [[`let (pat) = (val)\\n(>>>scope)`, Transform _ _]] (
+		=============
+		\(glob_scope)
+		=============
+	)) (Transform [[`pat`], [`val`], [`scope`]] (
+		===========
+		... // TODO
+		===========
+	))
+	===============================================================
+
+	=================================================================================
+)) (>>>(>>>
+
 /// Everything here and after is passed as the final input to `λ`.
 /// This is because `(>>>` is a special, open-ended parenthesis.
 /// 
@@ -241,6 +264,19 @@ let (println (x)\n(>>>scope)) = λ transform ((x)) (
 
 println "hello, world"
 // `(>>>` automatically inserted here, per the above function definition
+
+// Testing pattern matching / type checking on λ below ...
+
+let f = λ function ((x int) (y int) (z int)) (x + y + z)
+
+// λ
+let f λ _ _ _ = f
+// λ function, 1+ parameters (defines first=`(x int)` rest=`(y int) (z int)` in scope)
+let f λ function ¤(#(first) #(rest)) _ = f
+// λ function, 3 parameters
+let f λ function `\(_) \(_) \(_)` _ = f
+// λ function, 3x `int` => `int`
+let f λ function `\('int') \('int') \('int')` int = f
 
 
 /// ##################################################################################
