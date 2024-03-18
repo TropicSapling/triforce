@@ -209,7 +209,7 @@ deftokens ({ } [ ] ~ ') (>>>
 	)) (
 		λ transform ((pat) (val) (scope)) (
 			========================================
-			λ function (\\(pat)) \\(scope) (\\(val))
+			(λ function (\\(pat)) \\(scope)) \\(val)
 			========================================
 		)
 	)
@@ -218,25 +218,18 @@ deftokens ({ } [ ] ~ ') (>>>
 
 // WIP object/structure that the above command would evaluate to.
 // Might simply remove the command in favor of the object form.
-(Transform [[`glob_scope`]] (
-	=================================================================================
-	// Here we could run code at macro invocation if we wanted
-	// ...
+(Transform [(glob_scope)] (
+	runforeign rust `println("Entered macro.");` (>>>
 
-	// After any potential code above has finished running, this codestr is returned:
-	===============================================================
-	(Function [[`let (pat) = (val)\\n(>>>scope)`, Transform _ _]] (
-		=============
+	====================================================================
+	(Function [((let (pat) = (val)\\n(>>>scope)) Transform #'_' #'_')] (
 		\(glob_scope)
-		=============
-	)) (Transform [[`pat`], [`val`], [`scope`]] (
-		===========
-		... // TODO
-		===========
+	)) (Transform [(pat), (val), (scope)] (
+		========================================
+		(Function [\\(pat)] (\\(scope))) \\(val)
+		========================================
 	))
-	===============================================================
-
-	=================================================================================
+	====================================================================
 )) (>>>(>>>
 
 /// Everything here and after is passed as the final input to `λ`.
