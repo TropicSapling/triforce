@@ -252,9 +252,9 @@ let lambda = Function ['123', (y 1|2|3), (z _)] (
 	runforeign rust `println("Got {}, {}, {}.", 123, \(y), \(z));` (
 
 	Transform [(
-		// TODO: think more about if this parameter really is correctly typed!
-		(function taking '_' and '1|2|3')
-		Function|Transform [#'_', '1|2|3'] #'_'
+		// TODO: decide on `superset of` definition/implementation
+		(function taking '|' and '1|2|3')
+		Function|Transform [#'_', (#'_' #'superset of 1|2|3')] #'_'
 	)] (
 		runforeign rust `println("Entered macro.");` (
 
