@@ -286,7 +286,7 @@ let f λ function `\('int') \('int') \('int')` int = f
 /// ## Type system
 /// ==============
 /// 
-/// `_` = the set of all types (excluding itself)
+/// `_` = the set of all values valid at its position (excluding itself)
 /// 
 /// The type system is loosely based on set theory. It follows similar rules, but has
 /// a different syntax specially crafted for programming. A type is defined as a set
