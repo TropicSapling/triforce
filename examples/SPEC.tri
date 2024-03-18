@@ -202,48 +202,67 @@ deftokens ({ } [ ] ~ ') (>>>
 /// =>
 /// [let, invalidstr, str, =, "123 + 456", *=, (, (, "*789", ), ), \n]
 
-(λ transform ((glob_scope)) (
-	==================================================================
-	(λ function (((let (pat) = (val)\\n(>>>scope)) λ transform # #)) (
-		\(glob_scope)
-	)) (
-		λ transform ((pat) (val) (scope)) (
-			========================================
-			(λ function (\\(pat)) \\(scope)) \\(val)
-			========================================
-		)
-	)
-	==================================================================
-)) (>>>(>>>
-
-// WIP object/structure that the above command would evaluate to.
-// Might simply remove the command in favor of the object form.
+/// Functions/Transforms are special built-in objects with 2 fields: parameters, body.
+/// The fields are evaluated in order, but since they are not normal expressions they
+/// are evaluated in special ways specific to each field. They both evaluate to
+/// reduced forms where as much as possible has been evaluated normally.
+/// - Whatever cannot be normally evaluated will evaluate to itself
 (Transform [(glob_scope)] (
-	runforeign rust `println("Entered macro.");` (>>>
-
-	====================================================================
-	(Function [((let (pat) = (val)\\n(>>>scope)) Transform #'_' #'_')] (
+	================================================
+	(Function [((let (pat) = (val)\\n(>>>scope)))] (
 		\(glob_scope)
 	)) (Transform [(pat), (val), (scope)] (
 		========================================
 		(Function [\\(pat)] (\\(scope))) \\(val)
 		========================================
 	))
-	====================================================================
-)) (>>>(>>>
+	================================================
+))) (>>>(>>>
 
-/// Everything here and after is passed as the final input to `λ`.
+/// Everything here and after is passed as input to the `Transform`.
 /// This is because `(>>>` is a special, open-ended parenthesis.
 /// 
 /// Meaning that:
-/// > λ transform ((glob_scope)) (...) (>>>(>>>
+/// > (Transform [(glob_scope)] (...)) (>>>(>>>
 /// > ...
 /// <=>
-/// > λ transform ((glob_scope)) (...) ((
+/// > (Transform [(glob_scope)] (...)) ((
 /// >	 ...
 /// > ))
 /// 
 /// That is, the global scope is passed as the `glob_scope` argument.
+
+let type1 = 123
+let type2 = 1|2|3
+
+/// Example Function ...
+let lambda = Function [(x type1), (y type2), (z)] (
+	runforeign rust `println("Got {}, {}, {}.", \(x), \(y), \(z));` (
+
+	Transform [((function taking (a) and (b type2)))] (
+		runforeign rust `println("Entered macro.");` (
+
+		=================================================
+		\(function taking $ and 2) // partial application
+		=================================================
+	)))
+)
+/// ... and then again, with the RHS evaluated into a final *object value*:
+let lambda = Function ['123', (y 1|2|3), (z _)] (
+	runforeign rust `println("Got {}, {}, {}.", 123, \(y), \(z));` (
+
+	Transform [(
+		// TODO: think more about if this parameter really is correctly typed!
+		(function taking '_' and '1|2|3')
+		Function|Transform [#'_', '1|2|3'] #'_'
+	)] (
+		runforeign rust `println("Entered macro.");` (
+
+		=================================================
+		\(function taking $ and 2) // partial application
+		=================================================
+	)))
+)
 
 let ({(expr)}) = (λ function ((expr)) (expr)) $expr // `$` = unapplied arg
 
