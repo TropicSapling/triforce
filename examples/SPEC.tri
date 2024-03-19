@@ -117,13 +117,17 @@
 /// ```
 /// Type = "(" [Type] ")"
 ///      | "<" [Type] ">"
-///      | TypeOp
+///      | UnaTypeOp
+///      | BinTypeOp
 ///      | MatPat
 ///      | Single
 /// 
-/// TypeOp = [Type] "&" [Type]
-///        | [Type] "|" [Type]
-///        |        "~" [Type]
+/// UnaTypeOp = "super" [Type]
+///           | "power" [Type]
+///           | "~"     [Type]
+/// 
+/// BinTypeOp = [Type] "&" [Type]
+///           | [Type] "|" [Type]
 /// 
 /// MatPat = (Match|token) [Match|token]…
 /// Single = Builtin|block
@@ -252,9 +256,8 @@ let lambda = Function ['123', (y 1|2|3), (z _)] (
 	runforeign rust `println("Got {}, {}, {}.", 123, \(y), \(z));` (
 
 	Transform [(
-		// TODO: decide on `superset of` definition/implementation
 		(function taking '|' and '1|2|3')
-		Function|Transform [#'_', (#'_' #'superset of 1|2|3')] #'_'
+		Function|Transform [#'_', (#'_' #'super 1|2|3')] #'_'
 	)] (
 		runforeign rust `println("Entered macro.");` (
 
