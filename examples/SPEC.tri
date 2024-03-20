@@ -301,22 +301,26 @@ let f λ function `\('int') \('int') \('int')` int = f
 /// ## Type system
 /// ==============
 /// 
-/// **Patterns:**
-/// - `|...` = set of values
-/// - `_`    = non-set value matching anything
-/// - `type` = non-set value matching any set
+/// The type system is based on pattern matching and set theory.
+/// Every parameter has a match position containing a pattern value to match input on.
+/// If this position is left unspecified, its pattern value will default to `...`.
 /// 
-/// The type system is loosely based on set theory. It follows similar rules, but has
-/// a different syntax specially crafted for programming. A type is defined as a set
-/// of zero, one or more values, where the values may be types themselves.
+/// `Pattern = Value = Object|TypeSet|Wildcard|"..."`
+/// 
+/// - `Object`   = the basic value, optionally having fields
+/// - `TypeSet`  = set of 0, 1 or more values
+/// - `Wildcard` = value matching anything
+/// - `"..."`    = special value evaluating to a suitable pattern
+/// 
+/// **NOTE:** `Wildcard` is *not* a set, because then it would have to contain itself.
 
 /// ### Examples
 /// ------------
 
 // The empty, uninhabited bottom type is an empty set without values.
 let (N/A) type = |
-// It is the complement of the universal top type, which contains all values:
-let any type = _
+// It is the complement of the universal top type, which matches anything:
+let  any  type = _
 
 ~any :== ~_ :== N/A
 
