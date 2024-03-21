@@ -305,14 +305,25 @@ let f λ function `\('int') \('int') \('int')` int = f
 /// Every parameter has a match position containing a pattern value to match input on.
 /// If this position is left unspecified, its pattern value will default to `...`.
 /// 
-/// `Pattern = Value = Object|TypeSet|Wildcard|"..."`
+/// `Pattern = Value = Object|TypeSet|"..."`
 /// 
 /// - `Object`   = the basic value, optionally having fields
 /// - `TypeSet`  = set of 0, 1 or more values
 /// - `Wildcard` = value matching anything
 /// - `"..."`    = special value evaluating to a suitable pattern
 /// 
-/// **NOTE:** `Wildcard` is *not* a set, because then it would have to contain itself.
+/// ### TypeSet
+/// -----------
+/// A `TypeSet` is a set of 0, 1 or more values. It comes in 2 forms:
+/// - The *inclusively matching* `TypeSet`
+/// - The *excludingly matching* `TypeSet`
+/// 
+/// The first form is the default and will match any value contained in itself.
+/// The second form is the inverse of the first and will instead match all values *not* in the set.
+/// You can get the inverse set by using the complement/inverse operator `~` on a normal set.
+/// The `~` operator also combines with itself and other operators to enable switching back and forth between inverse and normal sets.
+/// 
+/// **NOTE:** These 2 variants are *necessary* in order to allow for important type checking that would otherwise introduce paradoxes if implemented only with pure sets. For example, the wildcard operator `_` cannot be a set, because then it would have to contain itself. Therefore, `_` is instead defined as simply being the excludingly matching empty set `~|`.
 
 /// ### Examples
 /// ------------
@@ -320,9 +331,9 @@ let f λ function `\('int') \('int') \('int')` int = f
 // The empty, uninhabited bottom type is an empty set without values.
 let (N/A) type = |
 // It is the complement of the universal top type, which matches anything:
-let  any  type = _
+let  any  type = _ = ~|
 
-~any :== ~_ :== N/A
+~any :== ~_ :== ~~| :== N/A
 
 // Since the empty `N/A` type matches nothing, this "function" cannot be called.
 func Object (field any) (N/A);
