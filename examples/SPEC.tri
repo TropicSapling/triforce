@@ -319,11 +319,16 @@ let f λ function `\('int') \('int') \('int')` int = f
 /// - The *excludingly matching* `TypeSet`
 /// 
 /// The first form is the default and will match any value contained in itself.
-/// The second form is the inverse of the first and will instead match all values *not* in the set.
-/// You can get the inverse set by using the complement/inverse operator `~` on a normal set.
-/// The `~` operator also combines with itself and other operators to enable switching back and forth between inverse and normal sets.
+/// The second form is the inverse of the first and will instead match all values
+/// *not* in the set. You can get the inverse set by using the complement/inverse
+/// operator `~` on a normal set. The `~` operator also combines with itself and other
+/// operators to enable switching back and forth between inverse and normal sets.
 /// 
-/// **NOTE:** These 2 variants are *necessary* in order to allow for important type checking that would otherwise introduce paradoxes if implemented only with pure sets. For example, the wildcard operator `_` cannot be a set, because then it would have to contain itself. Therefore, `_` is instead defined as simply being the excludingly matching empty set `~|`.
+/// **NOTE:** These 2 variants are *necessary* in order to allow for important type
+/// checking that would otherwise introduce paradoxes if implemented only with pure
+/// sets. For example, the wildcard operator `_` cannot be a set, because then it
+/// would have to contain itself. Therefore, `_` is instead defined as simply being
+/// the excludingly matching empty set `~|`.
 
 /// ### Examples
 /// ------------
@@ -351,6 +356,18 @@ typ :== "singleton"|2
 
 // Best to remove mutability when no longer needed
 let typ = typ
+
+// `N/A` matches no value, which means it technically matches the lack of a value.
+// Hence, any non-returning function will have its return type being `N/A`.
+partial func f() --> N/A { f()   }
+partial func g() --> N/A { panic }
+
+// This also makes it possible to check for totality:
+func total() --> type where (this is N/A: False) {
+	...
+}
+// Note though that this check is unnecessary for non-partial `func`:
+// It already does such a totality check automatically.
 
 // TODO ... [to fully solve: see "N/A - the type with no value" in random_experiments]
 
