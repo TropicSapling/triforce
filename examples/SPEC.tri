@@ -363,7 +363,7 @@ partial func f() --> N/A { f()   }
 partial func g() --> N/A { panic }
 
 // This also makes it possible to check for totality:
-func total() --> type where (this is N/A: False) {
+func total() --> type where (let 'False' = this is N/A) {
 	...
 }
 // Note though that this check is unnecessary for non-partial `func`:
