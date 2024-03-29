@@ -3184,3 +3184,24 @@ println True  &&
 /// If one wants to name a variable the same as a reserved keyword,
 /// one could underline it with unicode or surround it with underscores `_`.
 let _run_ = ... // (`run` is a reserved keyword)
+
+--------------------------------------------------
+
+// Lisp testing & stuff
+
+```Lisp
+; MultidimTokenList: [this|Token]
+
+(display (list 1 (+ 2 3) 7)) ; (1 5 7)
+(newline)
+(display '(1 (+ 2 3) 7)) ; (1 (+ 2 3) 7)
+(newline)
+
+; [a, [b0, b1], c]
+; <=>
+; === \(a) \(`\(b0) \(b1)`) \(c) ===
+
+; arr[1][0]
+; <=>
+; eval (firstof (tailof arr))
+```
