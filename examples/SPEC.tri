@@ -363,11 +363,16 @@ partial func f() --> N/A { f()   }
 partial func g() --> N/A { panic }
 
 // This also makes it possible to check for totality:
-func total() --> type where (let 'False' = this is N/A) {
+func total() --> ... where (this is N/A) is False {
 	...
 }
 // Note though that this check is unnecessary for non-partial `func`:
 // It already does such a totality check automatically.
+
+// Instead of defining a new variable, the below simply type checks `"something"`
+let 'str' = "something"
+// <=>
+let _ str = "something"
 
 // TODO ... [to fully solve: see "N/A - the type with no value" in random_experiments]
 

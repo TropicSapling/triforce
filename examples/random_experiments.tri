@@ -3189,19 +3189,27 @@ let _run_ = ... // (`run` is a reserved keyword)
 
 // Lisp testing & stuff
 
-```Lisp
-; MultidimTokenList: [this|Token]
-
-(display (list 1 (+ 2 3) 7)) ; (1 5 7)
+```Scheme
+(display (list 1 (+ 2 3) 7))       ; (1 5 7)
 (newline)
-(display '(1 (+ 2 3) 7)) ; (1 (+ 2 3) 7)
+(display '(1 (+ 2 3) 7))           ; (1 (+ 2 3) 7)
 (newline)
-
-; [a, [b0, b1], c]
-; <=>
-; === \(a) \(`\(b0) \(b1)`) \(c) ===
-
-; arr[1][0]
-; <=>
-; eval (firstof (tailof arr))
 ```
+
+// `MultidimTokenList`: [this|Token]
+
+--------------------------------------------------
+
+/// # Lists
+
+let list = [a, [b0, b1], c]
+// <=>
+let list = ================
+           \(a)
+           \(`\(b0) \(b1)`)
+           \(c)
+           ================
+
+let item = list[1][0]
+// <=>
+let item = eval (firstof (firstof (tailof list)))
