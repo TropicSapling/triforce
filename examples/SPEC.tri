@@ -177,6 +177,7 @@
 (>>>
 defblock comment //        \n    () (>>>
 defblock string  "         "     \\ (>>>
+defblock string  \(x=)"""+ \(x)  () (>>>
 defblock cstring `         `     \\ (>>>
 defblock cstring \(x=)===+ \(x)  () (>>>
 
