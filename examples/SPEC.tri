@@ -310,7 +310,6 @@ let f λ function `\('int') \('int') \('int')` int = f
 /// 
 /// - `Object`   = the basic value, optionally having fields
 /// - `TypeSet`  = set of 0, 1 or more values
-/// - `Wildcard` = value matching anything
 /// - `"..."`    = special value evaluating to a suitable pattern
 /// 
 /// ### TypeSet
@@ -336,7 +335,7 @@ let f λ function `\('int') \('int') \('int')` int = f
 
 // The empty, uninhabited bottom type is an empty set without values.
 let (N/A) type = |
-// It is the complement of the universal top type, which matches anything:
+// It is the complement of the universal top type (wildcard), which matches anything:
 let  any  type = _ = ~|
 
 ~any :== ~_ :== ~~| :== N/A
@@ -374,6 +373,11 @@ func total() --> ... where (this is N/A) is False {
 let 'str' = "something"
 // <=>
 let _ str = "something"
+
+// Pattern matching on object fields
+let '[#(first), int, #'#(obj Object #(field))']' = ["abc", 123, #(obj Object #(field)]
+// or maybe this?:
+let '[#(first), int, ##(obj Object ###(field))]' = ["abc", 123, #(obj Object ##(field)]
 
 // TODO ... [to fully solve: see "N/A - the type with no value" in random_experiments]
 
