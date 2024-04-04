@@ -177,7 +177,7 @@
 (>>>
 defblock comment //        \n    () (>>>
 defblock string  "         "     \\ (>>>
-defblock string  \(x=)"""+ \(x)  () (>>>
+defblock string  \(x=)"""+ \(x)  () (>>> //"
 defblock cstring `         `     \\ (>>>
 defblock cstring \(x=)===+ \(x)  () (>>>
 
@@ -386,7 +386,9 @@ let '[#(first), int, ##(obj Object ###(field))]' = ["abc", 123, #(obj Object ##(
 //       - Probably best to ignore order of elements. Order seemed helpful in some
 //         cases, but those cases have (better?) workarounds + order causes issues.
 // - maybe have `super` keyword for when superposition types should be allowed?
+//       - UPDATE: better with `#'...'` for superposition types
 // - subset + member checking combined by default, or member checking only by default?
+//       - UPDATE: member checking better, `#'...'` superpos types resolves issue
 // - **NOTE:** Subset checking means the empty set `|` matches itself.
 //             Meaning there would be no way to fully block an argument application.
 //             (Unless make special exception for the empty type of course)

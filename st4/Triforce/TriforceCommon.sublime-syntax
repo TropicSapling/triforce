@@ -14,7 +14,7 @@ variables:
 
   # Keywords
   keyword_ctrl:       '(if|then|else|unless|(for\s+)?each|while|break|continue(\s+matching(\s+for)?)?|return|eval|prerun|run|go|spawn|assign|to\s+worker\s+in|defer|multitask|concurrently|def(block|group|tokens)|runforeign)'
-  keyword_check:      '(as|fulfilling|where(\s+we)?|which|when|matches|and|is(\s+(a|an|any)(?!{{identifier}}))?|are|could\s+be)'
+  keyword_check:      '(as|fulfilling|where(\s+we)?|which|when|matches|and|is(\s+(a|an|any)(?!{{identifier}}))?|are|could\s+be|super|power)'
   keyword_namespace:  '((ex|im)port(\s+all)?|except|from|into|expose)'
   keyword_type:       '(type|proof\s+of|bool|nat|int|frac|complex|num|(code)?str)'
   keyword_type_spec:  '(impure|unpredictable|macro|implic\s+made|(suitable|subtype)\s+of|ref\s+to|allowing|parsed|raw|cloaked|constructed\s+using|unsafe(\s+area)?|async\s+escaping|exclusively|precedes)'

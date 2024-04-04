@@ -27,19 +27,19 @@ contexts:
           captures:
             1: cc.string.quoted.double.triforce markup.bold
           pop: true
-    - match: '\s+={3,40}(?!=)'
+    - match: '\s+={3,44}(?!=)'
       scope: cc.string.quoted.double.triforce markup.bold
       push:
         - meta_scope: cc.string.quoted.double.triforce meta.cs.triforce
-        - match: '(\s+={3,40}(?!=))'
+        - match: '(\s+={3,44}(?!=))'
           captures:
             1: cc.string.quoted.double.triforce markup.bold
           pop: true
-    - match: '\s+={41,}(?!=)'
+    - match: '\s+={45,}(?!=)'
       scope: cc.string.quoted.double.triforce markup.bold
       push:
         - meta_scope: cc.string.quoted.double.triforce meta.cs.triforce
-        - match: '(\s+={41,}(?!=))'
+        - match: '(\s+={45,}(?!=))'
           captures:
             1: cc.string.quoted.double.triforce markup.bold
           pop: true
@@ -379,9 +379,14 @@ contexts:
   ################# LET ##################
 
   cc-let-id-search-start:
-    - match: '\s+\(*  '
+    - match: '(?='')'
+      pop: true
+    - match: '\s+\(*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
       set: cc-let-id-search
-    - match: ''
+    - match: '{{identifier}}'
+      scope: cc.entity.name.function.triforce
+      pop: true
+    - match: '\('
       set: cc-let-id-search
 
   cc-let-id-search:
@@ -391,8 +396,7 @@ contexts:
     - match: '\$'
       scope: cc.variable.parameter.triforce
       push: cc-op-dollar
-    - match: '(?=[=:\[;])'
+    - match: '(?=[=:\[;)])' # end of let declaration (sort of; type may follow)
       pop: true
     - match: '{{identifier}}'
       scope: cc.entity.name.function.triforce
-      pop: true

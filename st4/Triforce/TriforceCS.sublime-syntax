@@ -25,10 +25,10 @@ contexts:
         - match: '.'
           scope: cs.constant.character.escape.triforce
           pop: true
-    - match: '(?=(\$\$|\\)(just|raw)?[({])'
+    - match: '(?=(\\)(just|raw)?[({])'
       push:
         - clear_scopes: true
-        - match: '(\$\$|\\)(just|raw)?[({]'
+        - match: '(\\)(just|raw)?[({]'
           captures:
             2: variable.annotation.triforce
         - match: '[)}]'
@@ -445,9 +445,14 @@ contexts:
 
   cs-let-id-search-start:
     - include: cs-all-universal
-    - match: '\s+\(*  '
+    - match: '(?='')'
+      pop: true
+    - match: '\s+\(*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
       set: cs-let-id-search
-    - match: ''
+    - match: '{{identifier}}'
+      scope: cs.entity.name.function.triforce
+      pop: true
+    - match: '\('
       set: cs-let-id-search
 
   cs-let-id-search:
@@ -457,8 +462,7 @@ contexts:
     - match: '\$'
       scope: cs.variable.parameter.triforce
       push: cs-op-dollar
-    - match: '(?=[=:\[;])'
+    - match: '(?=[=:\[;)])' # end of let declaration (sort of; type may follow)
       pop: true
     - match: '{{identifier}}'
       scope: cs.entity.name.function.triforce
-      pop: true

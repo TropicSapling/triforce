@@ -30,18 +30,18 @@ contexts:
       escape: '(?<!\\)(`)'
       escape_captures:
         1: string.quoted.double.triforce markup.bold
-    - match: '\s+={3,40}(?!=)'
+    - match: '\s+={3,44}(?!=)'
       scope: string.quoted.double.triforce markup.bold
       embed: cs-general
       embed_scope: string.quoted.double.triforce meta.cs.triforce
-      escape: '(\s+={3,40}(?!=))'
+      escape: '(\s+={3,44}(?!=))'
       escape_captures:
         1: string.quoted.double.triforce markup.bold
-    - match: '\s+={41,}(?!=)'
+    - match: '\s+={45,}(?!=)'
       scope: string.quoted.double.triforce markup.bold
       embed: cs-general
       embed_scope: string.quoted.double.triforce meta.cs.triforce
-      escape: '(\s+={41,}(?!=))'
+      escape: '(\s+={45,}(?!=))'
       escape_captures:
         1: string.quoted.double.triforce markup.bold
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
@@ -518,9 +518,14 @@ contexts:
   ################# LET ##################
 
   let-id-search-start:
+    - match: '(?='')'
+      pop: true
     - match: '\s+\(*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible
       set: let-id-search
-    - match: ''
+    - match: '{{identifier}}'
+      scope: entity.name.function.triforce
+      pop: true
+    - match: '\('
       set: let-id-search
 
   let-id-search:
@@ -530,8 +535,7 @@ contexts:
     - match: '\$'
       scope: variable.parameter.triforce
       push: op-dollar
-    - match: '(?=[=:\[;])' # end of let declaration (sort of; type may follow)
+    - match: '(?=[=:\[;)])' # end of let declaration (sort of; type may follow)
       pop: true
     - match: '{{identifier}}'
       scope: entity.name.function.triforce
-      pop: true
