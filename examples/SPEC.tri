@@ -374,10 +374,25 @@ let 'str' = "something"
 // <=>
 let _ str = "something"
 
-// Pattern matching on object fields
-let '[#(first), int, #'#(obj Object #(field))']' = ["abc", 123, #(obj Object #(field)]
-// or maybe this?:
-let '[#(first), int, ##(obj Object ###(field))]' = ["abc", 123, #(obj Object ##(field)]
+// Pattern matching on object field - and extracting into variable
+let 'Cons (Cons #(field Cons int))' = Cons (Cons (Cons 123))
+
+println field
+//> Cons 123
+
+// Patterns are first-class
+let pattern <Cons (Cons #(field Cons int))> = Cons (Cons #(field Cons int))
+
+// Type checking...
+let var typ = val
+// ... of objects
+let obj 1|2|3 = 2
+// ... of types
+let typ <1|2|3> = 1|2|3
+// ... of types of types
+let typ_of_typ <<1|2|3>> = typ
+// ... of types of types and objects
+let complex_typ <<1|2|3>|1|2|3|4|5|6> = <typ>|typ|4|5|6
 
 // TODO ... [to fully solve: see "N/A - the type with no value" in random_experiments]
 
