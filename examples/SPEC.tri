@@ -267,6 +267,9 @@ let lambda = Function ['123', (y 1|2|3), (z _)] (
 		=================================================
 	)))
 )
+/// TODO: **Come up with a binary representation for the final object values.**
+/// We want every program to reduce to one final object value compiling into a binary
+/// representation of it that also acts as the program's real, executable binary code.
 
 let ({(expr)}) = (λ function ((expr)) (expr)) $expr // `$` = unapplied arg
 
