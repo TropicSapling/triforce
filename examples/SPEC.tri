@@ -42,6 +42,23 @@
 /// ### General
 /// -----------
 /// ```
+/// Syntax = List
+/// 
+/// List     = CodeAsList|CStrAsList
+/// ListItem = List|atom
+/// 
+/// CodeAsList = BeginCodeDelim [ListItem]… EndCodeDelim
+/// CStrAsList = BeginCStrDelim [ListItem]… EndCStrDelim
+/// 
+/// BeginCodeDelim = "("
+/// EndCodeDelim   = ")"
+/// BeginCStrDelim = user_defined
+/// EndCStrDelim   = user_defined
+/// ```
+/// 
+/// Parentheses inserted automatically where required, based on precedence rules ...
+/// 
+/// ```
 /// Syntax     = [Expression]
 /// Expression = ListExpr|Value
 /// 
@@ -174,10 +191,9 @@
 ///       Causes issues with partial application (i.e. `let $unapplied = 123\n`).
 /// 	  BUT can keep that it represents a list of tokens!
 
-(>>>
 defblock comment //        \n    () (>>>
-defblock string  "         "     \\ (>>>
 defblock string  \(x=)"""+ \(x)  () (>>> //"
+defblock string  "         "     \\ (>>>
 defblock cstring `         `     \\ (>>>
 defblock cstring \(x=)===+ \(x)  () (>>>
 
@@ -270,6 +286,10 @@ let lambda = Function ['123', (y 1|2|3), (z _)] (
 /// TODO: **Come up with a binary representation for the final object values.**
 /// We want every program to reduce to one final object value compiling into a binary
 /// representation of it that also acts as the program's real, executable binary code.
+/// 
+/// Final object value = normal form
+/// 
+/// TODO: figure out how equality of functions should be decided
 
 let ({(expr)}) = (λ function ((expr)) (expr)) $expr // `$` = unapplied arg
 
