@@ -44,11 +44,23 @@
 /// ```
 /// Syntax = List
 /// 
-/// List     = CodeAsList|CStrAsList
-/// ListItem = List|atom
+/// List = CodeAsList
+///      | CStrAsList
 /// 
-/// CodeAsList = BeginCodeDelim [ListItem]… EndCodeDelim
-/// CStrAsList = BeginCStrDelim [ListItem]… EndCStrDelim
+/// CodeAsList = BeginCodeDelim CodeParts EndCodeDelim
+/// CStrAsList = BeginCStrDelim CodeParts EndCStrDelim
+/// 
+/// CodeParts = [ListItem]…
+/// CodeParts = CmdCall
+///           | FuncObj
+///           | [ListItem]…
+/// 
+/// (
+/// // comment
+/// (FuncObj ...) atom
+/// )
+/// 
+/// ListItem = List|atom
 /// 
 /// BeginCodeDelim = "("
 /// EndCodeDelim   = ")"

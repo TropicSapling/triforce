@@ -85,7 +85,7 @@ contexts:
       embed: cc-general
       embed_scope: meta.cc.triforce
       escape: '^(?!\s*//+\s*>)'
-    - match: '^(?!\s*//+)'
+    - match: '^(?!\s*//+I_HAVE_NO_IDEA_WHY_THIS_IS_NEEDED_FOR_COMMENTS_IN_```_BLOCKS)'
       pop: true
     - match: 'TODO[:.!]?'
       scope: cc.support.function.triforce
