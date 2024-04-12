@@ -47,17 +47,21 @@
 /// List = CodeAsList
 ///      | CStrAsList
 /// 
-/// CodeAsList = BeginCodeDelim CodeParts EndCodeDelim
-/// CStrAsList = BeginCStrDelim CodeParts EndCStrDelim
+/// CodeAsList = BeginCodeDelim [comment]… CodeParts [comment]… EndCodeDelim
+/// CStrAsList = BeginCStrDelim [comment]… CodeParts [comment]… EndCStrDelim
 /// 
 /// CodeParts = [ListItem]…
 /// CodeParts = CmdCall
-///           | FuncObj
+///           | PrimObj
+///           | FuncApp
 ///           | [ListItem]…
+/// 
+/// PrimObj = FunctionObject|TransformObject
 /// 
 /// (
 /// // comment
-/// (FuncObj ...) atom
+/// (Function ...) atom
+/// // comment
 /// )
 /// 
 /// ListItem = List|atom
