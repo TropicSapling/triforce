@@ -43,37 +43,42 @@
 /// -----------
 /// ```
 /// Syntax = List
+/// ```
 /// 
+/// Every program consists of a single `List` containing its code. This list is of the
+/// form `CodeAsList` and implicitly created by surrounding all code with parentheses.
+/// 
+/// Additionally, within this list more parentheses will be automatically inserted as
+/// specified by precedence rules, ultimately forming more `CodeAsList`s. This means
+/// that all fully parsed programs will contain only a single list of lists and atoms.
+/// 
+/// ### Lists
+/// ---------
+/// ```
 /// List = CodeAsList
 ///      | CStrAsList
 /// 
-/// CodeAsList = BeginCodeDelim [comment]… CodeParts [comment]… EndCodeDelim
-/// CStrAsList = BeginCStrDelim [comment]… CodeParts [comment]… EndCStrDelim
+/// CodeAsList = BegCode [comment]… [CodeItems] [comment]… EndCode
+/// CStrAsList = BegCStr [comment]… [CodeItems] [comment]… EndCStr
 /// 
-/// CodeParts = [ListItem]…
-/// CodeParts = CmdCall
-///           | PrimObj
-///           | FuncApp
-///           | [ListItem]…
+/// CodeItems = CodeItem [CodeItem]…
+/// CodeItem  = List|atom
 /// 
-/// PrimObj = FunctionObject|TransformObject
+/// CodeItems = (List|ident_atom) [Argument]…
+///           | Command
+///           | Mixfix
+///           | Object
+///           | string
+///           | "..."
 /// 
-/// (
-/// // comment
-/// (Function ...) atom
-/// // comment
-/// )
-/// 
-/// ListItem = List|atom
-/// 
-/// BeginCodeDelim = "("
-/// EndCodeDelim   = ")"
-/// BeginCStrDelim = user_defined
-/// EndCStrDelim   = user_defined
+/// BegCode = "("
+/// EndCode = ")"
+/// BegCStr = user_defined
+/// EndCStr = user_defined
 /// ```
 /// 
-/// Parentheses inserted automatically where required, based on precedence rules ...
-/// 
+/// ### [OLD SYNTAX - TODO REMOVE WHEN HAVE REPLACEMENT]
+/// ----------------------------------------------------
 /// ```
 /// Syntax     = [Expression]
 /// Expression = ListExpr|Value
@@ -95,6 +100,28 @@
 /// file has been included into another file; this allows for importing definitions.
 /// 
 /// Note also that `FuncUse` must always contain *at least* one `IdentToken`.
+/// 
+/// ### Commands
+/// ------------
+/// TODO ...
+/// 
+/// ### Mixfix
+/// ----------
+/// TODO ...
+/// 
+/// ### Objects
+/// -----------
+/// ```
+/// Object = FunctionObject|TransformObject
+/// 
+/// (
+/// 	(
+/// 		// comment
+/// 		(Function ...) atom (...) `...` ...
+/// 		// comment
+/// 	)
+/// )
+/// ```
 /// 
 /// ### Block Definitions
 /// ---------------------
