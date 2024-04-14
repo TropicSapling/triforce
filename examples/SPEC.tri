@@ -42,15 +42,21 @@
 /// ### General
 /// -----------
 /// ```
-/// Syntax = List
+/// Syntax = Expr
+/// Expr   = List|Atom
+/// Atom   = ident_atom|literal|"..."
 /// ```
 /// 
-/// Every program consists of a single `List` containing its code. This list is of the
-/// form `CodeAsList` and implicitly created by surrounding all code with parentheses.
+/// Every program consists of a single `Expr` containing its code. This expression is
+/// either a (typically nested) `List` or an `Atom`. If the file contains multiple
+/// atoms, these will automatically become enclosed by parentheses so that they form
+/// a single `List` (of type `CodeAsList`; see section on Lists for further details).
 /// 
-/// Additionally, within this list more parentheses will be automatically inserted as
+/// Additionally, within any `List` more parentheses will be automatically inserted as
 /// specified by precedence rules, ultimately forming more `CodeAsList`s. This means
-/// that all fully parsed programs will contain only a single list of lists and atoms.
+/// that parentheses can in many cases be omitted.
+/// 
+/// **Note:** An `ident_atom` is allowed to be the special `\n` token described above.
 /// 
 /// ### Lists
 /// ---------
@@ -58,18 +64,16 @@
 /// List = CodeAsList
 ///      | CStrAsList
 /// 
-/// CodeAsList = BegCode [comment]… [CodeItems] [comment]… EndCode
-/// CStrAsList = BegCStr [comment]… [CodeItems] [comment]… EndCStr
+/// CodeAsList = BegCode [CodeItems] EndCode
+/// CStrAsList = BegCStr [CodeItems] EndCStr
 /// 
 /// CodeItems = CodeItem [CodeItem]…
-/// CodeItem  = List|atom
+/// CodeItem  = Expr
 /// 
 /// CodeItems = (List|ident_atom) [Argument]…
 ///           | Command
 ///           | Mixfix
-///           | Object
-///           | string
-///           | "..."
+///           | Atom
 /// 
 /// BegCode = "("|"(>>>"
 /// EndCode = ")"
@@ -77,13 +81,14 @@
 /// EndCStr = user_defined
 /// ```
 /// 
+/// `CodeAsList` is a list of code items which are all evaluated together as a whole.
+/// `CStrAsList` is identical apart from only evaluating escaped `"\\"CodeAsList`s.
+/// 
 /// **NOTE:**
 /// The special open-ended parenthesis `(>>>` implicitly places a closing `EndCode`
 /// at the end of the scope. That is, it automatically inserts a new `)` right before
 /// an already existing scope-ending `)`. If no such scope-ender is found, the scope
 /// continues until the EOF or potentially past it if the file is included elsewhere.
-/// This behaviour allows for importing definitions from a file by simple inclusion.
-/// (Although of course you would want to first wrap definitions into a namespace.)
 /// 
 /// ### [OLD SYNTAX - TODO REMOVE WHEN HAVE REPLACEMENT]
 /// ----------------------------------------------------
@@ -232,10 +237,6 @@
 /// -----------------------------------
 
 // Below is some sort of prelude/foundation to test the syntax
-
-/// TODO: Consider just scrapping the idea that `(...)` is function application.
-///       Causes issues with partial application (i.e. `let $unapplied = 123\n`).
-/// 	  BUT can keep that it represents a list of tokens!
 
 defblock comment //        \n    () (>>>
 defblock string  \(x=)"""+ \(x)  () (>>> //"
