@@ -71,6 +71,7 @@
 /// CodeItem  = Expr
 /// 
 /// CodeItems = (List|ident_atom) [Argument]…
+///           | LambdaObject
 ///           | Command
 ///           | Mixfix
 ///           | Atom
@@ -90,46 +91,43 @@
 /// an already existing scope-ending `)`. If no such scope-ender is found, the scope
 /// continues until the EOF or potentially past it if the file is included elsewhere.
 /// 
-/// ### [OLD SYNTAX - TODO REMOVE WHEN HAVE REPLACEMENT]
-/// ----------------------------------------------------
-/// ```
-/// Syntax     = [Expression]
-/// Expression = ListExpr|Value
-/// 
-/// ListExpr = "("    [ListEvalApp|CmdCall|FuncUse] ")"
-///          | "(>>>" [ListEvalApp|CmdCall|FuncUse]
-/// 
-/// Value = block
-/// 
-/// ListEvalApp = ListExpr (Argument|token) [Argument|token]…
-/// 
-/// CmdCall = BlockDef|GroupDef|TokenDef|Lambda
-/// FuncUse = (IdentToken|Argument) [IdentToken|Argument]…
-/// ```
-/// 
-/// Note also that `FuncUse` must always contain *at least* one `IdentToken`.
-/// 
 /// ### Commands
 /// ------------
-/// TODO ...
+/// ```
+/// Command = BlockDef
+///         | GroupDef
+///         | TokenDef
+///         | RunForeign
+/// ```
 /// 
 /// ### Mixfix
 /// ----------
-/// TODO ...
-/// 
-/// ### Objects
-/// -----------
 /// ```
-/// Object = FunctionObject|TransformObject
+/// Mixfix = (Argument|ident_atom) [Argument|ident_atom]…
 /// 
-/// (
-/// 	(
-/// 		// comment
-/// 		(Function ...) atom (...) `...` ...
-/// 		// comment
-/// 	)
-/// )
+/// Argument = Expr | "$"[ident_atom]
 /// ```
+/// 
+/// Note that `Mixfix` must always contain *at least* one `ident_atom`.
+/// 
+/// ### λλλλλ
+/// ---------
+/// ```
+/// LambdaObject = "Function"|"Transform" ParamList Expr
+/// 
+/// ParamList = BegCode [Parameter]…   EndCode
+/// Parameter = BegCode ParName [Type] EndCode
+///           | "'" Type "'"
+/// 
+/// ParName = BegCode [Attr] (Parameter|ident_atom) [Parameter|ident_atom]… EndCode
+///         | ident_atom
+/// ```
+/// 
+/// **NOTE:**
+/// `(>>>` as part of `Parameter` here indicates something slightly different than it
+/// normally does. It will not enclose everything that follows it, but instead act as
+/// a normal start-of-parameter - apart from also declaring that an open-ended `(>>>`
+/// should be automatically placed ahead of the parameter/argument at application.
 /// 
 /// ### Block Definitions
 /// ---------------------
@@ -152,33 +150,6 @@
 /// EvalToDefgroup  = ListExpr | "defgroup"
 /// EvalToDeftokens = ListExpr | "deftokens"
 /// ```
-/// 
-/// ### λλλλλ
-/// ---------
-/// ```
-/// Lambda    = EvalToLambda EvalToLVariant ParamList ListExpr [ArgList]
-/// ParamList = "("    [Parameter]… ")"
-/// ArgList   = "("    [Argument]…  ")"
-///           | "(>>>" [Argument]…
-/// 
-/// Parameter = "("    ParName [Type] ")"
-///           | "(>>>" ParName [Type] ")"
-///           | "'" Type "'"
-/// 
-/// Argument = ListExpr | Builtin | "$"[IdentToken]
-/// 
-/// ParName   = "(" [AttrList] FuncPart [FuncPart]… ")" | IdentToken
-/// FuncPart  = Parameter|IdentToken
-/// 
-/// EvalToLambda   = ListExpr | "λ"
-/// EvalToLVariant = ListExpr | "transform" | "function"
-/// ```
-/// 
-/// **NOTE:**
-/// `(>>>` as part of `Parameter` here indicates something slightly different than it
-/// normally does. It will not enclose everything that follows it, but instead act as
-/// a normal start-of-parameter - apart from also declaring that an open-ended `(>>>`
-/// should be automatically placed ahead of the parameter/argument at application.
 /// 
 /// ### Type System
 /// ---------------
