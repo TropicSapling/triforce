@@ -71,11 +71,19 @@
 ///           | string
 ///           | "..."
 /// 
-/// BegCode = "("
+/// BegCode = "("|"(>>>"
 /// EndCode = ")"
 /// BegCStr = user_defined
 /// EndCStr = user_defined
 /// ```
+/// 
+/// **NOTE:**
+/// The special open-ended parenthesis `(>>>` implicitly places a closing `EndCode`
+/// at the end of the scope. That is, it automatically inserts a new `)` right before
+/// an already existing scope-ending `)`. If no such scope-ender is found, the scope
+/// continues until the EOF or potentially past it if the file is included elsewhere.
+/// This behaviour allows for importing definitions from a file by simple inclusion.
+/// (Although of course you would want to first wrap definitions into a namespace.)
 /// 
 /// ### [OLD SYNTAX - TODO REMOVE WHEN HAVE REPLACEMENT]
 /// ----------------------------------------------------
@@ -93,11 +101,6 @@
 /// CmdCall = BlockDef|GroupDef|TokenDef|Lambda
 /// FuncUse = (IdentToken|Argument) [IdentToken|Argument]…
 /// ```
-/// 
-/// The special `(>>>` open-ended parenthesis encloses everything that follows it
-/// within its own scope. It is always paired with a closing parenthesis implicitly
-/// placed at the end of the scope. Note that this scope can continue past EOF if the
-/// file has been included into another file; this allows for importing definitions.
 /// 
 /// Note also that `FuncUse` must always contain *at least* one `IdentToken`.
 /// 
