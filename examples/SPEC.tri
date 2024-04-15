@@ -200,6 +200,8 @@
 /// Single = Builtin|block
 /// 
 /// Match = "$"[ident_atom] | "#"[Parameter]
+/// 
+/// let test_type = (let $ #(typ any) = #)
 /// ```
 /// 
 /// ### Attributes
