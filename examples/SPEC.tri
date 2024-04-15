@@ -91,25 +91,6 @@
 /// an already existing scope-ending `)`. If no such scope-ender is found, the scope
 /// continues until the EOF or potentially past it if the file is included elsewhere.
 /// 
-/// ### Commands
-/// ------------
-/// ```
-/// Command = BlockDef
-///         | GroupDef
-///         | TokenDef
-///         | RunForeign
-/// ```
-/// 
-/// ### Mixfix
-/// ----------
-/// ```
-/// Mixfix = (Argument|ident_atom) [Argument|ident_atom]…
-/// 
-/// Argument = Expr | "$"[ident_atom]
-/// ```
-/// 
-/// Note that `Mixfix` must always contain *at least* one `ident_atom`.
-/// 
 /// ### λλλλλ
 /// ---------
 /// ```
@@ -129,26 +110,47 @@
 /// a normal start-of-parameter - apart from also declaring that an open-ended `(>>>`
 /// should be automatically placed ahead of the parameter/argument at application.
 /// 
+/// ### Commands
+/// ------------
+/// ```
+/// Command = BlockDef
+///         | GroupDef
+///         | TokenDef
+///         | RunForeign
+/// ```
+/// 
+/// ### Mixfix
+/// ----------
+/// ```
+/// Mixfix = (Argument|ident_atom) [Argument|ident_atom]…
+/// 
+/// Argument = Expr | "$"[ident_atom]
+/// ```
+/// 
+/// Note that `Mixfix` must always contain *at least* one `ident_atom`.
+/// 
 /// ### Block Definitions
 /// ---------------------
 /// ```
-/// BlockDef = EvalToDefblock EvalToBVariant BStart BEnd BEsc ListExpr
+/// BlockDef = "defblock" BVariant BStart BEnd BEsc Expr
 /// BStart   = regex_with_var_def_and_interpolation
 /// BEnd     = regex_with_var_def_and_interpolation
 /// BEsc     = regex_with_var_def_and_interpolation | "(" ")"
 /// 
-/// EvalToDefblock = ListExpr | "defblock"
-/// EvalToBVariant = ListExpr | "comment" | "string" | "cstring" | "custom"
+/// BVariant = "comment"|"string"|"cstring"|"custom"
 /// ```
 /// 
 /// ### Group/Token Definitions
 /// ---------------------------
 /// ```
-/// GroupDef = EvalToDefgroup  "(" [token]… ")" ListExpr
-/// TokenDef = EvalToDeftokens "(" [token]… ")" ListExpr
+/// GroupDef = "defgroup"  "(" [token]… ")" Expr
+/// TokenDef = "deftokens" "(" [token]… ")" Expr
+/// ```
 /// 
-/// EvalToDefgroup  = ListExpr | "defgroup"
-/// EvalToDeftokens = ListExpr | "deftokens"
+/// ### Foreign Function Interface
+/// ------------------------------
+/// ```
+/// RunForeign = "runforeign" "rust" block
 /// ```
 /// 
 /// ### Type System
@@ -171,7 +173,7 @@
 /// MatPat = (Match|token) [Match|token]…
 /// Single = Builtin|block
 /// 
-/// Match = "$"[IdentToken] | "#"[Parameter]
+/// Match = "$"[ident_atom] | "#"[Parameter]
 /// ```
 /// 
 /// ### Attributes
@@ -189,17 +191,15 @@
 /// 
 /// Default associativity should probably be "none" or "left".
 /// 
-/// ### Foreign Function Interface
-/// ------------------------------
-/// ```
-/// RunForeign = "runforeign" "rust" block
-/// ```
-/// 
 /// ### Misc.
 /// ---------
 /// ```
-/// Builtin    = "this"|"..."|"_"
-/// IdentToken = token
+/// ReservedIdentAtom = "Function"
+///                   | "Transform"
+///                   | "defblock"
+///                   | "defgroup"
+///                   | "deftokens"
+///                   | "runforeign"
 /// ```
 /// 
 /// Comments and whitespace can be inserted anywhere.
@@ -270,6 +270,10 @@ deftokens ({ } [ ] ~ ') (>>>
 /// > ))
 /// 
 /// That is, the global scope is passed as the `glob_scope` argument.
+
+let (N/A) = |
+let _     = ~N/A
+let any   = _
 
 let type1 = 123
 let type2 = 1|2|3
