@@ -114,7 +114,7 @@
 /// Parameter = BegCode ParName [Type] EndCode
 ///           | "'" Type "'"
 /// 
-/// ParName = BegCode [Attr] (Parameter|ident_atom) [Parameter|ident_atom]… EndCode
+/// ParName = BegCode [Attrs] (Parameter|ident_atom) [Parameter|ident_atom]… EndCode
 ///         | ident_atom
 /// ```
 /// 
@@ -205,11 +205,14 @@
 /// ### Attributes
 /// --------------
 /// ```
-/// AttrList  = "##" "(" [Attribute]… ")"
-/// Attribute = "(" (PreceAttr|AssocAttr) ")"
+/// Attrs = "##" BegCode [Attr]… EndCode
+/// Attr  = BegCode PreceAttr EndCode
+///       | BegCode AssocAttr EndCode
 /// 
-/// PreceAttr = Builtin "precedes" Builtin
+/// PreceAttr = Identifier "precedes" Identifier
 /// AssocAttr = "assoc" ("none"|"left"|"right")
+/// 
+/// Identifier = Expr|"this"
 /// ```
 /// 
 /// Precedence relations form a DAG - see figure 1 in the following paper:
@@ -219,15 +222,6 @@
 /// 
 /// ### Misc.
 /// ---------
-/// ```
-/// ReservedIdentAtom = "Function"
-///                   | "Transform"
-///                   | "defblock"
-///                   | "defgroup"
-///                   | "deftokens"
-///                   | "runforeign"
-/// ```
-/// 
 /// Comments and whitespace can be inserted anywhere.
 /// Note however that newlines count as tokens and are sometimes used.
 
