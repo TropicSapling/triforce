@@ -91,8 +91,22 @@
 /// an already existing scope-ending `)`. If no such scope-ender is found, the scope
 /// continues until the EOF or potentially past it if the file is included elsewhere.
 /// 
-/// ### λλλλλ
-/// ---------
+/// ### Mixfix
+/// ----------
+/// ```
+/// Mixfix = (Argument|ident_atom) [Argument|ident_atom]…
+/// 
+/// Argument = Expr | "$"[ident_atom]
+/// ```
+/// 
+/// Note that `Mixfix` must always contain *at least* one `ident_atom`.
+/// 
+/// ### SPECIAL FORMS
+/// -----------------
+/// Special forms are evaluated differently from normal expressions.
+/// 
+/// λλλλλλλ
+/// -------
 /// ```
 /// LambdaObject = "Function"|"Transform" ParamList Expr
 /// 
@@ -104,14 +118,19 @@
 ///         | ident_atom
 /// ```
 /// 
+/// **Evaluation:**
+/// - First code item follows normal evaluation, but must evaluate to a valid keyword.
+/// - `ParamList` defines parameters; only `Type`s are evaluated normally.
+/// - `Expr` evaluates to a reduced form of itself serving as the function body.
+/// 
 /// **NOTE:**
 /// `(>>>` as part of `Parameter` here indicates something slightly different than it
 /// normally does. It will not enclose everything that follows it, but instead act as
 /// a normal start-of-parameter - apart from also declaring that an open-ended `(>>>`
 /// should be automatically placed ahead of the parameter/argument at application.
 /// 
-/// ### Commands
-/// ------------
+/// Commands
+/// --------
 /// ```
 /// Command = BlockDef
 ///         | GroupDef
@@ -119,18 +138,12 @@
 ///         | RunForeign
 /// ```
 /// 
-/// ### Mixfix
-/// ----------
-/// ```
-/// Mixfix = (Argument|ident_atom) [Argument|ident_atom]…
+/// **Evaluation:**
+/// - First code item follows normal evaluation, but must evaluate to a valid keyword.
+/// - Evaluation of remaining code items depend on the command.
 /// 
-/// Argument = Expr | "$"[ident_atom]
-/// ```
-/// 
-/// Note that `Mixfix` must always contain *at least* one `ident_atom`.
-/// 
-/// ### Block Definitions
-/// ---------------------
+/// Block Definitions
+/// -----------------
 /// ```
 /// BlockDef = "defblock" BVariant BStart BEnd BEsc Expr
 /// BStart   = regex_with_var_def_and_interpolation
@@ -140,18 +153,31 @@
 /// BVariant = "comment"|"string"|"cstring"|"custom"
 /// ```
 /// 
-/// ### Group/Token Definitions
-/// ---------------------------
+/// **Evaluation:**
+/// - `BVariant` follows normal evaluation, but must evaluate to a valid keyword.
+/// - Regex terms evaluate to themselves.
+/// - `Expr` is evaluated normally.
+/// 
+/// Group/Token Definitions
+/// -----------------------
 /// ```
 /// GroupDef = "defgroup"  "(" [token]… ")" Expr
 /// TokenDef = "deftokens" "(" [token]… ")" Expr
 /// ```
 /// 
-/// ### Foreign Function Interface
-/// ------------------------------
+/// **Evaluation:**
+/// - Tokens evaluate to themselves.
+/// - `Expr` is evaluated normally.
+/// 
+/// Foreign Function Interface
+/// --------------------------
 /// ```
 /// RunForeign = "runforeign" "rust" block
 /// ```
+/// 
+/// **Evaluation:**
+/// - Second code item follows normal evaluation, but must evaluate to `rust`.
+/// - The code block at the end is evaluated as Rust code.
 /// 
 /// ### Type System
 /// ---------------
