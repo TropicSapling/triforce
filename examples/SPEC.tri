@@ -104,11 +104,11 @@
 /// 
 /// **Example:**
 /// > let identifier = $unapplied
-/// > ...
+/// > identifier
 /// <=>
-/// > (let $id = $val\n$scope) identifier $unapplied ...
+/// > (let $id = $val\n$scope) identifier $unapplied identifier
 /// <=>
-/// > (λ(val) ...)
+/// > (λ(val) val)
 /// 
 /// ### SPECIAL FORMS
 /// -----------------
