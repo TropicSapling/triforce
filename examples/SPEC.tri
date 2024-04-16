@@ -76,6 +76,8 @@
 ///           | Mixfix
 ///           | Atom
 /// 
+/// Argument = Expr | "$"[ident_atom]
+/// 
 /// BegCode = "("|"(>>>"
 /// EndCode = ")"
 /// BegCStr = user_defined
@@ -95,11 +97,18 @@
 /// ----------
 /// ```
 /// Mixfix = (Argument|ident_atom) [Argument|ident_atom]…
-/// 
-/// Argument = Expr | "$"[ident_atom]
 /// ```
 /// 
-/// Note that `Mixfix` must always contain *at least* one `ident_atom`.
+/// `Mixfix` is syntax sugar that reduces to normal lambda application.
+/// - Note that it must always contain *at least* one `ident_atom`.
+/// 
+/// **Example:**
+/// > let identifier = $unapplied
+/// > ...
+/// <=>
+/// > (let $id = $val\n$scope) identifier $unapplied ...
+/// <=>
+/// > (λ(val) ...)
 /// 
 /// ### SPECIAL FORMS
 /// -----------------
@@ -291,11 +300,11 @@ deftokens ({ } [ ] ~ ') (>>>
 	======================================
 	(λ((let (pat) = (val)\\n(>>>scope))) (
 		\(glob_scope)
-	)) (Λ(pat) Λ(val) Λ(scope) (
-		============================
-		(λ\\(pat) \\(scope)) \\(val)
-		============================
-	))
+	)) (Λ(pat) `λ(val) Λ(scope) (
+		================================
+		(λ\\(pat) \\\\(scope)) \\\\(val)
+		================================
+	)`)
 	======================================
 )) (>>>
 
@@ -352,7 +361,7 @@ let lambda = λ'123' λ(y 1|2|3) λ(z _) (
 /// TODO: figure out how equality of functions should be decided
 
 /// `{...}` <=> `(...)`
-let ({(expr)}) = (λ(expr) expr) $expr // `$` = unapplied arg
+let ({(expr)}) = λ(expr) expr
 
 /// `return` defined simply as ignoring the rest of the scope
 let (return (x)\n(>>>scope)) = λ(x) Λ(scope) `\(x)`
