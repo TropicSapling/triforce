@@ -108,9 +108,8 @@
 /// λλλλλλλ
 /// -------
 /// ```
-/// LambdaObject = "Function"|"Transform" ParamList Expr
+/// LambdaObject = "Function"|"Transform" Parameter Expr
 /// 
-/// ParamList = BegCode [Parameter]…   EndCode
 /// Parameter = BegCode ParName [Type] EndCode
 ///           | "'" Type "'"
 /// 
@@ -120,7 +119,7 @@
 /// 
 /// **Evaluation:**
 /// - First code item follows normal evaluation, but must evaluate to a valid keyword.
-/// - `ParamList` defines parameters; only `Type`s are evaluated normally.
+/// - `Parameter` defines a parameter; only its `Type` is evaluated normally.
 /// - `Expr` evaluates to a reduced form of itself serving as the function body.
 /// 
 /// **NOTE:**
@@ -202,6 +201,10 @@
 /// Match = "$"[ident_atom] | "#"[Parameter]
 /// 
 /// let test_type = (let $ #(typ any) = #)
+/// 
+/// let multiparam_lambda = Function (x) (
+///     Function (y) (Function (z) (...))
+/// )
 /// ```
 /// 
 /// ### Attributes
