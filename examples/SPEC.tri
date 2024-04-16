@@ -108,19 +108,28 @@
 /// λλλλλλλ
 /// -------
 /// ```
-/// LambdaObject = "Function"|"Transform" Parameter Expr
+/// LambdaObject = Function Parameter Expr
+///              | MacroFun Parameter Expr
 /// 
-/// Parameter = BegCode ParName [Type] EndCode
+/// Function = "λ"
+/// MacroFun = "Λ"
+/// 
+/// Parameter = BegCode ParDecl [Type] EndCode
+///           | BegCode ParName [Type] EndCode
 ///           | "'" Type "'"
 /// 
-/// ParName = BegCode [Attrs] (Parameter|ident_atom) [Parameter|ident_atom]… EndCode
-///         | ident_atom
+/// ParDecl = BegCode [Attrs] (Parameter|ident_atom) [Parameter|ident_atom]… EndCode
+/// ParName = ident_atom
 /// ```
 /// 
 /// **Evaluation:**
 /// - First code item follows normal evaluation, but must evaluate to a valid keyword.
 /// - `Parameter` defines a parameter; only its `Type` is evaluated normally.
 /// - `Expr` evaluates to a reduced form of itself serving as the function body.
+/// 
+/// **Associativity:**
+/// Lambdas are *right-associative*.
+/// - `λ(x) λ(y) Λ(z) 123 + 456` <=> `λ(x) (λ(y) (Λ(z) (123 + 456)))`
 /// 
 /// **NOTE:**
 /// `(>>>` as part of `Parameter` here indicates something slightly different than it
@@ -147,7 +156,7 @@
 /// BlockDef = "defblock" BVariant BStart BEnd BEsc Expr
 /// BStart   = regex_with_var_def_and_interpolation
 /// BEnd     = regex_with_var_def_and_interpolation
-/// BEsc     = regex_with_var_def_and_interpolation | "(" ")"
+/// BEsc     = regex_with_var_def_and_interpolation | BegCode EndCode
 /// 
 /// BVariant = "comment"|"string"|"cstring"|"custom"
 /// ```
@@ -160,8 +169,8 @@
 /// Group/Token Definitions
 /// -----------------------
 /// ```
-/// GroupDef = "defgroup"  "(" [token]… ")" Expr
-/// TokenDef = "deftokens" "(" [token]… ")" Expr
+/// GroupDef = "defgroup"  BegCode [token]… EndCode Expr
+/// TokenDef = "deftokens" BegCode [token]… EndCode Expr
 /// ```
 /// 
 /// **Evaluation:**
@@ -201,10 +210,6 @@
 /// Match = "$"[ident_atom] | "#"[Parameter]
 /// 
 /// let test_type = (let $ #(typ any) = #)
-/// 
-/// let multiparam_lambda = Function (x) (
-///     Function (y) (Function (z) (...))
-/// )
 /// ```
 /// 
 /// ### Attributes
@@ -266,33 +271,36 @@ deftokens ({ } [ ] ~ ') (>>>
 /// =>
 /// [let, invalidstr, str, =, "123 + 456", *=, (, (, "*789", ), ), \n]
 
-/// Functions/Transforms are special built-in objects with 2 fields: parameters, body.
-/// The fields are evaluated in order, but since they are not normal expressions they
-/// are evaluated in special ways specific to each field. They both evaluate to
-/// reduced forms where as much as possible has been evaluated normally.
-/// - Whatever cannot be normally evaluated will evaluate to itself
-(Transform [(glob_scope)] (
-	================================================
-	(Function [((let (pat) = (val)\\n(>>>scope)))] (
+/// **Lambdas are special built-in objects with 2 fields: `$parameter` and `$body`.**
+/// `λ` = anonymous function
+/// `Λ` = anonymous macro
+/// 
+/// The fields are evaluated in order, but in special ways specific to each field.
+/// They both evaluate to reduced forms where as much as possible has been evaluated
+/// normally. Whatever cannot be normally evaluated will evaluate to itself.
+/// - Calling the object will run `$body` and return its result
+(Λ(glob_scope) (
+	======================================
+	(λ((let (pat) = (val)\\n(>>>scope))) (
 		\(glob_scope)
-	)) (Transform [(pat), (val), (scope)] (
-		========================================
-		(Function [\\(pat)] (\\(scope))) \\(val)
-		========================================
+	)) (Λ(pat) Λ(val) Λ(scope) (
+		============================
+		(λ\\(pat) \\(scope)) \\(val)
+		============================
 	))
-	================================================
-))) (>>>(>>>
+	======================================
+)) (>>>
 
-/// Everything here and after is passed as input to the `Transform`.
+/// Everything here and after is passed as input to the `Λ`.
 /// This is because `(>>>` is a special, open-ended parenthesis.
 /// 
 /// Meaning that:
-/// > (Transform [(glob_scope)] (...)) (>>>(>>>
+/// > (Λ(glob_scope) (...)) (>>>
 /// > ...
 /// <=>
-/// > (Transform [(glob_scope)] (...)) ((
+/// > (Λ(glob_scope) (...)) (
 /// >	 ...
-/// > ))
+/// > )
 /// 
 /// That is, the global scope is passed as the `glob_scope` argument.
 
@@ -303,32 +311,29 @@ let any   = _
 let type1 = 123
 let type2 = 1|2|3
 
-/// Example Function ...
-let lambda = Function [(x type1), (y type2), (z)] (
+/// Example lambda ...
+let lambda = λ(x type1) λ(y type2) λ(z) (
 	runforeign rust `println("Got {}, {}, {}.", \(x), \(y), \(z));` (
 
-	Transform [((function taking (a) and (b type2)))] (
-		runforeign rust `println("Entered macro.");` (
+	Λ((function taking (a) and (b type2))) (
+		runforeign rust `println("Entered macro.");` (>>>
 
 		=================================================
 		\(function taking $ and 2) // partial application
 		=================================================
-	)))
+	)
 )
 /// ... and then again, with the RHS evaluated into a final *object value*:
-let lambda = Function ['123', (y 1|2|3), (z _)] (
+let lambda = λ'123' λ(y 1|2|3) λ(z _) (
 	runforeign rust `println("Got {}, {}, {}.", 123, \(y), \(z));` (
 
-	Transform [(
-		(function taking '|' and '1|2|3')
-		Function|Transform [#'_', (#'_' #'super 1|2|3')] #'_'
-	)] (
-		runforeign rust `println("Entered macro.");` (
+	Λ((function taking '|' and '1|2|3') λ|Λ(#'_') λ|Λ(#'_' #'super 1|2|3') #'_') (
+		runforeign rust `println("Entered macro.");` (>>>
 
 		=================================================
 		\(function taking $ and 2) // partial application
 		=================================================
-	)))
+	)
 )
 /// TODO: **Come up with a binary representation for the final object values.**
 /// We want every program to reduce to one final object value compiling into a binary
@@ -338,9 +343,9 @@ let lambda = Function ['123', (y 1|2|3), (z _)] (
 /// 
 /// TODO: figure out how equality of functions should be decided
 
-let ({(expr)}) = (λ function ((expr)) (expr)) $expr // `$` = unapplied arg
+let ({(expr)}) = (λ(expr) expr) $expr // `$` = unapplied arg
 
-let (println (x)\n(>>>scope)) = λ transform ((x)) (
+let (println (x)\n(>>>scope)) = Λ(x) (
 	======================================
 	runforeign rust `println("{}", \(x));`
 
@@ -353,16 +358,40 @@ println "hello, world"
 
 // Testing pattern matching / type checking on λ below ...
 
-let f = λ function ((x int) (y int) (z int)) (x + y + z)
+let f = λ(x int) λ(y int) λ(z int) x + y + z
 
-// λ
-let f λ _ _ _ = f
-// λ function, 1+ parameters (defines first=`(x int)` rest=`(y int) (z int)` in scope)
-let f λ function ¤(#(first) #(rest)) _ = f
-// λ function, 3 parameters
-let f λ function `\(_) \(_) \(_)` _ = f
-// λ function, 3x `int` => `int`
-let f λ function `\('int') \('int') \('int')` int = f
+// λ|Λ
+let 'λ|Λ # #' = f
+// λ, 2+ parameters (defines first=`(x int)` second=`(y int)` in scope)
+let 'λ#(first) λ#(second) #' = f
+// λ, 3 parameters
+let 'λ# λ# λ# #'~(λ#)'' = f
+// λ, 3x `int` => `int`
+let 'λ'int' λ'int' λ'int' #'int'' = f
+
+/// **REMEMBER:**
+/// > λ(...) 'int'
+/// <=>
+/// > λ(...) (any_param_decl ...|-1|0|1|...)'
+/// --- whereas ---
+/// > λ(...) #'int'
+/// <=>
+/// > ... | λ(...) -1 | λ(...) 0 | λ(...) 1 | ...
+/// 
+/// The first form checks that an `int` parameter is returned (invalid).
+/// The second form checks that return type is `int` (correct).
+
+/// TODO:
+/// > a :: (b0 :: b1) :: c
+/// <=>
+/// > a :: ((b0 :: (b1)) :: (c))
+/// <=>
+/// > `\(a) \(`\(b0) \(b1)`) \(c)`
+/// <=>
+/// > [a, [b0, b1], c]
+/// 
+/// **OR if `::` syntax doesn't work, try this instead:**
+/// > ¤($first $rest)
 
 
 /// ##################################################################################
