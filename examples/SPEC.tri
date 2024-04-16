@@ -148,6 +148,14 @@
 /// Lambdas are *right-associative*.
 /// - `λ(x) λ(y) Λ(z) return === 42 ===` <=> `λ(x) (λ(y) (Λ(z) (return === 42 ===)))`
 /// 
+/// **Equality:**
+/// Two lambdas are considered equal if:
+/// 1. They are of equal variant (`λ` or `Λ`).
+/// 2. The `Type`s of their respective `Parameter`s are equal.
+/// 3. Their body `Expr`s are equal after conversion to de Bruijn indexing.
+/// 
+/// This will sometimes be undecidable - in those cases an error should be issued.
+/// 
 /// **NOTE:**
 /// `(>>>` as part of `Parameter` here indicates something slightly different than it
 /// normally does. It will not enclose everything that follows it, but instead act as
@@ -296,6 +304,8 @@ deftokens ({ } [ ] ~ ') (>>>
 /// They both evaluate to reduced forms where as much as possible has been evaluated
 /// normally. Whatever cannot be normally evaluated will evaluate to itself.
 /// - Calling the object will run `$body` and return its result
+/// 
+/// Below we define `let $pat = $val\n` in the global scope with `Λ`:
 (Λ(glob_scope) (
 	======================================
 	(λ((let (pat) = (val)\\n(>>>scope))) (
@@ -344,7 +354,7 @@ let lambda = λ(x type1) λ(y type2) λ(z) (
 let lambda = λ'123' λ(y 1|2|3) λ(z _) (
 	runforeign rust `println("Got {}, {}, {}.", 123, \(y), \(z));` (
 
-	Λ((function taking '|' and '1|2|3') λ|Λ(#'_') λ|Λ(#'_' #'super 1|2|3') #'_') (
+	Λ((function taking '|' and '1|2|3') λ|Λ '#'_'' λ|Λ '#'super 1|2|3'' #'_') (
 		runforeign rust `println("Entered macro.");` (>>>
 
 		=================================================
@@ -356,15 +366,14 @@ let lambda = λ'123' λ(y 1|2|3) λ(z _) (
 /// We want every program to reduce to one final object value compiling into a binary
 /// representation of it that also acts as the program's real, executable binary code.
 /// 
-/// Final object value = normal form
-/// 
-/// TODO: figure out how equality of functions should be decided
+/// **Final object value = normal form**
 
 /// `{...}` <=> `(...)`
 let ({(expr)}) = λ(expr) expr
 
 /// `return` defined simply as ignoring the rest of the scope
 let (return (x)\n(>>>scope)) = λ(x) Λ(scope) `\(x)`
+// TODO: fix so works for returning out of function too and not just scope
 
 /// `println` defined as invoking Rust's equivalent
 let (println (x)\n(>>>scope)) = λ(x) Λ(scope) (
