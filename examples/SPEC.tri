@@ -127,9 +127,17 @@
 /// - `Parameter` defines a parameter; only its `Type` is evaluated normally.
 /// - `Expr` evaluates to a reduced form of itself serving as the function body.
 /// 
+/// **Upon calling `Function`:**
+/// Its body will run and evaluate to a result that will be returned.
+/// 
+/// **Upon calling `MacroFun`:**
+/// Its body will run *during compilation* and must return a `CStrAsList`.
+/// The returned code string will turn into normal code replacing the macro call.
+/// This code will then run and evaluate normally.
+/// 
 /// **Associativity:**
 /// Lambdas are *right-associative*.
-/// - `λ(x) λ(y) Λ(z) 123 + 456` <=> `λ(x) (λ(y) (Λ(z) (123 + 456)))`
+/// - `λ(x) λ(y) Λ(z) return === 42 ===` <=> `λ(x) (λ(y) (Λ(z) (return === 42 ===)))`
 /// 
 /// **NOTE:**
 /// `(>>>` as part of `Parameter` here indicates something slightly different than it
@@ -343,9 +351,14 @@ let lambda = λ'123' λ(y 1|2|3) λ(z _) (
 /// 
 /// TODO: figure out how equality of functions should be decided
 
+/// `{...}` <=> `(...)`
 let ({(expr)}) = (λ(expr) expr) $expr // `$` = unapplied arg
 
-let (println (x)\n(>>>scope)) = Λ(x) (
+/// `return` defined simply as ignoring the rest of the scope
+let (return (x)\n(>>>scope)) = λ(x) Λ(scope) `\(x)`
+
+/// `println` defined as invoking Rust's equivalent
+let (println (x)\n(>>>scope)) = λ(x) Λ(scope) (
 	======================================
 	runforeign rust `println("{}", \(x));`
 
