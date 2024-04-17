@@ -3211,17 +3211,22 @@ let _run_ = ... // (`run` is a reserved keyword)
 
 // Clearly, any random code (even complete nonsense!) is valid as a value
 
+//> (display (list-ref `(1 `(fdj ,(erre rtrg) gtr) 7) 1)) ; `(fdj ,(erre rtrg) gtr)
+//> (newline)
+
+// And, even escapes like `,` are included if in nested quote
+
 --------------------------------------------------
 
 /// # Lists
 
 let list = [a, [b0, b1], c]
 // <=>
-let list = ================
+let list = =================
            \(a)
-           \(`\(b0) \(b1)`)
+           \(`(\(b0) \(b1)))
            \(c)
-           ================
+           =================
 
 let item = list[1][0]
 // <=>
