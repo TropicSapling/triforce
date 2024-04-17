@@ -24,16 +24,17 @@
 /// ```
 /// Syntax     = [Definition]…
 /// Definition = def_name "=" Expression ["\n" "|" Expression]… "\n"
-/// Expression = Term ["|" Term]…
+/// Expression = Term ["|"|"=>" Term]…
 /// Term       = Factor [Factor]…
-/// Factor     = def_name | tok["-"tok] | Group | Option
+/// Factor     = def_name["=>"def_name] | tok["-"tok] | Group | Option
 /// Group      = "("Expression")"
 /// Option     = "["Expression"]"["…"]
 /// ```
 /// 
 /// Lexical tokens are enclosed in "" or `` (i.e. "let", "=", "``" or `""`).
 /// Terminal tokens are lowercase. Non-terminal tokens are CamelCase.
-/// - `[a-b]` = characters a through b
+/// - `a=>b` = `a` evaluating into `b`
+/// - `a-b`  = characters a through b
 /// 
 /// Note that one or more consecutive newlines - potentially intertwined with any
 /// other whitespace, which is ignored - together form a `\n` token. All other
@@ -58,16 +59,21 @@
 /// 
 /// **Note:** An `ident_atom` is allowed to be the special `\n` token described above.
 /// 
+/// ### Syntax sugar
+/// ----------------
+/// ```
+/// TODO = "===+" ... "===+" <=> CStrAsList
+/// TODO = "(>>>" ... <=> CodeAsList
+/// ```
+/// 
 /// ### Lists
 /// ---------
 /// ```
-/// List = CodeAsList
-///      | CStrAsList
-///      | TypeAsList
+/// List = CStrAsList => CodeAsList
+///      | CodeAsList
 /// 
-/// CodeAsList = BegCode [CodeItems] EndCode
-/// CStrAsList = BegCStr [CodeItems] EndCStr
-/// TypeAsList = Type
+/// CodeAsList = "(" [CodeItems] ")"
+/// CStrAsList = "`" CodeAsList
 /// 
 /// CodeItems = CodeItem [CodeItem]…
 /// CodeItem  = Expr
@@ -82,8 +88,6 @@
 /// 
 /// BegCode = "("|"(>>>"
 /// EndCode = ")"
-/// BegCStr = user_defined
-/// EndCStr = user_defined
 /// ```
 /// 
 /// `CodeAsList` is a list of code items which are all evaluated together as a whole.
@@ -146,10 +150,6 @@
 /// The returned code string will turn into normal code replacing the macro call.
 /// This code will then run and evaluate normally.
 /// 
-/// **Associativity:**
-/// Lambdas are *right-associative*.
-/// - `λ(x) λ(y) Λ(z) return === 42 ===` <=> `λ(x) (λ(y) (Λ(z) (return === 42 ===)))`
-/// 
 /// **Equality:**
 /// Two lambdas are considered equal if:
 /// 1. They are of equal variant (`λ` or `Λ`).
@@ -157,6 +157,10 @@
 /// 3. Their body `Expr`s are equal after conversion to de Bruijn indexing.
 /// 
 /// This will sometimes be undecidable - in those cases an error should be issued.
+/// 
+/// **Associativity:**
+/// Lambdas are *right-associative*.
+/// - `λ(x) λ(y) Λ(z) return === 42 ===` <=> `λ(x) (λ(y) (Λ(z) (return === 42 ===)))`
 /// 
 /// **NOTE:**
 /// `(>>>` as part of `Parameter` here indicates something slightly different than it
@@ -217,8 +221,7 @@
 /// ### Type System
 /// ---------------
 /// ```
-/// Type = "(" [Type] ")"
-///      | "<" [Type] ">"
+/// Type = "<" [Type] ">"
 ///      | UnaTypeOp
 ///      | BinTypeOp
 ///      | MatPat
@@ -353,10 +356,10 @@ let lambda = λ(x type1) λ(y type2) λ(z) (
 	)
 )
 /// ... and then again, with the RHS evaluated into a final *object value*:
-let lambda = λ'123' λ(y 1|2|3) λ(z _) (
+let lambda = λ'123' λ(y 1|2|3) λ(z ~|) (
 	runforeign rust `println("Got {}, {}, {}.", 123, \(y), \(z));` (
 
-	Λ((function taking '|' and '1|2|3') λ|Λ '#'_'' λ|Λ '#'super 1|2|3'' #'_') (
+	Λ((function taking '|' and '1|2|3') λ|Λ '#'~|'' λ|Λ '#'super 1|2|3'' #'~|') (
 		runforeign rust `println("Entered macro.");` (>>>
 
 		=================================================

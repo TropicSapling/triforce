@@ -3207,6 +3207,10 @@ let _run_ = ... // (`run` is a reserved keyword)
 (define x (list-ref '(1 (opt4ih gre+0934 regoi) 7) 1))
 (display x)                                            ; (opt4ih gre+0934 regoi)
 (newline)
+
+(display (list-ref '('(erre rtrg)) 0))                 ; '(erre rtrg)
+(display (list-ref ''(erre rtrg)   0))                 ; quote
+(display (list-ref '(erre rtrg)    0))                 ; erre
 ```
 
 // Clearly, any random code (even complete nonsense!) is valid as a value
