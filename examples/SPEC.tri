@@ -63,9 +63,11 @@
 /// ```
 /// List = CodeAsList
 ///      | CStrAsList
+///      | TypeAsList
 /// 
 /// CodeAsList = BegCode [CodeItems] EndCode
 /// CStrAsList = BegCStr [CodeItems] EndCStr
+/// TypeAsList = Type
 /// 
 /// CodeItems = CodeItem [CodeItem]…
 /// CodeItem  = Expr
