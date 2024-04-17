@@ -26,9 +26,10 @@
 /// Definition = def_name "=" Expression ["\n" "|" Expression]… "\n"
 /// Expression = Term ["|"|"=>" Term]…
 /// Term       = Factor [Factor]…
-/// Factor     = def_name["=>"def_name] | tok["-"tok] | Group | Option
+/// Factor     = def_name | tok["-"tok] | Group | Option | Variable
 /// Group      = "("Expression")"
 /// Option     = "["Expression"]"["…"]
+/// Variable   = "\\("var["="regex]")"
 /// ```
 /// 
 /// Lexical tokens are enclosed in "" or `` (i.e. "let", "=", "``" or `""`).
@@ -62,42 +63,46 @@
 /// ### Syntax sugar
 /// ----------------
 /// ```
-/// TODO = "===+" ... "===+" <=> CStrAsList
-/// TODO = "(>>>" ... <=> CodeAsList
+/// OpenParenthesis = "(>>>"
+/// MultilineCStr   = \(x="===+") contents \(x)
 /// ```
+/// 
+/// `MultilineCStr` converts to a `CStrAsList` whose `Expr` becomes `"("contents")"`.
+/// 
+/// When `OpenParenthesis` is used, it will be converted into a normal parenthesis and
+/// a closing parenthesis will be placed at the end of the scope to pair with it. What
+/// this means is that a new closing parenthesis will be automatically inserted right
+/// before an already existing scope-ending `)`. If no such scope-ender is found, the
+/// scope continues until EOF, or even past it if the file is included elsewhere.
 /// 
 /// ### Lists
 /// ---------
 /// ```
 /// List = CStrAsList => CodeAsList
+///      | SEscAsList => CodeAsList
 ///      | CodeAsList
 /// 
-/// CodeAsList = "(" [CodeItems] ")"
-/// CStrAsList = "`" CodeAsList
+/// CodeAsList = "("  [CodeItems] ")"
+/// CStrAsList = "`"  Expr
+/// SEscAsList = "\\" Expr
 /// 
-/// CodeItems = CodeItem [CodeItem]…
-/// CodeItem  = Expr
-/// 
+/// CodeItems = Expr [Expr]…
 /// CodeItems = (List|ident_atom) [Argument]…
 ///           | LambdaObject
 ///           | Command
 ///           | Mixfix
 ///           | Atom
 /// 
-/// Argument = Expr | "$"[ident_atom]
-/// 
-/// BegCode = "("|"(>>>"
-/// EndCode = ")"
+/// Argument = Expr|"$"[ident_atom]
 /// ```
 /// 
 /// `CodeAsList` is a list of code items which are all evaluated together as a whole.
-/// `CStrAsList` is identical apart from only evaluating escaped `"\\"CodeAsList`s.
 /// 
-/// **NOTE:**
-/// The special open-ended parenthesis `(>>>` implicitly places a closing `EndCode`
-/// at the end of the scope. That is, it automatically inserts a new `)` right before
-/// an already existing scope-ending `)`. If no such scope-ender is found, the scope
-/// continues until the EOF or potentially past it if the file is included elsewhere.
+/// `CStrAsList` is a two-item list of the backquote and an `Expr`. It evaluates to
+/// the latter item in its unevaluated form - the same behaviour as seen in Scheme.
+/// 
+/// `SEscAsList` is a two-item list of the backslash and an `Expr`. It evaluates to
+/// the latter item in its *evaluated* form, serving as an escaper for `CStrAsList`.
 /// 
 /// ### Mixfix
 /// ----------
@@ -171,8 +176,7 @@
 /// Commands
 /// --------
 /// ```
-/// Command = BlockDef
-///         | GroupDef
+/// Command = GroupDef
 ///         | TokenDef
 ///         | RunForeign
 /// ```
@@ -180,22 +184,6 @@
 /// **Evaluation:**
 /// - First code item follows normal evaluation, but must evaluate to a valid keyword.
 /// - Evaluation of remaining code items depend on the command.
-/// 
-/// Block Definitions
-/// -----------------
-/// ```
-/// BlockDef = "defblock" BVariant BStart BEnd BEsc Expr
-/// BStart   = regex_with_var_def_and_interpolation
-/// BEnd     = regex_with_var_def_and_interpolation
-/// BEsc     = regex_with_var_def_and_interpolation | BegCode EndCode
-/// 
-/// BVariant = "comment"|"string"|"cstring"|"custom"
-/// ```
-/// 
-/// **Evaluation:**
-/// - `BVariant` follows normal evaluation, but must evaluate to a valid keyword.
-/// - Regex terms evaluate to themselves.
-/// - `Expr` is evaluated normally.
 /// 
 /// Group/Token Definitions
 /// -----------------------
@@ -262,6 +250,12 @@
 /// 
 /// ### Misc.
 /// ---------
+/// ```
+/// Comment = "//"        anything "\n"
+/// String  = `"`         anything `"`
+///         | \(x=`"""+`) anything \(x)
+/// ```
+/// 
 /// Comments and whitespace can be inserted anywhere.
 /// Note however that newlines count as tokens and are sometimes used.
 
@@ -269,15 +263,7 @@
 
 // Below is some sort of prelude/foundation to test the syntax
 
-defblock comment //        \n    () (>>>
-defblock string  \(x=)"""+ \(x)  () (>>> //"
-defblock string  "         "     \\ (>>>
-defblock cstring `         `     \\ (>>>
-defblock cstring \(x=)===+ \(x)  () (>>>
-
-/// Groups and blocks are used for deciding how to form tokens.
-/// - Comment blocks and whitespace groups are ignored and do not form tokens.
-/// - Remaining blocks & groups form tokens as has been defined.
+/// Groups are used for deciding how to form tokens.
 defgroup (+ - * / ^ < > & | =) (>>>
 defgroup (@ % ? !)             (>>>
 defgroup (. ,)                 (>>>
@@ -285,7 +271,7 @@ defgroup (: ;)                 (>>>
 defgroup ($ #)                 (>>>
 /// Built-in groups:
 /// - Default
-/// - Whitespace, excl. `\n`
+/// - Whitespace, excl. `\n` (forms no tokens - only serves to separate)
 /// - `\n`
 
 /// The `deftokens` command defines specific stand-alone tokens.
@@ -315,11 +301,11 @@ deftokens ({ } [ ] ~ ') (>>>
 	======================================
 	(λ((let (pat) = (val)\\n(>>>scope))) (
 		\(glob_scope)
-	)) (Λ(pat) `λ(val) Λ(scope) (
+	)) (Λ(pat) `(λ(val) Λ(scope) (
 		================================
 		(λ\\(pat) \\\\(scope)) \\\\(val)
 		================================
-	)`)
+	)))
 	======================================
 )) (>>>
 
@@ -377,7 +363,7 @@ let lambda = λ'123' λ(y 1|2|3) λ(z ~|) (
 let ({(expr)}) = λ(expr) expr
 
 /// `return` defined simply as ignoring the rest of the scope
-let (return (x)\n(>>>scope)) = λ(x) Λ(scope) `\(x)`
+let (return (x)\n(>>>scope)) = λ(x) Λ(scope) `\(x)
 // TODO: fix so works for returning out of function too and not just scope
 
 /// `println` defined as invoking Rust's equivalent
