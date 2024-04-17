@@ -50,22 +50,34 @@
 /// ```
 /// 
 /// Every program consists of a single `Expr` containing its code. This expression is
-/// either a (typically nested) `List` or an `Atom`. If the file contains multiple
-/// atoms, these will automatically become enclosed by parentheses so that they form
-/// a single `List` (of type `CodeAsList`; see section on Lists for further details).
+/// either a `List` or an `Atom`. If the file contains multiple atoms, these will
+/// automatically become enclosed by parentheses so that they form a single `List`.
 /// 
 /// Additionally, within any `List` more parentheses will be automatically inserted as
-/// specified by precedence rules, ultimately forming more `CodeAsList`s. This means
-/// that parentheses can in many cases be omitted.
+/// specified by precedence rules, ultimately forming more `List`s. This means that
+/// conveniently, parentheses can in many cases be omitted.
 /// 
 /// **Note:** An `ident_atom` is allowed to be the special `\n` token described above.
 /// 
 /// ### Syntax sugar
 /// ----------------
 /// ```
+/// Mixfix = (Argument|ident_atom) [Argument|ident_atom]…
+/// 
 /// OpenParenthesis = "(>>>"
 /// MultilineCStr   = \(x="===+") contents \(x)
 /// ```
+/// 
+/// `Mixfix` is syntax sugar that reduces to normal lambda application.
+/// - Note that it must always contain *at least* one `ident_atom`.
+/// 
+/// **Example of `Mixfix`:**
+/// > let identifier = $unapplied
+/// > identifier
+/// <=>
+/// > (let $id = $val\n$scope) identifier $unapplied identifier
+/// <=>
+/// > (λ(val) val)
 /// 
 /// `MultilineCStr` converts to a `CStrAsList` whose `Expr` becomes `"("contents")"`.
 /// 
@@ -78,13 +90,7 @@
 /// ### Lists
 /// ---------
 /// ```
-/// List = CStrAsList => CodeAsList
-///      | SEscAsList => CodeAsList
-///      | CodeAsList
-/// 
-/// CodeAsList = "("  [CodeItems] ")"
-/// CStrAsList = "`"  Expr
-/// SEscAsList = "\\" Expr
+/// List = "(" [CodeItems] ")"
 /// 
 /// CodeItems = Expr [Expr]…
 /// CodeItems = (List|ident_atom) [Argument]…
@@ -96,30 +102,8 @@
 /// Argument = Expr|"$"[ident_atom]
 /// ```
 /// 
-/// `CodeAsList` is a list of code items which are all evaluated together as a whole.
-/// 
-/// `CStrAsList` is a two-item list of the backquote and an `Expr`. It evaluates to
-/// the latter item in its unevaluated form - the same behaviour as seen in Scheme.
-/// 
-/// `SEscAsList` is a two-item list of the backslash and an `Expr`. It evaluates to
-/// the latter item in its *evaluated* form, serving as an escaper for `CStrAsList`.
-/// 
-/// ### Mixfix
-/// ----------
-/// ```
-/// Mixfix = (Argument|ident_atom) [Argument|ident_atom]…
-/// ```
-/// 
-/// `Mixfix` is syntax sugar that reduces to normal lambda application.
-/// - Note that it must always contain *at least* one `ident_atom`.
-/// 
-/// **Example:**
-/// > let identifier = $unapplied
-/// > identifier
-/// <=>
-/// > (let $id = $val\n$scope) identifier $unapplied identifier
-/// <=>
-/// > (λ(val) val)
+/// `List` is a list of code items which are all evaluated together as a whole.
+/// - In its unevaluated form, it is indexable and its code items are valid values.
 /// 
 /// ### SPECIAL FORMS
 /// -----------------
@@ -176,7 +160,9 @@
 /// Commands
 /// --------
 /// ```
-/// Command = GroupDef
+/// Command = Quote
+///         | Escape
+///         | GroupDef
 ///         | TokenDef
 ///         | RunForeign
 /// ```
@@ -184,6 +170,17 @@
 /// **Evaluation:**
 /// - First code item follows normal evaluation, but must evaluate to a valid keyword.
 /// - Evaluation of remaining code items depend on the command.
+/// 
+/// Quoting & Escaping
+/// ------------------
+/// ```
+/// Quote  = "`"  Expr
+/// Escape = "\\" Expr
+/// ```
+/// 
+/// `Quote` takes an `Expr` and returns it in its unevaluated form, apart from any
+/// `Escape` subexpressions which will be evaluated normally.
+/// - Escapes evaluating outside of a quote will error.
 /// 
 /// Group/Token Definitions
 /// -----------------------
@@ -331,7 +328,7 @@ let type2 = 1|2|3
 
 /// Example lambda ...
 let lambda = λ(x type1) λ(y type2) λ(z) (
-	runforeign rust `println("Got {}, {}, {}.", \(x), \(y), \(z));` (
+	runforeign rust `(println("Got {}, {}, {}.", \(x), \(y), \(z));) (
 
 	Λ((function taking (a) and (b type2))) (
 		runforeign rust `println("Entered macro.");` (>>>
@@ -343,7 +340,7 @@ let lambda = λ(x type1) λ(y type2) λ(z) (
 )
 /// ... and then again, with the RHS evaluated into a final *object value*:
 let lambda = λ'123' λ(y 1|2|3) λ(z ~|) (
-	runforeign rust `println("Got {}, {}, {}.", 123, \(y), \(z));` (
+	runforeign rust `(println("Got {}, {}, {}.", 123, \(y), \(z));) (
 
 	Λ((function taking '|' and '1|2|3') λ|Λ '#'~|'' λ|Λ '#'super 1|2|3'' #'~|') (
 		runforeign rust `println("Entered macro.");` (>>>
