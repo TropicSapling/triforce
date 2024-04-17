@@ -3187,16 +3187,29 @@ let _run_ = ... // (`run` is a reserved keyword)
 
 --------------------------------------------------
 
-// Lisp testing & stuff
+// Lisp testing
 
 ```Scheme
-(display (list 1 (+ 2 3) 7))       ; (1 5 7)
+(display (list 1 (+ 2 3) 7))      ; (1 5 7)
 (newline)
-(display '(1 (+ 2 3) 7))           ; (1 (+ 2 3) 7)
+(display (list 1 '(+ 2 3) 7))     ; (1 (+ 2 3) 7)
+(newline)
+(display '(1 (+ 2 3) 7))          ; (1 (+ 2 3) 7)
+(newline)
+(display '(1 '(+ 2 3) 7))         ; (1 '(+ 2 3) 7)
+(newline)
+
+(display (list-ref '(1 (fdjfd errej gtrio) 7) 1))      ; (fdjfd errej gtrio)
+(newline)
+(display (list-ref '(1 '(fdjfd errej gtrio) 7) 1))     ; '(fdjfd errej gtrio)
+(newline)
+
+(define x (list-ref '(1 (opt4ih gre+0934 regoi) 7) 1))
+(display x)                                            ; (opt4ih gre+0934 regoi)
 (newline)
 ```
 
-// `MultidimTokenList`: [this|Token]
+// Clearly, any random code (even complete nonsense!) is valid as a value
 
 --------------------------------------------------
 
