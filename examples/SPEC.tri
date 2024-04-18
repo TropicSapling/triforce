@@ -104,6 +104,7 @@
 /// 
 /// `List` is a list of code items which are all evaluated together as a whole.
 /// - In its unevaluated form, it is indexable and its code items are valid values.
+/// - It may be empty, and will in that case evaluate to itself.
 /// 
 /// ### SPECIAL FORMS
 /// -----------------
@@ -162,6 +163,7 @@
 /// ```
 /// Command = Quote
 ///         | Escape
+///         | LinkList
 ///         | GroupDef
 ///         | TokenDef
 ///         | RunForeign
@@ -174,13 +176,21 @@
 /// Quoting & Escaping
 /// ------------------
 /// ```
-/// Quote  = "`"  Expr
+/// Quote  = "`"  Expr => Expr
 /// Escape = "\\" Expr
 /// ```
 /// 
 /// `Quote` takes an `Expr` and returns it in its unevaluated form, apart from any
 /// `Escape` subexpressions which will be evaluated normally.
 /// - Escapes evaluating outside of a quote will error.
+/// 
+/// Linked Lists
+/// ------------
+/// ```
+/// LinkList = "linklist" Expr List => List
+/// ```
+/// 
+/// `LinkList` creates a list by linking a first item with a list of following items.
 /// 
 /// Group/Token Definitions
 /// -----------------------
@@ -400,17 +410,15 @@ let 'λ'int' λ'int' λ'int' #'int'' = f
 /// The first form checks that an `int` parameter is returned (invalid).
 /// The second form checks that return type is `int` (correct).
 
-/// TODO:
-/// > a :: (b0 :: b1) :: c
+[a, [b0, b1], c]
 /// <=>
-/// > a :: ((b0 :: (b1)) :: (c))
+`(\a (\b0 \b1) \c)
 /// <=>
-/// > `\(a) \(`\(b0) \(b1)`) \(c)`
+linklist a `((\b0 \b1) \c)
 /// <=>
-/// > [a, [b0, b1], c]
-/// 
-/// **OR if `::` syntax doesn't work, try this instead:**
-/// > ¤($first $rest)
+linklist a (linklist `(\b0 \b1) (c))
+/// <=>
+linklist a (linklist `(\b0 \b1) (linklist c ())
 
 
 /// ##################################################################################
