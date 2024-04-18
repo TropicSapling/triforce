@@ -27,19 +27,19 @@ contexts:
           captures:
             1: cc.string.quoted.double.triforce markup.bold
           pop: true
-    - match: '\s+={3,30}(?!=)'
+    - match: '\s+={3,32}(?!=)'
       scope: cc.string.quoted.double.triforce markup.bold
       push:
         - meta_scope: cc.string.quoted.double.triforce meta.cs.triforce
-        - match: '(\s+={3,30}(?!=))'
+        - match: '(\s+={3,32}(?!=))'
           captures:
             1: cc.string.quoted.double.triforce markup.bold
           pop: true
-    - match: '\s+={31,}(?!=)'
+    - match: '\s+={33,}(?!=)'
       scope: cc.string.quoted.double.triforce markup.bold
       push:
         - meta_scope: cc.string.quoted.double.triforce meta.cs.triforce
-        - match: '(\s+={31,}(?!=))'
+        - match: '(\s+={33,}(?!=))'
           captures:
             1: cc.string.quoted.double.triforce markup.bold
           pop: true

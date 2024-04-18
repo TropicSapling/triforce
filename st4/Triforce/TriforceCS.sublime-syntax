@@ -14,29 +14,8 @@ contexts:
   ##                   ========  BASICALLY UNIVERSAL  ========                  ##
   ##                                                                            ##
   ################################################################################
-  
-  cs-all-universal:
-    - match: '(\\)[\\$]'
-      captures:
-        1: cc.constant.character.escape.triforce # cc for fade effect
-    - match: '\\(?![({])'
-      scope: cs.constant.character.escape.triforce
-      push:
-        - match: '.'
-          scope: cs.constant.character.escape.triforce
-          pop: true
-    - match: '(?=(\\)(just|raw)?[({])'
-      push:
-        - clear_scopes: true
-        - match: '(\\)(just|raw)?[({]'
-          captures:
-            2: variable.annotation.triforce
-        - match: '[)}]'
-          pop: true
-        - include: general
 
   cs-universal:
-    - include: cs-all-universal
     - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
       scope: cs.storage.type.triforce
       push:
@@ -63,12 +42,13 @@ contexts:
     - match: '"'
       scope: cs.punctuation.definition.string.begin.triforce
       push: cs-double-quoted-string
-    - match: '`'
+    - match: '`{{identifier}}'
+      scope: string.quoted.double.triforce
+    - match: '`\('
       scope: cs.punctuation.definition.string.begin.triforce
       push: cs-codestr-small
     - match: '===+'
-      scope: cs.punctuation.definition.string.begin.triforce
-      push: cs-codestr-large
+      scope: string.quoted.double.triforce
 
     # Keywords
     - match: '\b{{keyword_ctrl}}\b'
@@ -149,19 +129,16 @@ contexts:
   ################################################################################
 
   cs-comments:
-    - include: cs-all-universal
     - include: cs-line-comments
     - include: cs-block-comments
 
   cs-line-comments:
-    - include: cs-all-universal
     # Line comments within code strings
     - match: '//'
       scope: punctuation.definition.comment.triforce
       push: cs-line-comment
 
   cs-block-comments:
-    - include: cs-all-universal
     # NOTE: Using IDE keybindings, multiple line comments can function as block comments.
     #       This is the recommended way, and the below block comments are only supported
     #       because some people prefer to use them instead. Depending on what consensus
@@ -171,18 +148,15 @@ contexts:
       push: cs-block-comment
 
   cs-comment:
-    - include: cs-all-universal
     # Common syntax for all comments (excl. deprecated /* block comments */)
     - match: '^(?!\s*//+)'
       pop: true
 
   cs-line-comment:
-    - include: cs-all-universal
     - meta_scope: cs.comment.line.triforce
     - include: cs-comment
 
   cs-block-comment:
-    - include: cs-all-universal
     # Currently, these comments don't support any advanced features
     - meta_scope: cs.comment.block.triforce
     - match: '\*/'
@@ -197,7 +171,6 @@ contexts:
   ################################################################################
 
   cs-double-quoted-string:
-    - include: cs-all-universal
     - meta_scope: cs.string.quoted.double.triforce
     - match: '\\.'
       scope: cs.constant.character.escape.triforce
@@ -206,24 +179,9 @@ contexts:
       pop: true
 
   cs-codestr-small:
-    - include: cs-all-universal
-    - meta_scope: cs.string.quoted.double.triforce
-    - match: '(\$\$|\\)(just|raw)?[({]'
-      scope: cs.string.quoted.double.triforce
-    - match: '\\.'
-      scope: cs.constant.character.escape.triforce
-    - match: '`'
-      scope: cs.punctuation.definition.string.end.triforce
-      pop: true
-
-  cs-codestr-large:
-    - include: cs-all-universal
-    - meta_scope: cs.string.quoted.double.triforce
-    - match: '(\$\$|\\)(just|raw)?[({]'
-      scope: cs.string.quoted.double.triforce
-    - match: '\\.'
-      scope: cs.constant.character.escape.triforce
-    - match: '===+'
+    - match: '(?=\()'
+      push: cs-str-group
+    - match: '\)'
       scope: cs.punctuation.definition.string.end.triforce
       pop: true
 
@@ -234,7 +192,6 @@ contexts:
   ################################################################################
 
   cs-operators:
-    - include: cs-all-universal
     - match: \.{2,3}
       scope: cs.keyword.operator.range.triforce
     - match: '(-->|==>)'
@@ -272,7 +229,6 @@ contexts:
   ################################################################################
 
   cs-block:
-    - include: cs-all-universal
     - match: '\}'
       scope: meta.block.triforce punctuation.section.block.end.triforce
       pop: true
@@ -281,14 +237,12 @@ contexts:
       push: [cs-block-body]
 
   cs-block-body:
-    - include: cs-all-universal
     - meta_scope: meta.block.triforce
     - match: '(?=\})'
       pop: true
     - include: cs-general
 
   cs-group:
-    - include: cs-all-universal
     - match: '\)'
       scope: meta.group.triforce punctuation.section.group.end.triforce
       pop: true
@@ -297,23 +251,34 @@ contexts:
       push: [cs-group-body]
 
   cs-group-body:
-    - include: cs-all-universal
     - meta_scope: meta.group.triforce
     - match: '(?=\))'
       pop: true
     - include: cs-general
 
+  cs-str-group:
+    - match: '\)'
+      scope: meta.group.triforce punctuation.section.group.end.triforce
+      pop: true
+    - match: '\('
+      scope: punctuation.section.group.begin.triforce
+      push: [cs-str-group-body]
+
+  cs-str-group-body:
+    - meta_scope: meta.group.triforce
+    - match: '(?=\))'
+      pop: true
+    - include: cs-codestr-small
+
   # TODO: split below into group & block to get correct meta.group & meta.block
 
   cs-code-group:
-    - include: cs-all-universal
     - meta_scope: markup.raw meta.block.triforce
     - match: '[)}]'
       pop: true
     - include: cs-general
 
   cs-code-block:
-    - include: cs-all-universal
     - meta_content_scope: markup.raw meta.block.triforce
     - match: '\s*[)}]'
       pop: true
@@ -336,7 +301,6 @@ contexts:
     - include: cs-general
 
   cs-func-id-search-start:
-    - include: cs-all-universal
     - match: '\s+\(+  '
       set: cs-func-id-search-group
     - match: ''
@@ -397,7 +361,6 @@ contexts:
       scope: cs.entity.name.function.triforce
 
   cs-func-bracket-group:
-    - include: cs-all-universal
     - match: '\]'
       scope: cs.meta.group.triforce cs.punctuation.section.group.end.triforce
       pop: true
@@ -406,7 +369,6 @@ contexts:
       push: [cs-func-bracket-group-body]
 
   cs-func-bracket-group-body:
-    - include: cs-all-universal
     - meta_scope: meta.group.triforce
     - match: '(?=\])'
       pop: true
@@ -419,7 +381,6 @@ contexts:
   ############### OBJECTS ################
 
   cs-obj-id-search-start:
-    - include: cs-all-universal
     - match: '\s+[\(]*  '
       set: cs-obj-id-search
     - match: ''
@@ -444,7 +405,6 @@ contexts:
   ################# LET ##################
 
   cs-let-id-search-start:
-    - include: cs-all-universal
     - match: '(?='')'
       pop: true
     - match: '\s+\(*  ' # tmp; possible to parse correctly when not using regex, but very difficult in regex if even possible

@@ -344,7 +344,7 @@ let lambda = λ(x type1) λ(y type2) λ(z) (
 	runforeign rust `(println("Got {}, {}, {}.", \(x), \(y), \(z));) (
 
 	Λ((function taking (a) and (b type2))) (
-		runforeign rust `println("Entered macro.");` (>>>
+		runforeign rust `(println("Entered macro.");) (>>>
 
 		=================================================
 		\(function taking $ and 2) // partial application
@@ -356,7 +356,7 @@ let lambda = λ'123' λ(y 1|2|3) λ(z ~|) (
 	runforeign rust `(println("Got {}, {}, {}.", 123, \(y), \(z));) (
 
 	Λ((function taking '|' and '1|2|3') λ|Λ '#'~|'' λ|Λ '#'super 1|2|3'' #'~|') (
-		runforeign rust `println("Entered macro.");` (>>>
+		runforeign rust `(println("Entered macro.");) (>>>
 
 		=================================================
 		\(function taking $ and 2) // partial application
@@ -378,11 +378,11 @@ let (return (x)\n(>>>scope)) = λ(x) Λ(scope) `\(x)
 
 /// `println` defined as invoking Rust's equivalent
 let (println (x)\n(>>>scope)) = λ(x) Λ(scope) (
-	======================================
-	runforeign rust `println("{}", \(x));`
+	=======================================
+	runforeign rust `(println("{}", \(x));)
 
 	\(scope)
-	======================================
+	=======================================
 )
 
 println "hello, world"

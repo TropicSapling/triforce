@@ -3220,6 +3220,8 @@ let _run_ = ... // (`run` is a reserved keyword)
 
 // And, even escapes like `,` are included if in nested quote
 
+/// # Scheme spec - easy-to-read version: https://cs61a.org/articles/scheme-spec/
+
 --------------------------------------------------
 
 /// # Lists
