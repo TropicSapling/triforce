@@ -3190,13 +3190,13 @@ let _run_ = ... // (`run` is a reserved keyword)
 // Lisp testing
 
 ```Scheme
-(display (list 1 (+ 2 3) 7))      ; (1 5 7)
+(display (list 1 (+ 2 3) 7))                           ; (1 5 7)
 (newline)
-(display (list 1 '(+ 2 3) 7))     ; (1 (+ 2 3) 7)
+(display (list 1 '(+ 2 3) 7))                          ; (1 (+ 2 3) 7)
 (newline)
-(display '(1 (+ 2 3) 7))          ; (1 (+ 2 3) 7)
+(display '(1 (+ 2 3) 7))                               ; (1 (+ 2 3) 7)
 (newline)
-(display '(1 '(+ 2 3) 7))         ; (1 '(+ 2 3) 7)
+(display '(1 '(+ 2 3) 7))                              ; (1 '(+ 2 3) 7)
 (newline)
 
 (display (list-ref '(1 (fdjfd errej gtrio) 7) 1))      ; (fdjfd errej gtrio)
@@ -3211,6 +3211,13 @@ let _run_ = ... // (`run` is a reserved keyword)
 (display (list-ref '('(erre rtrg)) 0))                 ; '(erre rtrg)
 (display (list-ref ''(erre rtrg)   0))                 ; quote
 (display (list-ref '(erre rtrg)    0))                 ; erre
+
+(display (+ 123 456))                                  ; 579
+(display (+ '123 '456))                                ; 579
+('display (+ 123 456))                                 ; ERROR: invalid application
+
+(define-macro test (lambda (x) 'display))
+((test 123) (+ 123 456))                               ; 579
 ```
 
 // Clearly, any random code (even complete nonsense!) is valid as a value

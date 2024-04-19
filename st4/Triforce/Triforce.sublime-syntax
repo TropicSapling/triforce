@@ -20,9 +20,11 @@ contexts:
   ################################################################################
 
   universal:
+    # Escaping
     - match: '\\.'
       scope: constant.character.escape.triforce
-    # Code strings
+
+    # Code string items & groups
     - match: '`{{identifier}}'
       scope: string.quoted.double.triforce
     - match: '`\('
@@ -32,30 +34,12 @@ contexts:
         - match: ''
           push: cs-general
           with_prototype:
-            - match: '(\\)(\\(?![\\(]).)'
-              captures:
-                1: cc.constant.character.escape.triforce # cc for fade effect
-                2: cs.constant.character.escape.triforce
-            - match: '(\\)[\\$]'
-              captures:
-                1: cc.constant.character.escape.triforce # cc for fade effect
+            - include: cs-esc-start
             - match: '\)'
               pop: 2
-            - match: '\\(?![({])'
-              scope: cs.constant.character.escape.triforce
-              push:
-                - match: '.'
-                  scope: cs.constant.character.escape.triforce
-                  pop: true
-            - match: '(?=(\\)[({])'
-              push:
-                - clear_scopes: true
-                - match: '(\\)[({]'
-                  captures:
-                    2: variable.annotation.triforce
-                - match: '[)}]'
-                  pop: true
-                - include: general
+            - include: cs-esc-end
+
+    # Code string blocks
     - match: '\s+={3,32}(?!=)'
       scope: string.quoted.double.triforce markup.bold
       push:
@@ -63,31 +47,11 @@ contexts:
         - match: ''
           push: cs-general
           with_prototype:
-            - match: '(\\)(\\(?![\\(]).)'
-              captures:
-                1: cc.constant.character.escape.triforce # cc for fade effect
-                2: cs.constant.character.escape.triforce
-            - match: '(\\)[\\$]'
-              captures:
-                1: cc.constant.character.escape.triforce # cc for fade effect
+            - include: cs-esc-start
             - match: '(\s+={3,32}(?!=))'
               scope: string.quoted.double.triforce markup.bold
               pop: 2
-            - match: '\\(?![({])'
-              scope: cs.constant.character.escape.triforce
-              push:
-                - match: '.'
-                  scope: cs.constant.character.escape.triforce
-                  pop: true
-            - match: '(?=(\\)[({])'
-              push:
-                - clear_scopes: true
-                - match: '(\\)[({]'
-                  captures:
-                    2: variable.annotation.triforce
-                - match: '[)}]'
-                  pop: true
-                - include: general
+            - include: cs-esc-end
     - match: '\s+={33,}(?!=)'
       scope: string.quoted.double.triforce markup.bold
       push:
@@ -95,43 +59,39 @@ contexts:
         - match: ''
           push: cs-general
           with_prototype:
-            - match: '(\\)(\\(?![\\(]).)'
-              captures:
-                1: cc.constant.character.escape.triforce # cc for fade effect
-                2: cs.constant.character.escape.triforce
-            - match: '(\\)[\\$]'
-              captures:
-                1: cc.constant.character.escape.triforce # cc for fade effect
+            - include: cs-esc-start
             - match: '(\s+={33,}(?!=))'
               scope: string.quoted.double.triforce markup.bold
               pop: 2
-            - match: '\\(?![({])'
-              scope: cs.constant.character.escape.triforce
-              push:
-                - match: '.'
-                  scope: cs.constant.character.escape.triforce
-                  pop: true
-            - match: '(?=(\\)[({])'
-              push:
-                - clear_scopes: true
-                - match: '(\\)[({]'
-                  captures:
-                    2: variable.annotation.triforce
-                - match: '[)}]'
-                  pop: true
-                - include: general
-    - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
-      scope: storage.type.triforce
-      push:
-        - match: '[({]\n'
-          set: code-block
-        - match: '[({]'
-          set: code-group
-        - match: '{{identifier}}'
-          scope: markup.raw
-          pop: true
+            - include: cs-esc-end
+
+    # Misc.
     - include: comments
     - include: truly-universal
+
+  cs-esc-start:
+    - match: '(\\)(\\(?![\\(]).)'
+      captures:
+        1: cc.constant.character.escape.triforce # cc for fade effect
+        2: cs.constant.character.escape.triforce
+    - match: '(\\)[\\$]'
+      captures:
+        1: cc.constant.character.escape.triforce # cc for fade effect
+
+  cs-esc-end:
+    - match: '\\(?![({])'
+      scope: cs.constant.character.escape.triforce
+      push:
+        - match: '.'
+          scope: cs.constant.character.escape.triforce
+          pop: true
+    - match: '(?=(\\)[({])'
+      push:
+        - clear_scopes: true
+        - match: '\\[({]'
+        - match: '[)}]'
+          pop: true
+        - include: general
 
   ################################################################################
   ##                                                                            ##

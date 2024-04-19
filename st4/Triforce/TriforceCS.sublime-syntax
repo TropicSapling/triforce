@@ -149,7 +149,7 @@ contexts:
 
   cs-comment:
     # Common syntax for all comments (excl. deprecated /* block comments */)
-    - match: '^(?!\s*//+)'
+    - match: '\n'
       pop: true
 
   cs-line-comment:

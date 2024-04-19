@@ -15,44 +15,47 @@ contexts:
   ##                                                                            ##
   ################################################################################
 
+  cc-cs-group:
+    - match: '\)'
+      scope: cc.string.quoted.double.triforce meta.cs.triforce
+      pop: true
+    - match: '\('
+      scope: punctuation.section.group.begin.triforce
+      push:
+        - meta_scope: meta.group.triforce
+        - include: cc-cs-group
+
   cc-universal:
+    # Escaping
     - match: '\\.'
       scope: cc.constant.character.escape.triforce
-    # Code strings within comments just coloured as regular strings for now
-    - match: '`'
-      scope: cc.string.quoted.double.triforce markup.bold
+
+    # Code string items & groups
+    - match: '`{{identifier}}'
+      scope: cc.string.quoted.double.triforce
+    - match: '`\('
+      scope: cc.string.quoted.double.triforce
       push:
-        - meta_scope: cc.string.quoted.double.triforce meta.cs.triforce
-        - match: '(?<!\\)(`)'
-          captures:
-            1: cc.string.quoted.double.triforce markup.bold
-          pop: true
+        - meta_content_scope: cc.string.quoted.double.triforce meta.cs.triforce
+        - include: cc-cs-group
+
+    # Code string blocks
     - match: '\s+={3,32}(?!=)'
       scope: cc.string.quoted.double.triforce markup.bold
       push:
         - meta_scope: cc.string.quoted.double.triforce meta.cs.triforce
         - match: '(\s+={3,32}(?!=))'
-          captures:
-            1: cc.string.quoted.double.triforce markup.bold
+          scope: cc.string.quoted.double.triforce markup.bold
           pop: true
     - match: '\s+={33,}(?!=)'
       scope: cc.string.quoted.double.triforce markup.bold
       push:
         - meta_scope: cc.string.quoted.double.triforce meta.cs.triforce
         - match: '(\s+={33,}(?!=))'
-          captures:
-            1: cc.string.quoted.double.triforce markup.bold
+          scope: cc.string.quoted.double.triforce markup.bold
           pop: true
-    - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
-      scope: cc.storage.type.triforce
-      push:
-        - match: '[({]\n'
-          set: cc-code-block
-        - match: '[({]'
-          set: cc-code-group
-        - match: '{{identifier}}'
-          scope: markup.raw
-          pop: true
+
+    # Misc.
     - include: cc-comments
     - include: truly-universal
 
