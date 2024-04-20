@@ -31,9 +31,9 @@ contexts:
       scope: cc.constant.character.escape.triforce
 
     # Code string items & groups
-    - match: '`{{identifier}}'
+    - match: '`\s*{{identifier}}'
       scope: cc.string.quoted.double.triforce
-    - match: '`\('
+    - match: '`\s*\('
       scope: cc.string.quoted.double.triforce
       push:
         - meta_content_scope: cc.string.quoted.double.triforce meta.cs.triforce

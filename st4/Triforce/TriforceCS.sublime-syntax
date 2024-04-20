@@ -16,16 +16,6 @@ contexts:
   ################################################################################
 
   cs-universal:
-    - match: '\b(code|literally)(\s+(just|unmangled|as\s+is))?\b'
-      scope: cs.storage.type.triforce
-      push:
-        - match: '[({]\n'
-          set: cs-code-block
-        - match: '[({]'
-          set: cs-code-group
-        - match: '{{identifier}}'
-          scope: markup.raw
-          pop: true
     - include: cs-comments
     - include: truly-universal
 
@@ -42,9 +32,9 @@ contexts:
     - match: '"'
       scope: cs.punctuation.definition.string.begin.triforce
       push: cs-double-quoted-string
-    - match: '`{{identifier}}'
+    - match: '`\s*{{identifier}}'
       scope: string.quoted.double.triforce
-    - match: '`\('
+    - match: '`\s*\('
       scope: cs.punctuation.definition.string.begin.triforce
       push: cs-codestr-small
     - match: '===+'

@@ -197,13 +197,14 @@
 /// Quoting & Escaping
 /// ------------------
 /// ```
-/// Quote  = "`"  Expr => Expr
-/// Escape = "\\" Expr
+/// Quote  = "`"        Expr => Expr
+/// Escape = "\\" ["!"] List
 /// ```
 /// 
 /// **Evaluation:**
 /// `Quote` takes an `Expr` and returns it in its unevaluated form, apart from any
-/// `Escape` subexpressions which will be evaluated normally.
+/// `Escape` subexpressions which will be evaluated normally and then inserted.
+/// - Evaluated escapes will be inserted as-is if using `!`, otherwise list-enclosed.
 /// - Escapes evaluating outside of a quote will error.
 /// 
 /// Group/Token Definitions

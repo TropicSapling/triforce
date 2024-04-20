@@ -25,9 +25,16 @@ contexts:
       scope: constant.character.escape.triforce
 
     # Code string items & groups
-    - match: '`{{identifier}}'
+    - match: '`\s*(?={{identifier}})'
       scope: string.quoted.double.triforce
-    - match: '`\('
+      push:
+        - meta_content_scope: string.quoted.double.triforce meta.cs.triforce
+        - match: ''
+          push: cs-general
+          with_prototype:
+          - match: '\s'
+            pop: 2
+    - match: '`\s*\('
       scope: string.quoted.double.triforce
       push:
         - meta_content_scope: string.quoted.double.triforce meta.cs.triforce
@@ -70,25 +77,25 @@ contexts:
     - include: truly-universal
 
   cs-esc-start:
-    - match: '(\\)(\\(?![\\(]).)'
+    - match: '(\\)(\\(?!(!)?[\\({]).)'
       captures:
         1: cc.constant.character.escape.triforce # cc for fade effect
         2: cs.constant.character.escape.triforce
-    - match: '(\\)[\\$]'
+    - match: '(\\)[\\$](!)?'
       captures:
         1: cc.constant.character.escape.triforce # cc for fade effect
 
   cs-esc-end:
-    - match: '\\(?![({])'
+    - match: '\\(?!(!)?[({])'
       scope: cs.constant.character.escape.triforce
       push:
         - match: '.'
           scope: cs.constant.character.escape.triforce
           pop: true
-    - match: '(?=(\\)[({])'
+    - match: '(?=\\(!)?[({])'
       push:
         - clear_scopes: true
-        - match: '\\[({]'
+        - match: '\\(!)?[({]'
         - match: '[)}]'
           pop: true
         - include: general
