@@ -141,11 +141,11 @@
 /// Function = "λ"
 /// MacroFun = "Λ"
 /// 
-/// Parameter = BegCode ParDecl [Type] EndCode
-///           | BegCode ParName [Type] EndCode
+/// Parameter = List<ParDecl [Type]>
+///           | List<ParName [Type]>
 ///           | "'" Type "'"
 /// 
-/// ParDecl = BegCode [Attrs] (Parameter|ident_atom) [Parameter|ident_atom]… EndCode
+/// ParDecl = List<[Attrs] (Parameter|ident_atom) [Parameter|ident_atom]…>
 /// ParName = ident_atom
 /// ```
 /// 
@@ -209,8 +209,8 @@
 /// Group/Token Definitions
 /// -----------------------
 /// ```
-/// GroupDef = "defgroup"  BegCode [token]… EndCode Expr
-/// TokenDef = "deftokens" BegCode [token]… EndCode Expr
+/// GroupDef = "defgroup"  List<[token]…> Expr
+/// TokenDef = "deftokens" List<[token]…> Expr
 /// ```
 /// 
 /// **Evaluation:**
@@ -246,7 +246,7 @@
 /// TODO: improve syntax, add `#` and maybe `super`, add syntax sugar
 /// 
 /// ```
-/// (U (123 (¤ (∩ ((U (12 34)) (U (34 56))))) (∁ (78 90))))
+/// (U (123 (¤ (intersect ((U (12 34)) (U (34 56))))) (∁ (78 90))))
 /// // <=>
 /// (U (123 (¤ (U (34))) (∁ (78 90))))
 /// // <=>
@@ -258,8 +258,10 @@
 /// Type Intersection
 /// -----------------
 /// ```
-/// TypeAnd = "∩" List<[TypeList]…> => TypeList
+/// TypeAnd = "intersect" List<[TypeList]…> => TypeList
 /// ```
+/// 
+/// The type intersection command returns the intersection of all given types.
 /// 
 /// [OLD STUFF - TODO REMOVE WHEN HAVE REPLACEMENT]
 /// -----------------------------------------------
@@ -286,9 +288,9 @@
 /// ### Attributes
 /// --------------
 /// ```
-/// Attrs = "##" BegCode [Attr]… EndCode
-/// Attr  = BegCode PreceAttr EndCode
-///       | BegCode AssocAttr EndCode
+/// Attrs = "##" List<[Attr]…>
+/// Attr  = List<PreceAttr>
+///       | List<AssocAttr>
 /// 
 /// PreceAttr = Identifier "precedes" Identifier
 /// AssocAttr = "assoc" ("none"|"left"|"right")
