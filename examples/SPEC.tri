@@ -107,8 +107,8 @@
 /// 
 /// CodeItems = Expr [Expr]…
 /// CodeItems = (List|ident_atom) [Argument]…
-///           | TypeSetObject
 ///           | LambdaObject
+///           | TypeObject
 ///           | Command
 ///           | Mixfix
 ///           | Atom
@@ -231,26 +231,26 @@
 /// ### TYPE SYSTEM
 /// ---------------
 /// ```
-/// TypeSetObject = SolidTypeSet
-///               | InclTypeSet
-///               | ExclTypeSet
+/// TypeObject = LiquidType|SolidType
 /// 
-/// SolidTypeSet = "¤" TypeList
-/// InclTypeSet  = "U" List
-/// ExclTypeSet  = "∁" List
+/// LiquidType = InclTypeSet
+///            | ExclTypeSet
 /// 
-/// TypeList = List<TypeSetObject>
-/// Type     = Expr => TypeList
+/// InclTypeSet = "U" (Expr=>List)
+/// ExclTypeSet = "∁" (Expr=>List)
+/// 
+/// SolidType = "¤" Type
+/// Type      = Expr => List<LiquidType>
 /// ```
 /// 
 /// TODO: improve syntax, add `#` and maybe `super`, add syntax sugar
 /// 
 /// ```
-/// (U (123 (¤ (intersect ((U (12 34)) (U (34 56))))) (∁ (78 90))))
+/// (U `(123 \(¤ (intersect ((U `(12 34)) (U `(34 56))))) \(∁ `(78 90))))
 /// // <=>
-/// (U (123 (¤ (U (34))) (∁ (78 90))))
+/// (U `(123 \(¤ (U `(34))) \(∁ `(78 90))))
 /// // <=>
-/// (∁ (78 90))
+/// (∁ `(78 90))
 /// 
 /// let test_type = (let $ #(typ any) = #)
 /// ```
@@ -258,7 +258,7 @@
 /// Type Intersection
 /// -----------------
 /// ```
-/// TypeAnd = "intersect" List<[TypeList]…> => TypeList
+/// TypeAnd = "intersect" List<[Type]…> => List<LiquidType>
 /// ```
 /// 
 /// The type intersection command returns the intersection of all given types.
