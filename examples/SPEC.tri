@@ -26,7 +26,7 @@
 /// Definition = def_name "=" Expression ["\n" "|" Expression]… "\n"
 /// Expression = Term ["|"|"=>" Term]…
 /// Term       = Factor [Factor]…
-/// Factor     = def_name | tok["-"tok] | Group | Option | Variable
+/// Factor     = def_name["<"variant">"] | tok["-"tok] | Group | Option | Variable
 /// Group      = "("Expression")"
 /// Option     = "["Expression"]"["…"]
 /// Variable   = "\\("var["="regex]")"
@@ -87,6 +87,19 @@
 /// before an already existing scope-ending `)`. If no such scope-ender is found, the
 /// scope continues until EOF, or even past it if the file is included elsewhere.
 /// 
+/// ### Commands
+/// ------------
+/// ```
+/// Command = SpecialCmd
+///         | LinkList
+///         | TypeAnd
+/// ```
+/// 
+/// `SpecialCmd`s are specified in the section on special forms.
+/// 
+/// `LinkList` is specified in the section on lists.
+/// `TypeAnd`  is specified in the section on types.
+/// 
 /// ### LISTS
 /// ---------
 /// ```
@@ -94,6 +107,7 @@
 /// 
 /// CodeItems = Expr [Expr]…
 /// CodeItems = (List|ident_atom) [Argument]…
+///           | TypeSetObject
 ///           | LambdaObject
 ///           | Command
 ///           | Mixfix
@@ -113,8 +127,6 @@
 /// ```
 /// 
 /// `LinkList` creates a list by linking a first item with a list of following items.
-/// - This is a `Command`, but unlike all other commands it is not a special form.
-/// 
 /// 
 /// ### SPECIAL FORMS
 /// -----------------
@@ -168,15 +180,14 @@
 /// a normal start-of-parameter - apart from also declaring that an open-ended `(>>>`
 /// should be automatically placed ahead of the parameter/argument at application.
 /// 
-/// Commands
-/// --------
+/// Special Commands
+/// ----------------
 /// ```
-/// Command = Quote
-///         | Escape
-///         | LinkList
-///         | GroupDef
-///         | TokenDef
-///         | RunForeign
+/// SpecialCmd = Quote
+///            | Escape
+///            | GroupDef
+///            | TokenDef
+///            | RunForeign
 /// ```
 /// 
 /// **Evaluation:**
@@ -204,20 +215,54 @@
 /// 
 /// **Evaluation:**
 /// - Tokens evaluate to themselves.
-/// - `Expr` is evaluated normally.
+/// - `Expr` is evaluated normally and returned.
 /// 
 /// Foreign Function Interface
 /// --------------------------
 /// ```
-/// RunForeign = "runforeign" "rust" block
+/// RunForeign = "runforeign" "rust" block Expr
 /// ```
 /// 
 /// **Evaluation:**
 /// - Second code item follows normal evaluation, but must evaluate to `rust`.
-/// - The code block at the end is evaluated as Rust code.
+/// - The code block is evaluated as Rust code.
+/// - `Expr` is evaluated normally and returned.
 /// 
-/// ### Type System
+/// ### TYPE SYSTEM
 /// ---------------
+/// ```
+/// TypeSetObject = SolidTypeSet
+///               | InclTypeSet
+///               | ExclTypeSet
+/// 
+/// SolidTypeSet = "¤" TypeList
+/// InclTypeSet  = "U" List
+/// ExclTypeSet  = "∁" List
+/// 
+/// TypeList = List<TypeSetObject>
+/// Type     = Expr => TypeList
+/// ```
+/// 
+/// TODO: improve syntax, add `#` and maybe `super`, add syntax sugar
+/// 
+/// ```
+/// (U (123 (¤ (∩ ((U (12 34)) (U (34 56))))) (∁ (78 90))))
+/// // <=>
+/// (U (123 (¤ (U (34))) (∁ (78 90))))
+/// // <=>
+/// (∁ (78 90))
+/// 
+/// let test_type = (let $ #(typ any) = #)
+/// ```
+/// 
+/// Type Intersection
+/// -----------------
+/// ```
+/// TypeAnd = "∩" List<[TypeList]…> => TypeList
+/// ```
+/// 
+/// [OLD STUFF - TODO REMOVE WHEN HAVE REPLACEMENT]
+/// -----------------------------------------------
 /// ```
 /// Type = "<" [Type] ">"
 ///      | UnaTypeOp
@@ -236,8 +281,6 @@
 /// Single = Builtin|block
 /// 
 /// Match = "$"[ident_atom] | "#"[Parameter]
-/// 
-/// let test_type = (let $ #(typ any) = #)
 /// ```
 /// 
 /// ### Attributes
