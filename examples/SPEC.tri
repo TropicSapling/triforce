@@ -46,7 +46,7 @@
 /// ```
 /// Syntax = Expr
 /// Expr   = List|Atom
-/// Atom   = ident_atom|literal|"..."
+/// Atom   = Literal|ident_atom|"..."
 /// ```
 /// 
 /// Every program consists of a single `Expr` containing its code. This expression is
@@ -58,34 +58,6 @@
 /// conveniently, parentheses can in many cases be omitted.
 /// 
 /// **Note:** An `ident_atom` is allowed to be the special `\n` token described above.
-/// 
-/// ### Syntax sugar
-/// ----------------
-/// ```
-/// Mixfix = (Argument|ident_atom) [Argument|ident_atom]…
-/// 
-/// OpenParenthesis = "(>>>"
-/// MultilineCStr   = \(x="===+") contents \(x)
-/// ```
-/// 
-/// `Mixfix` is syntax sugar that reduces to normal lambda application.
-/// - Note that it must always contain *at least* one `ident_atom`.
-/// 
-/// **Example of `Mixfix`:**
-/// > let identifier = $unapplied
-/// > identifier
-/// <=>
-/// > (let $id = $val\n$scope) identifier $unapplied identifier
-/// <=>
-/// > (λ(val) val)
-/// 
-/// `MultilineCStr` converts to a `CStrAsList` whose `Expr` becomes `"("contents")"`.
-/// 
-/// When `OpenParenthesis` is used, it will be converted into a normal parenthesis and
-/// a closing parenthesis will be placed at the end of the scope to pair with it. What
-/// this means is that a new closing parenthesis will be automatically inserted right
-/// before an already existing scope-ending `)`. If no such scope-ender is found, the
-/// scope continues until EOF, or even past it if the file is included elsewhere.
 /// 
 /// ### Commands
 /// ------------
@@ -99,6 +71,54 @@
 /// 
 /// `LinkList` is specified in the section on lists.
 /// `TypeAnd`  is specified in the section on types.
+/// 
+/// ### SYNTAX SUGAR
+/// ----------------
+/// 
+/// General
+/// -------
+/// ```
+/// MultilineQuote = \(x="===+") contents \(x)
+/// ```
+/// 
+/// `MultilineQuote` converts to `Quote<List<contents>>`.
+/// 
+/// Mixfixs
+/// -------
+/// ```
+/// Mixfix = (Argument|ident_atom) [Argument|ident_atom]…
+/// ```
+/// 
+/// `Mixfix` is syntax sugar that reduces to normal lambda application.
+/// - Note that it must always contain *at least* one `ident_atom`.
+/// 
+/// **Example of `Mixfix`:**
+/// > let identifier = $unapplied
+/// > identifier
+/// <=>
+/// > (let $id = $val\n$scope) identifier $unapplied identifier
+/// <=>
+/// > (λ(val) val)
+/// 
+/// Open-ended parentheses
+/// ----------------------
+/// ```
+/// OpenParenthesis = "(>>>"
+/// ```
+/// 
+/// When `OpenParenthesis` is used, it will be converted into a normal parenthesis and
+/// a closing parenthesis will be placed at the end of the scope to pair with it. What
+/// this means is that a new closing parenthesis will be automatically inserted right
+/// before an already existing scope-ending `)`. If no such scope-ender is found, the
+/// scope continues until EOF, or even past it if the file is included elsewhere.
+/// 
+/// Anonymous parameters
+/// --------------------
+/// ```
+/// UnnamedParam = "'" Type "'"
+/// ```
+/// 
+/// `UnnamedParam` converts into a parameter `List<() Type>`.
 /// 
 /// ### LISTS
 /// ---------
@@ -143,9 +163,8 @@
 /// 
 /// Parameter = List<ParDecl [Type]>
 ///           | List<ParName [Type]>
-///           | "'" Type "'"
 /// 
-/// ParDecl = List<[Attrs] (Parameter|ident_atom) [Parameter|ident_atom]…>
+/// ParDecl = List<[Attrs] [Parameter|ident_atom]…>
 /// ParName = ident_atom
 /// ```
 /// 
@@ -158,9 +177,8 @@
 /// Its body will run and evaluate to a result that will be returned.
 /// 
 /// **Upon calling `MacroFun`:**
-/// Its body will run *during compilation* and must return a `CStrAsList`.
-/// The returned code string will turn into normal code replacing the macro call.
-/// This code will then run and evaluate normally.
+/// Its body will run and evaluate *during compilation* to a result that is returned.
+/// The returned result will replace the macro call and *evaluate once more*.
 /// 
 /// **Equality:**
 /// Two lambdas are considered equal if:
@@ -242,6 +260,8 @@
 /// 
 /// SolidType = "¤" Type
 /// Type      = Expr => List<LiquidType>
+/// 
+/// Special = "ExtractMatch" Parameter
 /// ```
 /// 
 /// TODO: improve syntax, add `#` and maybe `super`, add syntax sugar
@@ -307,6 +327,8 @@
 /// ### Misc.
 /// ---------
 /// ```
+/// Literal = String|number
+/// 
 /// Comment = "//"        anything "\n"
 /// String  = `"`         anything `"`
 ///         | \(x=`"""+`) anything \(x)
@@ -398,10 +420,13 @@ let lambda = λ(x type1) λ(y type2) λ(z) (
 	)
 )
 /// ... and then again, with the RHS evaluated into a final *object value*:
-let lambda = λ'123' λ(y 1|2|3) λ(z ~|) (
+let lambda = λ(() 123) λ(y 1|2|3) λ(z ~|) (
 	runforeign rust `(println("Got {}, {}, {}.", 123, \(y), \(z));) (
 
-	Λ((function taking '|' and '1|2|3') λ|Λ '#'~|'' λ|Λ '#'super 1|2|3'' #'~|') (
+	Λ(
+		(function taking (() |) and (() 1|2|3))
+		λ|Λ (() #(() ~|)) λ|Λ (() #(() super 1|2|3)) #(() ~|)
+	) (
 		runforeign rust `(println("Entered macro.");) (>>>
 
 		=================================================
