@@ -25,15 +25,17 @@ contexts:
       scope: constant.character.escape.triforce
 
     # Code string items & groups
-    - match: '`\s*(?={{identifier}})'
+    - match: '`\s*(?={{identifier}}|\\)'
       scope: string.quoted.double.triforce
       push:
         - meta_content_scope: string.quoted.double.triforce meta.cs.triforce
         - match: ''
           push: cs-general
           with_prototype:
+          - include: cs-esc-start
           - match: '\s'
             pop: 2
+          - include: cs-esc-end
     - match: '`\s*\('
       scope: string.quoted.double.triforce
       push:

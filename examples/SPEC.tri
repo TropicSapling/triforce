@@ -275,26 +275,28 @@
 /// ```
 /// TypeObject = LiquidType|SolidType
 /// 
-/// LiquidType = InclTypeSet
-///            | ExclTypeSet
+/// LiquidType = InclSetUnion
+///            | ExclSetUnion
 /// 
-/// InclTypeSet = "U" (Expr=>List)
-/// ExclTypeSet = "∁" (Expr=>List)
+/// InclSetUnion = "|" [Expr ["|" Expr]…]
+/// ExclSetUnion = "~" [Type]
 /// 
-/// SolidType = "¤" Type
+/// SolidType = "<" Type ">"
 /// Type      = Expr => List<LiquidType>
 /// ```
 /// 
 /// **NOTE:** The special argument `MatchExtract` is also part of the type system.
 /// 
-/// TODO: improve syntax, maybe add `super`, add syntax sugar
+/// TODO: maybe add `super`, add syntax sugar
 /// 
 
-(U `(123 \(¤ (intersect ((U `(12 34)) (U `(34 56))))) \(∁ `(78 90))))
+123 | <12|34 & 34|56> | ~(78|90)
 // <=>
-(U `(123 \(¤ (U `(34))) \(∁ `(78 90))))
+(| 123 | (< (& (| 12 | 34) & (| 34 | 56)) >) | (~ (| 78 | 90)))
 // <=>
-(∁ `(78 90))
+(| 123 | (< 34 >) | (~ (| 78 | 90)))
+// <=>
+(~ (| 78 | 90))
 
 let test_type = (let $ #(typ any) = #)
 // <=>
@@ -445,12 +447,12 @@ let lambda = λ(x type1) λ(y type2) λ(z) (
 	)
 )
 /// ... and then again, with the RHS evaluated into a final *object value*:
-let lambda = λ(() 123) λ(y 1|2|3) λ(z ~|) (
+let lambda = λ(() 123) λ(y 1|2|3) λ(z ~) (
 	runforeign rust `(println("Got {}, {}, {}.", 123, \(y), \(z));) (
 
 	Λ(
 		(function taking (() |) and (() 1|2|3))
-		λ|Λ (() #(() ~|)) λ|Λ (() #(() super 1|2|3)) #(() ~|)
+		λ|Λ (() #(() ~)) λ|Λ (() #(() super 1|2|3)) #(() ~)
 	) (
 		runforeign rust `(println("Entered macro.");) (>>>
 
@@ -469,7 +471,7 @@ let lambda = λ(() 123) λ(y 1|2|3) λ(z ~|) (
 let ({(expr)}) = λ(expr) expr
 
 /// `return` defined simply as ignoring the rest of the scope
-let (return (x)\n(>>>scope)) = λ(x) Λ(scope) `\(x)
+let (return (x)\n(>>>scope)) = λ(x) Λ() `\(x)
 // TODO: fix so works for returning out of function too and not just scope
 
 /// `println` defined as invoking Rust's equivalent
@@ -527,21 +529,24 @@ linklist a (linklist `(\b0 \b1) (linklist c ()))
 /// ## Type system
 /// ==============
 /// 
+/// **NOTE: In Triforce, set and union are one and the same, "set-union".**
+/// - Special "solidify" operator `<...>` resolves issues arising from this.
+/// 
 /// The type system is based on pattern matching and set theory.
 /// Every parameter has a match position containing a pattern value to match input on.
 /// If this position is left unspecified, its pattern value will default to `...`.
 /// 
 /// `Pattern = Value = Object|TypeSet|"..."`
 /// 
-/// - `Object`   = the basic value, optionally having fields
-/// - `TypeSet`  = set of 0, 1 or more values
-/// - `"..."`    = special value evaluating to a suitable pattern
+/// - `Object`  = the basic value, optionally having fields
+/// - `TypeSet` = set-union of 0, 1 or more values
+/// - `"..."`   = special value evaluating to a suitable pattern
 /// 
 /// ### TypeSet
 /// -----------
-/// A `TypeSet` is a set of 0, 1 or more values. It comes in 2 forms:
-/// - The *inclusively matching* `TypeSet`
-/// - The *excludingly matching* `TypeSet`
+/// A `TypeSet` is a set-union of 0, 1 or more values. It comes in 2 forms:
+/// - The *inclusively matching* `InclSetUnion`
+/// - The *excludingly matching* `ExclSetUnion`
 /// 
 /// The first form is the default and will match any value contained in itself.
 /// The second form is the inverse of the first and will instead match all values
