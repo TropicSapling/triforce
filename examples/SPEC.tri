@@ -72,6 +72,16 @@
 /// `LinkList` is specified in the section on lists.
 /// `TypeAnd`  is specified in the section on types.
 /// 
+/// ### Arguments
+/// -------------
+/// ```
+/// Argument   = Expr
+/// SpecialArg = MatchExtract
+///            | Placeholder
+/// ```
+/// 
+/// Arguments can be any expression, including "special" arguments (specified later).
+/// 
 /// ### SYNTAX SUGAR
 /// ----------------
 /// 
@@ -118,7 +128,7 @@
 /// UnnamedParam = "'" Type "'"
 /// ```
 /// 
-/// `UnnamedParam` converts into a parameter `List<() Type>`.
+/// `UnnamedParam` converts into `Parameter<List<() Type>>`.
 /// 
 /// ### LISTS
 /// ---------
@@ -129,11 +139,10 @@
 /// CodeItems = (List|ident_atom) [Argument]…
 ///           | LambdaObject
 ///           | TypeObject
+///           | SpecialArg
 ///           | Command
 ///           | Mixfix
 ///           | Atom
-/// 
-/// Argument = Expr|"$"[ident_atom]
 /// ```
 /// 
 /// `List` is a list of code items which are all evaluated together as a whole.
@@ -198,6 +207,20 @@
 /// a normal start-of-parameter - apart from also declaring that an open-ended `(>>>`
 /// should be automatically placed ahead of the parameter/argument at application.
 /// 
+/// Special Arguments
+/// -----------------
+/// ```
+/// MatchExtract = "#"[Parameter]
+/// Placeholder  = "$"[ident_atom]
+/// ```
+/// 
+/// `MatchExtract` matches an argument and optionally extracts it into a variable.
+/// `Placeholder` is a placeholder argument acting as no argument - useful for mixfix.
+/// 
+/// **Evaluation:**
+/// - `"#"`, `"$"` and `ident_atom` evaluate to themselves.
+/// - `Parameter` defines a parameter; only its `Type` is evaluated normally.
+/// 
 /// Special Commands
 /// ----------------
 /// ```
@@ -260,21 +283,23 @@
 /// 
 /// SolidType = "¤" Type
 /// Type      = Expr => List<LiquidType>
-/// 
-/// Special = "ExtractMatch" Parameter
 /// ```
 /// 
-/// TODO: improve syntax, add `#` and maybe `super`, add syntax sugar
+/// **NOTE:** The special argument `MatchExtract` is also part of the type system.
 /// 
-/// ```
-/// (U `(123 \(¤ (intersect ((U `(12 34)) (U `(34 56))))) \(∁ `(78 90))))
-/// // <=>
-/// (U `(123 \(¤ (U `(34))) \(∁ `(78 90))))
-/// // <=>
-/// (∁ `(78 90))
+/// TODO: improve syntax, maybe add `super`, add syntax sugar
 /// 
-/// let test_type = (let $ #(typ any) = #)
-/// ```
+
+(U `(123 \(¤ (intersect ((U `(12 34)) (U `(34 56))))) \(∁ `(78 90))))
+// <=>
+(U `(123 \(¤ (U `(34))) \(∁ `(78 90))))
+// <=>
+(∁ `(78 90))
+
+let test_type = (let $ #(typ any) = #)
+// <=>
+let test_type = (U `(\(let ($ #(typ any)) = #)))
+
 /// 
 /// Type Intersection
 /// -----------------
