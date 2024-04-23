@@ -412,7 +412,7 @@ contexts:
     - match: '\$'
       scope: cs.variable.parameter.triforce
       push: cs-op-dollar
-    - match: '(?=[=:\[;)])' # end of let declaration (sort of; type may follow)
+    - match: '[=:\[;)]' # end of let declaration (sort of; type may follow)
       pop: true
     - match: '{{identifier}}'
       scope: cs.entity.name.function.triforce
