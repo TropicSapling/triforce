@@ -112,9 +112,17 @@ deftokens () (
 /// -------
 /// ```
 /// MultilineQuote = \(x="===+") contents \(x)
+/// 
+/// SimpleTSUnion = Expr ["|" Expr]…
+/// SimpleTypeAnd = Type "&" Type ["&" Type]…
 /// ```
 /// 
 /// `MultilineQuote` converts to `Quote<List<contents>>`.
+/// 
+/// `SimpleTSUnion` converts to `"(" "|" itself ")"` (a.k.a. `List<InclSetUnion>`).
+/// `SimpleTypeAnd` converts to `"(" "&" itself ")"` (a.k.a. `List<TypeAnd>`).
+/// 
+/// In general, multiple consecutive `Expr`s will be automatically put into lists.
 /// 
 /// Mixfixs
 /// -------
@@ -319,8 +327,6 @@ deftokens () (
 /// 
 /// *Remark: `SuperType`, `PowerType` and `MatchExtract` could in theory all reduce
 /// to forms of `NormalType`. This would however require lazy infinite lists.*
-/// 
-/// TODO: add syntax sugar
 /// 
 /// Type Intersection
 /// -----------------
