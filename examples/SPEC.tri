@@ -275,28 +275,30 @@
 /// ```
 /// TypeObject = LiquidType|SolidType
 /// 
-/// LiquidType = InclSetUnion
+/// LiquidType = NormalType
+///            | SuperType
+///            | PowerType
+/// 
+/// NormalType = InclSetUnion
 ///            | ExclSetUnion
 /// 
 /// InclSetUnion = "|" [Expr ["|" Expr]…]
-/// ExclSetUnion = "~" [Type]
+/// ExclSetUnion = "~" Type
 /// 
 /// SolidType = "<" Type ">"
-/// Type      = Expr => List<LiquidType>
+/// SuperType = "super" Type
+/// PowerType = "power" Type
+/// 
+/// Type = Expr => List<LiquidType>
 /// ```
 /// 
 /// **NOTE:** The special argument `MatchExtract` is also part of the type system.
 /// 
-/// TODO: maybe add `super`, add syntax sugar
+/// *Remark: `SuperType`, `PowerType` and `MatchExtract` could in theory all reduce
+/// to forms of `NormalType`. This would however require lazy infinite lists.*
 /// 
-
-123 | <12|34 & 34|56> | ~(78|90)
-// <=>
-(| 123 | (< (& (| 12 | 34) & (| 34 | 56)) >) | (~ (| 78 | 90)))
-// <=>
-(| 123 | (< 34 >) | (~ (| 78 | 90)))
-// <=>
-(~ (| 78 | 90))
+/// TODO: add syntax sugar
+/// 
 
 let test_type = (let $ #(typ any) = #)
 // <=>
@@ -306,32 +308,10 @@ let test_type = (U `(\(let ($ #(typ any)) = #)))
 /// Type Intersection
 /// -----------------
 /// ```
-/// TypeAnd = "intersect" List<[Type]…> => List<LiquidType>
+/// TypeAnd = "&" Type "&" Type ["&" Type]… => List<LiquidType>
 /// ```
 /// 
 /// The type intersection command returns the intersection of all given types.
-/// 
-/// [OLD STUFF - TODO REMOVE WHEN HAVE REPLACEMENT]
-/// -----------------------------------------------
-/// ```
-/// Type = "<" [Type] ">"
-///      | UnaTypeOp
-///      | BinTypeOp
-///      | MatPat
-///      | Single
-/// 
-/// UnaTypeOp = "super" [Type]
-///           | "power" [Type]
-///           | "~"     [Type]
-/// 
-/// BinTypeOp = [Type] "&" [Type]
-///           | [Type] "|" [Type]
-/// 
-/// MatPat = (Match|token) [Match|token]…
-/// Single = Builtin|block
-/// 
-/// Match = "$"[ident_atom] | "#"[Parameter]
-/// ```
 /// 
 /// ### Attributes
 /// --------------
@@ -447,12 +427,12 @@ let lambda = λ(x type1) λ(y type2) λ(z) (
 	)
 )
 /// ... and then again, with the RHS evaluated into a final *object value*:
-let lambda = λ(() 123) λ(y 1|2|3) λ(z ~) (
+let lambda = λ(() 123) λ(y 1|2|3) λ(z ~|) (
 	runforeign rust `(println("Got {}, {}, {}.", 123, \(y), \(z));) (
 
 	Λ(
 		(function taking (() |) and (() 1|2|3))
-		λ|Λ (() #(() ~)) λ|Λ (() #(() super 1|2|3)) #(() ~)
+		λ|Λ (() #(() ~|)) λ|Λ (() #(() super 1|2|3)) #(() ~|)
 	) (
 		runforeign rust `(println("Entered macro.");) (>>>
 
