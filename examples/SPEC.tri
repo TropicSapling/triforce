@@ -16,6 +16,29 @@
 /// ##################################################################################
 
 
+/// ==============================
+/// ## Triforce fits on a postcard
+/// ==============================
+/// 
+/// This is basically all of the language in a compact block to show how small it is.
+/// It includes syntax sugar and would technically be even "simpler" without.
+
+defgroup  () (>>>
+deftokens () (
+	λ((##((_ precedes this) (assoc none)) take (x 13|37) and '...') λ(#) Λ(#) #'~|') (
+		(take 37 and rust $unapplied) println!("Triforce fits on a postcard!");
+	) (λ(() 37|73|31|13 & ~73 | super power <2|4>|42) Λ(y) Λ(>>>z) (
+		// Run code in language `y`, then return a weird list
+		====================================================================
+		runforeign \!(y) `\(z) (linklist "first" `(`second """ "third" """))
+		====================================================================
+	)
+)
+
+
+/// ##################################################################################
+
+
 /// ================
 /// ## Formal syntax
 /// ================
@@ -299,12 +322,6 @@
 /// 
 /// TODO: add syntax sugar
 /// 
-
-let test_type = (let $ #(typ any) = #)
-// <=>
-let test_type = (U `(\(let ($ #(typ any)) = #)))
-
-/// 
 /// Type Intersection
 /// -----------------
 /// ```
@@ -386,11 +403,11 @@ deftokens ({ } [ ] ~ ') (>>>
 	======================================
 	(λ((let (pat) = (val)\\n(>>>scope))) (
 		\(glob_scope)
-	)) (Λ(pat) `(λ(val) Λ(scope) (
+	)) (Λ(pat) λ(val) Λ(scope) (
 		================================
 		(λ\\(pat) \\\\(scope)) \\\\(val)
 		================================
-	)))
+	))
 	======================================
 )) (>>>
 
@@ -493,13 +510,13 @@ let 'λ'int' λ'int' λ'int' #'int'' = f
 
 [a, [b0, b1], c]
 /// <=>
-`(\a (\b0 \b1) \c)
+`(\!(a) (\!(b0) \!(b1)) \!(c))
 /// <=>
-linklist a `((\b0 \b1) \c)
+linklist a `((\!(b0) \!(b1)) \!(c))
 /// <=>
-linklist a (linklist `(\b0 \b1) (c))
+linklist a (linklist `(\!(b0) \!(b1)) (c))
 /// <=>
-linklist a (linklist `(\b0 \b1) (linklist c ()))
+linklist a (linklist `(\!(b0) \!(b1)) (linklist c ()))
 
 
 /// ##################################################################################
