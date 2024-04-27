@@ -2,8 +2,9 @@
 ![banner](img/banner.PNG)
 
 ## This README is (very) outdated
-**See [random_experiments.tri](examples/random_experiments.tri) for sketches of newer language concepts.**
-- **Also see [SPEC.tri](examples/SPEC.tri) for a very incomplete specification**
+**See [SPEC.tri](examples/SPEC.tri) for an up-to-date draft language specification (2024).** A new compiler is also being worked on and [can be found here.](compiler/2024-EDITION)
+
+Finally, you may want to take a look at [random_experiments.tri](examples/random_experiments.tri) for sketches of newer language concepts.
 
 *Everything below this point was last updated on 2020-08-05.*
 
