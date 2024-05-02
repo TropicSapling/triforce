@@ -1,11 +1,19 @@
 use std::{fs, io::Error};
 use culpa::throws;
 
+mod lexer;
+
+macro_rules! debug {
+    ($e:expr) => (println!("");dbg!($e))
+}
+
 #[throws]
 fn main() {
-    let text = fs::read_to_string("../postcard.tri")?;
+    let code = fs::read_to_string("../postcard.tri")?;
 
-    println!("");
+    debug!(&code);
 
-    dbg!(text);
+    let tokens = lexer::tokenised(code);
+
+    debug!(tokens);
 }
