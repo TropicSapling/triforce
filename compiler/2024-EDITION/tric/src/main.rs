@@ -4,16 +4,16 @@ use culpa::throws;
 mod lexer;
 
 macro_rules! debug {
-    ($e:expr) => (println!("");dbg!($e))
+	($e:expr) => (println!("");dbg!($e))
 }
 
 #[throws]
 fn main() {
-    let code = fs::read_to_string("../postcard.tri")?;
+	let code = fs::read_to_string("../postcard.tri")?;
 
-    debug!(&code);
+	debug!(&code);
 
-    let tokens = lexer::tokenised(code);
+	let tokens = lexer::tokenised(code);
 
-    debug!(tokens);
+	debug!(tokens);
 }
