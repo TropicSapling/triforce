@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use crate::helpers::Substr;
 
 #[derive(Debug, Clone)]
 pub enum Token {
@@ -46,16 +47,21 @@ pub fn tokenised(code: String) -> Vec<Token> {
 		comment = false;
 		match group {
 			Group::Default => if c == '\n' || c.is_whitespace() {
-				group = if c == '\n' {Group::NewlineWs} else {Group::Whitespace};
+				if let Some(c) = it.peek() {
+					if c.is_whitespace() {
+						group = if *c == '\n' {Group::NewlineWs} else {Group::Whitespace}
+					}
+				}
+
 				if superpos.len() > 0 {
 					if superend.0 == usize::MAX {
 						tokens.push(Token::Default(superpos[0].clone()))
 					} else {
-						if superend.0 > 1 {
-							tokens.push(Token::Default((&superpos[0][..superend.0]).to_string()))
+						if superend.0 > 0 {
+							tokens.push(Token::Default(superpos[0].substr(..superend.0)))
 						}
 
-						tokens.push(standalones.get(&superpos[superend.0][..superend.1]).unwrap().clone());
+						tokens.push(standalones.get(superpos[superend.0].substr(..superend.1).as_str()).unwrap().clone());
 						it = nxt_it.clone();
 						group = Group::Default
 					}
