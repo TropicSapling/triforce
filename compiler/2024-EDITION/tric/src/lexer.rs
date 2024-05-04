@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::helpers::Substr;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
 	Default(String),
 	UserDef(String),
@@ -67,6 +67,8 @@ pub fn tokenised(code: String) -> Vec<Token> {
 					}
 				}
 
+				if c == '\n' {tokens.push(Token::Newline)}
+
 				superpos = vec![];
 				superend = (usize::MAX, usize::MAX)
 			} else {
@@ -92,9 +94,30 @@ pub fn tokenised(code: String) -> Vec<Token> {
 				}
 			},
 
-			Group::NewlineWs | Group::Whitespace => if let Some(c) = it.peek() {
-				if !c.is_whitespace() {
-					group = Group::Default
+			Group::NewlineWs => {
+				if tokens[tokens.len() - 1] != Token::Newline {
+					tokens.push(Token::Newline)
+				}
+
+				if let Some(c) = it.peek() {
+					if !c.is_whitespace() {
+						group = Group::Default
+					}
+				}
+			},
+
+			Group::Whitespace => {
+				if c == '\n' {
+					group = Group::NewlineWs;
+					if tokens[tokens.len() - 1] != Token::Newline {
+						tokens.push(Token::Newline)
+					}
+				}
+
+				if let Some(c) = it.peek() {
+					if !c.is_whitespace() {
+						group = Group::Default
+					}
 				}
 			},
 
