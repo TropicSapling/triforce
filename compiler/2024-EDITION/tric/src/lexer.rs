@@ -1,5 +1,5 @@
-use std::collections::HashMap;
-use crate::helpers::Substr;
+use std::{collections::HashMap, str::Chars};
+//use crate::helpers::Substr;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
@@ -11,6 +11,7 @@ pub enum Token {
 	Newline
 }
 
+#[derive(Clone, PartialEq)]
 enum Group {
 	Default,
 	NewlineWs,
@@ -18,6 +19,82 @@ enum Group {
 	Custom(HashMap<String, Token>)
 }
 
+struct Cursor<'a> {
+	group: Group,
+	posit: Chars<'a>,
+	token: Token
+}
+
+impl Cursor<'_> {
+	fn handle(&mut self, groups: &Vec<Group>, c: char) -> Option<Token> {
+		let new_group = groups.iter().find(|g| match g {
+			Group::Custom(map) => map.keys().any(|s| s.starts_with(c)),
+			Group::NewlineWs   => {
+				c == '\n' || (c.is_whitespace() && self.group == Group::NewlineWs)
+			}
+			Group::Whitespace  => c.is_whitespace(),
+			Group::Default     => true
+		}).unwrap();
+
+		if self.group == *new_group {
+			// Extend current token
+			match &mut self.token {
+				Token::Default(ref mut tokstr) |
+				Token::UserDef(ref mut tokstr) => tokstr.push(c),
+				_                              => ()
+			}
+
+			None
+		} else {
+			// Switch group, return finished token, create new token
+			let finished_token = self.token.clone();
+
+			self.group = new_group.clone();
+			match new_group {
+				Group::NewlineWs  => self.token = Token::Newline,
+				Group::Whitespace => self.token = Token::Default(String::new()),
+				Group::Default    => self.token = Token::Default(c.to_string()),
+				Group::Custom(_)  => self.token = Token::UserDef(c.to_string())
+			}
+
+			if finished_token != Token::Default(String::new()) {
+				Some(finished_token)
+			} else {
+				None
+			}
+		}
+	}
+}
+
+// Tokenises based on "maximal munch"
+pub fn tokenised(code: String) -> Vec<Token> {
+	let mut tokens: Vec<Token> = vec![];
+	let     groups: Vec<Group> = vec![
+		Group::Custom(HashMap::from([
+			(String::from("(>>>"), Token::BegOpenList),
+			(String::from("("   ), Token::BegList    ),
+			(String::from(")"   ), Token::EndList    )
+		])),
+		Group::NewlineWs,
+		Group::Whitespace,
+		Group::Default
+	];
+
+	let mut cursor = Cursor {
+		group: Group::Default,
+		posit: code.chars(),
+		token: Token::Default(String::new())
+	};
+
+	while let Some(c) = cursor.posit.next() {
+		if let Some(tok) = cursor.handle(&groups, c) {
+			tokens.push(tok)
+		}
+	}
+
+	tokens
+}
+/*
 // Tokenises based on "maximal munch"
 pub fn tokenised(code: String) -> Vec<Token> {
 	let mut tokens: Vec<Token> = vec![];
@@ -92,7 +169,7 @@ pub fn tokenised(code: String) -> Vec<Token> {
 					superpos = vec![];
 					superend = (usize::MAX, usize::MAX)
 				}
-			},
+			}
 
 			Group::NewlineWs => {
 				if tokens[tokens.len() - 1] != Token::Newline {
@@ -104,7 +181,7 @@ pub fn tokenised(code: String) -> Vec<Token> {
 						group = Group::Default
 					}
 				}
-			},
+			}
 
 			Group::Whitespace => {
 				if c == '\n' {
@@ -119,11 +196,11 @@ pub fn tokenised(code: String) -> Vec<Token> {
 						group = Group::Default
 					}
 				}
-			},
+			}
 
 			_ => todo!()
 		}
 	}
 
 	tokens
-}
+}*/
