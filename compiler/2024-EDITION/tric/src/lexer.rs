@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::Chars};
+use std::str::Chars;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
@@ -13,12 +13,11 @@ pub enum Token {
 
 #[derive(Clone, PartialEq)]
 enum Group {
-	Default,
-	NewlineWs,
+	StrTok(String),
+	ChrTok(char),
 	Whitespace,
-	Custom(HashMap<String, Token>),
-	BegList,
-	EndList
+	NewlineWs,
+	Default
 }
 
 struct Cursor<'a> {
@@ -32,43 +31,49 @@ impl Cursor<'_> {
 		let c = self.skip_if_comment(c);
 
 		let new_group = groups.iter().find(|g| match g {
-			Group::BegList     => c == '(',
-			Group::EndList     => c == ')',
-			Group::Custom(map) => map.keys().any(|s| s.starts_with(c)),
-			Group::NewlineWs   => {
+			Group::StrTok(s) => s.contains(c),
+			Group::ChrTok(r) => c == *r,
+
+			Group::NewlineWs => {
 				c == '\n' || (c.is_whitespace() && self.group == Group::NewlineWs)
 			}
-			Group::Whitespace  => c.is_whitespace(),
-			Group::Default     => true
+
+			Group::Whitespace => c.is_whitespace(),
+			Group::Default    => true
 		}).unwrap();
 
-		if self.group != Group::BegList
-		&& self.group != Group::EndList
-		&& self.group == *new_group {
-			// Extend current token
-			match &mut self.token {
-				Token::Default(ref mut tokstr) |
-				Token::UserDef(ref mut tokstr) => tokstr.push(c),
-				_                              => ()
-			}
-
-			Token::Ignored
-		} else {
-			// Switch group, return finished token, create new token
-			let finished_token = self.token.clone();
-
-			self.group = new_group.clone();
-			match new_group {
-				Group::BegList    => self.token = self.beglist(),
-				Group::EndList    => self.token = Token::EndList,
-				Group::NewlineWs  => self.token = Token::Newline,
-				Group::Whitespace => self.token = Token::Ignored,
-				Group::Default    => self.token = Token::Default(c.to_string()),
-				Group::Custom(_)  => self.token = Token::UserDef(c.to_string())
-			}
-
-			finished_token
+		match new_group {
+			Group::ChrTok(_)              => self.complete_token(c, new_group),
+			_ if self.group != *new_group => self.complete_token(c, new_group),
+			_                             => self.extend_token(c)
 		}
+	}
+
+	fn extend_token(&mut self, c: char) -> Token {
+		match &mut self.token {
+			Token::Default(ref mut tokstr) |
+			Token::UserDef(ref mut tokstr) => tokstr.push(c),
+			_                              => ()
+		}
+
+		Token::Ignored
+	}
+
+	fn complete_token(&mut self, c: char, new_group: &Group) -> Token {
+		let finished_token = self.token.clone();
+
+		self.group = new_group.clone();
+		match new_group {
+			Group::ChrTok('(') => self.token = self.beglist(),
+			Group::ChrTok(')') => self.token = Token::EndList,
+			Group::ChrTok(_)   |
+			Group::StrTok(_)   => self.token = Token::UserDef(c.to_string()),
+			Group::Default     => self.token = Token::Default(c.to_string()),
+			Group::NewlineWs   => self.token = Token::Newline,
+			Group::Whitespace  => self.token = Token::Ignored
+		}
+
+		finished_token
 	}
 
 	fn skip_if_comment(&mut self, c: char) -> char {
@@ -93,8 +98,8 @@ impl Cursor<'_> {
 pub fn tokenised(code: String) -> Vec<Token> {
 	let mut tokens: Vec<Token> = vec![];
 	let mut groups: Vec<Group> = vec![
-		Group::BegList,
-		Group::EndList,
+		Group::ChrTok('('),
+		Group::ChrTok(')'),
 		Group::NewlineWs,
 		Group::Whitespace,
 		Group::Default
