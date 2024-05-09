@@ -1,4 +1,4 @@
-use std::{collections::HashMap, str::Chars};
+use std::{collections::HashMap, iter::Peekable, str::Chars};
 //use crate::helpers::Substr;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -22,12 +22,14 @@ enum Group {
 
 struct Cursor<'a> {
 	group: Group,
-	posit: Chars<'a>,
+	posit: Peekable<Chars<'a>>,
 	token: Token
 }
 
 impl Cursor<'_> {
 	fn handle(&mut self, groups: &Vec<Group>, c: char) -> Token {
+		let c = self.skip_if_comment(c);
+
 		let new_group = groups.iter().find(|g| match g {
 			Group::Custom(map) => map.keys().any(|s| s.starts_with(c)),
 			Group::NewlineWs   => {
@@ -61,6 +63,14 @@ impl Cursor<'_> {
 			finished_token
 		}
 	}
+
+	fn skip_if_comment(&mut self, c: char) -> char {
+		if c == '/' && self.posit.peek().is_some_and(|c| *c == '/') {
+			self.posit.find(|c| *c == '\n'); '\n'
+		} else {
+			c
+		}
+	}
 }
 
 // Tokenises based on "maximal munch"
@@ -79,14 +89,14 @@ pub fn tokenised(code: String) -> Vec<Token> {
 
 	let mut cursor = Cursor {
 		group: Group::Whitespace,
-		posit: code.chars(),
+		posit: code.chars().peekable(),
 		token: Token::Ignored
 	};
 
 	while let Some(c) = cursor.posit.next() {
 		let token = cursor.handle(&groups, c);
 		if token != Token::Ignored {
-			tokens.push(tok)
+			tokens.push(token)
 		}
 	}
 
