@@ -8,7 +8,8 @@ pub enum Token {
 	BegOpenList,
 	BegList,
 	EndList,
-	Newline
+	Newline,
+	Ignored
 }
 
 #[derive(Clone, PartialEq)]
@@ -26,7 +27,7 @@ struct Cursor<'a> {
 }
 
 impl Cursor<'_> {
-	fn handle(&mut self, groups: &Vec<Group>, c: char) -> Option<Token> {
+	fn handle(&mut self, groups: &Vec<Group>, c: char) -> Token {
 		let new_group = groups.iter().find(|g| match g {
 			Group::Custom(map) => map.keys().any(|s| s.starts_with(c)),
 			Group::NewlineWs   => {
@@ -44,7 +45,7 @@ impl Cursor<'_> {
 				_                              => ()
 			}
 
-			None
+			Token::Ignored
 		} else {
 			// Switch group, return finished token, create new token
 			let finished_token = self.token.clone();
@@ -52,16 +53,12 @@ impl Cursor<'_> {
 			self.group = new_group.clone();
 			match new_group {
 				Group::NewlineWs  => self.token = Token::Newline,
-				Group::Whitespace => self.token = Token::Default(String::new()),
+				Group::Whitespace => self.token = Token::Ignored,
 				Group::Default    => self.token = Token::Default(c.to_string()),
 				Group::Custom(_)  => self.token = Token::UserDef(c.to_string())
 			}
 
-			if finished_token != Token::Default(String::new()) {
-				Some(finished_token)
-			} else {
-				None
-			}
+			finished_token
 		}
 	}
 }
@@ -81,13 +78,14 @@ pub fn tokenised(code: String) -> Vec<Token> {
 	];
 
 	let mut cursor = Cursor {
-		group: Group::Default,
+		group: Group::Whitespace,
 		posit: code.chars(),
-		token: Token::Default(String::new())
+		token: Token::Ignored
 	};
 
 	while let Some(c) = cursor.posit.next() {
-		if let Some(tok) = cursor.handle(&groups, c) {
+		let token = cursor.handle(&groups, c);
+		if token != Token::Ignored {
 			tokens.push(tok)
 		}
 	}
