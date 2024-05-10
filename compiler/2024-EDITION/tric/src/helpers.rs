@@ -1,6 +1,10 @@
-use std::ops::{Bound, RangeBounds};
+//use std::ops::{Bound, RangeBounds};
 
-// Why this is not in the std lib is a mystery...
+macro_rules! debug {
+	($e:expr) => (println!("");dbg!($e))
+}
+
+/*// Why this is not in the std lib is a mystery...
 pub trait Substr {
 	fn substr<R>(&self, r: R) -> String where R: RangeBounds<usize>;
 }
@@ -21,4 +25,4 @@ impl Substr for str {
 
 		self.chars().skip(beg).take(end - beg).collect()
 	}
-}
+}*/

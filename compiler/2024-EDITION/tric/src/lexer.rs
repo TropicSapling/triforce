@@ -1,6 +1,6 @@
 use std::str::Chars;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Token {
 	Default(String),
 	UserDef(String),
@@ -11,7 +11,7 @@ pub enum Token {
 	Ignored
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 enum Group {
 	StrTok(String),
 	ChrTok(char),
@@ -39,8 +39,14 @@ impl Cursor<'_> {
 			}
 
 			Group::Whitespace => c.is_whitespace(),
-			Group::Default    => true
-		}).unwrap();
+
+			_ => false
+		});
+
+		let new_group = match new_group {
+			Some(g) => g,
+			None    => &Group::Default
+		};
 
 		match new_group {
 			Group::ChrTok(_)              => self.complete_token(c, new_group),
@@ -53,7 +59,7 @@ impl Cursor<'_> {
 		match &mut self.token {
 			Token::Default(ref mut tokstr) |
 			Token::UserDef(ref mut tokstr) => tokstr.push(c),
-			_                              => ()
+			_ => ()
 		}
 
 		Token::Ignored
@@ -94,7 +100,6 @@ impl Cursor<'_> {
 	}
 }
 
-// Tokenises based on "maximal munch"
 pub fn tokenised(code: String) -> Vec<Token> {
 	let mut tokens: Vec<Token> = vec![];
 	let mut groups: Vec<Group> = vec![
@@ -111,12 +116,39 @@ pub fn tokenised(code: String) -> Vec<Token> {
 		token: Token::Ignored
 	};
 
+	let mut deftokens = false;
+	let mut defgroup  = false;
 	while let Some(c) = cursor.posit.next() {
 		let token = cursor.handle(&groups, c);
 		if token != Token::Ignored {
-			tokens.push(token)
+			tokens.push(token);
+			match tokens.last().unwrap() {
+				Token::Default(s) if s == "defgroup"  => {
+					groups.push(Group::StrTok(String::new()));
+					defgroup = true;
+				}
+
+				Token::Default(s) if s == "deftokens" => deftokens = true,
+
+				Token::Default(s) if deftokens => {
+					groups.push(Group::ChrTok(s.chars().next().unwrap()))
+				}
+
+				Token::Default(s) if defgroup => {
+					if let Some(Group::StrTok(ref mut tok_grp)) = groups.last_mut() {
+						tok_grp.push(s.chars().next().unwrap())
+					}
+				}
+
+				Token::EndList if deftokens => deftokens = false,
+				Token::EndList if defgroup  => defgroup  = false,
+
+				_ => ()
+			}
 		}
 	}
+
+	debug!(groups);
 
 	tokens
 }

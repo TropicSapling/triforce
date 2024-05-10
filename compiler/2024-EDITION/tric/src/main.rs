@@ -1,12 +1,9 @@
 use std::{fs, io::Error};
 use culpa::throws;
 
+#[macro_use]
 mod helpers;
 mod lexer;
-
-macro_rules! debug {
-	($e:expr) => (println!("");dbg!($e))
-}
 
 #[throws]
 fn main() {
