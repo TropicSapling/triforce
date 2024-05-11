@@ -11,7 +11,7 @@ fn main() {
 
 	debug!(&code);
 
-	let tokens = lexer::tokenised(code);
+	let tokens = lexer::lexer::tokenised(code);
 
 	debug!(tokens);
 }
