@@ -20,6 +20,40 @@ enum Group {
 	Default
 }
 
+struct GroupHandler {
+	groups    : Vec<Group>,
+	defgroup  : bool,
+	deftokens : bool
+}
+
+impl GroupHandler {
+	fn handle_tok(&mut self, token: &Token) {
+		match token {
+			Token::Default(s) if s == "defgroup"  => {
+				self.groups.push(Group::StrTok(String::new()));
+				self.defgroup = true;
+			}
+
+			Token::Default(s) if s == "deftokens" => self.deftokens = true,
+
+			Token::Default(s) if self.deftokens => {
+				self.groups.push(Group::ChrTok(s.chars().next().unwrap()))
+			}
+
+			Token::Default(s) if self.defgroup => {
+				if let Some(Group::StrTok(ref mut tok_grp)) = self.groups.last_mut() {
+					tok_grp.push(s.chars().next().unwrap())
+				}
+			}
+
+			Token::EndList if self.deftokens => self.deftokens = false,
+			Token::EndList if self.defgroup  => self.defgroup  = false,
+
+			_ => ()
+		}
+	}
+}
+
 struct Cursor<'a> {
 	group: Group,
 	posit: Chars<'a>,
@@ -30,28 +64,27 @@ impl Cursor<'_> {
 	fn handle(&mut self, groups: &Vec<Group>, c: char) -> Token {
 		let c = self.skip_if_comment(c);
 
-		let new_group = groups.iter().find(|g| match g {
-			Group::StrTok(s) => s.contains(c),
-			Group::ChrTok(r) => c == *r,
+		match self.group_of(c, groups) {
+			g @ Group::ChrTok(_)  => self.complete_token(c, g),
+			g if self.group != *g => self.complete_token(c, g),
+			_                     => self.extend_token(c)
+		}
+	}
 
-			Group::NewlineWs => {
-				c == '\n' || (c.is_whitespace() && self.group == Group::NewlineWs)
-			}
+	fn group_of<'a>(&self, c: char, groups: &'a Vec<Group>) -> &'a Group {
+		use Group::*;
 
-			Group::Whitespace => c.is_whitespace(),
-
-			_ => false
+		let group = groups.iter().find(|g| match g {
+			StrTok(syms) => syms.contains(c),
+			ChrTok(sym)  => c == *sym,
+			Whitespace   => c.is_whitespace(),
+			NewlineWs    => c.is_whitespace() && self.group == NewlineWs || c == '\n',
+			_            => false
 		});
 
-		let new_group = match new_group {
+		match group {
 			Some(g) => g,
-			None    => &Group::Default
-		};
-
-		match new_group {
-			Group::ChrTok(_)              => self.complete_token(c, new_group),
-			_ if self.group != *new_group => self.complete_token(c, new_group),
-			_                             => self.extend_token(c)
+			None    => &Default
 		}
 	}
 
@@ -101,14 +134,20 @@ impl Cursor<'_> {
 }
 
 pub fn tokenised(code: String) -> Vec<Token> {
-	let mut tokens: Vec<Token> = vec![];
-	let mut groups: Vec<Group> = vec![
-		Group::ChrTok('('),
-		Group::ChrTok(')'),
-		Group::NewlineWs,
-		Group::Whitespace,
-		Group::Default
-	];
+	let mut tokens = vec![];
+
+	let mut grp_handler = GroupHandler {
+		groups: vec![
+			Group::ChrTok('('),
+			Group::ChrTok(')'),
+			Group::NewlineWs,
+			Group::Whitespace,
+			Group::Default
+		],
+
+		defgroup  : false,
+		deftokens : false
+	};
 
 	let mut cursor = Cursor {
 		group: Group::Whitespace,
@@ -116,39 +155,15 @@ pub fn tokenised(code: String) -> Vec<Token> {
 		token: Token::Ignored
 	};
 
-	let mut deftokens = false;
-	let mut defgroup  = false;
 	while let Some(c) = cursor.posit.next() {
-		let token = cursor.handle(&groups, c);
+		let token = cursor.handle(&grp_handler.groups, c);
 		if token != Token::Ignored {
-			tokens.push(token);
-			match tokens.last().unwrap() {
-				Token::Default(s) if s == "defgroup"  => {
-					groups.push(Group::StrTok(String::new()));
-					defgroup = true;
-				}
-
-				Token::Default(s) if s == "deftokens" => deftokens = true,
-
-				Token::Default(s) if deftokens => {
-					groups.push(Group::ChrTok(s.chars().next().unwrap()))
-				}
-
-				Token::Default(s) if defgroup => {
-					if let Some(Group::StrTok(ref mut tok_grp)) = groups.last_mut() {
-						tok_grp.push(s.chars().next().unwrap())
-					}
-				}
-
-				Token::EndList if deftokens => deftokens = false,
-				Token::EndList if defgroup  => defgroup  = false,
-
-				_ => ()
-			}
+			grp_handler.handle_tok(&token);
+			tokens.push(token)
 		}
 	}
 
-	debug!(groups);
+	debug!(grp_handler.groups);
 
 	tokens
 }
