@@ -1,4 +1,4 @@
 pub mod lexer;
 
-mod cursor;
+mod reader;
 mod group_handler;

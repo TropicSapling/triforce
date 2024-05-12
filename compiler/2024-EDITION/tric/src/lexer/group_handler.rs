@@ -13,9 +13,8 @@ impl GroupHandler {
 			groups: vec![
 				Group::ChrTok('('),
 				Group::ChrTok(')'),
-				Group::NewlineWs,
-				Group::Whitespace,
-				Group::Default
+				Group::NewlinesWs,
+				Group::Whitespace
 			],
 
 			defgroup  : false,
@@ -25,12 +24,16 @@ impl GroupHandler {
 
 	pub fn handle(&mut self, token: &Token) {
 		match token {
+			// -------- DEFINITION START --------
+
 			Token::Default(s) if s == "defgroup"  => {
 				self.groups.push(Group::StrTok(String::new()));
 				self.defgroup = true;
 			}
 
 			Token::Default(s) if s == "deftokens" => self.deftokens = true,
+
+			// -------- DEFINITION BODY --------
 
 			Token::Default(s) if self.deftokens => {
 				self.groups.push(Group::ChrTok(s.chars().next().unwrap()))
@@ -41,6 +44,8 @@ impl GroupHandler {
 					tok_grp.push(s.chars().next().unwrap())
 				}
 			}
+
+			// -------- DEFINITION END --------
 
 			Token::EndList if self.deftokens => self.deftokens = false,
 			Token::EndList if self.defgroup  => self.defgroup  = false,
