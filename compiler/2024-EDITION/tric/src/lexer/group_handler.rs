@@ -13,6 +13,7 @@ impl GroupHandler {
 			groups: vec![
 				Group::ChrTok('('),
 				Group::ChrTok(')'),
+				Group::StrLiteral,
 				Group::NewlinesWs,
 				Group::Whitespace
 			],

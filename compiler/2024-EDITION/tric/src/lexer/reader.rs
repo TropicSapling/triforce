@@ -34,6 +34,7 @@ impl Reader<'_> {
 		let group = groups.iter().find(|g| match g {
 			StrTok(syms) => syms.contains(c),
 			ChrTok(sym)  => c == *sym,
+			StrLiteral   => self.is_str_literal(c),
 			NewlinesWs   => c.is_whitespace() && self.group == NewlinesWs || c == '\n',
 			Whitespace   => c.is_whitespace(),
 			_            => unreachable!()
@@ -49,7 +50,8 @@ impl Reader<'_> {
 	fn extend_token(&mut self, c: char) -> Token {
 		match &mut self.token {
 			Token::Default(ref mut tokstr) |
-			Token::UserDef(ref mut tokstr) => tokstr.push(c),
+			Token::UserDef(ref mut tokstr) |
+			Token::Literal(ref mut tokstr) => tokstr.push(c),
 
 			_ => () // do nothing for non-extendable tokens
 		}
@@ -68,6 +70,7 @@ impl Reader<'_> {
 			Group::ChrTok(_)   |
 			Group::StrTok(_)   => self.token = Token::UserDef(c.to_string()),
 			Group::Default     => self.token = Token::Default(c.to_string()),
+			Group::StrLiteral  => self.token = Token::Literal(c.to_string()),
 			Group::NewlinesWs  => self.token = Token::Newline,
 			Group::Whitespace  => self.token = Token::Ignored
 		}
@@ -81,6 +84,14 @@ impl Reader<'_> {
 			'\n'
 		} else {
 			c
+		}
+	}
+
+	fn is_str_literal(&self, c: char) -> bool {
+		if let Token::Literal(tokstr) = &self.token {
+			tokstr.len() == 1 || tokstr.chars().rev().next().unwrap() != '"'
+		} else {
+			c == '"'
 		}
 	}
 

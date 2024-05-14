@@ -4,6 +4,7 @@ use crate::lexer::{reader::Reader, group_handler::GroupHandler};
 pub enum Token {
 	Default(String),
 	UserDef(String),
+	Literal(String),
 	BegOpenList,
 	BegList,
 	EndList,
@@ -15,6 +16,7 @@ pub enum Token {
 pub enum Group {
 	StrTok(String),
 	ChrTok(char),
+	StrLiteral,
 	NewlinesWs,
 	Whitespace,
 	Default
