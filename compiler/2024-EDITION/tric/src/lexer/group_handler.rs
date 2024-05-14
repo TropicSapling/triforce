@@ -11,9 +11,9 @@ impl GroupHandler {
 	pub fn new() -> GroupHandler {
 		GroupHandler {
 			groups: vec![
+				Group::StringLiteral,
 				Group::ChrTok('('),
 				Group::ChrTok(')'),
-				Group::StrLiteral,
 				Group::NewlinesWs,
 				Group::Whitespace
 			],

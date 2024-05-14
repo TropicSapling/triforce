@@ -27,17 +27,17 @@ impl Reader<'_> {
 		}
 	}
 
-	fn group_of(&self, c: char, groups: &Vec<Group>) -> Group {
+	fn group_of(&mut self, c: char, groups: &Vec<Group>) -> Group {
 		use Group::*;
 
 		// Assign a group the character qualifies into (if any)
 		let group = groups.iter().find(|g| match g {
-			StrTok(syms) => syms.contains(c),
-			ChrTok(sym)  => c == *sym,
-			StrLiteral   => self.is_str_literal(c),
-			NewlinesWs   => c.is_whitespace() && self.group == NewlinesWs || c == '\n',
-			Whitespace   => c.is_whitespace(),
-			_            => unreachable!()
+			StringLiteral => self.is_str_literal(c),
+			StrTok(syms)  => syms.contains(c),
+			ChrTok(sym)   => c == *sym,
+			NewlinesWs    => c.is_whitespace() && self.group == NewlinesWs || c=='\n',
+			Whitespace    => c.is_whitespace(),
+			_             => unreachable!()
 		});
 
 		// If a group was found, return it - otherwise return the default group
@@ -49,9 +49,9 @@ impl Reader<'_> {
 
 	fn extend_token(&mut self, c: char) -> Token {
 		match &mut self.token {
-			Token::Default(ref mut tokstr) |
-			Token::UserDef(ref mut tokstr) |
-			Token::Literal(ref mut tokstr) => tokstr.push(c),
+			Token::Literal(ref mut tokstr, _) |
+			Token::Default(ref mut tokstr)    |
+			Token::UserDef(ref mut tokstr)    => tokstr.push(c),
 
 			_ => () // do nothing for non-extendable tokens
 		}
@@ -64,16 +64,16 @@ impl Reader<'_> {
 
 		// Switch group and begin formation of new token
 		self.group = new_group;
-		match self.group {
-			Group::ChrTok('(') => self.token = self.beglist(),
-			Group::ChrTok(')') => self.token = Token::EndList,
-			Group::ChrTok(_)   |
-			Group::StrTok(_)   => self.token = Token::UserDef(c.to_string()),
-			Group::Default     => self.token = Token::Default(c.to_string()),
-			Group::StrLiteral  => self.token = Token::Literal(c.to_string()),
-			Group::NewlinesWs  => self.token = Token::Newline,
-			Group::Whitespace  => self.token = Token::Ignored
-		}
+		self.token = match self.group {
+			Group::ChrTok('(')   => self.beglist(),
+			Group::ChrTok(')')   => Token::EndList,
+			Group::ChrTok(_)     |
+			Group::StrTok(_)     => Token::UserDef(c.to_string()),
+			Group::Default       => Token::Default(c.to_string()),
+			Group::StringLiteral => Token::Literal(c.to_string(), c.to_string()),
+			Group::NewlinesWs    => Token::Newline,
+			Group::Whitespace    => Token::Ignored
+		};
 
 		finished_token
 	}
@@ -87,9 +87,13 @@ impl Reader<'_> {
 		}
 	}
 
-	fn is_str_literal(&self, c: char) -> bool {
-		if let Token::Literal(tokstr) = &self.token {
-			tokstr.len() == 1 || tokstr.chars().rev().next().unwrap() != '"'
+	fn is_str_literal(&mut self, c: char) -> bool {
+		if let Token::Literal(tokstr, ref mut end) = &mut self.token {
+			if tokstr == end && c == '"' {
+				end.push(c)
+			}
+
+			tokstr == end || !tokstr.ends_with(end.as_str())
 		} else {
 			c == '"'
 		}

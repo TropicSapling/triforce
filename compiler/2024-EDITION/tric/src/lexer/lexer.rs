@@ -2,9 +2,9 @@ use crate::lexer::{reader::Reader, group_handler::GroupHandler};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
+	Literal(String, String),
 	Default(String),
 	UserDef(String),
-	Literal(String),
 	BegOpenList,
 	BegList,
 	EndList,
@@ -14,9 +14,9 @@ pub enum Token {
 
 #[derive(Clone, PartialEq)]
 pub enum Group {
+	StringLiteral,
 	StrTok(String),
 	ChrTok(char),
-	StrLiteral,
 	NewlinesWs,
 	Whitespace,
 	Default
