@@ -7,12 +7,12 @@
 
 defgroup  (@ % ? !) (>>>
 deftokens ({ } ~ ') (
-	λ((##((_ precedes this) (assoc none)) take (x 13|37) and '...') λ(#) Λ(#) #'~|') (
+	(λ((##((_ precedes this) (assoc none)) take (x 13|37) and '...') λ(#) Λ(#) #'~|') (
 		(take 37 and rust $unapplied) println!("Triforce fits on a postcard!");
-	) (λ(() 37|73|31|13 & ~73 | super power <2|4>|42) Λ(y) Λ(>>>z) (
+	)) (λ(() 37|73|31|13 & ~73 | super power <2|4>|42) Λ(y) Λ(>>>z) (
 		// Run code in language `y`, then return a weird list
 		====================================================================
 		runforeign \!(y) `\(z) (linklist "first" `(`second """ "third" """))
 		====================================================================
-	)
+	))
 )
