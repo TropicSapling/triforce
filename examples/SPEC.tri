@@ -23,11 +23,11 @@
 /// This is basically all of the language in a compact block to show how small it is.
 /// It includes syntax sugar and would technically be even "simpler" without.
 
-defgroup  (@ % ? !) (>>>
-deftokens ({ } ~ ') (
-	(λ((##((_ precedes this) (assoc none)) take (x 13|37) and '...') λ(#) Λ(#) #'~|') (
+defgroup  ($ # ! | < >) (>>>
+deftokens ({ } [ ] ~ ') (
+	(λ((##((_ precedes this) (assoc none)) take (x 13|37) and '...') λ# Λ# #'~|') (
 		(take 37 and rust $unapplied) println!("Triforce fits on a postcard!");
-	)) (λ(() 37|73|31|13 & ~73 | super power <2|4>|42) Λ(y) Λ(>>>z) (
+	)) (λ(() 37|73|31|13 & ~73 | super power <2|4>|42) Λ(y) Λ(z>>>) (
 		// Run code in language `y`, then return a weird list
 		====================================================================
 		runforeign \!(y) `\(z) (linklist "first" `(`second """ "third" """))
@@ -201,8 +201,8 @@ deftokens ({ } ~ ') (
 /// Function = "λ"
 /// MacroFun = "Λ"
 /// 
-/// Parameter = List<ParDecl [Type]>
-///           | List<ParName [Type]>
+/// Parameter = List<ParDecl [Type] [">>>"]>
+///           | List<ParName [Type] [">>>"]>
 /// 
 /// ParDecl = List<[Attrs] [Parameter|ident_atom]…>
 /// ParName = ident_atom
@@ -233,10 +233,9 @@ deftokens ({ } ~ ') (
 /// - `λ(x) λ(y) Λ(z) return === 42 ===` <=> `λ(x) (λ(y) (Λ(z) (return === 42 ===)))`
 /// 
 /// **NOTE:**
-/// `(>>>` as part of `Parameter` here indicates something slightly different than it
-/// normally does. It will not enclose everything that follows it, but instead act as
-/// a normal start-of-parameter - apart from also declaring that an open-ended `(>>>`
-/// should be automatically placed ahead of the parameter/argument at application.
+/// `>>>` at the end of `Parameter` declares that the parameter takes the entire
+/// following scope. This is acheived by automatically placing an open-ended `(>>>`
+/// ahead of the corresponding argument at function application.
 /// 
 /// Special Arguments
 /// -----------------
@@ -407,7 +406,7 @@ deftokens ({ } [ ] ~ ') (>>>
 /// Below we define `let $pat = $val\n` in the global scope with `Λ`:
 (Λ(glob_scope) (
 	======================================
-	(λ((let (pat) = (val)\\n(>>>scope))) (
+	(λ((let (pat) = (val)\\n(scope>>>))) (
 		\(glob_scope)
 	)) (Λ(pat) λ(val) Λ(scope) (
 		================================
@@ -474,11 +473,11 @@ let lambda = λ(() 123) λ(y 1|2|3) λ(z ~|) (
 let ({(expr)}) = λ(expr) expr
 
 /// `return` defined simply as ignoring the rest of the scope
-let (return (x)\n(>>>scope)) = λ(x) Λ() `\(x)
+let (return (x)\n(scope>>>)) = λ(x) Λ() `\(x)
 // TODO: fix so works for returning out of function too and not just scope
 
 /// `println` defined as invoking Rust's equivalent
-let (println (x)\n(>>>scope)) = λ(x) Λ(scope) (
+let (println (x)\n(scope>>>)) = λ(x) Λ(scope) (
 	=======================================
 	runforeign rust `(println("{}", \(x));)
 

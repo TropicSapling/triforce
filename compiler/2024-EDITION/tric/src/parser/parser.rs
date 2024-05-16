@@ -9,35 +9,17 @@ pub enum Expr {
 fn parsed_list(posit: &mut impl Iterator<Item = Token>) -> Expr {
 	let mut list = vec![];
 
-	let mut param = false;
 	while let Some(token) = posit.next() {
 		match token {
-			Token::Default(tokstr) |
-			Token::Default(tokstr) if tokstr == "Λ" || tokstr == "λ" => param = true,
-
 			Token::BegOpenList => {
 				list.push(parsed_list(posit));
-				if param {
-					param = false
-				} else {
-					break
-				}
-			}
-
-			Token::BegList => {
-				list.push(parsed_list(posit));
-				param = false
-			}
-
-			Token::EndList => {
-				param = false;
 				break
 			}
 
-			_ => {
-				list.push(Expr::Atom(token));
-				param = false
-			}
+			Token::BegList => list.push(parsed_list(posit)),
+			Token::EndList => break,
+
+			_ => list.push(Expr::Atom(token))
 		}
 	}
 
