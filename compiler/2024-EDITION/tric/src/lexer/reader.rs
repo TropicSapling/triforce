@@ -1,5 +1,5 @@
 use std::str::Chars;
-use crate::lexer::lexer::{Group, Token};
+use crate::enums::{Group, Token};
 
 pub struct Reader<'a> {
 	pub group: Group,

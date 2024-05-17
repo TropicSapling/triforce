@@ -1,10 +1,4 @@
-use crate::lexer::lexer::Token;
-
-#[derive(Debug)]
-pub enum Expr {
-	List(Vec<Expr>),
-	Atom(Token)
-}
+use crate::enums::{Expr, Token};
 
 fn parsed_list(posit: &mut impl Iterator<Item = Token>) -> Expr {
 	let mut list = vec![];

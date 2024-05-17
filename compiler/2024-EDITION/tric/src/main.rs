@@ -3,6 +3,7 @@ use culpa::throws;
 
 #[macro_use]
 mod helpers;
+mod enums;
 mod lexer;
 mod parser;
 

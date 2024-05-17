@@ -1,26 +1,5 @@
 use crate::lexer::{reader::Reader, group_handler::GroupHandler};
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum Token {
-	Literal(String, String),
-	Default(String),
-	UserDef(String),
-	BegOpenList,
-	BegList,
-	EndList,
-	Newline,
-	Ignored
-}
-
-#[derive(Clone, PartialEq)]
-pub enum Group {
-	StringLiteral,
-	StrTok(String),
-	ChrTok(char),
-	NewlinesWs,
-	Whitespace,
-	Default
-}
+use crate::enums::Token;
 
 pub fn tokenised(code: String) -> Vec<Token> {
 	let mut tokens = vec![];

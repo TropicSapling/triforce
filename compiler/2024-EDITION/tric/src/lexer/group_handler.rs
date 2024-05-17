@@ -1,4 +1,4 @@
-use crate::lexer::lexer::{Group, Token};
+use crate::enums::{Group, Token};
 
 pub struct GroupHandler {
 	pub groups: Vec<Group>,
