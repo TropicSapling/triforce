@@ -1,0 +1,18 @@
+/// =========================
+/// ## Minimum Viable Product
+/// =========================
+/// 
+/// Goal is to get this file to compile correctly (untyped) to an executable.
+/// This is just the postcard but stripped of syntax sugar and other complexities.
+
+defgroup  ($ # ! | < >) (>>>
+deftokens ({ } [ ] ~ ') (
+	(λ(((##()) take (x (|13|37)) and (() (~(|)))) (~(|))) (
+		(take 37 and rust $unapplied) println!("Triforce fits on a postcard!");
+	)) (λ(() (| (& (|13|37) & (~(|73))) | 42)) Λ(y) Λ(z>>>) (
+		// Run code in language `y`, then return a weird list
+		==========================================================================
+		runforeign \!(y) (`\(z)) (linklist "first" (`((`second) """ "third" """)))
+		==========================================================================
+	))
+)
