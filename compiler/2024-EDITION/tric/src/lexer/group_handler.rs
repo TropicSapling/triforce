@@ -41,7 +41,7 @@ impl GroupHandler {
 			}
 
 			Token::Default(s) if self.defgroup => {
-				if let Some(Group::StrTok(ref mut tok_grp)) = self.groups.last_mut() {
+				if let Some(Group::StrTok(tok_grp)) = self.groups.last_mut() {
 					tok_grp.push(s.chars().next().unwrap())
 				}
 			}

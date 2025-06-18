@@ -49,9 +49,9 @@ impl Reader<'_> {
 
 	fn extend_token(&mut self, c: char) -> Token {
 		match &mut self.token {
-			Token::Literal(ref mut tokstr, _) |
-			Token::Default(ref mut tokstr)    |
-			Token::UserDef(ref mut tokstr)    => tokstr.push(c),
+			Token::Literal(tokstr, _) |
+			Token::Default(tokstr)    |
+			Token::UserDef(tokstr)    => tokstr.push(c),
 
 			_ => () // do nothing for non-extendable tokens
 		}
@@ -88,7 +88,7 @@ impl Reader<'_> {
 	}
 
 	fn is_str_literal(&mut self, c: char) -> bool {
-		if let Token::Literal(tokstr, ref mut end) = &mut self.token {
+		if let Token::Literal(tokstr, end) = &mut self.token {
 			if tokstr == end && c == '"' {
 				end.push(c)
 			}
