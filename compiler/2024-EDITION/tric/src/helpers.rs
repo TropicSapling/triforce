@@ -1,7 +1,7 @@
 //use std::ops::{Bound, RangeBounds};
 
 macro_rules! debug {
-	($e:expr) => (println!("");dbg!($e))
+	($e:expr) => ({println!("");dbg!($e)})
 }
 
 /*// Why this is not in the std lib is a mystery...

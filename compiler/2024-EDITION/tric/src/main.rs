@@ -6,15 +6,13 @@ mod helpers;
 mod enums;
 mod lexer;
 mod parser;
+mod reducer;
 
 #[throws]
 fn main() {
-	let code = fs::read_to_string("../postcard.tri")?;
-	debug!(&code);
+	let code   = debug!(fs::read_to_string("../simple.tri")?);
+	let tokens = debug!(lexer::lexer::tokenised(code));
+	let expr   = debug!(parser::parser::parsed(tokens));
 
-	let tokens = lexer::lexer::tokenised(code);
-	debug!(&tokens);
-
-	let expr = parser::parser::parsed(tokens);
-	debug!(expr);
+	debug!(reducer::reducer::reduced(expr));
 }
