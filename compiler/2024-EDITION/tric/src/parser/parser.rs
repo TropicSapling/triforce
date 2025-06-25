@@ -17,8 +17,8 @@ fn parsed_list(posit: &mut impl Iterator<Item = Token>) -> Expr {
 			Default(ref s) => match s.as_str() {
 				"defgroup"  => list.push(Atom(Special(Defgroup))),
 				"deftokens" => list.push(Atom(Special(Deftoken))),
-				"λ"         => list.push(Atom(Special(MacroFun))),
-				"Λ"         => list.push(Atom(Special(Function))),
+				"λ"         => list.push(Atom(Special(Function))),
+				"Λ"         => list.push(Atom(Special(MacroFun))),
 				_           => list.push(Atom(token))
 			}
 

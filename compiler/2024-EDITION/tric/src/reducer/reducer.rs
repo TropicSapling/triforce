@@ -34,6 +34,7 @@ impl Reducer {
 
 	fn reduced_fun(&mut self, args: Vec<Expr>) -> Expr {
 		self.env.insert(args[1].clone(), args[3].clone());
+		debug!(&self.env);
 
 		let res = self.reduced(args[2].clone());
 
