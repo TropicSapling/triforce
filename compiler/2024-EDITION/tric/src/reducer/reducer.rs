@@ -1,31 +1,44 @@
-use crate::enums::{Expr, Token};
+use std::collections::HashMap;
+use crate::enums::{Expr, Token, Cmd};
 
-pub fn reduced(expr: &Expr) -> &Expr {
-	let Expr::List(exprs) = expr else {return expr};
-	
-	match exprs.len() {
-		0 => expr,
-		_ => {
-			let cmd = match exprs[0] {
-				Expr::Atom(_) => &exprs[0],
-				_             => reduced(&exprs[0])
-			};
+pub struct Reducer {
+	env: HashMap<Expr, Expr>
+}
+
+impl Reducer {
+	pub fn new() -> Self {
+		Reducer {env: HashMap::new()}
+	}
+
+	pub fn reduced(&mut self, expr: Expr) -> Expr {
+		let Expr::List(ref args) = expr else {return expr};
+		
+		if args.len() > 0 {
+			let cmd = self.reduced(args[0].clone());
 
 			match cmd {
-				Expr::Atom(atom) => match atom {
-					Token::Default(s) if s == "defgroup"  => reduced(&exprs[2]),
-					Token::Default(s) if s == "deftokens" => reduced(&exprs[2]),
-					Token::Default(s) if s == "Λ"         => reduced_lambda(exprs),
+				Expr::Atom(ref atom) => match atom {
+					Token::Special(Cmd::Defgroup) => self.reduced(args[2].clone()),
+					Token::Special(Cmd::Deftoken) => self.reduced(args[2].clone()),
+					Token::Special(Cmd::MacroFun) => self.reduced_fun(args.clone()),
 
 					_ => cmd
-				},
+				}
 
 				_ => cmd
 			}
+		} else {
+			expr
 		}
 	}
-}
 
-fn reduced_lambda(args: &[Expr]) -> &Expr {
-	reduced(&args[2]) // placeholder
+	fn reduced_fun(&mut self, args: Vec<Expr>) -> Expr {
+		self.env.insert(args[1].clone(), args[3].clone());
+
+		let res = self.reduced(args[2].clone());
+
+		self.env.remove(&args[1]);
+
+		res
+	}
 }

@@ -1,10 +1,19 @@
 use std::fmt;
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub enum Cmd {
+	Defgroup,
+	Deftoken,
+	MacroFun,
+	Function
+}
+
+#[derive(Clone, Eq, Hash, PartialEq)]
 pub enum Token {
 	Literal(String, String),
 	Default(String),
 	UserDef(String),
+	Special(Cmd),
 	BegOpenList,
 	BegList,
 	EndList,
@@ -22,6 +31,7 @@ pub enum Group {
 	Default
 }
 
+#[derive(Clone, Eq, Hash, PartialEq)]
 pub enum Expr {
 	List(Vec<Expr>),
 	Atom(Token)
@@ -36,6 +46,7 @@ impl fmt::Debug for Token {
 			Token::Literal(a, b) => format!("Literal({a:?}, {b:?})"),
 			Token::Default(x)    => format!("Default({x:?})"),
 			Token::UserDef(x)    => format!("UserDef({x:?})"),
+			Token::Special(c)    => format!("Special({c:?})"),
 			Token::BegOpenList   => format!("BegOpenList"),
 			Token::BegList       => format!("BegList"),
 			Token::EndList       => format!("EndList"),

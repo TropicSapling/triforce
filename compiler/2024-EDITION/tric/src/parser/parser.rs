@@ -1,4 +1,4 @@
-use crate::enums::{Expr, Token};
+use crate::enums::{Expr, Token, Expr::*, Token::*, Cmd::*};
 
 fn parsed_list(posit: &mut impl Iterator<Item = Token>) -> Expr {
 	let mut list = vec![];
@@ -6,29 +6,37 @@ fn parsed_list(posit: &mut impl Iterator<Item = Token>) -> Expr {
 	let mut first = true;
 	while let Some(token) = posit.next() {
 		match token {
-			Token::BegOpenList => {
+			BegOpenList => {
 				list.push(parsed_list(posit));
 				break
 			}
 
-			Token::BegList => list.push(parsed_list(posit)),
-			Token::EndList => break,
+			BegList => list.push(parsed_list(posit)),
+			EndList => break,
 
-			Token::Newline if first => continue,
+			Default(ref s) => match s.as_str() {
+				"defgroup"  => list.push(Atom(Special(Defgroup))),
+				"deftokens" => list.push(Atom(Special(Deftoken))),
+				"λ"         => list.push(Atom(Special(MacroFun))),
+				"Λ"         => list.push(Atom(Special(Function))),
+				_           => list.push(Atom(token))
+			}
 
-			_ => list.push(Expr::Atom(token))
+			Newline if first => continue,
+
+			_ => list.push(Atom(token))
 		}
 
 		first = false
 	}
 
-	Expr::List(list)
+	List(list)
 }
 
 pub fn parsed(tokens: Vec<Token>) -> Expr {
 	if tokens.len() > 1 {
 		parsed_list(&mut tokens.into_iter())
 	} else {
-		Expr::List(vec![Expr::Atom(tokens[0].clone())])
+		List(vec![Atom(tokens[0].clone())])
 	}
 }
