@@ -1,4 +1,4 @@
-use crate::enums::{Expr, Token, Expr::*, Token::*, Cmd::*};
+use crate::enums::{Expr::{self, *}, Token::{self, *}, Cmd::*};
 
 fn parsed_list(posit: &mut impl Iterator<Item = Token>) -> Expr {
 	let mut list = vec![];

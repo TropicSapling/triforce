@@ -14,5 +14,5 @@ fn main() {
 	let tokens = debug!(lexer::lexer::tokenised(code));
 	let expr   = debug!(parser::parser::parsed(tokens));
 
-	debug!(reducer::reducer::Reducer::new().reduced(expr));
+	debug!(reducer::reducer::Reducer::new().reduced(&expr));
 }

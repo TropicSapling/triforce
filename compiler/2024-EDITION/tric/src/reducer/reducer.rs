@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::enums::{Expr, Token, Cmd};
+use crate::enums::{Expr, Token::*, Cmd::*};
 
 pub struct Reducer {
 	env: HashMap<Expr, Expr>
@@ -10,36 +10,52 @@ impl Reducer {
 		Reducer {env: HashMap::new()}
 	}
 
-	pub fn reduced(&mut self, expr: Expr) -> Expr {
-		let Expr::List(ref args) = expr else {return expr};
-		
-		if args.len() > 0 {
-			let cmd = self.reduced(args[0].clone());
+	pub fn reduced(&mut self, expr: &Expr) -> Expr {
+		// If variable, replace with its value
+		if let Some(val) = self.env.get(expr) {
+			return val.clone()
+		}
 
-			match cmd {
-				Expr::Atom(ref atom) => match atom {
-					Token::Special(Cmd::Defgroup) => self.reduced(args[2].clone()),
-					Token::Special(Cmd::Deftoken) => self.reduced(args[2].clone()),
-					Token::Special(Cmd::MacroFun) => self.reduced_fun(args.clone()),
+		// Otherwise, check if it's a command
+		match expr {
+			// Non-empty list => possible command
+			Expr::List(args) if !args.is_empty() => {
+				let head = self.reduced(&args[0]);
 
-					_ => cmd
+				match head {
+					Expr::Atom(ref tok) => match tok {
+						Special(Defgroup) |
+						Special(Deftoken) => self.reduced(&args[2]),
+						Special(MacroFun) => self.reduced_mac(args),
+						_                 => error!("undefined token {tok:?}")
+					}
+
+					_ => head
 				}
-
-				_ => cmd
 			}
-		} else {
-			expr
+
+			// Empty list or atom => return as-is
+			_ => expr.clone()
 		}
 	}
 
-	fn reduced_fun(&mut self, args: Vec<Expr>) -> Expr {
-		self.env.insert(args[1].clone(), args[3].clone());
-		debug!(&self.env);
+	fn reduced_mac(&mut self, args: &[Expr]) -> Expr {
+		// Insert new variable binding into environment
+		self.env.insert(ident(&args[1]).clone(), args[3].clone());
 
-		let res = self.reduced(args[2].clone());
+		// Reduce the macro body
+		let expanded_macro = self.reduced(&args[2]);
 
+		// Remove variable binding to restore environment
 		self.env.remove(&args[1]);
 
-		res
+		expanded_macro
+	}
+}
+
+fn ident(expr: &Expr) -> &Expr {
+	match expr {
+		Expr::List(list) if list.len() == 1 => &list[0],
+		_                                   => &expr
 	}
 }
