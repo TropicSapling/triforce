@@ -6,7 +6,7 @@
 
 defgroup  ($ # ! | < >) (>>>
 deftokens ({ } [ ] ~ ') (
-	Λ (code_in) (
+	(Λ(code_in) (
 		code_in // code_out = code_in
-	) (absolutely Λny b0gu$ thing ##)
+	)) (absolutely Λny b0gu$ thing ##)
 )

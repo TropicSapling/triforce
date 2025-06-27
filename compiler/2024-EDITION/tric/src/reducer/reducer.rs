@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::enums::{Expr, Token::*, Cmd::*};
+use crate::enums::{Expr::{self, *}, Token::{self, *}, Cmd::*};
 
 pub struct Reducer {
 	env: HashMap<Expr, Expr>
@@ -7,7 +7,7 @@ pub struct Reducer {
 
 impl Reducer {
 	pub fn new() -> Self {
-		Reducer {env: HashMap::new()}
+		Self {env: HashMap::new()}
 	}
 
 	pub fn reduced(&mut self, expr: &Expr) -> Expr {
@@ -16,20 +16,28 @@ impl Reducer {
 			return val.clone()
 		}
 
-		// Otherwise, check if it's a command
 		match expr {
-			// Non-empty list => possible command
-			Expr::List(args) if !args.is_empty() => {
+			// Non-empty list => possible command or function application
+			List(args) if !args.is_empty() => {
 				let head = self.reduced(&args[0]);
 
-				match head {
-					Expr::Atom(ref tok) => match tok {
-						Special(Defgroup) |
-						Special(Deftoken) => self.reduced(&args[2]),
-						Special(MacroFun) => self.reduced_mac(args),
-						_                 => error!("undefined token `{tok:?}`")
+				match &head {
+					// Non-empty list as prefix => possible lambda application
+					List(pars) if !pars.is_empty() => match &pars[0] {
+						// MacroFun application
+						Atom(tok) if is_mapp(tok, args) => self.reduced_mac(&pars, args),
+
+						// Other prefix => return as-is
+						_ => head
 					}
 
+					// Def-commands reduce to their bodies
+					Atom(tok) if is_defcmd(tok) => self.reduced(&args[2]),
+
+					// Unapplied MacroFun reduces to itself
+					Atom(tok) if *tok == Special(MacroFun) => expr.clone(),
+
+					// Anything else => return as-is
 					_ => head
 				}
 			}
@@ -39,28 +47,43 @@ impl Reducer {
 		}
 	}
 
-	fn reduced_mac(&mut self, args: &[Expr]) -> Expr {
+	fn reduced_mac(&mut self, pars: &[Expr], args: &[Expr]) -> Expr {
 		// Insert new variable binding into environment
-		self.env.insert(ident(&args[1]).clone(), args[3].clone());
+		self.env.insert(ident(&pars[1]), val(&args[1]));
 
 		// Reduce the macro body
-		let expanded_macro = self.reduced(&args[2]);
+		let expanded_macro = self.reduced(&pars[2]);
 
 		// Remove variable binding to restore environment
-		self.env.remove(&args[1]);
+		self.env.remove(&pars[1]);
 
 		expanded_macro
 	}
 }
 
-fn ident(expr: &Expr) -> &Expr {
-	match expr {
-		Expr::List(list) if !list.is_empty() => {
-			let _type = &list[1..]; // currently unused
+fn is_mapp(tok: &Token, args: &[Expr]) -> bool {
+	*tok == Special(MacroFun) && args.len() > 1 && args[1] != Atom(Newline)
+}
 
-			&list[0]
+fn is_defcmd(tok: &Token) -> bool {
+	*tok == Special(Defgroup) || *tok == Special(Deftoken)
+}
+
+fn ident(expr: &Expr) -> Expr {
+	match expr {
+		List(list) if !list.is_empty() => {
+			let _type = List(list[1..].to_vec()); // currently unused
+
+			list[0].clone()
 		}
 
 		_ => error!("invalid Λ param `{expr:?}`")
+	}
+}
+
+fn val(expr: &Expr) -> Expr {
+	match expr {
+		List(_) => expr.clone(),
+		atom    => List(vec![atom.clone()])
 	}
 }
