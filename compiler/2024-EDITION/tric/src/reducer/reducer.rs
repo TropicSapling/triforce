@@ -34,8 +34,14 @@ impl Reducer {
 					// Def-commands reduce to their bodies
 					Atom(tok) if is_defcmd(tok) => self.reduced(&args[2]),
 
-					// Unapplied MacroFun reduces to itself
-					Atom(tok) if *tok == Special(MacroFun) => expr.clone(),
+					// Unapplied MacroFun reduces to itself with its body reduced
+					Atom(tok) if *tok == Special(MacroFun) => {
+						let mut args = args.clone();
+
+						args[2] = self.reduced(&args[2]);
+
+						List(args)
+					}
 
 					// Anything else => return as-is
 					_ => head
