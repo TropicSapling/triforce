@@ -27,7 +27,7 @@ impl Reducer {
 						Special(Defgroup) |
 						Special(Deftoken) => self.reduced(&args[2]),
 						Special(MacroFun) => self.reduced_mac(args),
-						_                 => error!("undefined token {tok:?}")
+						_                 => error!("undefined token `{tok:?}`")
 					}
 
 					_ => head
@@ -55,7 +55,12 @@ impl Reducer {
 
 fn ident(expr: &Expr) -> &Expr {
 	match expr {
-		Expr::List(list) if list.len() == 1 => &list[0],
-		_                                   => &expr
+		Expr::List(list) if !list.is_empty() => {
+			let _type = &list[1..]; // currently unused
+
+			&list[0]
+		}
+
+		_ => error!("invalid Λ param `{expr:?}`")
 	}
 }
