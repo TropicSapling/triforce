@@ -6,7 +6,7 @@ macro_rules! debug {
 // - https://docs.rs/annotate-snippets/latest/annotate_snippets/
 macro_rules! error {
 	($e:expr) => ({
-		eprint!("error: ");
+		eprint!("\x1b[91merror\x1b[0m: ");
 		eprintln!($e);
 		std::process::exit(1);
 	})

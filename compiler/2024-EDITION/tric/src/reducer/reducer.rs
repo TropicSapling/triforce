@@ -35,16 +35,12 @@ impl Reducer {
 					Atom(tok) if is_defcmd(tok) => self.reduced(&args[2]),
 
 					// Unapplied MacroFun reduces to itself with its body reduced
-					Atom(tok) if *tok == Special(MacroFun) => {
-						let mut args = args.clone();
-
-						args[2] = self.reduced(&args[2]);
-
-						List(args)
-					}
+					Atom(tok) if *tok == Special(MacroFun) => self.reduced_mac_obj(args),
 
 					// Anything else => return as-is
-					_ => head
+					_ if self.env.get(&head).is_some() => head,
+
+					_ => error!("invalid command `{head:?}` in `{expr:?}`\n")
 				}
 			}
 
@@ -54,14 +50,26 @@ impl Reducer {
 	}
 
 	fn reduced_mac(&mut self, pars: &[Expr], args: &[Expr]) -> Expr {
+		self.reduced_mac_body(ident(&pars[1]), val(&args[1]), &pars[2])
+	}
+
+	fn reduced_mac_obj(&mut self, pars: &Vec<Expr>) -> Expr {
+		let mut pars = pars.clone();
+
+		pars[2] = self.reduced_mac_body(ident(&pars[1]), ident(&pars[1]), &pars[2]);
+
+		List(pars)
+	}
+
+	fn reduced_mac_body(&mut self, var: Expr, val: Expr, body: &Expr) -> Expr {
 		// Insert new variable binding into environment
-		self.env.insert(ident(&pars[1]), val(&args[1]));
+		self.env.insert(var.clone(), val);
 
 		// Reduce the macro body
-		let expanded_macro = self.reduced(&pars[2]);
+		let expanded_macro = self.reduced(body);
 
 		// Remove variable binding to restore environment
-		self.env.remove(&pars[1]);
+		self.env.remove(&var);
 
 		expanded_macro
 	}
