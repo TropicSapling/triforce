@@ -237,6 +237,36 @@ deftokens ({ } [ ] ~ ') (
 /// following scope. This is acheived by automatically placing an open-ended `(>>>`
 /// ahead of the corresponding argument at function application.
 /// 
+/// λλλΛΛλΛΛ
+/// --------
+/// ```
+/// AltLambdaObj = IOEvalSpec Parameter Expr
+/// 
+/// IOEvalSpec = BefInput AfterRet
+/// IOEvalSpec = EvalSpec EvalSpec
+/// 
+/// EvalSpec   = Eval|Keep
+/// Eval       = "λ"
+/// Keep       = "Λ"
+/// ```
+/// 
+/// **POTENTIAL ALTERNATIVE** to and replacement of `LambdaObject`.
+/// - `"λΛ" Parameter Expr` <=> `"λ" Parameter Expr`
+/// - `"Λλ" Parameter Expr` <=> `"Λ" Parameter Expr`
+/// 
+/// `BefInput` specifies if the argument should be evaluated or not before being passed
+/// as input to the function. `AfterRet` specifies if the function's return value should
+/// be evaluated (once more) or not after it has been returned.
+/// 
+/// Basically, instead of choosing between functions and macros, with this alternative
+/// definition you would choose how input and output gets evaluated. How beneficial this
+/// would be is unclear but it sure is interesting. Implementation would be difficult.
+/// 
+/// **Upon calling:**
+/// - The input argument will be evaluated (`λx`) or be kept as is (`Λx`).
+/// - The body will run and evaluate (when???) to a result that will be returned.
+/// - The returned result will evaluate again (`xλ`) or be kept as is (`xΛ`).
+/// 
 /// Special Arguments
 /// -----------------
 /// ```
