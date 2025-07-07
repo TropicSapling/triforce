@@ -213,12 +213,15 @@ deftokens ({ } [ ] ~ ') (
 /// - `Parameter` defines a parameter; only its `Type` is evaluated normally.
 /// - `Expr` evaluates to a reduced form of itself serving as the function body.
 /// 
-/// **Upon calling `Function`:**
-/// Its body will run and evaluate to a result that will be returned.
+/// **Upon calling `Function`, input is transformed into output:**
+/// 1. Input is evaluated.
+/// 2. Body uses input and evaluates to a result.
+/// 3. Result returns replacing the call. It is interpreted as data and forwarded.
 /// 
-/// **Upon calling `MacroFun`:**
-/// Its body will run and evaluate *during compilation* to a result that is returned.
-/// The returned result will replace the macro call and *evaluate once more*.
+/// **Upon calling `MacroFun`, code is transformed into new code:**
+/// 1. Input is taken as it is, i.e. code.
+/// 2. Body uses input and evaluates *during compilation* to a result.
+/// 3. Result returns replacing the call. It is interpreted as new code and re-evaluated.
 /// 
 /// **Equality:**
 /// Two lambdas are considered equal if:
@@ -259,8 +262,9 @@ deftokens ({ } [ ] ~ ') (
 /// be evaluated (once more) or not after it has been returned.
 /// 
 /// Basically, instead of choosing between functions and macros, with this alternative
-/// definition you would choose how input and output gets evaluated. How beneficial this
-/// would be is unclear but it sure is interesting. Implementation would be difficult.
+/// definition you would choose how input and output gets evaluated. Implementing this
+/// would be difficult, but it would allow for defining `Quote` (excluding escapes) and
+/// `eval` as `ΛΛ(x) x` and `λλ(x) x` respectively instead of making them built-in.
 /// 
 /// **Upon calling:**
 /// - The input argument will be evaluated (`λx`) or be kept as is (`Λx`).
