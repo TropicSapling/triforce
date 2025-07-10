@@ -263,13 +263,15 @@ deftokens ({ } [ ] ~ ') (
 /// 
 /// Basically, instead of choosing between functions and macros, with this alternative
 /// definition you would choose how input and output gets evaluated. Implementing this
-/// would be difficult, but it would allow for defining `Quote` (excluding escapes) and
-/// `eval` as `ΛΛ(x) x` and `λλ(x) x` respectively instead of making them built-in.
+/// would be difficult, but it would allow for defining `Quote` as `ΛΛ(x) x` and `eval`
+/// as `λλ(x) x` instead of making them built-in. Escaping would work for the new `Quote`
+/// as well thanks to escaping being allowed for all `Keep` input applied to `Λ_`.
+/// - e.g. `(ΛΛ(x) ...) (one two \(escaped) four)`
 /// 
 /// **Upon calling:**
-/// - The input argument will be evaluated (`λx`) or be kept as is (`Λx`).
+/// - The input argument will be evaluated (`λ_`) or be kept as is (`Λ_`).
 /// - The body will run and evaluate (when???) to a result that will be returned.
-/// - The returned result will evaluate again (`xλ`) or be kept as is (`xΛ`).
+/// - The returned result will evaluate again (`_λ`) or be kept as is (`_Λ`).
 /// 
 /// Special Arguments
 /// -----------------
