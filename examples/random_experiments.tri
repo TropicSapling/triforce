@@ -3244,3 +3244,54 @@ let list = ====================
 let item = list[1][0]
 // <=>
 let item = eval (firstof (firstof (tailof list)))
+
+--------------------------------------------------
+
+/// # Icon language - "goal-directed execution" and generators
+/// https://en.wikipedia.org/wiki/Icon_(programming_language)
+/// 
+/// **Icon key points:**
+/// - All functions produce *result sequences*
+/// - On function return/yield: `return res_seq.pop()`
+/// - As long as something is returned => *success*
+/// - Once `res_seq` is exhausted/empty => `return &fail`
+/// 
+/// Examples below from Wikipedia but translated.
+
+/// -----------------------------------
+
+// Example 1 - basic success/failure concept
+while (char = read()) != EOF {
+	write char
+}
+// Could be shortened to simply:
+while char = read() {
+	write char
+}
+// Or even:
+while write(read()) // `&fail` propagates => `while write(&fail)` => `while &fail`
+
+/// -----------------------------------
+
+// Example 2 - generator returns multiple times
+func (i)..(j) {
+	while i <= j {
+		yield i // called `suspend` in Icon
+		i++
+	}
+	
+	// Return `&fail` to indicate end of sequence.
+	// In Icon, this is returned by default and technically not necessary.
+	// However, that is a poor default - arguably success should be the default.
+	FAIL
+}
+
+// `every` is probably like `while` except it skips rather than exits on `&fail`
+every x = 0..10 & x % 2 == 0 {
+	write x // 0, 2, 4, 6, 8 and 10 printed
+}
+
+// `&` = conjunction, `|` = alternator (both generators)
+if y < (x|5) {
+	write "y=${y}" // prints if `y < x || y < 5`
+}
