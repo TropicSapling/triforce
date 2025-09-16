@@ -3295,3 +3295,27 @@ every x = 0..10 & x % 2 == 0 {
 if y < (x|5) {
 	write "y=${y}" // prints if `y < x || y < 5`
 }
+
+--------------------------------------------------
+
+/// # For loops for everything
+/// Like in Go, maybe `for` should just be the universal loop construct?
+
+/// `for` as in *forever*
+for {
+	...
+}
+
+/// `for` as in *for each*
+for i in 0..<128 {
+	println i //> 0, 1, ..., 127
+}
+
+/// `for` as in *for each <x>, <i> = <f(x)>*
+for x => i = -2*x**3 + 4 {
+	println i //> 4, 2, -12, -50, ...
+}
+// <=>
+for x in 0.. => i = -2*x**3 + 4 {
+	println i //> 4, 2, -12, -50, ...
+}
