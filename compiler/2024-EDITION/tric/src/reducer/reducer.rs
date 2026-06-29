@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 use crate::enums::{Expr::{self, *}, Token::{self, *}, Cmd::*};
 
+// TODO: Function cache for complete reductions.
+// - Speed up compilation with HashMap cache in a file
+// - Removes need to re-reduce complex expressions every compilation
+
 pub struct Reducer {
 	env: HashMap<Expr, Expr>
 }
